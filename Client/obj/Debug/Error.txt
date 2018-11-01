@@ -1,0 +1,636 @@
+[2018-09-21 08:10:46] System.TypeInitializationException: “Client.MirGraphics.DXManager”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.Direct3D.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirGraphics.DXManager..cctor()
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.MirGraphics.DXManager.Create()
+   在 Client.CMain.CMain_Load(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 93
+[2018-09-21 08:10:46] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:46] System.TypeInitializationException: “Client.MirGraphics.DXManager”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.Direct3D.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirGraphics.DXManager..cctor()
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.MirGraphics.DXManager.Clean()
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 318
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:46] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:46] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.CMain_MouseMove(Object sender, MouseEventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 169
+[2018-09-21 08:10:47] System.TypeInitializationException: “Client.MirControls.MirScene”的类型初始值设定项引发异常。 ---> System.BadImageFormatException: 未能加载文件或程序集“Microsoft.DirectX.DirectSound.dll”或它的某一个依赖项。 不是有效的 Win32 应用程序。 (异常来自 HRESULT:0x800700C1)
+   在 Client.MirSounds.SoundManager.PlaySound(Int32 index, Boolean loop)
+   在 Client.MirScenes.LoginScene..ctor() 位置 D:\c_work\mir2-master\Client\MirScenes\LoginScene.cs:行号 37
+   在 Client.MirControls.MirScene..cctor() 位置 D:\c_work\mir2-master\Client\MirControls\MirScene.cs:行号 20
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 Client.CMain.UpdateEnviroment() 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 325
+   在 Client.CMain.Application_Idle(Object sender, EventArgs e) 位置 D:\c_work\mir2-master\Client\CMain.cs:行号 114

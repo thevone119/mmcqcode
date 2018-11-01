@@ -1,0 +1,11 @@
+D:\c_work\mir2-master\Build\Client\Client.exe.config
+D:\c_work\mir2-master\Build\Client\Client.exe
+D:\c_work\mir2-master\Build\Client\Client.pdb
+D:\c_work\mir2-master\Client\obj\Debug\Launcher.AMain.resources
+D:\c_work\mir2-master\Client\obj\Debug\Client.CMain.resources
+D:\c_work\mir2-master\Client\obj\Debug\Launcher.Config.resources
+D:\c_work\mir2-master\Client\obj\Debug\Client.Properties.Resources.resources
+D:\c_work\mir2-master\Client\obj\Debug\Client.csproj.GenerateResource.Cache
+D:\c_work\mir2-master\Client\obj\Debug\Client.exe
+D:\c_work\mir2-master\Client\obj\Debug\Client.pdb
+D:\c_work\mir2-master\Client\obj\Debug\Client.Test.resources
