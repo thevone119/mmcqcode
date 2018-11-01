@@ -1,0 +1,14 @@
+[2018-09-16 20:27:22]: 0 Recipes loaded.
+[2018-09-16 20:27:28]: 386 Maps Loaded.
+[2018-09-16 20:27:29]: Drops Loaded.
+[2018-09-16 20:27:29]: Dragon Loaded.
+[2018-09-16 20:27:29]: Envir Started.
+[2018-09-16 20:27:29]: Cannot start server without mob: RedTurtle
+[2018-09-16 20:27:29]: Envir Stopped.
+[2018-09-16 20:36:06]: 0 Recipes loaded.
+[2018-09-16 20:36:11]: 386 Maps Loaded.
+[2018-09-16 20:36:12]: Drops Loaded.
+[2018-09-16 20:36:12]: Dragon Loaded.
+[2018-09-16 20:36:12]: Envir Started.
+[2018-09-16 20:36:12]: Cannot start server without mob: BlueTurtle
+[2018-09-16 20:36:12]: Envir Stopped.

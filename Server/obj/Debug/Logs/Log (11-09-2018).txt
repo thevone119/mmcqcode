@@ -1,0 +1,6 @@
+[2018-09-11 21:22:01]: 0 Recipes loaded.
+[2018-09-11 21:22:01]: 0 Maps Loaded.
+[2018-09-11 21:22:01]: Drops Loaded.
+[2018-09-11 21:22:01]: Envir Started.
+[2018-09-11 21:22:01]: Cannot start server without start points
+[2018-09-11 21:22:01]: Envir Stopped.
