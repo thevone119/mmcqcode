@@ -17,7 +17,7 @@ namespace Server.MirObjects
         public static MonsterObject GetMonster(MonsterInfo info)
         {
             if (info == null) return null;
-
+           
             switch (info.AI)
             {
                 case 1:
@@ -636,7 +636,7 @@ namespace Server.MirObjects
             return true;
         }
 
-
+        //怪物死亡
         public override void Die()
         {
             if (Dead) return;
@@ -705,24 +705,25 @@ namespace Server.MirObjects
 
                 if (!CurrentMap.ValidPoint(location)) return result;
 
-                Cell cell = CurrentMap.GetCell(location);
+                //Cell cell = CurrentMap.GetCell(location);
 
                 bool stop = false;
-                if (cell.Objects != null)
-                    for (int c = 0; c < cell.Objects.Count; c++)
+                if (CurrentMap.Objects[location.X, location.Y] != null)
+                    for (int c = 0; c < CurrentMap.Objects[location.X, location.Y].Count; c++)
                     {
-                        MapObject ob = cell.Objects[c];
+                        MapObject ob = CurrentMap.Objects[location.X, location.Y][c];
                         if (!ob.Blocking) continue;
                         stop = true;
                     }
                 if (stop) break;
 
-                CurrentMap.GetCell(CurrentLocation).Remove(this);
+                CurrentMap.Remove(CurrentLocation.X, CurrentLocation.Y,this);
 
                 Direction = reverse;
                 RemoveObjects(dir, 1);
                 CurrentLocation = location;
-                CurrentMap.GetCell(CurrentLocation).Add(this);
+                //CurrentMap.GetCell(CurrentLocation).Add(this);
+                CurrentMap.Add(CurrentLocation.X, CurrentLocation.Y, this);
                 AddObjects(dir, 1);
 
                 Broadcast(new S.ObjectPushed { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
@@ -735,12 +736,12 @@ namespace Server.MirObjects
 
             if (result > 0)
             {
-                Cell cell = CurrentMap.GetCell(CurrentLocation);
+                //Cell cell = CurrentMap.GetCell(CurrentLocation);
 
-                for (int i = 0; i < cell.Objects.Count; i++)
+                for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
                 {
-                    if (cell.Objects[i].Race != ObjectType.Spell) continue;
-                    SpellObject ob = (SpellObject)cell.Objects[i];
+                    if (CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i].Race != ObjectType.Spell) continue;
+                    SpellObject ob = (SpellObject)CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i];
 
                     ob.ProcessSpell(this);
                     //break;
@@ -749,7 +750,7 @@ namespace Server.MirObjects
 
             return result;
         }
-
+        //怪物掉落物品
         protected virtual void Drop()
         {
             for (int i = 0; i < Info.Drops.Count; i++)
@@ -783,8 +784,11 @@ namespace Server.MirObjects
                 }
                 else
                 {
-                    UserItem item = Envir.CreateDropItem(drop.Item);
-
+                    if (drop.Item == null)
+                    {
+                        continue;
+                    }
+                    UserItem item = drop.Item.CreateDropItem();
                     if (item == null) continue;
 
                     if (EXPOwner != null && EXPOwner.Race == ObjectType.Player)
@@ -1343,6 +1347,8 @@ namespace Server.MirObjects
 
             return Target.CurrentLocation != CurrentLocation && Functions.InRange(CurrentLocation, Target.CurrentLocation, 1);
         }
+        //这个是怪物的仇恨？
+        //这个循环很坑啊
         protected virtual void FindTarget()
         {
             //if (CurrentMap.Players.Count < 1) return;
@@ -1359,11 +1365,11 @@ namespace Server.MirObjects
                     {
                         if (x < 0) continue;
                         if (x >= Current.Width) break;
-                        Cell cell = Current.Cells[x, y];
-                        if (cell.Objects == null || !cell.Valid) continue;
-                        for (int i = 0; i < cell.Objects.Count; i++)
+                        //Cell cell = Current.Cells[x, y];
+                        if (Current.Objects[x,y] == null || !Current.Valid(x,y)) continue;
+                        for (int i = 0; i < Current.Objects[x, y].Count; i++)
                         {
-                            MapObject ob = cell.Objects[i];
+                            MapObject ob = Current.Objects[x, y][i];
                             switch (ob.Race)
                             {
                                 case ObjectType.Monster:
@@ -1437,11 +1443,11 @@ namespace Server.MirObjects
             if (inRange)
             {
                 if (!CurrentMap.ValidPoint(location)) return;
-                Cell cell = CurrentMap.GetCell(location);
-                if (cell.Objects != null)
-                    for (int i = 0; i < cell.Objects.Count; i++)
+                //Cell cell = CurrentMap.GetCell(location);
+                if (CurrentMap.Objects[location.X, location.Y] != null)
+                    for (int i = 0; i < CurrentMap.Objects[location.X, location.Y].Count; i++)
                     {
-                        MapObject ob = cell.Objects[i];
+                        MapObject ob = CurrentMap.Objects[location.X, location.Y][i];
                         if (!ob.Blocking) continue;
                         return;
                     }
@@ -1483,12 +1489,12 @@ namespace Server.MirObjects
             InSafeZone = CurrentMap.GetSafeZone(CurrentLocation) != null;
 
 
-            Cell cell = CurrentMap.GetCell(CurrentLocation);
+            //Cell cell = CurrentMap.GetCell(CurrentLocation);
 
-            for (int i = 0; i < cell.Objects.Count; i++)
+            for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
             {
-                if (cell.Objects[i].Race != ObjectType.Spell) continue;
-                SpellObject ob = (SpellObject)cell.Objects[i];
+                if (CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i].Race != ObjectType.Spell) continue;
+                SpellObject ob = (SpellObject)CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i];
 
                 ob.ProcessSpell(this);
                 //break;
@@ -1507,23 +1513,25 @@ namespace Server.MirObjects
 
             if (!CurrentMap.ValidPoint(location)) return false;
 
-            Cell cell = CurrentMap.GetCell(location);
+            //Cell cell = CurrentMap.GetCell(location);
 
-            if (cell.Objects != null)
-            for (int i = 0; i < cell.Objects.Count; i++)
+            if (CurrentMap.Objects[location.X, location.Y] != null)
             {
-                MapObject ob = cell.Objects[i];
-                if (!ob.Blocking || Race == ObjectType.Creature) continue;
+                for (int i = 0; i < CurrentMap.Objects[location.X, location.Y].Count; i++)
+                {
+                    MapObject ob = CurrentMap.Objects[location.X, location.Y][i];
+                    if (!ob.Blocking || Race == ObjectType.Creature) continue;
 
-                return false;
+                    return false;
+                }
             }
-
-            CurrentMap.GetCell(CurrentLocation).Remove(this);
+           
+            CurrentMap.Remove(CurrentLocation.X, CurrentLocation.Y,this);
 
             Direction = dir;
             RemoveObjects(dir, 1);
             CurrentLocation = location;
-            CurrentMap.GetCell(CurrentLocation).Add(this);
+            CurrentMap.Add(this);
             AddObjects(dir, 1);
 
             if (Hidden)
@@ -1551,12 +1559,12 @@ namespace Server.MirObjects
             Broadcast(new S.ObjectWalk { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
 
 
-            cell = CurrentMap.GetCell(CurrentLocation);
+            //cell = CurrentMap.GetCell(CurrentLocation);
 
-            for (int i = 0; i < cell.Objects.Count; i++)
+            for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
             {
-                if (cell.Objects[i].Race != ObjectType.Spell) continue;
-                SpellObject ob = (SpellObject)cell.Objects[i];
+                if (CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i].Race != ObjectType.Spell) continue;
+                SpellObject ob = (SpellObject)CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i];
 
                 ob.ProcessSpell(this);
                 //break;
@@ -1611,12 +1619,12 @@ namespace Server.MirObjects
                     if (x < 0) continue;
                     if (x >= CurrentMap.Width) break;
 
-                    Cell cell = CurrentMap.GetCell(x, y);
-                    if (!cell.Valid || cell.Objects == null) continue;
+                    //Cell cell = CurrentMap.GetCell(x, y);
+                    if (!CurrentMap.Valid(x, y) || CurrentMap.Objects[x,y] == null) continue;
 
-                    for (int i = 0; i < cell.Objects.Count; i++)
+                    for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                     {
-                        MapObject targetob = cell.Objects[i];
+                        MapObject targetob = CurrentMap.Objects[x, y][i];
                         if (targetob == null || targetob.Node == null || targetob.Race != ObjectType.Monster) continue;
                         if (((MonsterObject)targetob).ShockTime == 0) continue;
 
@@ -1644,12 +1652,12 @@ namespace Server.MirObjects
                         if (x < 0) continue;
                         if (x >= CurrentMap.Width) break;
                         if (!CurrentMap.ValidPoint(x, y)) continue;
-                        Cell cell = CurrentMap.GetCell(x, y);
-                        if (cell.Objects == null) continue;
+                       // Cell cell = CurrentMap.GetCell(x, y);
+                        if (CurrentMap.Objects[x,y] == null) continue;
 
-                        for (int i = 0; i < cell.Objects.Count; i++)
+                        for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                         {
-                            MapObject ob = cell.Objects[i];
+                            MapObject ob = CurrentMap.Objects[x, y][i];
                             switch (ob.Race)
                             {
                                 case ObjectType.Monster:
@@ -1686,12 +1694,12 @@ namespace Server.MirObjects
                         if (x < 0) continue;
                         if (x >= CurrentMap.Width) break;
                         if (!CurrentMap.ValidPoint(x, y)) continue;
-                        Cell cell = CurrentMap.GetCell(x, y);
-                        if (cell.Objects == null) continue;
+                        //Cell cell = CurrentMap.GetCell(x, y);
+                        if (CurrentMap.Objects[x,y] == null) continue;
 
-                        for (int i = 0; i < cell.Objects.Count; i++)
+                        for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                         {
-                            MapObject ob = cell.Objects[i];
+                            MapObject ob = CurrentMap.Objects[x, y][i];
                             switch (ob.Race)
                             {
                                 case ObjectType.Monster:
@@ -1730,12 +1738,12 @@ namespace Server.MirObjects
                         if (x < 0) continue;
                         if (x >= CurrentMap.Width) break;
 
-                        Cell cell = CurrentMap.GetCell(x, y);
-                        if (!cell.Valid || cell.Objects == null) continue;
+                        //Cell cell = CurrentMap.GetCell(x, y);
+                        if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                        for (int i = 0; i < cell.Objects.Count; i++)
+                        for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                         {
-                            MapObject ob = cell.Objects[i];
+                            MapObject ob = CurrentMap.Objects[x, y][i];
                             switch (ob.Race)
                             {
                                 case ObjectType.Monster:
@@ -1767,12 +1775,12 @@ namespace Server.MirObjects
                         if (x < 0) continue;
                         if (x >= CurrentMap.Width) break;                    
 
-                        Cell cell = CurrentMap.GetCell(x, y);
-                        if (!cell.Valid || cell.Objects == null) continue;
+                        //Cell cell = CurrentMap.GetCell(x, y);
+                        if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x, y] == null) continue;
 
-                        for (int i = 0; i < cell.Objects.Count; i++)
+                        for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                         {
-                            MapObject ob = cell.Objects[i];
+                            MapObject ob = CurrentMap.Objects[x, y][i];
                             switch (ob.Race)
                             {
                                 case ObjectType.Monster:
@@ -2317,13 +2325,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Remove(this);
                             }
@@ -2342,13 +2350,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Remove(this);
                             }
@@ -2366,13 +2374,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X - Globals.DataRange + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Remove(this);
                             }
@@ -2391,13 +2399,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X - Globals.DataRange + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Remove(this);
                             }
@@ -2416,13 +2424,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Remove(this);
                             }
@@ -2440,13 +2448,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X - Globals.DataRange + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Remove(this);
                             }
@@ -2464,13 +2472,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Remove(this);
                             }
@@ -2489,13 +2497,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Remove(this);
                             }
@@ -2513,13 +2521,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + Globals.DataRange - b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Remove(this);
                             }
@@ -2537,13 +2545,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + Globals.DataRange - b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Remove(this);
                             }
@@ -2563,13 +2571,13 @@ namespace Server.MirObjects
                             if (x < 0 || x >= CurrentMap.Width) continue;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Remove(this);
                             }
@@ -2587,13 +2595,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + Globals.DataRange - b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Remove(this);
                             }
@@ -2617,13 +2625,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Add(this);
                             }
@@ -2642,13 +2650,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Add(this);
                             }
@@ -2666,13 +2674,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + Globals.DataRange - b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Add(this);
                             }
@@ -2690,13 +2698,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + Globals.DataRange - b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x, y) || CurrentMap.Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Add(this);
                             }
@@ -2715,13 +2723,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x, y) || CurrentMap.Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Add(this);
                             }
@@ -2739,13 +2747,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + Globals.DataRange - b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x, y) || CurrentMap.Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Add(this);
                             }
@@ -2764,13 +2772,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x, y) || CurrentMap.Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Add(this);
                             }
@@ -2789,13 +2797,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                           // Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x, y) || CurrentMap.Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Add(this);
                             }
@@ -2813,13 +2821,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X - Globals.DataRange + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x, y) || CurrentMap.Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Add(this);
                             }
@@ -2838,13 +2846,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X - Globals.DataRange + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x, y) || CurrentMap.Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Add(this);
                             }
@@ -2863,13 +2871,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x, y) || CurrentMap.Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Add(this);
                             }
@@ -2887,13 +2895,13 @@ namespace Server.MirObjects
                             int x = CurrentLocation.X - Globals.DataRange + b;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            //Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Player) continue;
                                 ob.Add(this);
                             }
@@ -2938,6 +2946,16 @@ namespace Server.MirObjects
             SlaveList.Clear();
             base.Despawn();
         }
+
+    }
+
+    /// <summary>
+    /// 采用怪物对象包裹器，包裹怪物
+    /// 这里只记录简单的怪物的位置，血量，仇恨等个性东西，其他的都用具体的怪物属性
+    /// 采用怪物属性引用的方式，避免大量刷怪占用的内存属性
+    /// </summary>
+    public class MonsterObjectInstance
+    {
 
     }
 }

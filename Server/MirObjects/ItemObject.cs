@@ -184,7 +184,7 @@ namespace Server.MirObjects
         {
             if (CurrentMap == null) return false;
 
-            Cell best = null;
+            object best = null;
             int bestCount = 0;
             Point bestLocation = Point.Empty;
 
@@ -212,9 +212,9 @@ namespace Server.MirObjects
 
                         if (movement) continue;
 
-                        Cell cell = CurrentMap.GetCell(x, y);
-
-                        if (cell.Objects == null)
+                        //Cell cell = CurrentMap.GetCell(x, y);
+                        object cell = 1;
+                        if (CurrentMap.Objects[x,y] == null)
                         {
                             CurrentLocation = new Point(x, y);
                             CurrentMap.AddObject(this);
@@ -225,9 +225,9 @@ namespace Server.MirObjects
                         int count = 0;
                         bool blocking = false;
 
-                        for (int i = 0; i < cell.Objects.Count; i++)
+                        for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                         {
-                            MapObject ob = cell.Objects[i];
+                            MapObject ob = CurrentMap.Objects[x, y][i];
                             if (ob.Blocking)
                             {
                                 blocking = true;
@@ -258,7 +258,6 @@ namespace Server.MirObjects
             }
 
             if (best == null)
-
                 return false;
 
             CurrentLocation = bestLocation;
@@ -271,7 +270,7 @@ namespace Server.MirObjects
         {
             if (CurrentMap == null) return false;
 
-            Cell best = null;
+            object best = null;
             int bestCount = 0;
             Point bestLocation = Point.Empty;
 
@@ -299,9 +298,9 @@ namespace Server.MirObjects
 
                         if (movement) continue;
 
-                        Cell cell = CurrentMap.GetCell(x, y);
-
-                        if (cell.Objects == null)
+                        //Cell cell = CurrentMap.GetCell(x, y);
+                        object cell = 1;
+                        if (CurrentMap.Objects[x,y] == null)
                         {
                             CurrentLocation = new Point(x, y);
                             CurrentMap.AddObject(this);
@@ -312,9 +311,9 @@ namespace Server.MirObjects
                         int count = 0;
                         bool blocking = false;
 
-                        for (int i = 0; i < cell.Objects.Count; i++)
+                        for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                         {
-                            MapObject ob = cell.Objects[i];
+                            MapObject ob = CurrentMap.Objects[x, y][i];
                             if (ob.Blocking)
                             {
                                 blocking = true;

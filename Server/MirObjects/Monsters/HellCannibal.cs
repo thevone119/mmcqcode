@@ -42,7 +42,7 @@ namespace Server.MirObjects.Monsters
 
                 MirDirection dir = Functions.PreviousDir(Direction);
                 Point location = CurrentLocation;
-                Cell cell;
+                //Cell cell;
 
                 for (int y = location.Y - 2; y <= location.Y + 2; y++)
                 {
@@ -54,13 +54,13 @@ namespace Server.MirObjects.Monsters
                         if (x < 0) continue;
                         if (x >= CurrentMap.Width) break;
 
-                        cell = CurrentMap.GetCell(x, y);
+                        //cell = CurrentMap.GetCell(x, y);
 
-                        if (!cell.Valid || cell.Objects == null) continue;
+                        if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                        for (int i = 0; i < cell.Objects.Count; i++)
+                        for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                         {
-                            MapObject target = cell.Objects[i];
+                            MapObject target = CurrentMap.Objects[x, y][i];
                             switch (target.Race)
                             {
                                 case ObjectType.Player:

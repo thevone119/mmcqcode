@@ -69,14 +69,14 @@ namespace Server.MirObjects.Monsters
 
             if (!CurrentMap.ValidPoint(location)) return false;
 
-            Cell cell = CurrentMap.GetCell(location);
+            //Cell cell = CurrentMap.GetCell(location);
 
             bool isBreak = false;
 
-            if (cell.Objects != null)
-                for (int i = 0; i < cell.Objects.Count; i++)
+            if (CurrentMap.Objects[location.X, location.Y] != null)
+                for (int i = 0; i < CurrentMap.Objects[location.X, location.Y].Count; i++)
                 {
-                    MapObject ob = cell.Objects[i];
+                    MapObject ob = CurrentMap.Objects[location.X, location.Y][i];
                     if (!ob.Blocking) continue;
                     isBreak = true;
                     break;
@@ -88,23 +88,23 @@ namespace Server.MirObjects.Monsters
 
                 if (!CurrentMap.ValidPoint(location)) return false;
 
-                cell = CurrentMap.GetCell(location);
+                //cell = CurrentMap.GetCell(location);
 
-                if (cell.Objects != null)
-                    for (int i = 0; i < cell.Objects.Count; i++)
+                if (CurrentMap.Objects[location.X, location.Y] != null)
+                    for (int i = 0; i < CurrentMap.Objects[location.X, location.Y].Count; i++)
                     {
-                        MapObject ob = cell.Objects[i];
+                        MapObject ob = CurrentMap.Objects[location.X, location.Y][i];
                         if (!ob.Blocking) continue;
                         return false;
                     }
             }
 
-            CurrentMap.GetCell(CurrentLocation).Remove(this);
+            CurrentMap.Remove(CurrentLocation.X, CurrentLocation.Y,this);
 
             Direction = dir;
             RemoveObjects(dir, 1);
             CurrentLocation = location;
-            CurrentMap.GetCell(CurrentLocation).Add(this);
+            CurrentMap.Add(CurrentLocation.X, CurrentLocation.Y,this);
             AddObjects(dir, 1);
 
             if (Hidden)
@@ -135,12 +135,12 @@ namespace Server.MirObjects.Monsters
                 Broadcast(new S.ObjectRun { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
 
 
-            cell = CurrentMap.GetCell(CurrentLocation);
+            //cell = CurrentMap.GetCell(CurrentLocation);
 
-            for (int i = 0; i < cell.Objects.Count; i++)
+            for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
             {
-                if (cell.Objects[i].Race != ObjectType.Spell) continue;
-                SpellObject ob = (SpellObject)cell.Objects[i];
+                if (CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i].Race != ObjectType.Spell) continue;
+                SpellObject ob = (SpellObject)CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i];
 
                 ob.ProcessSpell(this);
                 //break;
@@ -176,12 +176,12 @@ namespace Server.MirObjects.Monsters
             //Stacking or Infront of master - Move
             bool stacking = false;
 
-            Cell cell = CurrentMap.GetCell(CurrentLocation);
+            //Cell cell = CurrentMap.GetCell(CurrentLocation);
 
-            if (cell.Objects != null)
-                for (int i = 0; i < cell.Objects.Count; i++)
+            if (CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y] != null)
+                for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
                 {
-                    MapObject ob = cell.Objects[i];
+                    MapObject ob = CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i];
                     if (ob == this || !ob.Blocking) continue;
                     stacking = true;
                     break;
@@ -315,14 +315,14 @@ namespace Server.MirObjects.Monsters
 
                 if (!CurrentMap.ValidPoint(hitPoint)) continue;
 
-                Cell cell = CurrentMap.GetCell(hitPoint);
+                //Cell cell = CurrentMap.GetCell(hitPoint);
 
-                if (cell.Objects == null) continue;
+                if (CurrentMap.Objects[hitPoint.X, hitPoint.Y] == null) continue;
 
 
-                for (int j = 0; j < cell.Objects.Count; j++)
+                for (int j = 0; j < CurrentMap.Objects[hitPoint.X, hitPoint.Y].Count; j++)
                 {
-                    MapObject target = cell.Objects[j];
+                    MapObject target = CurrentMap.Objects[hitPoint.X, hitPoint.Y][j];
                     switch (target.Race)
                     {
                         case ObjectType.Monster:

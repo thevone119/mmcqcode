@@ -20,7 +20,7 @@ namespace Server
         public SMain()
         {
                 InitializeComponent();
-
+                InterfaceTimer.Interval = 1000;
                 AutoResize();
         }
 

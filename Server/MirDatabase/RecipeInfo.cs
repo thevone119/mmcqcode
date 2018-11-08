@@ -8,6 +8,7 @@ using Server.MirObjects;
 
 namespace Server.MirDatabase
 {
+    //食物，
     public class RecipeInfo
     {
         protected static Envir Envir
@@ -33,7 +34,7 @@ namespace Server.MirDatabase
                 return;
             }
 
-            Item = SMain.Envir.CreateShopItem(itemInfo);
+            Item = itemInfo.CreateShopItem();
 
             LoadIngredients(name);
         }
@@ -74,7 +75,7 @@ namespace Server.MirDatabase
                             if (data.Length == 2)
                                 uint.TryParse(data[1], out count);
 
-                            UserItem ingredient = SMain.Envir.CreateShopItem(info);
+                            UserItem ingredient = info.CreateShopItem();
 
                             ingredient.Count = count > info.StackSize ? info.StackSize : count;
 

@@ -77,13 +77,13 @@ namespace Server.MirObjects.Monsters
 
                             if (!CurrentMap.ValidPoint(tar)) continue;
 
-                            cell = CurrentMap.GetCell(tar);
+                            //cell = CurrentMap.GetCell(tar);
 
-                            if (cell.Objects == null) continue;
+                            if (CurrentMap.Objects[tar.X, tar.Y] == null) continue;
 
-                            for (int o = 0; o < cell.Objects.Count; o++)
+                            for (int o = 0; o < CurrentMap.Objects[tar.X, tar.Y].Count; o++)
                             {
-                                MapObject ob = cell.Objects[o];
+                                MapObject ob = CurrentMap.Objects[tar.X, tar.Y][o];
                                 if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
                                 if (!ob.IsAttackTarget(this)) continue;
 

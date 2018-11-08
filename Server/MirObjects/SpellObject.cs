@@ -100,9 +100,9 @@ namespace Server.MirObjects
             if (Envir.Time < TickTime) return;
             TickTime = Envir.Time + TickSpeed;
 
-            Cell cell = CurrentMap.GetCell(CurrentLocation);
-            for (int i = 0; i < cell.Objects.Count; i++)
-                ProcessSpell(cell.Objects[i]);
+            //Cell cell = CurrentMap.GetCell(CurrentLocation);
+            for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
+                ProcessSpell(CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i]);
 
             if ((Spell == Spell.MapLava) || (Spell == Spell.MapLightning)) Value = 0;
         }

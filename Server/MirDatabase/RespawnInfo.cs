@@ -24,7 +24,7 @@ namespace Server.MirDatabase
         public int RespawnIndex;
         //是否保存重生的时间
         public bool SaveRespawnTime = false;
-        //不知道干嘛用的哦
+        //不知道干嘛用的哦，重生的间隔计数？
         public ushort RespawnTicks; //leave 0 if not using this system!
 
         public RespawnInfo()

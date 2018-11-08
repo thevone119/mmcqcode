@@ -1,3 +1,4 @@
+D:\c_work\mir2-master\Build\Server\Server.exe.config
 D:\c_work\mir2-master\Build\Server\Server.exe
 D:\c_work\mir2-master\Build\Server\Server.pdb
 D:\c_work\mir2-master\Server\obj\Debug\Server.AccountInfoForm.resources
@@ -28,4 +29,3 @@ D:\c_work\mir2-master\Server\obj\Debug\Server.Properties.Resources.resources
 D:\c_work\mir2-master\Server\obj\Debug\Server.csproj.GenerateResource.Cache
 D:\c_work\mir2-master\Server\obj\Debug\Server.exe
 D:\c_work\mir2-master\Server\obj\Debug\Server.pdb
-D:\c_work\mir2-master\Build\Server\Server.exe.config

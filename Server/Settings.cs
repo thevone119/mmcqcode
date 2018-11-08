@@ -37,8 +37,8 @@ namespace Server
         public static bool CheckVersion = false;//是否检测客户端版本
         public static byte[] VersionHash;//这个应该是客户端exe的文件md5
         public static string GMPassword = "C#Mir 4.0";
-        public static bool Multithreaded = true;
-        public static int ThreadLimit = 2;
+        public static bool Multithreaded = false;//是否开启多线程进行处理
+        public static int ThreadLimit = 1;//开启的线程数
         public static bool TestServer = false;
         public static bool EnforceDBChecks = true;
 

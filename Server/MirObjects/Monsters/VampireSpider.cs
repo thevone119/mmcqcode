@@ -86,13 +86,13 @@ namespace Server.MirObjects.Monsters
                     if (x < 0) continue;
                     if (x >= CurrentMap.Width) break;
 
-                    Cell cell = CurrentMap.GetCell(x, y);
+                    //Cell cell = CurrentMap.GetCell(x, y);
 
-                    if (!cell.Valid || cell.Objects == null) continue;
+                    if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                    for (int i = 0; i < cell.Objects.Count; i++)
+                    for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                     {
-                        MapObject target = cell.Objects[i];
+                        MapObject target = CurrentMap.Objects[x, y][i];
                         switch (target.Race)
                         {
                             case ObjectType.Monster:
@@ -158,12 +158,12 @@ namespace Server.MirObjects.Monsters
             {
                 if (!CurrentMap.ValidPoint(target)) return;
 
-                Cell cell = CurrentMap.GetCell(target);
-                if (cell.Objects == null) return;
+                //Cell cell = CurrentMap.GetCell(target);
+                if (CurrentMap.Objects == null) return;
 
-                for (int o = 0; o < cell.Objects.Count; o++)
+                for (int o = 0; o < CurrentMap.Objects[target.X, target.Y].Count; o++)
                 {
-                    MapObject ob = cell.Objects[o];
+                    MapObject ob = CurrentMap.Objects[target.X, target.Y][o];
                     if (ob.Race == ObjectType.Monster || ob.Race == ObjectType.Player)
                     {
                         if (!ob.IsAttackTarget(this)) continue;

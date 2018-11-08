@@ -1378,7 +1378,7 @@ namespace Server.MirObjects
             }
             else if (cost > player.Account.Gold) return;
 
-            UserItem item = (isBuyBack || isUsed) ? goods : Envir.CreateFreshItem(goods.Info);
+            UserItem item = (isBuyBack || isUsed) ? goods : goods.Info.CreateFreshItem();
             item.Count = goods.Count;
 
             if (!player.CanGainItem(item)) return;
@@ -1496,7 +1496,7 @@ namespace Server.MirObjects
                 return;
             }
 
-            UserItem craftedItem = Envir.CreateFreshItem(goods.Info);
+            UserItem craftedItem = goods.Info.CreateFreshItem();
             craftedItem.Count = count;
 
             if (!player.CanGainItem(craftedItem))

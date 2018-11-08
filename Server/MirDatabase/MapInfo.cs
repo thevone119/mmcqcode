@@ -234,7 +234,7 @@ namespace Server.MirDatabase
             }
         }
 
-
+        //创建地图信息(非常消耗内存)
         public void CreateMap()
         {
             for (int j = 0; j < SMain.Envir.NPCInfoList.Count; j++)

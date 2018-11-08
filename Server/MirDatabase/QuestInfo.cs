@@ -7,9 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Server.MirEnvir;
+using System.Data.SQLite;
 
 namespace Server.MirDatabase
 {
+    //任务信息，定义各种任务
     public class QuestInfo
     {
         public int Index;
@@ -100,6 +102,43 @@ namespace Server.MirDatabase
             writer.Write(KillMessage);
             writer.Write(ItemMessage);
             writer.Write(FlagMessage);
+            SaveDB();
+        }
+
+        //保存到数据库
+        public void SaveDB()
+        {
+            StringBuilder sb = new StringBuilder();
+            List<SQLiteParameter> lp = new List<SQLiteParameter>();
+            sb.Append("update QuestInfo set ");
+
+            sb.Append(" Name=@Name, "); lp.Add(new SQLiteParameter("Name", Name));
+            sb.Append(" GroupName=@GroupName, "); lp.Add(new SQLiteParameter("GroupName", Group));
+            sb.Append(" FileName=@FileName, "); lp.Add(new SQLiteParameter("FileName", FileName));
+            sb.Append(" RequiredMinLevel=@RequiredMinLevel, "); lp.Add(new SQLiteParameter("RequiredMinLevel", RequiredMinLevel));
+            sb.Append(" RequiredMaxLevel=@RequiredMaxLevel, "); lp.Add(new SQLiteParameter("RequiredMaxLevel", RequiredMaxLevel));
+
+            sb.Append(" RequiredQuest=@RequiredQuest, "); lp.Add(new SQLiteParameter("RequiredQuest", RequiredQuest));
+            sb.Append(" RequiredClass=@RequiredClass, "); lp.Add(new SQLiteParameter("RequiredClass", RequiredClass));
+            sb.Append(" Type=@Type, "); lp.Add(new SQLiteParameter("Type", Type));
+            sb.Append(" GotoMessage=@GotoMessage, "); lp.Add(new SQLiteParameter("GotoMessage", GotoMessage));
+
+            sb.Append(" KillMessage=@KillMessage, "); lp.Add(new SQLiteParameter("KillMessage", KillMessage));
+            sb.Append(" ItemMessage=@ItemMessage, "); lp.Add(new SQLiteParameter("ItemMessage", ItemMessage));
+            sb.Append(" FlagMessage=@FlagMessage "); lp.Add(new SQLiteParameter("FlagMessage", FlagMessage));
+
+            sb.Append(" where  Idx=@Idx "); lp.Add(new SQLiteParameter("Idx", Index)); 
+            //执行更新
+            int ucount = MirConfigDB.Execute(sb.ToString(), lp.ToArray());
+
+            //没有得更新，则执行插入
+            if (ucount <= 0)
+            {
+                sb.Clear();
+                sb.Append("insert into QuestInfo(Idx,Name,GroupName,FileName,RequiredMinLevel,RequiredMaxLevel,RequiredQuest,RequiredClass,Type,GotoMessage,KillMessage,ItemMessage,FlagMessage) values(@Idx,@Name,@GroupName,@FileName,@RequiredMinLevel,@RequiredMaxLevel,@RequiredQuest,@RequiredClass,@Type,@GotoMessage,@KillMessage,@ItemMessage,@FlagMessage) ");
+                //执行插入
+                MirConfigDB.Execute(sb.ToString(), lp.ToArray());
+            }
         }
 
         public void LoadInfo(bool clear = false)

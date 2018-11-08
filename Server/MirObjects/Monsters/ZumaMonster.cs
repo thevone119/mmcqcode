@@ -96,13 +96,13 @@ namespace Server.MirObjects.Monsters
                     if (x < 0) continue;
                     if (x >= CurrentMap.Width) break;
 
-                    Cell cell = CurrentMap.GetCell(x, y);
+                    //Cell cell = CurrentMap.GetCell(x, y);
 
-                    if (!cell.Valid || cell.Objects == null) continue;
+                    if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                    for (int i = 0; i < cell.Objects.Count; i++)
+                    for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                     {
-                        ZumaMonster target = cell.Objects[i] as ZumaMonster;
+                        ZumaMonster target = CurrentMap.Objects[x, y][i] as ZumaMonster;
                         if (target == null || !target.Stoned) continue;
                         target.Wake();
                         target.Target = Target;
@@ -128,12 +128,12 @@ namespace Server.MirObjects.Monsters
 
             if (!CurrentMap.ValidPoint(location)) return false;
 
-            Cell cell = CurrentMap.GetCell(location);
+            //Cell cell = CurrentMap.GetCell(location);
 
-            if (cell.Objects != null)
-                for (int i = 0; i < cell.Objects.Count; i++)
+            if (CurrentMap.Objects[location.X, location.Y] != null)
+                for (int i = 0; i < CurrentMap.Objects[location.X, location.Y].Count; i++)
                 {
-                    MapObject ob = cell.Objects[i];
+                    MapObject ob = CurrentMap.Objects[location.X, location.Y][i];
                     if (AvoidFireWall && ob.Race == ObjectType.Spell)
                         if (((SpellObject)ob).Spell == Spell.FireWall) return false;
 
@@ -142,12 +142,12 @@ namespace Server.MirObjects.Monsters
                     return false;
                 }
 
-            CurrentMap.GetCell(CurrentLocation).Remove(this);
+            CurrentMap.Remove(CurrentLocation.X, CurrentLocation.Y,this);
 
             Direction = dir;
             RemoveObjects(dir, 1);
             CurrentLocation = location;
-            CurrentMap.GetCell(CurrentLocation).Add(this);
+            CurrentMap.Add(CurrentLocation.X, CurrentLocation.Y,this);
             AddObjects(dir, 1);
 
             if (Hidden)
@@ -174,12 +174,12 @@ namespace Server.MirObjects.Monsters
 
 
 
-            cell = CurrentMap.GetCell(CurrentLocation);
+            //cell = CurrentMap.GetCell(CurrentLocation);
 
-            for (int i = 0; i < cell.Objects.Count; i++)
+            for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
             {
-                if (cell.Objects[i].Race != ObjectType.Spell) continue;
-                SpellObject ob = (SpellObject)cell.Objects[i];
+                if (CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i].Race != ObjectType.Spell) continue;
+                SpellObject ob = (SpellObject)CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i];
 
                 ob.ProcessSpell(this);
                 //break;

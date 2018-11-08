@@ -31,12 +31,12 @@ namespace Server.MirObjects.Monsters
                 {
                     if (!CurrentMap.ValidPoint(target)) continue;
 
-                    Cell cell = CurrentMap.GetCell(target);
-                    if (cell.Objects == null) continue;
+                    //Cell cell = CurrentMap.GetCell(target);
+                    if (CurrentMap.Objects[target.X, target.Y] == null) continue;
 
-                    for (int o = 0; o < cell.Objects.Count; o++)
+                    for (int o = 0; o < CurrentMap.Objects[target.X, target.Y].Count; o++)
                     {
-                        MapObject ob = cell.Objects[o];
+                        MapObject ob = CurrentMap.Objects[target.X, target.Y][o];
                         if (ob.Race == ObjectType.Monster || ob.Race == ObjectType.Player)
                         {
                             if (!ob.IsAttackTarget(this)) continue;

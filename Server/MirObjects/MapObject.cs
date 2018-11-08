@@ -13,6 +13,7 @@ namespace Server.MirObjects
     /// <summary>
     /// 地图对象的抽象类，包括地图上的怪物，地图上的掉落物品，地图上的魔法？
     /// 这个感觉要优化才可以，把太多的东西放在这里类里了。
+    /// 这个类是造成服务器内存很大的主要原因
     /// 
     /// </summary>
     public abstract class MapObject
@@ -201,7 +202,7 @@ namespace Server.MirObjects
 
         }
         
-        
+        //死循环调用入口
         public virtual void Process()
         {
             if (Master != null && Master.Node == null) Master = null;
@@ -310,7 +311,7 @@ namespace Server.MirObjects
 
                 if (location.X < 0 || location.Y < 0 || location.X >= CurrentMap.Width || location.Y >= CurrentMap.Height) return false;
 
-                if (!CurrentMap.GetCell(location).Valid) return false;
+                if (!CurrentMap.ValidPoint(location)) return false;
 
             }
 
@@ -363,12 +364,12 @@ namespace Server.MirObjects
                         if (x < 0) continue;
                         if (x >= CurrentMap.Width) break;
 
-                        Cell cell = CurrentMap.GetCell(x, y);
-                        if (!cell.Valid || cell.Objects == null) continue;
+                        //Cell cell = CurrentMap.GetCell(x, y);
+                        if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                        for (int i = 0; i < cell.Objects.Count; i++)
+                        for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                         {
-                            MapObject ob = cell.Objects[i];
+                            MapObject ob = CurrentMap.Objects[x, y][i];
                             if (ob.ObjectID != targetID) continue;
 
                             return ob;
@@ -456,13 +457,13 @@ namespace Server.MirObjects
                             if (x >= CurrentMap.Width) break;
                             if (x < 0 || x >= CurrentMap.Width) continue;
 
-                            Cell cell = CurrentMap.GetCell(x, y);
+                            ///Cell cell = CurrentMap.GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                             {
-                                MapObject ob = cell.Objects[i];
+                                MapObject ob = CurrentMap.Objects[x, y][i];
                                 if (ob.Race != ObjectType.Monster) continue;
 
                                 if (ob.Target == this && (!ob.CoolEye || ob.Level < Level)) ob.Target = null;
@@ -497,12 +498,12 @@ namespace Server.MirObjects
 
         public bool CheckStacked()
         {
-            Cell cell = CurrentMap.GetCell(CurrentLocation);
+            //Cell cell = CurrentMap.GetCell(CurrentLocation);
 
-            if (cell.Objects != null)
-                for (int i = 0; i < cell.Objects.Count; i++)
+            if (CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y] != null)
+                for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
                 {
-                    MapObject ob = cell.Objects[i];
+                    MapObject ob = CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i];
                     if (ob == this || !ob.Blocking) continue;
                     return true;
                 }
@@ -533,27 +534,22 @@ namespace Server.MirObjects
             return true;
         }
 
+        //随机传送
         public virtual bool TeleportRandom(int attempts, int distance, Map map = null)
         {
             if (map == null) map = CurrentMap;
             if (map.Cells == null) return false;
-            if (map.WalkableCells != null && map.WalkableCells.Count == 0) return false;
-
-            if (map.WalkableCells == null)
+            //最大随机100次，都随机不出来，则返回false
+            for (int i = 0; i < 1000; i++)
             {
-                map.WalkableCells = new List<Point>();
-
-                for (int x = 0; x < map.Width; x++)
-                    for (int y = 0; y < map.Height; y++)
-                        if (map.Cells[x, y].Attribute == CellAttribute.Walk)
-                            map.WalkableCells.Add(new Point(x, y));
-
-                if (map.WalkableCells.Count == 0) return false;
+                int x = RandomUtils.Next(map.Width);
+                int y = RandomUtils.Next(map.Height);
+                if (map.Valid(x,y))
+                {
+                    return Teleport(map, new Point(x, y));
+                }
             }
-
-            int cellIndex = RandomUtils.Next(map.WalkableCells.Count);
-
-            return Teleport(map, map.WalkableCells[cellIndex]);
+            return false;
         }
 
         public Point GetRandomPoint(int attempts, int distance, Map map)
@@ -713,12 +709,12 @@ namespace Server.MirObjects
                     if (checklocation.Y < 0) continue;
                     if (checklocation.Y >= CurrentMap.Height) continue;
 
-                    Cell cell = CurrentMap.GetCell(checklocation.X, checklocation.Y);
-                    if (!cell.Valid || cell.Objects == null) continue;
+                    //Cell cell = CurrentMap.GetCell(checklocation.X, checklocation.Y);
+                    if (!CurrentMap.Valid(checklocation.X, checklocation.Y) || CurrentMap.Objects[checklocation.X, checklocation.Y] == null) continue;
 
-                    for (int j = 0; j < cell.Objects.Count; j++)
+                    for (int j = 0; j < CurrentMap.Objects[checklocation.X, checklocation.Y].Count; j++)
                     {
-                        MapObject ob = cell.Objects[j];
+                        MapObject ob = CurrentMap.Objects[checklocation.X, checklocation.Y][j];
                         switch (ob.Race)
                         {
                             case ObjectType.Monster:

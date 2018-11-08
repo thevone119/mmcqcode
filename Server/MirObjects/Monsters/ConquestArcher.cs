@@ -38,12 +38,12 @@ namespace Server.MirObjects.Monsters
                         if (x < 0) continue;
                         if (x >= CurrentMap.Width) break;
 
-                        Cell cell = CurrentMap.GetCell(x, y);
-                        if (!cell.Valid || cell.Objects == null) continue;
+                        //Cell cell = CurrentMap.GetCell(x, y);
+                        if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                        for (int i = 0; i < cell.Objects.Count; i++)
+                        for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                         {
-                            MapObject ob = cell.Objects[i];
+                            MapObject ob = CurrentMap.Objects[x, y][i];
                             switch (ob.Race)
                             {
                                 case ObjectType.Player:

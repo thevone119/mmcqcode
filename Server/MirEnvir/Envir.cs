@@ -143,7 +143,8 @@ namespace Server.MirEnvir
         public List<DropInfo> BlackstoneDrops = new List<DropInfo>();
         //行会战争
         public List<GuildAtWar> GuildsAtWar = new List<GuildAtWar>();
-        //地图重生
+
+        //地图重生(这个是把重生信息保存起来，避免重启的时候，怪物的刷新时间变化了？)
         public List<MapRespawn> SavedSpawns = new List<MapRespawn>();
 
         //排行榜,排行榜其实定期缓存就行了？10分钟循环计算一次不就行了？靠了
@@ -183,6 +184,7 @@ namespace Server.MirEnvir
         }
 
         public static int LastCount = 0, LastRealCount = 0;
+
         public static long LastRunTime = 0;
         public int MonsterCount;
 
@@ -314,14 +316,15 @@ namespace Server.MirEnvir
                 }
                 //开启网络
                 StartNetwork();
-
+  
                 try
                 {
                     //这里死循环，每秒循环一次？
                     while (Running)
                     {
+                        //这里睡眠10-50毫秒，可以减少大量的CPU消耗
+                        //Thread.Sleep(10);
                         Time = Stopwatch.ElapsedMilliseconds;
-
                         if (Time >= processTime)
                         {
                             LastCount = processCount;
@@ -331,7 +334,7 @@ namespace Server.MirEnvir
                             processTime = Time + 1000;
                         }
 
-
+                        //网络处理，应该放到单独的网络处理线程里比较好？
                         if (conTime != Time)
                         {
                             conTime = Time;
@@ -365,6 +368,7 @@ namespace Server.MirEnvir
                             StartTime = Time;
                         }
 
+                        //多线程进行处理
                         if (Settings.Multithreaded)
                         {
                             for (int j = 1; j < MobThreads.Length; j++)
@@ -385,7 +389,7 @@ namespace Server.MirEnvir
                             //run the first loop in the main thread so the main thread automaticaly 'halts' untill the other threads are finished
                             ThreadLoop(MobThreads[0]);
                         }
-
+                        //这个是否放在地图处理里比较好呢
                         Boolean TheEnd = false;
                         long Start = Stopwatch.ElapsedMilliseconds;
                         while ((!TheEnd) && (Stopwatch.ElapsedMilliseconds - Start < 20))
@@ -412,13 +416,17 @@ namespace Server.MirEnvir
                             }
                         }
 
+                        //地图处理
                         for (int i = 0; i < MapList.Count; i++)
                             MapList[i].Process();
+
+                        //后面这些都是写无关紧要的处理了
 
                         if (DragonSystem != null) DragonSystem.Process();
 
                         Process();
 
+                        //每分钟保存一次数据
                         if (Time >= saveTime)
                         {
                             saveTime = Time + Settings.SaveDelay * Settings.Minute;
@@ -428,6 +436,7 @@ namespace Server.MirEnvir
                             SaveConquests();
                         }
 
+                        //每5分钟发送在线人数的广播？
                         if (Time >= userTime)
                         {
                             userTime = Time + Settings.Minute * 5;
@@ -438,6 +447,7 @@ namespace Server.MirEnvir
                                 });
                         }
 
+                        //这几个不知道干嘛的
                         if (Time >= SpawnTime)
                         {
                             SpawnTime = Time + (Settings.Second * 10);//technicaly this limits the respawn tick code to a minimum of 10 second each but lets assume it's not meant to be this accurate
@@ -820,7 +830,7 @@ namespace Server.MirEnvir
                         File.Delete(oldfilename + "o");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
@@ -885,7 +895,7 @@ namespace Server.MirEnvir
                         File.Delete(oldfilename + "o");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
@@ -925,7 +935,7 @@ namespace Server.MirEnvir
                         File.Delete(oldfilename + "o");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 
             }
@@ -974,8 +984,9 @@ namespace Server.MirEnvir
                         File.Delete(oldfilename + "o");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+               
             }
 
             Saving = false;
@@ -1444,7 +1455,7 @@ namespace Server.MirEnvir
                 ConquestGateObject tempGate;
                 ConquestWallObject tempWall;
                 ConquestSiegeObject tempSiege;
-                ConquestFlagObject tempFlag;
+
 
                 for (int i = 0; i < ConquestInfos.Count; i++)
                 {
@@ -1677,10 +1688,11 @@ namespace Server.MirEnvir
                 RecipeInfoList.Add(new RecipeInfo(recipe));
 
             SMain.Enqueue(string.Format("{0} Recipes loaded.", RecipeInfoList.Count));
-
+      
             for (int i = 0; i < MapInfoList.Count; i++)
                 MapInfoList[i].CreateMap();
             SMain.Enqueue(string.Format("{0} Maps Loaded.", MapInfoList.Count));
+            SMain.Enqueue(string.Format("{0} Maps cellCount.", Map.cellcount));
 
             for (int i = 0; i < ItemInfoList.Count; i++)
             {
@@ -2317,64 +2329,24 @@ namespace Server.MirEnvir
                 
             //Desync all objects\
         }
-        //新鲜的物品
-        public UserItem CreateFreshItem(ItemInfo info)
-        {
-            UserItem item = new UserItem(info)
-                {
-                    UniqueID = ++NextUserItemID,
-                    CurrentDura = info.Durability,
-                    MaxDura = info.Durability
-                };
-
-            item.UpdateItemExpiry();
-
-            return item;
-        }
+      
 
         //掉落物品
         public UserItem CreateDropItem(int index)
         {
-            return CreateDropItem(GetItemInfo(index));
-        }
-        //掉落物品
-        public UserItem CreateDropItem(ItemInfo info)
-        {
-            if (info == null) return null;
-
-            UserItem item = new UserItem(info)
+            ItemInfo item= GetItemInfo(index);
+            if (item == null)
             {
-                UniqueID = ++NextUserItemID,
-                MaxDura = info.Durability,
-                CurrentDura = (ushort)Math.Min(info.Durability, RandomUtils.Next(info.Durability) + 1000)
-            };
-
-            item.UpgradeItem();
-
-            item.UpdateItemExpiry();
-
-            if (!info.NeedIdentify) item.Identified = true;
-            return item;
+                return null;
+            }
+            return item.CreateDropItem();
         }
+
 
         
 
 
-        //商店物品
-        public UserItem CreateShopItem(ItemInfo info)
-        {
-            if (info == null) return null;
-
-            UserItem item = new UserItem(info)
-            {
-                UniqueID = ++NextUserItemID,
-                CurrentDura = info.Durability,
-                MaxDura = info.Durability,
-            };
-
-            return item;
-        }
-
+       
         
 
         public bool BindItem(UserItem item)

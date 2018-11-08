@@ -63,8 +63,11 @@ namespace Server.MirObjects.Monsters
 
                 int rate = (int)(drop.Chance / Settings.DropRate); if (rate < 1) rate = 1;
                 if (drop.Gold > 0 || RandomUtils.Next(rate) != 0) continue;
-
-                UserItem item = Envir.CreateDropItem(drop.Item);
+                if (drop.Item == null)
+                {
+                    continue;
+                }
+                UserItem item = drop.Item.CreateDropItem();
                 if (item == null) continue;
 
                 if (drop.QuestRequired)

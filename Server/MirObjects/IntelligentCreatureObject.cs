@@ -319,12 +319,12 @@ namespace Server.MirObjects
                         if (x < 0) continue;
                         if (x >= CurrentMap.Width) break;
 
-                        Cell cell = CurrentMap.GetCell(x, y);
-                        if (!cell.Valid || cell.Objects == null) continue;
+                        //Cell cell = CurrentMap.GetCell(x, y);
+                        if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                        for (int i = 0; i < cell.Objects.Count; i++)
+                        for (int i = 0; i < CurrentMap.Objects[x, y].Count; i++)
                         {
-                            MapObject ob = cell.Objects[i];
+                            MapObject ob = CurrentMap.Objects[x, y][i];
                             if (ob == null) continue;
                             if (ob.Race != ObjectType.Item) continue;
                             if (ob.Owner != null && ob.Owner != this && ob.Owner != Master && !IsMasterGroupMember(ob.Owner)) continue;
@@ -380,12 +380,12 @@ namespace Server.MirObjects
                         if (x < 0) continue;
                         if (x >= CurrentMap.Width) break;
 
-                        Cell cell = CurrentMap.GetCell(x, y);
-                        if (!cell.Valid || cell.Objects == null) continue;
+                        //Cell cell = CurrentMap.GetCell(x, y);
+                        if (!CurrentMap.Valid(x,y) || CurrentMap.Objects[x,y] == null) continue;
 
-                        for (int i = 0; i < cell.Objects.Count; i++)
+                        for (int i = 0; i < CurrentMap.Objects[x,y].Count; i++)
                         {
-                            MapObject ob = cell.Objects[i];
+                            MapObject ob = CurrentMap.Objects[x, y][i];
                             if (ob == null) continue;
                             if (ob.Race != ObjectType.Item) continue;
                             if (ob.Owner != null && ob.Owner != this && ob.Owner != Master && !IsMasterGroupMember(ob.Owner)) continue;
@@ -472,11 +472,11 @@ namespace Server.MirObjects
             if (inRange)
             {
                 if (!CurrentMap.ValidPoint(location)) return false;
-                Cell cell = CurrentMap.GetCell(location);
-                if (cell.Objects != null)
-                    for (int i = 0; i < cell.Objects.Count; i++)
+                //Cell cell = CurrentMap.GetCell(location);
+                if (CurrentMap.Objects[location.X, location.Y] != null)
+                    for (int i = 0; i < CurrentMap.Objects[location.X, location.Y].Count; i++)
                     {
-                        MapObject ob = cell.Objects[i];
+                        MapObject ob = CurrentMap.Objects[location.X, location.Y][i];
                         if (!ob.Blocking) continue;
                         return false;
                     }
@@ -552,11 +552,11 @@ namespace Server.MirObjects
         {
             if (Dead || Master == null) return;
 
-            Cell cell = CurrentMap.GetCell(Target.CurrentLocation);
-            if (!cell.Valid || cell.Objects == null) return;
+            //Cell cell = CurrentMap.GetCell(Target.CurrentLocation);
+            if (!CurrentMap.Valid(Target.CurrentLocation.X, Target.CurrentLocation.Y) || CurrentMap.Objects[Target.CurrentLocation.X, Target.CurrentLocation.Y] == null) return;
 
 
-            int count = cell.Objects.Count;
+            int count = CurrentMap.Objects[Target.CurrentLocation.X, Target.CurrentLocation.Y].Count;
 
             for (int i = 0; i < count; i++)
             {
@@ -568,11 +568,11 @@ namespace Server.MirObjects
         {
             if (Dead || Master == null) return;
 
-            Cell cell = CurrentMap.GetCell(location);
-            if (!cell.Valid || cell.Objects == null) return;
-            for (int i = 0; i < cell.Objects.Count; i++)
+            //Cell cell = CurrentMap.GetCell(location);
+            if (!CurrentMap.Valid(location.X, location.Y) || CurrentMap.Objects[location.X, location.Y] == null) return;
+            for (int i = 0; i < CurrentMap.Objects[location.X, location.Y].Count; i++)
             {
-                MapObject ob = cell.Objects[i];
+                MapObject ob = CurrentMap.Objects[location.X, location.Y][i];
                 if (ob == null) continue;
                 if (ob.Race != ObjectType.Item) continue;
                 if (ob.Owner != null && ob.Owner != this && ob.Owner != Master && !IsMasterGroupMember(ob.Owner)) continue;

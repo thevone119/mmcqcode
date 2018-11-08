@@ -2658,7 +2658,7 @@ namespace Server.MirObjects
 
                         while (count > 0)
                         {
-                            UserItem item = SMain.Envir.CreateFreshItem(info);
+                            UserItem item = info.CreateFreshItem();
 
                             if (item == null)
                             {
@@ -3074,13 +3074,13 @@ namespace Server.MirObjects
                         map = SMain.Envir.GetMapByNameAndInstance(param[0], tempInt);
                         if (map == null) return;
                         
-                        foreach (var cell in map.Cells)
+                        foreach (var objs in map.Objects)
                         {
-                            if (cell == null || cell.Objects == null) continue;
+                            if (objs == null ) continue;
 
-                            for (int j = 0; j < cell.Objects.Count(); j++)
+                            for (int j = 0; j < objs.Count(); j++)
                             {
-                                MapObject ob = cell.Objects[j];
+                                MapObject ob = objs[j];
 
                                 if (ob.Race != ObjectType.Monster) continue;
                                 if (ob.Dead) continue;
@@ -3274,7 +3274,7 @@ namespace Server.MirObjects
 
                         while (count > 0 && mailInfo.Items.Count < 5)
                         {
-                            UserItem item = SMain.Envir.CreateFreshItem(info);
+                            UserItem item = info.CreateFreshItem();
 
                             if (item == null)
                             {
@@ -3598,13 +3598,13 @@ namespace Server.MirObjects
                         map = SMain.Envir.GetMapByNameAndInstance(param[0], tempInt);
                         if (map == null) return;
 
-                        foreach (var cell in map.Cells)
+                        foreach (var objs in map.Objects)
                         {
-                            if (cell == null || cell.Objects == null) continue;
+                            if (objs == null) continue;
 
-                            for (int j = 0; j < cell.Objects.Count(); j++)
+                            for (int j = 0; j < objs.Count(); j++)
                             {
-                                MapObject ob = cell.Objects[j];
+                                MapObject ob = objs[j];
 
                                 if (ob.Race != ObjectType.Monster) continue;
                                 if (ob.Dead) continue;
@@ -3802,13 +3802,13 @@ namespace Server.MirObjects
                         map = SMain.Envir.GetMapByNameAndInstance(param[0], tempInt);
                         if (map == null) return;
 
-                        foreach (var cell in map.Cells)
+                        foreach (var objs in map.Objects)
                         {
-                            if (cell == null || cell.Objects == null) continue;
+                            if (objs == null ) continue;
 
-                            for (int j = 0; j < cell.Objects.Count(); j++)
+                            for (int j = 0; j < objs.Count(); j++)
                             {
-                                MapObject ob = cell.Objects[j];
+                                MapObject ob = objs[j];
 
                                 if (ob.Race != ObjectType.Monster) continue;
                                 if (ob.Dead) continue;

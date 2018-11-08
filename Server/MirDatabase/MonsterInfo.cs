@@ -219,46 +219,8 @@ namespace Server.MirDatabase
             if (ucount <= 0)
             {
                 sb.Clear();
-                lp.Clear();
+
                 sb.Append("insert into MonsterInfo(Idx,Name,Image,AI,Effect,Level,ViewRange,CoolEye,HP,MinAC,MaxAC,MinMAC,MaxMAC,MinDC,MaxDC,MinMC,MaxMC,MinSC,MaxSC,Accuracy,Agility,Light,AttackSpeed,MoveSpeed,Experience,CanPush,CanTame,AutoRev,Undead) values(@Idx,@Name,@Image,@AI,@Effect,@Level,@ViewRange,@CoolEye,@HP,@MinAC,@MaxAC,@MinMAC,@MaxMAC,@MinDC,@MaxDC,@MinMC,@MaxMC,@MinSC,@MaxSC,@Accuracy,@Agility,@Light,@AttackSpeed,@MoveSpeed,@Experience,@CanPush,@CanTame,@AutoRev,@Undead) ");
-
-                lp.Add(new SQLiteParameter("Idx", Index));
-                lp.Add(new SQLiteParameter("Name", Name));
-                lp.Add(new SQLiteParameter("Image", Image));
-                lp.Add(new SQLiteParameter("AI", AI));
-                lp.Add(new SQLiteParameter("Effect", Effect));
-                lp.Add(new SQLiteParameter("ViewRange", ViewRange));
-                lp.Add(new SQLiteParameter("CoolEye", CoolEye));
-
-                lp.Add(new SQLiteParameter("Level", Level));
-                lp.Add(new SQLiteParameter("HP", HP));
-
-                lp.Add(new SQLiteParameter("Accuracy", Accuracy));
-                lp.Add(new SQLiteParameter("Agility", Agility));
-                lp.Add(new SQLiteParameter("Light", Light));
-
-                lp.Add(new SQLiteParameter("MinAC", MinAC));
-                lp.Add(new SQLiteParameter("MaxAC", MaxAC));
-                lp.Add(new SQLiteParameter("MaxMAC", MaxMAC));
-                lp.Add(new SQLiteParameter("MinMAC", MinMAC));
-                lp.Add(new SQLiteParameter("MinDC", MinDC));
-                lp.Add(new SQLiteParameter("MaxDC", MaxDC));
-                lp.Add(new SQLiteParameter("MinMC", MinMC));
-                lp.Add(new SQLiteParameter("MaxMC", MaxMC));
-                lp.Add(new SQLiteParameter("MinMC", MinMC));
-                lp.Add(new SQLiteParameter("MaxMC", MaxMC));
-                lp.Add(new SQLiteParameter("MinSC", MinSC));
-                lp.Add(new SQLiteParameter("MaxSC", MaxSC));
-
-                lp.Add(new SQLiteParameter("AttackSpeed", AttackSpeed));
-                lp.Add(new SQLiteParameter("MoveSpeed", MoveSpeed));
-                lp.Add(new SQLiteParameter("Experience", Experience));
-
-                lp.Add(new SQLiteParameter("CanPush", CanPush));
-                lp.Add(new SQLiteParameter("CanTame", CanTame));
-                lp.Add(new SQLiteParameter("AutoRev", AutoRev));
-                lp.Add(new SQLiteParameter("Undead", Undead));
-
                 //执行插入
                 MirConfigDB.Execute(sb.ToString(), lp.ToArray());
             }
@@ -302,7 +264,7 @@ namespace Server.MirDatabase
                     SMain.Enqueue(string.Format("Could not load Drop: {0}, Line {1}", Name, lines[i]));
                     continue;
                 }
-
+                
                 Drops.Add(drop);
             }
 
@@ -385,6 +347,7 @@ namespace Server.MirDatabase
     }
 
     //掉落物品几率配置
+    //删掉，重新做爆率
     public class DropInfo
     {
         public int Chance;//机会

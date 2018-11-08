@@ -10,31 +10,59 @@ using S = ServerPackets;
 namespace Server.MirEnvir
 {
     //地图数据全部在这里啊。
+    //地图是所有处理的入口啊
+    /// <summary>
+    /// 地图属性每格用一个byte表示，一个byte是8位，0-255，
+    /// 最后1位表示是否可以行走(0:不能，1：可以）0或1
+    /// 倒数第2位表示是否可以飞行（低0,1高）0或2
+    /// 倒数第3位表示是否可以钓鱼4（0：不能，1能）0或4
+    /// </summary>
     public class Map
     {
+        //计算总格子数，这个格子最消耗资源了
+        public static int cellcount = 0;
+
+        //高低墙定义
+        private static byte HighWall = 2;
+        private static byte LowWall = 0;
+        private static byte Fishing = 4;
+
         private static Envir Envir
         {
             get { return SMain.Envir; }
         }
-        
+        //地图数据库信息
         public MapInfo Info;
-
+        //处理地图的线程，多个地图可能采用多线程进行处理
         public int Thread = 0;
-
+        //地图的一些基础属
         public int Width, Height;
-        public Cell[,] Cells;
-        public List<Point> WalkableCells;
-        public Door[,] DoorIndex;
+
+        //public Cell[,] Cells;//地图的格子(这个超级消耗资源，内存消耗就优化这个就好了)
+
+        //对应格子的对象，大部分都是空的
+        public List<MapObject>[,] Objects;
+
+        public byte[,] Cells;//所有格子的属性，byte表示，
+
+
+        //public Door[,] DoorIndex;//门索引
         public List<Door> Doors = new List<Door>();
+        //矿区
         public MineSpot[,] Mine;
+        //雷电时间，地火时间，空闲时间
         public long LightningTime, FireTime, InactiveTime;
+        //怪物总数，空闲总次数
         public int MonsterCount, InactiveCount;
-
+        //NPC
         public List<NPCObject> NPCs = new List<NPCObject>();
+        //玩家
         public List<PlayerObject> Players = new List<PlayerObject>();
+        //重生信息,怪物重生啊(这里非常消耗内存啊)
         public List<MapRespawn> Respawns = new List<MapRespawn>();
+        //动作列表
         public List<DelayedAction> ActionList = new List<DelayedAction>();
-
+        //征服，战争信息
         public List<ConquestObject> Conquest = new List<ConquestObject>();
         public ConquestObject tempConquest;
 
@@ -112,39 +140,46 @@ namespace Server.MirEnvir
             Width = BitConverter.ToInt16(fileBytes, offSet);
             offSet += 2;
             Height = BitConverter.ToInt16(fileBytes, offSet);
-            Cells = new Cell[Width, Height];
-            DoorIndex = new Door[Width, Height];
+            Cells = new byte[Width, Height];
+            Objects = new List<MapObject>[Width, Height];
+            //DoorIndex = new Door[Width, Height];
 
             offSet = 52;
 
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
                 {//total 12
+                    //默认都是可以行走的格子
+                    Cells[x, y] = 1;
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.HighWall; //Can Fire Over.
+                        Cells[x, y] = HighWall; //Can Fire Over.
 
                     offSet += 2;
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.LowWall; //Can't Fire Over.
+                        Cells[x, y] = LowWall; //Can't Fire Over.
 
                     offSet += 2;
 
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.HighWall; //No Floor Tile.
+                        Cells[x, y] = HighWall; //No Floor Tile.
 
-                    if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
+                    //if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
 
                     offSet += 4;
 
                     if (fileBytes[offSet] > 0)
-                        DoorIndex[x, y] = AddDoor(fileBytes[offSet], new Point(x, y));
+                    {
+                        //DoorIndex[x, y] = AddDoor(fileBytes[offSet], new Point(x, y));
+                        AddDoor(fileBytes[offSet], new Point(x, y));
+                    }
+                        
 
                     offSet += 3;
 
                     byte light = fileBytes[offSet++];
 
                     if (light >= 100 && light <= 119)
-                        Cells[x, y].FishingAttribute = (sbyte)(light - 100);
+                        Cells[x, y]= (byte)(Cells[x, y] | Fishing);
                 }
         }
         
@@ -159,31 +194,38 @@ namespace Server.MirEnvir
             int h = BitConverter.ToInt16(fileBytes, offSet);
             Width = w ^ xor;
             Height = h ^ xor;
-            Cells = new Cell[Width, Height];
-            DoorIndex = new Door[Width, Height];
+            Cells = new byte[Width, Height];
+            Objects = new List<MapObject>[Width, Height];
+            //DoorIndex = new Door[Width, Height];
 
             offSet = 54;
 
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
                 {
+                    //默认都是可以行走的格子
+                    Cells[x, y] = 1;
                     if (((BitConverter.ToInt32(fileBytes, offSet) ^ 0xAA38AA38) & 0x20000000) != 0)
-                        Cells[x, y] = Cell.HighWall; //Can Fire Over.
+                        Cells[x, y] = HighWall; //Can Fire Over.
 
                     offSet += 6;
                     if (((BitConverter.ToInt16(fileBytes, offSet) ^ xor) & 0x8000) != 0)
-                        Cells[x, y] = Cell.LowWall; //No Floor Tile.
+                        Cells[x, y] = LowWall; //No Floor Tile.
 
-                    if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
+                    //if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
                     offSet += 2;
                     if (fileBytes[offSet] > 0)
-                        DoorIndex[x, y] = AddDoor(fileBytes[offSet], new Point(x, y));
+                    {
+                        //DoorIndex[x, y] = AddDoor(fileBytes[offSet], new Point(x, y));
+                        AddDoor(fileBytes[offSet], new Point(x, y));
+                    }
+                        
                     offSet += 5;
 
                     byte light = fileBytes[offSet++];
 
                     if (light >= 100 && light <= 119)
-                        Cells[x, y].FishingAttribute = (sbyte)(light - 100);
+                        Cells[x, y] = (byte)(Cells[x, y] | Fishing);
 
                     offSet += 1;
                 }
@@ -195,36 +237,43 @@ namespace Server.MirEnvir
             Width = BitConverter.ToInt16(fileBytes, offSet);
             offSet += 2;
             Height = BitConverter.ToInt16(fileBytes, offSet);
-            Cells = new Cell[Width, Height];
-            DoorIndex = new Door[Width, Height];
+            Cells = new byte[Width, Height];
+            Objects = new List<MapObject>[Width, Height];
+            //DoorIndex = new Door[Width, Height];
 
             offSet = 52;
 
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
                 {//total 14
+                    //默认都是可以行走的格子
+                    Cells[x, y] = 1;
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.HighWall; //Can Fire Over.
+                        Cells[x, y] = HighWall; //Can Fire Over.
 
                     offSet += 2;
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.LowWall; //Can't Fire Over.
+                        Cells[x, y] = LowWall; //Can't Fire Over.
 
                     offSet += 2;
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.HighWall; //No Floor Tile.
+                        Cells[x, y] = HighWall; //No Floor Tile.
 
-                    if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
+                    //if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
 
                     offSet += 2;
                     if (fileBytes[offSet] > 0)
-                        DoorIndex[x, y] = AddDoor(fileBytes[offSet], new Point(x, y));
+                    {
+                        //DoorIndex[x, y] = AddDoor(fileBytes[offSet], new Point(x, y));
+                        AddDoor(fileBytes[offSet], new Point(x, y));
+                    }
+                       
                     offSet += 5;
 
                     byte light = fileBytes[offSet++];
 
                     if (light >= 100 && light <= 119)
-                        Cells[x, y].FishingAttribute = (sbyte)(light - 100);
+                        Cells[x, y] = (byte)(Cells[x, y] | Fishing);
 
                     offSet += 2;
                 }
@@ -236,35 +285,42 @@ namespace Server.MirEnvir
             Width = BitConverter.ToInt16(fileBytes, offSet);
             offSet += 2;
             Height = BitConverter.ToInt16(fileBytes, offSet);
-            Cells = new Cell[Width, Height];
-            DoorIndex = new Door[Width, Height];
+            Cells = new byte[Width, Height];
+            Objects = new List<MapObject>[Width, Height];
+            //DoorIndex = new Door[Width, Height];
 
             offSet = 52;
 
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
                 {//total 36
+                    //默认都是可以行走的格子
+                    Cells[x, y] = 1;
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.HighWall; //Can Fire Over.
+                        Cells[x, y] = HighWall; //Can Fire Over.
 
                     offSet += 2;
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.LowWall; //Can't Fire Over.
+                        Cells[x, y] = LowWall; //Can't Fire Over.
 
                     offSet += 2;
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.HighWall; //No Floor Tile.
+                        Cells[x, y] = HighWall; //No Floor Tile.
 
-                    if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
+                    //if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
                     offSet += 2;
                     if (fileBytes[offSet] > 0)
-                        DoorIndex[x, y] = AddDoor(fileBytes[offSet], new Point(x, y));
+                    {
+                        //DoorIndex[x, y] = AddDoor(fileBytes[offSet], new Point(x, y));
+                        AddDoor(fileBytes[offSet], new Point(x, y));
+                    }
+                        
                     offSet += 12;
 
                     byte light = fileBytes[offSet++];
 
                     if (light >= 100 && light <= 119)
-                        Cells[x, y].FishingAttribute = (sbyte)(light - 100);
+                        Cells[x, y] = (byte)(Cells[x, y] | Fishing);
 
                     offSet += 17;
                 }
@@ -280,25 +336,32 @@ namespace Server.MirEnvir
             int h = BitConverter.ToInt16(fileBytes, offSet);
             Width = w ^ xor;
             Height = h ^ xor;
-            Cells = new Cell[Width, Height];
-            DoorIndex = new Door[Width, Height];
+            Cells = new byte[Width, Height];
+            Objects = new List<MapObject>[Width, Height];
+            //DoorIndex = new Door[Width, Height];
 
             offSet = 64;
 
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
                 {//total 12
+                 //默认都是可以行走的格子
+                    Cells[x, y] = 1;
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.HighWall; //Can Fire Over.
+                        Cells[x, y] = HighWall; //Can Fire Over.
 
                     offSet += 2;
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.LowWall; //Can't Fire Over.
+                        Cells[x, y] = LowWall; //Can't Fire Over.
 
-                    if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
+                    //if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
                     offSet += 4;
                     if (fileBytes[offSet] > 0)
-                        DoorIndex[x, y] = AddDoor(fileBytes[offSet], new Point(x, y));
+                    {
+                        AddDoor(fileBytes[offSet], new Point(x, y));
+                        //DoorIndex[x, y] = AddDoor(fileBytes[offSet], new Point(x, y));
+                    }
+                        
                     offSet += 6;
                 }
         }
@@ -309,25 +372,28 @@ namespace Server.MirEnvir
             Width = BitConverter.ToInt16(fileBytes, offSet);
             offSet += 2;
             Height = BitConverter.ToInt16(fileBytes, offSet);
-            Cells = new Cell[Width, Height];
-            DoorIndex = new Door[Width, Height];
+            Cells = new byte[Width, Height];
+            Objects = new List<MapObject>[Width, Height];
+            //DoorIndex = new Door[Width, Height];
 
             offSet = 28 + (3 * ((Width / 2) + (Width % 2)) * (Height / 2));
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
                 {//total 14
+                    //默认都是可以行走的格子
+                    Cells[x, y] = 1;
                     if ((fileBytes[offSet] & 0x01) != 1)
-                        Cells[x, y] = Cell.HighWall;
+                        Cells[x, y] = HighWall;
                     else if ((fileBytes[offSet] & 0x02) != 2)
-                        Cells[x, y] = Cell.LowWall;
-                    else
-                        Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
+                        Cells[x, y] = LowWall;
+                    //else
+                        //Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
                     offSet += 13;
 
                     byte light = fileBytes[offSet++];
 
                     if (light >= 100 && light <= 119)
-                        Cells[x, y].FishingAttribute = (sbyte)(light - 100);
+                        Cells[x, y] = (byte)(Cells[x, y] | Fishing);
                 }
         }
 
@@ -337,20 +403,23 @@ namespace Server.MirEnvir
             Width = BitConverter.ToInt16(fileBytes, offSet);
             offSet += 2;
             Height = BitConverter.ToInt16(fileBytes, offSet);
-            Cells = new Cell[Width, Height];
-            DoorIndex = new Door[Width, Height];
+            Cells = new byte[Width, Height];
+            Objects = new List<MapObject>[Width, Height];
+            //DoorIndex = new Door[Width, Height];
 
             offSet = 40;
 
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
                 {//total 20
+                 //默认都是可以行走的格子
+                    Cells[x, y] = 1;
                     if ((fileBytes[offSet] & 0x01) != 1)
-                        Cells[x, y] = Cell.HighWall;
+                        Cells[x, y] = HighWall;
                     else if ((fileBytes[offSet] & 0x02) != 2)
-                        Cells[x, y] = Cell.LowWall;
-                    else
-                        Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
+                        Cells[x, y] = LowWall;
+                    //else
+                        //Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
                     offSet += 20;
                 }
         }
@@ -361,30 +430,37 @@ namespace Server.MirEnvir
             Width = BitConverter.ToInt16(fileBytes, offSet);
             offSet += 4;
             Height = BitConverter.ToInt16(fileBytes, offSet);
-            Cells = new Cell[Width, Height];
-            DoorIndex = new Door[Width, Height];
+            Cells = new byte[Width, Height];
+            Objects = new List<MapObject>[Width, Height];
+            //DoorIndex = new Door[Width, Height];
 
             offSet = 54;
 
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
                 {//total 15
+                    //默认都是可以行走的格子
+                    Cells[x, y] = 1;
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.HighWall; //Can Fire Over.
+                        Cells[x, y] = HighWall; //Can Fire Over.
                     offSet += 6;
                     if ((BitConverter.ToInt16(fileBytes, offSet) & 0x8000) != 0)
-                        Cells[x, y] = Cell.LowWall; //Can't Fire Over.
+                        Cells[x, y] = LowWall; //Can't Fire Over.
                     //offSet += 2;
-                    if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
+                    //if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
                     offSet += 2;
                     if (fileBytes[offSet] > 0)
-                        DoorIndex[x, y] = AddDoor(fileBytes[offSet], new Point(x, y));
+                    {
+                        //DoorIndex[x, y] = AddDoor(fileBytes[offSet], new Point(x, y));
+                        AddDoor(fileBytes[offSet], new Point(x, y));
+                    }
+                      
                     offSet += 4;
 
                     byte light = fileBytes[offSet++];
 
                     if (light >= 100 && light <= 119)
-                        Cells[x, y].FishingAttribute = (sbyte)(light - 100);
+                        Cells[x, y] = (byte)(Cells[x, y] | Fishing);
 
                     offSet += 2;
                 }
@@ -397,35 +473,45 @@ namespace Server.MirEnvir
             Width = BitConverter.ToInt16(Bytes, offset);
             offset += 2;
             Height = BitConverter.ToInt16(Bytes, offset);
-            Cells = new Cell[Width, Height];
-            DoorIndex = new Door[Width, Height];
+            Cells = new byte[Width, Height];
+            Objects = new List<MapObject>[Width, Height];
+            //DoorIndex = new Door[Width, Height];
 
             offset = 8;
 
             for (int x = 0; x < Width; x++)
                 for (int y = 0; y < Height; y++)
                 {
+                    //默认都是可以行走的格子
+                    Cells[x, y] = 1;
                     offset += 2;
                     if ((BitConverter.ToInt32(Bytes, offset) & 0x20000000) != 0)
-                        Cells[x, y] = Cell.HighWall; //Can Fire Over.
+                        Cells[x, y] = HighWall; //Can Fire Over.
                     offset += 10;
                     if ((BitConverter.ToInt16(Bytes, offset) & 0x8000) != 0)
-                        Cells[x, y] = Cell.LowWall; //Can't Fire Over.
+                        Cells[x, y] = LowWall; //Can't Fire Over.
 
-                    if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
+                    //if (Cells[x, y] == null) Cells[x, y] = new Cell { Attribute = CellAttribute.Walk };
                     offset += 2;
                     if (Bytes[offset] > 0)
-                        DoorIndex[x, y] = AddDoor(Bytes[offset], new Point(x, y));
+                    {
+                        //DoorIndex[x, y] = AddDoor(Bytes[offset], new Point(x, y));
+                        AddDoor(Bytes[offset], new Point(x, y));
+                    }
+                    
                     offset += 11;
 
                     byte light = Bytes[offset++];
 
                     if (light >= 100 && light <= 119)
-                        Cells[x, y].FishingAttribute = (sbyte)(light - 100);
+                    {
+                        //Cells[x, y].FishingAttribute = (sbyte)(light - 100);
+                        Cells[x, y] = (byte)(Cells[x, y] | Fishing);
+                    }
                 }
                 
         }
-
+        //加载地图信息
         public bool Load()
         {
             try
@@ -464,7 +550,9 @@ namespace Server.MirEnvir
                             LoadMapCellsV100(fileBytes);
                             break;
                     }
-                    
+
+                    cellcount += Width * Height;
+
                     for (int i = 0; i < Info.Respawns.Count; i++)
                     {
                         MapRespawn info = new MapRespawn(Info.Respawns[i]);
@@ -473,7 +561,9 @@ namespace Server.MirEnvir
                         Respawns.Add(info);
 
                         if ((info.Info.SaveRespawnTime) && (info.Info.RespawnTicks != 0))
+                        {
                             SMain.Envir.SavedSpawns.Add(info);
+                        }
                     }
 
 
@@ -497,9 +587,82 @@ namespace Server.MirEnvir
             }
 
             SMain.Enqueue("Failed to Load Map: " + Info.FileName);
+
             return false;
         }
+        
 
+        //某个点是否可以访问，其实就是是否可以行走
+        public bool Valid(int x,int y)
+        {
+            if(x >= Width || y >= Height || x<0 || y<0)
+            {
+                return false;
+            }
+            return (Cells[x, y] & 1)==1;
+        }
+
+        //判断某个点是否可以钓鱼
+        public bool CanFishing(int x, int y)
+        {
+            if (x >= Width || y >= Height || x < 0 || y < 0)
+            {
+                return false;
+            }
+            return (Cells[x, y] & 4) == 1;
+        }
+
+        public bool ValidPoint(Point location)
+        {
+            return ValidPoint(location.X, location.Y);
+        }
+        public bool ValidPoint(int x, int y)
+        {
+            return Valid(x,y);
+        }
+
+
+        public void Add(MapObject mapObject)
+        {
+            Add(mapObject.CurrentLocation.X, mapObject.CurrentLocation.Y, mapObject);
+        }
+        //添加对象进地图
+        public void Add(int x,int y,MapObject mapObject)
+        {
+            if (Objects[x, y] == null)
+            {
+                Objects[x, y]= new List<MapObject>();
+            }
+            Objects[x, y].Add(mapObject);
+        }
+
+
+        public void Remove(MapObject mapObject)
+        {
+            Remove(mapObject.CurrentLocation.X, mapObject.CurrentLocation.Y, mapObject);
+        }
+
+        //移除对象
+        public void Remove(int x, int y, MapObject mapObject)
+        {
+            if (Objects[x, y] == null)
+            {
+                return;
+            }
+            Objects[x, y].Remove(mapObject);
+            if (Objects[x, y].Count == 0)
+            {
+                Objects[x, y] = null;
+            }
+        }
+
+        public List<MapObject> getMapObjects(int x,int y)
+        {
+            return Objects[x, y];
+        }
+
+
+        //安全区
         private void CreateSafeZone(SafeZoneInfo info)
         {
             if (Settings.SafeZoneBorder)
@@ -512,7 +675,7 @@ namespace Server.MirEnvir
                     {
                         if (x < 0) continue;
                         if (x >= Width) break;
-                        if (!Cells[x, y].Valid) continue;
+                        if (!Valid(x, y)) continue;
 
                         SpellObject spell = new SpellObject
                         {
@@ -523,8 +686,7 @@ namespace Server.MirEnvir
                             CurrentMap = this,
                             Decoration = true
                         };
-
-                        Cells[x, y].Add(spell);
+                        Add(x,y, spell);
 
                         spell.Spawned();
                     }
@@ -541,7 +703,7 @@ namespace Server.MirEnvir
                     {
                         if (x < 0) continue;
                         if (x >= Width) break;
-                        if (!Cells[x, y].Valid) continue;
+                        if (!Valid(x, y)) continue;
 
                         SpellObject spell = new SpellObject
                             {
@@ -553,7 +715,7 @@ namespace Server.MirEnvir
                                 CurrentMap = this
                             };
 
-                        Cells[x, y].Add(spell);
+                        Add(x, y,spell);
 
                         spell.Spawned();
                     }
@@ -562,7 +724,7 @@ namespace Server.MirEnvir
 
 
         }
-
+        //矿区
         private void CreateMine()
         {
             if ((Info.MineIndex == 0) && (Info.MineZones.Count == 0)) return;
@@ -598,35 +760,32 @@ namespace Server.MirEnvir
             }
         }
 
-        public Cell GetCell(Point location)
-        {
-            return Cells[location.X, location.Y];
-        }
 
-        public Cell GetCell(int x, int y)
-        {
-            return Cells[x, y];
-        }
 
-        public bool ValidPoint(Point location)
-        {
-            return location.X >= 0 && location.X < Width && location.Y >= 0 && location.Y < Height && GetCell(location).Valid;
-        }
-        public bool ValidPoint(int x, int y)
-        {
-            return x >= 0 && x < Width && y >= 0 && y < Height && GetCell(x, y).Valid;
-        }
+        
 
+        //不知道这是干嘛
         public bool CheckDoorOpen(Point location)
         {
-            if (DoorIndex[location.X, location.Y] == null) return true;
-            if (DoorIndex[location.X, location.Y].DoorState != 2) return false;
+            for (int i = 0; i < Doors.Count; i++)
+            {
+                if(Doors[i].Location== location && Doors[i].DoorState!=2)
+                {
+                    return false;
+                }
+            }
+            //不存在则返回真？
+            //if (DoorIndex[location.X, location.Y] == null) return true;
+            //if (DoorIndex[location.X, location.Y].DoorState != 2) return false;
             return true;
         }
 
+        //死循环调用入口
         public void Process()
         {
             ProcessRespawns();
+
+            //处理门的开关？，这里好像只处理关门，不处理开门
             //process doors
             for (int i = 0; i < Doors.Count; i++)
             {
@@ -639,6 +798,9 @@ namespace Server.MirEnvir
                 }
             }
 
+            //闪电？部分地图有闪电？
+            //如果有闪电，3-15秒随机产生一个闪电
+            //整个地图的几乎所有玩家都会看到？那如果很多玩家，就会产生非常多的闪电哦。
             if ((Info.Lightning) && Envir.Time > LightningTime)
             {
                 LightningTime = Envir.Time + RandomUtils.Next(3000, 15000);
@@ -671,6 +833,8 @@ namespace Server.MirEnvir
                     Lightning.Spawned();
                 }
             }
+
+            //地图火灾，熔岩伤害
             if ((Info.Fire) && Envir.Time > FireTime)
             {
                 FireTime = Envir.Time + RandomUtils.Next(3000, 15000);
@@ -681,7 +845,6 @@ namespace Server.MirEnvir
                     if (RandomUtils.Next(4) == 0)
                     {
                         Location = player.CurrentLocation;
-
                     }
                     else
                         Location = new Point(player.CurrentLocation.X - 10 + RandomUtils.Next(20), player.CurrentLocation.Y - 10 + RandomUtils.Next(20));
@@ -704,14 +867,14 @@ namespace Server.MirEnvir
                     Lightning.Spawned();
                 }
             }
-
+            //处理各种动作，处理完一个删除一个
             for (int i = 0; i < ActionList.Count; i++)
             {
                 if (Envir.Time < ActionList[i].Time) continue;
                 Process(ActionList[i]);
                 ActionList.RemoveAt(i);
             }
-
+            //计算空闲数
             if (InactiveTime < Envir.Time)
             {
                 if (!Players.Any())
@@ -727,6 +890,8 @@ namespace Server.MirEnvir
 
         }
 
+        //处理重生
+        //地图的重生？
         private void ProcessRespawns()
         {
             bool Success = true;
@@ -777,6 +942,7 @@ namespace Server.MirEnvir
             }
         }
 
+        //处理动作
         public void Process(DelayedAction action)
         {
             switch (action.Type)
@@ -807,6 +973,9 @@ namespace Server.MirEnvir
                     break;
             }
         }
+
+        //完成魔法
+        //用户释放魔法技能
         private void CompleteMagic(IList<object> data)
         {
             bool train = false;
@@ -817,7 +986,8 @@ namespace Server.MirEnvir
 
             int value, value2;
             Point location;
-            Cell cell;
+            //Cell cell;
+            
             MirDirection dir;
             MonsterObject monster;
             Point front;
@@ -839,15 +1009,15 @@ namespace Server.MirEnvir
                         DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 100, player, magic, value, location, dir, count);
                         ActionList.Add(action);
                     }
+                    
+                    //cell = GetCell(location);
 
-                    cell = GetCell(location);
-
-                    if (cell.Objects == null) return;
+                    if (Objects[location.X, location.Y] == null) return;
 
 
-                    for (int i = 0; i < cell.Objects.Count; i++)
+                    for (int i = 0; i < Objects[location.X, location.Y].Count; i++)
                     {
-                        MapObject target = cell.Objects[i];
+                        MapObject target = Objects[location.X, location.Y][i];
                         switch (target.Race)
                         {
                             case ObjectType.Monster:
@@ -906,13 +1076,13 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!Valid(x,y) || Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < Objects[x, y].Count; i++)
                             {
-                                MapObject target = cell.Objects[i];
+                                MapObject target = Objects[x, y][i];
                                 switch (target.Race)
                                 {
                                     case ObjectType.Monster:
@@ -951,13 +1121,13 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!Valid(x,y) || Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < Objects[x, y].Count; i++)
                             {
-                                MapObject target = cell.Objects[i];
+                                MapObject target = Objects[x, y][i];
                                 switch (target.Race)
                                 {
                                     case ObjectType.Monster:
@@ -1002,13 +1172,13 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!Valid(x,y) || Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < Objects[x, y].Count; i++)
                             {
-                                MapObject target = cell.Objects[i];
+                                MapObject target = Objects[x, y][i];
                                 switch (target.Race)
                                 {
                                     case ObjectType.Monster:
@@ -1042,13 +1212,13 @@ namespace Server.MirEnvir
 
                     if (ValidPoint(location))
                     {
-                        cell = GetCell(location);
+                        //cell = GetCell(location);
 
                         bool cast = true;
-                        if (cell.Objects != null)
-                            for (int o = 0; o < cell.Objects.Count; o++)
+                        if (Objects[location.X, location.Y] != null)
+                            for (int o = 0; o < Objects[location.X, location.Y].Count; o++)
                             {
-                                MapObject target = cell.Objects[o];
+                                MapObject target = Objects[location.X, location.Y][o];
                                 if (target.Race != ObjectType.Spell || ((SpellObject)target).Spell != Spell.FireWall) continue;
 
                                 cast = false;
@@ -1080,13 +1250,13 @@ namespace Server.MirEnvir
 
                         if (!ValidPoint(location)) continue;
 
-                        cell = GetCell(location);
+                        //cell = GetCell(location);
                         bool cast = true;
 
-                        if (cell.Objects != null)
-                            for (int o = 0; o < cell.Objects.Count; o++)
+                        if (Objects[location.X, location.Y] != null)
+                            for (int o = 0; o < Objects[location.X, location.Y].Count; o++)
                             {
-                                MapObject target = cell.Objects[o];
+                                MapObject target = Objects[location.X, location.Y][o];
                                 if (target.Race != ObjectType.Spell || ((SpellObject)target).Spell != Spell.FireWall) continue;
 
                                 cast = false;
@@ -1126,13 +1296,13 @@ namespace Server.MirEnvir
 
                         if (!ValidPoint(location)) continue;
 
-                        cell = GetCell(location);
+                        //cell = GetCell(location);
 
-                        if (cell.Objects == null) continue;
+                        if (Objects[location.X, location.Y] == null) continue;
 
-                        for (int o = 0; o < cell.Objects.Count; o++)
+                        for (int o = 0; o < Objects[location.X, location.Y].Count; o++)
                         {
-                            MapObject target = cell.Objects[o];
+                            MapObject target = Objects[location.X, location.Y][o];
                             if (target.Race != ObjectType.Player && target.Race != ObjectType.Monster) continue;
 
                             if (!target.IsAttackTarget(player)) continue;
@@ -1159,13 +1329,13 @@ namespace Server.MirEnvir
 
                         if (!ValidPoint(location)) continue;
 
-                        cell = GetCell(location);
+                        //cell = GetCell(location);
 
-                        if (cell.Objects == null) continue;
+                        if (Objects[location.X, location.Y] == null) continue;
 
-                        for (int o = 0; o < cell.Objects.Count; o++)
+                        for (int o = 0; o < Objects[location.X, location.Y].Count; o++)
                         {
-                            MapObject target = cell.Objects[o];
+                            MapObject target = Objects[location.X, location.Y][o];
                             if (target.Race != ObjectType.Player && target.Race != ObjectType.Monster) continue;
 
                             if (!target.IsAttackTarget(player)) continue;
@@ -1195,13 +1365,13 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!Valid(x,y) || Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < Objects[x, y].Count; i++)
                             {
-                                MapObject target = cell.Objects[i];
+                                MapObject target = Objects[x, y][i];
                                 switch (target.Race)
                                 {
                                     case ObjectType.Monster:
@@ -1244,13 +1414,13 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!Valid(x,y) || Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < Objects[x, y].Count; i++)
                             {
-                                MapObject target = cell.Objects[i];
+                                MapObject target = Objects[x, y][i];
                                 switch (target.Race)
                                 {
                                     case ObjectType.Monster:
@@ -1294,13 +1464,13 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!Valid(x,y) || Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < Objects[x, y].Count; i++)
                             {
-                                MapObject target = cell.Objects[i];
+                                MapObject target = Objects[x, y][i];
                                 if (target.Race != ObjectType.Monster) continue;
                                 //Only targets
                                 if (!target.IsAttackTarget(player) || player.Level + 3 < target.Level) continue;
@@ -1336,15 +1506,15 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid) continue;
+                            if (!Valid(x,y)) continue;
 
                             bool cast = true;
-                            if (cell.Objects != null)
-                                for (int o = 0; o < cell.Objects.Count; o++)
+                            if (Objects[x, y] != null)
+                                for (int o = 0; o < Objects[x, y].Count; o++)
                                 {
-                                    MapObject target = cell.Objects[o];
+                                    MapObject target = Objects[x, y][o];
                                     if (target.Race != ObjectType.Spell || ((SpellObject)target).Spell != Spell.PoisonCloud) continue;
 
                                     cast = false;
@@ -1404,13 +1574,13 @@ namespace Server.MirEnvir
 
                                 if (!ValidPoint(hitPoint)) continue;
 
-                                cell = GetCell(hitPoint);
+                                //cell = GetCell(hitPoint);
 
-                                if (cell.Objects == null) continue;
+                                if (Objects[hitPoint.X, hitPoint.Y] == null) continue;
 
-                                for (int k = 0; k < cell.Objects.Count; k++)
+                                for (int k = 0; k < Objects[hitPoint.X, hitPoint.Y].Count; k++)
                                 {
-                                    MapObject target = cell.Objects[k];
+                                    MapObject target = Objects[hitPoint.X, hitPoint.Y][k];
                                     switch (target.Race)
                                     {
                                         case ObjectType.Monster:
@@ -1472,13 +1642,13 @@ namespace Server.MirEnvir
 
                         if (!ValidPoint(location)) continue;
 
-                        cell = GetCell(location);
+                        //cell = GetCell(location);
 
-                        if (cell.Objects == null) continue;
+                        if (Objects[location.X, location.Y] == null) continue;
 
-                        for (int o = 0; o < cell.Objects.Count; o++)
+                        for (int o = 0; o < Objects[location.X, location.Y].Count; o++)
                         {
-                            MapObject target = cell.Objects[o];
+                            MapObject target = Objects[location.X, location.Y][o];
                             if (target.Race != ObjectType.Player && target.Race != ObjectType.Monster) continue;
 
                             if (!target.IsAttackTarget(player)) continue;
@@ -1531,15 +1701,15 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid) continue;
+                            if (!Valid(x,y)) continue;
 
                             bool cast = true;
-                            if (cell.Objects != null)
-                                for (int o = 0; o < cell.Objects.Count; o++)
+                            if (Objects[x, y] != null)
+                                for (int o = 0; o < Objects[x, y].Count; o++)
                                 {
-                                    MapObject target = cell.Objects[o];
+                                    MapObject target = Objects[x, y][o];
                                     if (target.Race != ObjectType.Spell || ((SpellObject) target).Spell != Spell.Blizzard) continue;
 
                                     cast = false;
@@ -1592,15 +1762,15 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid) continue;
+                            if (!Valid(x,y)) continue;
 
                             bool cast = true;
-                            if (cell.Objects != null)
-                                for (int o = 0; o < cell.Objects.Count; o++)
+                            if (Objects[x, y] != null)
+                                for (int o = 0; o < Objects[x, y].Count; o++)
                                 {
-                                    MapObject target = cell.Objects[o];
+                                    MapObject target = Objects[x, y][o];
                                     if (target.Race != ObjectType.Spell || ((SpellObject)target).Spell != Spell.MeteorStrike) continue;
 
                                     cast = false;
@@ -1652,13 +1822,13 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!Valid(x,y) || Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < Objects[x, y].Count; i++)
                             {
-                                MapObject target = cell.Objects[i];
+                                MapObject target = Objects[x, y][i];
 
                                 if (y == location.Y && x == location.X && target.Race == ObjectType.Monster)
                                 {
@@ -1735,13 +1905,13 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!Valid(x,y) || Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < Objects[x, y].Count; i++)
                             {
-                                MapObject target = cell.Objects[i];
+                                MapObject target = Objects[x, y][i];
                                 switch (target.Race)
                                 {
                                     case ObjectType.Monster:
@@ -1778,13 +1948,13 @@ namespace Server.MirEnvir
 
                     if (ValidPoint(front))
                     {
-                        cell = GetCell(front);
+                        //cell = GetCell(front);
 
                         bool cast = true;
-                        if (cell.Objects != null)
-                            for (int o = 0; o < cell.Objects.Count; o++)
+                        if (Objects[front.X, front.Y] != null)
+                            for (int o = 0; o < Objects[front.X, front.Y].Count; o++)
                             {
-                                MapObject target = cell.Objects[o];
+                                MapObject target = Objects[front.X, front.Y][o];
                                 if (target.Race != ObjectType.Spell || (((SpellObject)target).Spell != Spell.FireWall && ((SpellObject)target).Spell != Spell.ExplosiveTrap)) continue;
 
                                 cast = false;
@@ -1838,13 +2008,13 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!Valid(x,y) || Objects[x, y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < Objects[x, y].Count; i++)
                             {
-                                MapObject target = cell.Objects[i];
+                                MapObject target = Objects[x, y][i];
                                 switch (target.Race)
                                 {
                                     case ObjectType.Monster:
@@ -1909,13 +2079,13 @@ namespace Server.MirEnvir
 
                     if (!ValidPoint(location)) break;
 
-                    cell = GetCell(location);
+                    //cell = GetCell(location);
 
-                    if (!cell.Valid || cell.Objects == null) break;
+                    if (!ValidPoint(location) || Objects[location.X, location.Y] == null) break;
 
-                    for (int i = 0; i < cell.Objects.Count; i++)
+                    for (int i = 0; i < Objects[location.X, location.Y].Count; i++)
                     {
-                        MapObject target = cell.Objects[i];
+                        MapObject target = Objects[location.X, location.Y][i];
                         if (target.Race == ObjectType.Monster)
                         {
                             selectTarget = (MonsterObject)target;
@@ -1970,13 +2140,13 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!Valid(x,y) || Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < Objects[x, y].Count; i++)
                             {
-                                MapObject target = cell.Objects[i];
+                                MapObject target = Objects[x, y][i];
                                 switch (target.Race)
                                 {
                                     case ObjectType.Monster:
@@ -2086,13 +2256,13 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!Valid(x,y) || Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < Objects[x, y].Count; i++)
                             {
-                                MapObject target = cell.Objects[i];
+                                MapObject target = Objects[x, y][i];
                                 switch (target.Race)
                                 {
                                     case ObjectType.Monster:
@@ -2130,13 +2300,13 @@ namespace Server.MirEnvir
                             if (x < 0) continue;
                             if (x >= Width) break;
 
-                            cell = GetCell(x, y);
+                            //cell = GetCell(x, y);
 
-                            if (!cell.Valid || cell.Objects == null) continue;
+                            if (!Valid(x,y) || Objects[x,y] == null) continue;
 
-                            for (int i = 0; i < cell.Objects.Count; i++)
+                            for (int i = 0; i < Objects[x, y].Count; i++)
                             {
-                                MapObject target = cell.Objects[i];
+                                MapObject target = Objects[x, y][i];
                                 if (target.Race != ObjectType.Monster) continue;
 
                                 if (magic.Level == 0)
@@ -2182,16 +2352,15 @@ namespace Server.MirEnvir
             }
             if (ob.Race == ObjectType.Merchant)
                 NPCs.Add((NPCObject)ob);
-
-            GetCell(ob.CurrentLocation).Add(ob);
+            Add(ob.CurrentLocation.X, ob.CurrentLocation.Y, ob);
         }
 
         public void RemoveObject(MapObject ob)
         {
             if (ob.Race == ObjectType.Player) Players.Remove((PlayerObject)ob);
             if (ob.Race == ObjectType.Merchant) NPCs.Remove((NPCObject)ob);
-
-            GetCell(ob.CurrentLocation).Remove(ob);
+            Remove(ob.CurrentLocation.X, ob.CurrentLocation.Y, ob);
+            //GetCell(ob.CurrentLocation).Remove(ob);
         }
 
 
@@ -2278,6 +2447,8 @@ namespace Server.MirEnvir
             return false;
         }
     }
+
+
     public class Cell
     {
         public static Cell LowWall { get { return new Cell { Attribute = CellAttribute.LowWall }; } }
@@ -2285,7 +2456,9 @@ namespace Server.MirEnvir
 
         public bool Valid
         {
-            get { return Attribute == CellAttribute.Walk; }
+            get {
+                return Attribute == CellAttribute.Walk;
+            }
         }
 
         public List<MapObject> Objects;

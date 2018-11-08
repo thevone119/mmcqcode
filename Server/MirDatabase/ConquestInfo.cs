@@ -10,7 +10,6 @@ namespace Server.MirDatabase
     /// 占领》？
     /// 是行会占领么？
     /// 整个行会战斗用这个数据啊。
-    /// 
     /// </summary>
     public class ConquestInfo
     {
@@ -42,6 +41,7 @@ namespace Server.MirDatabase
         public ConquestType Type = ConquestType.Request;
         public ConquestGame Game = ConquestGame.CapturePalace;
 
+        //星期1-7
         public bool Monday;
         public bool Tuesday;
         public bool Wednesday;
@@ -228,6 +228,7 @@ namespace Server.MirDatabase
         }
     }
 
+    //围攻？
     public class ConquestSiegeInfo
     {
         public int Index;
@@ -267,7 +268,7 @@ namespace Server.MirDatabase
 
 
     }
-
+    //城墙？
     public class ConquestWallInfo
     {
         public int Index;
@@ -308,13 +309,14 @@ namespace Server.MirDatabase
 
     }
 
+    //行会战的门？
     public class ConquestGateInfo
     {
         public int Index;
-        public Point Location;
+        public Point Location;//位置
         public int MobIndex;
-        public string Name;
-        public uint RepairCost;
+        public string Name;//名称
+        public uint RepairCost;//修理费用
 
         public ConquestGateInfo()
         {
@@ -347,7 +349,7 @@ namespace Server.MirDatabase
 
 
     }
-
+    //行会战的射手信息
     public class ConquestArcherInfo
     {
         public int Index;
