@@ -90,6 +90,7 @@ namespace Server.MirDatabase
             writer.Write(MultiplierBonus);
         }
 
+
         /// <summary>
         /// 加载所有的魔法技能，从数据库中加载
         /// </summary>
@@ -97,9 +98,7 @@ namespace Server.MirDatabase
         public static List<MagicInfo>  loadAll()
         {
             List<MagicInfo> list = new List<MagicInfo>();
-            //DbDataReader read = MirConfigDB.ExecuteReader("select Name,BaseCost,LevelCost,Icon,Level1,Level2,Level3,Need1,Need2,Need3,DelayBase,DelayReduction,PowerBase,PowerBonus,MPowerBase,MPowerBonus,Range,Spell,MultiplierBase,MultiplierBonus from MagicInfo");
             DbDataReader read = MirConfigDB.ExecuteReader("select * from MagicInfo");
-
             while (read.Read())
             {
                 MagicInfo magic = new MagicInfo();
@@ -136,43 +135,58 @@ namespace Server.MirDatabase
 
                 magic.MultiplierBase = read.GetFloat(read.GetOrdinal("MultiplierBase"));
                 magic.MultiplierBonus = read.GetFloat(read.GetOrdinal("MultiplierBonus"));
-
+                DBObjectUtils.updateObjState(magic, (int)magic.Spell);
                 list.Add(magic);
             }
-
             return list;
         }
 
         //保存到数据库中,update
-        //作废
-        public void SaveDB2()
+        public void SaveDB()
         {
-            StringBuilder sb = new StringBuilder();
+            byte state = DBObjectUtils.ObjState(this, (int)Spell);
+            if (state == 0)//没有改变
+            {
+                return;
+            }
             List<SQLiteParameter> lp = new List<SQLiteParameter>();
-            sb.Append("update MagicInfo set ");
-
-            sb.Append(" Name=@Name, "); lp.Add(new SQLiteParameter("Name", Name));
-            sb.Append(" BaseCost=@BaseCost, "); lp.Add(new SQLiteParameter("BaseCost", BaseCost));
-            sb.Append(" LevelCost=@LevelCost, "); lp.Add(new SQLiteParameter("LevelCost", LevelCost));
-            sb.Append(" Icon=@Icon, "); lp.Add(new SQLiteParameter("Icon", Icon));
-            sb.Append(" Level1=@Level1, "); lp.Add(new SQLiteParameter("Level1", Level1));
-            sb.Append(" Level2=@Level2, "); lp.Add(new SQLiteParameter("Level2", Level2));
-            sb.Append(" Level3=@Level3, "); lp.Add(new SQLiteParameter("Level3", Level3));
-            sb.Append(" Need1=@Need1, "); lp.Add(new SQLiteParameter("Need1", Need1));
-            sb.Append(" Need2=@Need2, "); lp.Add(new SQLiteParameter("Need2", Need2));
-            sb.Append(" Need3=@Need3, "); lp.Add(new SQLiteParameter("Need3", Need3));
-            sb.Append(" DelayBase=@DelayBase, "); lp.Add(new SQLiteParameter("DelayBase", DelayBase));
-            sb.Append(" DelayReduction=@DelayReduction, "); lp.Add(new SQLiteParameter("DelayReduction", DelayReduction));
-            sb.Append(" PowerBase=@PowerBase, "); lp.Add(new SQLiteParameter("PowerBase", PowerBase));
-            sb.Append(" PowerBonus=@PowerBonus, "); lp.Add(new SQLiteParameter("PowerBonus", PowerBonus));
-            sb.Append(" MPowerBase=@MPowerBase, "); lp.Add(new SQLiteParameter("MPowerBase", MPowerBase));
-            sb.Append(" MPowerBonus=@MPowerBonus, "); lp.Add(new SQLiteParameter("MPowerBonus", MPowerBonus));
-            sb.Append(" Range=@Range, "); lp.Add(new SQLiteParameter("Range", Range));
-            sb.Append(" MultiplierBase=@MultiplierBase, "); lp.Add(new SQLiteParameter("MultiplierBase", MultiplierBase));
-            sb.Append(" MultiplierBonus=@MultiplierBonus "); lp.Add(new SQLiteParameter("MultiplierBonus", MultiplierBonus));
-            sb.Append(" where  Spell=@Spell"); lp.Add(new SQLiteParameter("Spell", Spell));
+            lp.Add(new SQLiteParameter("Name", Name));
+            lp.Add(new SQLiteParameter("BaseCost", BaseCost));
+            lp.Add(new SQLiteParameter("LevelCost", LevelCost));
+            lp.Add(new SQLiteParameter("Icon", Icon));
+            lp.Add(new SQLiteParameter("Level1", Level1));
+            lp.Add(new SQLiteParameter("Level2", Level2));
+            lp.Add(new SQLiteParameter("Level3", Level3));
+            lp.Add(new SQLiteParameter("Need1", Need1));
+            lp.Add(new SQLiteParameter("Need2", Need2));
+            lp.Add(new SQLiteParameter("Need3", Need3));
+            lp.Add(new SQLiteParameter("DelayBase", DelayBase));
+            lp.Add(new SQLiteParameter("DelayReduction", DelayReduction));
+            lp.Add(new SQLiteParameter("PowerBase", PowerBase));
+            lp.Add(new SQLiteParameter("PowerBonus", PowerBonus));
+            lp.Add(new SQLiteParameter("MPowerBase", MPowerBase));
+            lp.Add(new SQLiteParameter("MPowerBonus", MPowerBonus));
+            lp.Add(new SQLiteParameter("Range", Range));
+            lp.Add(new SQLiteParameter("MultiplierBase", MultiplierBase));
+            lp.Add(new SQLiteParameter("MultiplierBonus", MultiplierBonus));
+           
             //执行更新
-            MirConfigDB.Execute(sb.ToString(),lp.ToArray());
+            //新增
+            if (state == 1)
+            {
+                lp.Add(new SQLiteParameter("Spell", Spell));
+                string sql = "insert into MagicInfo" + SQLiteHelper.createInsertSql(lp.ToArray()); ;
+                MirConfigDB.Execute(sql, lp.ToArray());
+            }
+            //修改
+            if (state == 2)
+            {
+                string sql = "update MagicInfo set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where Spell=@Spell";
+                lp.Add(new SQLiteParameter("Spell", Spell));
+                MirConfigDB.Execute(sql, lp.ToArray());
+            }
+            DBObjectUtils.updateObjState(this, (int)Spell);
+     
         }
     }
 

@@ -377,6 +377,7 @@ namespace Server.MirObjects
             SearchTime = RandomUtils.Next(SearchDelay) + Envir.Time;
             RoamTime = RandomUtils.Next(RoamDelay) + Envir.Time;
         }
+        //这个重生是在当前位置重生，如僵尸的复活
         public bool Spawn(Map temp, Point location)
         {
             if (!temp.ValidPoint(location)) return false;
@@ -394,7 +395,7 @@ namespace Server.MirObjects
             CurrentMap.MonsterCount++;
             return true;
         }
-        //怪物重生
+        //怪物重生(这个是根据配置进行刷怪)
         public bool Spawn(MapRespawn respawn)
         {
             Respawn = respawn;
@@ -647,12 +648,13 @@ namespace Server.MirObjects
             DeadTime = Envir.Time + DeadDelay;
 
             Broadcast(new S.ObjectDied { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
-
+            //触发死亡脚本
             if (Info.HasDieScript && (SMain.Envir.MonsterNPC != null))
             {
                 SMain.Envir.MonsterNPC.Call(this,string.Format("[@_DIE({0})]", Info.Index));
             }
 
+            //经验拥有者
             if (EXPOwner != null && Master == null && EXPOwner.Race == ObjectType.Player)
             {
                 EXPOwner.WinExp(Experience, Level);
@@ -664,6 +666,7 @@ namespace Server.MirObjects
             if (Respawn != null)
                 Respawn.Count--;
 
+            //没有主人，并且有经验拥有者才爆东西
             if (Master == null && EXPOwner != null)
                  Drop();
 
@@ -673,7 +676,7 @@ namespace Server.MirObjects
             Envir.MonsterCount--;
             CurrentMap.MonsterCount--;
         }
-
+        //复活
         public void Revive(uint hp, bool effect)
         {
             if (!Dead) return;
@@ -692,6 +695,7 @@ namespace Server.MirObjects
             CurrentMap.MonsterCount++;
         }
 
+        //被推动
         public override int Pushed(MapObject pusher, MirDirection dir, int distance)
         {
             if (!Info.CanPush) return 0;
@@ -899,6 +903,7 @@ namespace Server.MirObjects
             BroadcastHealthChange();*/
         }
 
+        //这个是干嘛的，设置操作的时间？
         public override void SetOperateTime()
         {
             long time = Envir.Time + 2000;

@@ -485,7 +485,7 @@ namespace Server
 
             for (int i = 0; i < _selectedItemInfos.Count; i++) Envir.Remove(_selectedItemInfos[i]);
 
-            if (Envir.ItemInfoList.Count == 0) Envir.ItemIndex = 0;
+            //if (Envir.ItemInfoList.Count == 0) Envir.ItemIndex = 0;
 
             UpdateInterface(true);
         }
@@ -1054,7 +1054,7 @@ namespace Server
                 ItemInfo info = ItemInfo.FromText(items[i]);
 
                 if (info == null) continue;
-                info.Index = ++Envir.ItemIndex;
+                info.Index = DBObjectUtils.getObjNextId(info);
                 Envir.ItemInfoList.Add(info);
 
             }
@@ -1113,7 +1113,7 @@ namespace Server
             foreach (var info in items.Select(ItemInfo.FromText).Where(info => info != null))
             {
                 count++;
-                info.Index = ++Envir.ItemIndex;
+                info.Index = DBObjectUtils.getObjNextId(info);
                 Envir.ItemInfoList.Add(info);
             }
 

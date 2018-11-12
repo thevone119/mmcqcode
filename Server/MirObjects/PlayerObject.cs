@@ -1626,6 +1626,7 @@ namespace Server.MirObjects
             RefreshStats();
         }
 
+        //获得经验
         public override void WinExp(uint amount, uint targetLevel = 0)
         {
             int expPoint;
@@ -17230,6 +17231,7 @@ namespace Server.MirObjects
             }
         }
 
+        //检测怪物杀死任务
         public void CheckGroupQuestKill(MonsterInfo mInfo)
         {
             if (GroupMembers != null)
@@ -17245,6 +17247,7 @@ namespace Server.MirObjects
             else
                 CheckNeedQuestKill(mInfo);
         }
+        //任务
         public bool CheckGroupQuestItem(UserItem item, bool gainItem = true)
         {
             bool itemCollected = false;
@@ -17274,7 +17277,7 @@ namespace Server.MirObjects
 
             return itemCollected;
         }
-
+        //任务
         public bool CheckNeedQuestItem(UserItem item, bool gainItem = true)
         {
             foreach (QuestProgressInfo quest in CurrentQuests.
@@ -17314,6 +17317,7 @@ namespace Server.MirObjects
 
             return false;
         }
+        //任务
         public void CheckNeedQuestKill(MonsterInfo mInfo)
         {
             foreach (QuestProgressInfo quest in CurrentQuests.

@@ -44,7 +44,7 @@ namespace Server
 
             for (int i = 0; i < _selectedQuestInfos.Count; i++) Envir.Remove(_selectedQuestInfos[i]);
 
-            if (Envir.QuestInfoList.Count == 0) Envir.QuestIndex = 0;
+            //if (Envir.QuestInfoList.Count == 0) Envir.QuestIndex = 0;
 
             UpdateInterface();
         }

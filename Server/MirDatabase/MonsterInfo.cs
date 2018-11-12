@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Server.MirEnvir;
 using System.Data.SQLite;
+using System.Data.Common;
 
 namespace Server.MirDatabase
 {
@@ -49,181 +50,144 @@ namespace Server.MirDatabase
         public MonsterInfo()
         {
         }
-        public MonsterInfo(BinaryReader reader)
+
+        /// <summary>
+        /// 加载所有数据
+        /// </summary>
+        /// <returns></returns>
+        public static List<MonsterInfo> loadAll()
         {
-            Index = reader.ReadInt32();
-            Name = reader.ReadString();
+            List<MonsterInfo> list = new List<MonsterInfo>();
+            DbDataReader read = MirConfigDB.ExecuteReader("select * from MonsterInfo");
 
-            Image = (Monster) reader.ReadUInt16();
-            AI = reader.ReadByte();
-            Effect = reader.ReadByte();
-            if (Envir.LoadVersion < 62)
+            while (read.Read())
             {
-                Level = (ushort)reader.ReadByte();
+                MonsterInfo obj = new MonsterInfo();
+                if (read.IsDBNull(read.GetOrdinal("Name")))
+                {
+                    continue;
+                }
+                obj.Name = read.GetString(read.GetOrdinal("Name"));
+                if (obj.Name == null)
+                {
+                    continue;
+                }
+                obj.Index = read.GetInt32(read.GetOrdinal("Idx"));
+
+                obj.Image = (Monster)read.GetByte(read.GetOrdinal("Image"));
+                obj.AI = read.GetByte(read.GetOrdinal("AI"));
+                obj.Effect = read.GetByte(read.GetOrdinal("Effect"));
+                obj.ViewRange = read.GetByte(read.GetOrdinal("ViewRange"));
+                obj.CoolEye = read.GetByte(read.GetOrdinal("CoolEye"));
+                obj.Level = (ushort)read.GetInt32(read.GetOrdinal("Level"));
+                obj.HP = (uint)read.GetInt32(read.GetOrdinal("HP"));
+                obj.Accuracy = read.GetByte(read.GetOrdinal("Accuracy"));
+                obj.Agility = read.GetByte(read.GetOrdinal("Agility"));
+                obj.Light = read.GetByte(read.GetOrdinal("Light"));
+
+                obj.MinAC = (ushort)read.GetInt32(read.GetOrdinal("MinAC"));
+                obj.MaxAC = (ushort)read.GetInt32(read.GetOrdinal("MaxAC"));
+
+                obj.MinMAC = (ushort)read.GetInt32(read.GetOrdinal("MinMAC"));
+                obj.MaxMAC = (ushort)read.GetInt32(read.GetOrdinal("MaxMAC"));
+
+                obj.MinDC = (ushort)read.GetInt32(read.GetOrdinal("MinDC"));
+                obj.MaxDC = (ushort)read.GetInt32(read.GetOrdinal("MaxDC"));
+
+                obj.MinMC = (ushort)read.GetInt32(read.GetOrdinal("MinMC"));
+                obj.MaxMC = (ushort)read.GetInt32(read.GetOrdinal("MaxMC"));
+
+                obj.MinSC = (ushort)read.GetInt32(read.GetOrdinal("MinSC"));
+                obj.MaxSC = (ushort)read.GetInt32(read.GetOrdinal("MaxSC"));
+
+                obj.AttackSpeed = (ushort)read.GetInt32(read.GetOrdinal("AttackSpeed"));
+                obj.MoveSpeed = (ushort)read.GetInt32(read.GetOrdinal("MoveSpeed"));
+                obj.Experience = (ushort)read.GetInt32(read.GetOrdinal("Experience"));
+                obj.CanPush = read.GetBoolean(read.GetOrdinal("CanPush"));
+                obj.CanTame = read.GetBoolean(read.GetOrdinal("CanTame"));
+                obj.AutoRev = read.GetBoolean(read.GetOrdinal("AutoRev"));
+                obj.Undead = read.GetBoolean(read.GetOrdinal("Undead"));
+
+                DBObjectUtils.updateObjState(obj, obj.Index);
+                list.Add(obj);
             }
-            else
-            {
-                Level = reader.ReadUInt16();
-            }
-
-            ViewRange = reader.ReadByte();
-            if (Envir.LoadVersion >= 3) CoolEye = reader.ReadByte();
-
-            HP = reader.ReadUInt32();
-
-            if (Envir.LoadVersion < 62)
-            {
-                MinAC = (ushort)reader.ReadByte();
-                MaxAC = (ushort)reader.ReadByte();
-                MinMAC = (ushort)reader.ReadByte();
-                MaxMAC = (ushort)reader.ReadByte();
-                MinDC = (ushort)reader.ReadByte();
-                MaxDC = (ushort)reader.ReadByte();
-                MinMC = (ushort)reader.ReadByte();
-                MaxMC = (ushort)reader.ReadByte();
-                MinSC = (ushort)reader.ReadByte();
-                MaxSC = (ushort)reader.ReadByte();
-            }
-            else
-            {
-                MinAC = reader.ReadUInt16();
-                MaxAC = reader.ReadUInt16();
-                MinMAC = reader.ReadUInt16();
-                MaxMAC = reader.ReadUInt16();
-                MinDC = reader.ReadUInt16();
-                MaxDC = reader.ReadUInt16();
-                MinMC = reader.ReadUInt16();
-                MaxMC = reader.ReadUInt16();
-                MinSC = reader.ReadUInt16();
-                MaxSC = reader.ReadUInt16();
-            }
-
-            Accuracy = reader.ReadByte();
-            Agility = reader.ReadByte();
-            Light = reader.ReadByte();
-
-            AttackSpeed = reader.ReadUInt16();
-            MoveSpeed = reader.ReadUInt16();
-            Experience = reader.ReadUInt32();
-
-            if (Envir.LoadVersion < 6)
-            {
-                reader.BaseStream.Seek(8, SeekOrigin.Current);
-
-                int count = reader.ReadInt32();
-                reader.BaseStream.Seek(count*12, SeekOrigin.Current);
-            }
-
-            CanPush = reader.ReadBoolean();
-            CanTame = reader.ReadBoolean();
-
-            if (Envir.LoadVersion < 18) return;
-            AutoRev = reader.ReadBoolean();
-            Undead = reader.ReadBoolean();
+            return list;
         }
 
+       
         public string GameName
         {
             get { return Regex.Replace(Name, @"[\d-]", string.Empty); }
         }
 
-        public void Save(BinaryWriter writer)
-        {
-            writer.Write(Index);
-            writer.Write(Name);
-
-            writer.Write((ushort) Image);
-            writer.Write(AI);
-            writer.Write(Effect);
-            writer.Write(Level);
-            writer.Write(ViewRange);
-            writer.Write(CoolEye);
-
-            writer.Write(HP);
-
-            writer.Write(MinAC);
-            writer.Write(MaxAC);
-            writer.Write(MinMAC);
-            writer.Write(MaxMAC);
-            writer.Write(MinDC);
-            writer.Write(MaxDC);
-            writer.Write(MinMC);
-            writer.Write(MaxMC);
-            writer.Write(MinSC);
-            writer.Write(MaxSC);
-
-            writer.Write(Accuracy);
-            writer.Write(Agility);
-            writer.Write(Light);
-
-            writer.Write(AttackSpeed);
-            writer.Write(MoveSpeed);
-            writer.Write(Experience);
-
-            writer.Write(CanPush);
-            writer.Write(CanTame);
-            writer.Write(AutoRev);
-            writer.Write(Undead);
-            SaveDB();
-        }
-        
+       
         //保存到数据库
         public void SaveDB()
         {
-            StringBuilder sb = new StringBuilder();
-            List<SQLiteParameter> lp = new List<SQLiteParameter>();
-            sb.Append("update MonsterInfo set ");
-
-            sb.Append(" Name=@Name, "); lp.Add(new SQLiteParameter("Name", Name));
-            sb.Append(" Image=@Image, "); lp.Add(new SQLiteParameter("Image", Image));
-            sb.Append(" AI=@AI, "); lp.Add(new SQLiteParameter("AI", AI));
-            sb.Append(" Effect=@Effect, "); lp.Add(new SQLiteParameter("Effect", Effect));
-            sb.Append(" ViewRange=@ViewRange, "); lp.Add(new SQLiteParameter("ViewRange", ViewRange));
-            sb.Append(" CoolEye=@CoolEye, "); lp.Add(new SQLiteParameter("CoolEye", CoolEye));
-
-            sb.Append(" Level=@Level, "); lp.Add(new SQLiteParameter("Level", Level));
-            sb.Append(" HP=@HP, "); lp.Add(new SQLiteParameter("HP", HP));
-
-            sb.Append(" Accuracy=@Accuracy, "); lp.Add(new SQLiteParameter("Accuracy", Accuracy));
-            sb.Append(" Agility=@Agility, "); lp.Add(new SQLiteParameter("Agility", Agility));
-            sb.Append(" Light=@Light, "); lp.Add(new SQLiteParameter("Light", Light));
-
-            sb.Append(" MinAC=@MinAC, "); lp.Add(new SQLiteParameter("MinAC", MinAC));
-            sb.Append(" MaxAC=@MaxAC, "); lp.Add(new SQLiteParameter("MaxAC", MaxAC));
-
-            sb.Append(" MinMAC=@MinMAC, "); lp.Add(new SQLiteParameter("MinMAC", MinMAC));
-            sb.Append(" MaxMAC=@MaxMAC, "); lp.Add(new SQLiteParameter("MaxMAC", MaxMAC));
-            sb.Append(" MinDC=@MinDC, "); lp.Add(new SQLiteParameter("MinDC", MinDC));
-            sb.Append(" MaxDC=@MaxDC, "); lp.Add(new SQLiteParameter("MaxDC", MaxDC));
-            sb.Append(" MinMC=@MinMC, "); lp.Add(new SQLiteParameter("MinMC", MinMC));
-            sb.Append(" MaxMC=@MaxMC, "); lp.Add(new SQLiteParameter("MaxMC", MaxMC));
-            sb.Append(" MinMC=@MinMC, "); lp.Add(new SQLiteParameter("MinMC", MinMC));
-            sb.Append(" MaxMC=@MaxMC, "); lp.Add(new SQLiteParameter("MaxMC", MaxMC));
-            sb.Append(" MinSC=@MinSC, "); lp.Add(new SQLiteParameter("MinSC", MinSC));
-            sb.Append(" MaxSC=@MaxSC, "); lp.Add(new SQLiteParameter("MaxSC", MaxSC));
-
-            sb.Append(" AttackSpeed=@AttackSpeed, "); lp.Add(new SQLiteParameter("AttackSpeed", AttackSpeed));
-            sb.Append(" MoveSpeed=@MoveSpeed, "); lp.Add(new SQLiteParameter("MoveSpeed", MoveSpeed));
-            sb.Append(" Experience=@Experience, "); lp.Add(new SQLiteParameter("Experience", Experience));
-
-            sb.Append(" CanPush=@CanPush, "); lp.Add(new SQLiteParameter("CanPush", CanPush));
-            sb.Append(" CanTame=@CanTame, "); lp.Add(new SQLiteParameter("CanTame", CanTame));
-            sb.Append(" AutoRev=@AutoRev, "); lp.Add(new SQLiteParameter("AutoRev", AutoRev));
-            sb.Append(" Undead=@Undead "); lp.Add(new SQLiteParameter("Undead", Undead));
-
-            sb.Append(" where  Idx=@Idx "); lp.Add(new SQLiteParameter("Idx", Index));
-            //执行更新
-            int ucount = MirConfigDB.Execute(sb.ToString(), lp.ToArray());
-
-            //没有得更新，则执行插入
-            if (ucount <= 0)
+            byte state = DBObjectUtils.ObjState(this, Index);
+            if (state == 0)//没有改变
             {
-                sb.Clear();
-
-                sb.Append("insert into MonsterInfo(Idx,Name,Image,AI,Effect,Level,ViewRange,CoolEye,HP,MinAC,MaxAC,MinMAC,MaxMAC,MinDC,MaxDC,MinMC,MaxMC,MinSC,MaxSC,Accuracy,Agility,Light,AttackSpeed,MoveSpeed,Experience,CanPush,CanTame,AutoRev,Undead) values(@Idx,@Name,@Image,@AI,@Effect,@Level,@ViewRange,@CoolEye,@HP,@MinAC,@MaxAC,@MinMAC,@MaxMAC,@MinDC,@MaxDC,@MinMC,@MaxMC,@MinSC,@MaxSC,@Accuracy,@Agility,@Light,@AttackSpeed,@MoveSpeed,@Experience,@CanPush,@CanTame,@AutoRev,@Undead) ");
-                //执行插入
-                MirConfigDB.Execute(sb.ToString(), lp.ToArray());
+                return;
             }
+            List<SQLiteParameter> lp = new List<SQLiteParameter>();
+            lp.Add(new SQLiteParameter("Name", Name));
+            lp.Add(new SQLiteParameter("Image", Image));
+            lp.Add(new SQLiteParameter("AI", AI));
+            lp.Add(new SQLiteParameter("Effect", Effect));
+            lp.Add(new SQLiteParameter("ViewRange", ViewRange));
+            lp.Add(new SQLiteParameter("CoolEye", CoolEye));
+
+            lp.Add(new SQLiteParameter("Level", Level));
+            lp.Add(new SQLiteParameter("HP", HP));
+
+            lp.Add(new SQLiteParameter("Accuracy", Accuracy));
+            lp.Add(new SQLiteParameter("Agility", Agility));
+            lp.Add(new SQLiteParameter("Light", Light));
+
+            lp.Add(new SQLiteParameter("MinAC", MinAC));
+            lp.Add(new SQLiteParameter("MaxAC", MaxAC));
+
+            lp.Add(new SQLiteParameter("MinMAC", MinMAC));
+            lp.Add(new SQLiteParameter("MaxMAC", MaxMAC));
+
+            lp.Add(new SQLiteParameter("MinDC", MinDC));
+            lp.Add(new SQLiteParameter("MaxDC", MaxDC));
+
+            lp.Add(new SQLiteParameter("MinMC", MinMC));
+            lp.Add(new SQLiteParameter("MaxMC", MaxMC));
+
+
+            lp.Add(new SQLiteParameter("MinSC", MinSC));
+            lp.Add(new SQLiteParameter("MaxSC", MaxSC));
+
+            lp.Add(new SQLiteParameter("AttackSpeed", AttackSpeed));
+            lp.Add(new SQLiteParameter("MoveSpeed", MoveSpeed));
+            lp.Add(new SQLiteParameter("Experience", Experience));
+
+            lp.Add(new SQLiteParameter("CanPush", CanPush));
+            lp.Add(new SQLiteParameter("CanTame", CanTame));
+            lp.Add(new SQLiteParameter("AutoRev", AutoRev));
+            lp.Add(new SQLiteParameter("Undead", Undead));
+
+      
+            //新增
+            if (state == 1)
+            {
+                if (Index > 0)
+                {
+                    lp.Add(new SQLiteParameter("Idx", Index));
+                }
+                string sql = "insert into MonsterInfo" + SQLiteHelper.createInsertSql(lp.ToArray()); ;
+                MirConfigDB.Execute(sql, lp.ToArray());
+            }
+            //修改
+            if (state == 2)
+            {
+                string sql = "update MapInfo set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where Idx=@Idx"; 
+                lp.Add(new SQLiteParameter("Idx", Index));
+                MirConfigDB.Execute(sql, lp.ToArray());
+            }
+            DBObjectUtils.updateObjState(this, Index);
         }
         //加载怪物的掉落物品数据
         public void LoadDrops()
@@ -329,7 +293,7 @@ namespace Server.MirDatabase
 
             //if (28 + count * 3 > data.Length) return;
 
-            info.Index = ++SMain.EditEnvir.MonsterIndex;
+            info.Index = DBObjectUtils.getObjNextId(info);
             SMain.EditEnvir.MonsterInfoList.Add(info);
         }
         public string ToText()

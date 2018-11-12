@@ -55,9 +55,9 @@ namespace Server
 
         public static ushort Port = 7000,
                              TimeOut = 10000,//10秒超时？
-                             MaxUser = 50,
+                             MaxUser = 500,
                              RelogDelay = 50,
-                             MaxIP = 5;
+                             MaxIP = 500;
 
 
         //Permission
@@ -83,13 +83,14 @@ namespace Server
         public static int SaveDelay = 5;
         public static short CredxGold = 30;
 
-        //Game
+        //Game(游戏设置)
         public static List<long> ExperienceList = new List<long>();
         public static List<long> OrbsExpList = new List<long>();
         public static List<long> OrbsDefList = new List<long>();
         public static List<long> OrbsDmgList = new List<long>();
 
-        public static float DropRate = 1F, ExpRate = 1F;
+        //全局的爆率，经验倍率，刷怪倍数
+        public static float DropRate = 1F, ExpRate = 1F, MonsterRate=1.0F;
 
         public static int ItemTimeOut = 5,
                           PlayerDiedItemTimeOut = 5,//玩家死亡掉落物品增加多少时间,可以给玩家重新捡回物品，这个有个毛的用啊。统一5分钟算了。靠
@@ -316,6 +317,8 @@ namespace Server
             //Game
             DropRate = Reader.ReadSingle("Game", "DropRate", DropRate);
             ExpRate = Reader.ReadSingle("Game", "ExpRate", ExpRate);
+            MonsterRate = Reader.ReadSingle("Game", "MonsterRate", MonsterRate);
+            
             ItemTimeOut = Reader.ReadInt32("Game", "ItemTimeOut", ItemTimeOut);
             PlayerDiedItemTimeOut = Reader.ReadInt32("Game", "PlayerDiedItemTimeOut", PlayerDiedItemTimeOut);
             PetTimeOut = Reader.ReadInt64("Game", "PetTimeOut", PetTimeOut);
@@ -519,6 +522,8 @@ namespace Server
             //Game
             Reader.Write("Game", "DropRate", DropRate);
             Reader.Write("Game", "ExpRate", ExpRate);
+            Reader.Write("Game", "MonsterRate", MonsterRate);
+            
             Reader.Write("Game", "ItemTimeOut", ItemTimeOut);
             Reader.Write("Game", "PlayerDiedItemTimeOut", PlayerDiedItemTimeOut);
             Reader.Write("Game", "PetTimeOut", PetTimeOut);
@@ -712,7 +717,7 @@ namespace Server
                 reader.Write(BaseStatClassNames[i], "CriticalDamageGain", ClassBaseStats[i].CriticalDamageGain);
             }
         }
-
+        //物品的极品率
         public static void LoadRandomItemStats()
         {
             //note: i could have used a flat file system for this which would be faster, 
@@ -885,7 +890,7 @@ namespace Server
                 reader.Write("Item" + i.ToString(), "CurseChance", stat.CurseChance);
             }
         }
-
+        //矿区
         public static void LoadMines()
         {
             if (!File.Exists(ConfigPath + @".\Mines.ini"))
@@ -955,7 +960,7 @@ namespace Server
                 }
             }
         }
-
+        //行会配置
         public static void LoadGuildSettings()
         {
             if (!File.Exists(ConfigPath + @".\GuildSettings.ini"))
@@ -1047,7 +1052,7 @@ namespace Server
                   
             }
         }
-
+        //觉醒配置
 		public static void LoadAwakeAttribute()
         {
             if (!File.Exists(ConfigPath + @".\AwakeningSystem.ini"))
@@ -1145,7 +1150,7 @@ namespace Server
                 reader.Write("Materials_IncreaseValue", "Materials_" + ((ItemGrade)(c + 1)).ToString(), Awake.AwakeMaterialRate[c]);
             }
         }
-
+        //钓鱼配置
         public static void LoadFishing()
         {
             if (!File.Exists(ConfigPath + @".\FishingSystem.ini"))
@@ -1173,7 +1178,7 @@ namespace Server
             reader.Write("Rates", "MonsterSpawnChance", FishingMobSpawnChance);
             reader.Write("Game", "Monster", FishingMonster);
         }
-
+        //邮件配置
         public static void LoadMail()
         {
             if (!File.Exists(ConfigPath + @".\MailSystem.ini"))
@@ -1265,7 +1270,7 @@ namespace Server
             reader.Write("Config", "MinimumLevel", MarriageLevelRequired);
             reader.Write("Config", "ReplaceRingCost", ReplaceWedRingCost); 
         }
-
+        //商人配置
         public static void LoadMentor()
         {
             if (!File.Exists(ConfigPath + @".\MentorSystem.ini"))
@@ -1292,6 +1297,7 @@ namespace Server
             reader.Write("Config", "MenteeExpBoost", MentorExpBoost);
             reader.Write("Config", "PercentXPtoMentor", MenteeExpBank);
         }
+
         public static void LoadGem()
         {
             if (!File.Exists(ConfigPath + @".\GemSystem.ini"))
@@ -1310,7 +1316,7 @@ namespace Server
             InIReader reader = new InIReader(ConfigPath + @".\GemSystem.ini");
             reader.Write("Config", "GemStatIndependent", GemStatIndependent);
         }
-
+        //食物，食材
         public static void LoadGoods()
         {
             if (!File.Exists(ConfigPath + @".\GoodsSystem.ini"))

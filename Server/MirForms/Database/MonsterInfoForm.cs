@@ -42,7 +42,7 @@ namespace Server
 
             for (int i = 0; i < _selectedMonsterInfos.Count; i++) Envir.Remove(_selectedMonsterInfos[i]);
 
-            if (Envir.MonsterInfoList.Count == 0) Envir.MonsterIndex = 0;
+            //if (Envir.MonsterInfoList.Count == 0) Envir.MonsterIndex = 0;
 
             UpdateInterface();
         }

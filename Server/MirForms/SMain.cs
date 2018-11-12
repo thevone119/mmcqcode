@@ -12,7 +12,10 @@ namespace Server
 {
     public partial class SMain : Form
     {
-        public static readonly Envir Envir = new Envir(), EditEnvir = new Envir();
+        //这里分开2个对象，一个做运行，一个做配置。合并到一起吧，这样才可以实时的改内存数据啊。靠
+        //public static readonly Envir Envir = new Envir(), EditEnvir = new Envir();
+        public static readonly Envir Envir = new Envir();
+        public static readonly Envir EditEnvir = Envir;
         private static readonly ConcurrentQueue<string> MessageLog = new ConcurrentQueue<string>();
         private static readonly ConcurrentQueue<string> DebugLog = new ConcurrentQueue<string>();
         private static readonly ConcurrentQueue<string> ChatLog = new ConcurrentQueue<string>();
@@ -72,6 +75,7 @@ namespace Server
             
         }
 
+        //1秒刷新一次
         private void InterfaceTimer_Tick(object sender, EventArgs e)
         {
             try
@@ -364,7 +368,7 @@ namespace Server
 
         private void SMain_Load(object sender, EventArgs e)
         {
-            EditEnvir.LoadDB();
+            //EditEnvir.LoadDB();
             Envir.Start();
             AutoResize();
         }

@@ -67,7 +67,7 @@ namespace Server.MirObjects.Monsters
 
                         MirDirection dir = Functions.PreviousDir(Direction);
                         Point tar;
-                        Cell cell;
+                        //Cell cell;
 
                         for (int i = 0; i < 8; i++)
                         {

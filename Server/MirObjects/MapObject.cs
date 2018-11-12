@@ -161,7 +161,7 @@ namespace Server.MirObjects
             }
 
         }
-
+        //主人，最后攻击人，经验拥有者，拥有者
         public MapObject Master, LastHitter, EXPOwner, Owner;
         public long ExpireTime, OwnerTime, OperateTime;
         public int OperateDelay = 100;
@@ -182,6 +182,7 @@ namespace Server.MirObjects
         public PoisonType CurrentPoison = PoisonType.None;
         public List<DelayedAction> ActionList = new List<DelayedAction>();
 
+        //这个是引用到全局的哦？好多嵌套引用啊。坑
         public LinkedListNode<MapObject> Node;
         public LinkedListNode<MapObject> NodeThreaded;
         public long RevTime;
@@ -317,7 +318,7 @@ namespace Server.MirObjects
 
             return true;
         }
-
+        //生产，产生
         public virtual void Spawned()
         {
             Node = Envir.Objects.AddLast(this);

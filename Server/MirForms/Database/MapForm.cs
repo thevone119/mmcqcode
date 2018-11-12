@@ -29,7 +29,7 @@ namespace Server.MirForms
 
             var lines = File.ReadAllLines(Path);
 
-            _endIndex = EditEnvir.MapIndex; // Last map index number
+            _endIndex = DBObjectUtils.getObjCurrMaxId(new MapInfo()); // Last map index number
 
             for (int i = 0; i < lines.Length; i++)
             {

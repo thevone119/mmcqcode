@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using Server.MirEnvir;
 using System.Data.SQLite;
+using System.Data.Common;
+using Newtonsoft.Json;
 
 namespace Server.MirDatabase
 {
@@ -46,6 +48,60 @@ namespace Server.MirDatabase
         
         public NPCInfo()
         { }
+
+        /// <summary>
+        /// 加载所有数据
+        /// </summary>
+        /// <returns></returns>
+        public static List<NPCInfo> loadAll()
+        {
+            List<NPCInfo> list = new List<NPCInfo>();
+            DbDataReader read = MirConfigDB.ExecuteReader("select * from NPCInfo");
+
+            while (read.Read())
+            {
+                NPCInfo obj = new NPCInfo();
+                if (read.IsDBNull(read.GetOrdinal("Name")))
+                {
+                    continue;
+                }
+                obj.Name = read.GetString(read.GetOrdinal("Name"));
+                if (obj.Name == null)
+                {
+                    continue;
+                }
+                obj.Index = read.GetInt32(read.GetOrdinal("Idx"));
+                obj.FileName = read.GetString(read.GetOrdinal("FileName"));
+
+                obj.MapIndex = read.GetInt16(read.GetOrdinal("MapIndex"));
+                obj.Location = new Point(read.GetInt16(read.GetOrdinal("Location_X")), read.GetInt16(read.GetOrdinal("Location_Y")));
+
+                obj.Rate = (ushort)read.GetInt16(read.GetOrdinal("Rate"));
+                obj.Image = (ushort)read.GetInt16(read.GetOrdinal("Image"));
+
+                obj.TimeVisible = read.GetBoolean(read.GetOrdinal("TimeVisible"));
+                obj.HourStart = read.GetByte(read.GetOrdinal("HourStart"));
+                obj.MinuteStart = read.GetByte(read.GetOrdinal("MinuteStart"));
+                obj.HourEnd = read.GetByte(read.GetOrdinal("HourEnd"));
+                obj.MinuteEnd = read.GetByte(read.GetOrdinal("MinuteEnd"));
+                obj.MinLev = (short)read.GetInt16(read.GetOrdinal("MinLev"));
+                obj.MaxLev = (short)read.GetInt16(read.GetOrdinal("MaxLev"));
+                obj.DayofWeek = read.GetString(read.GetOrdinal("DayofWeek"));
+                obj.ClassRequired = read.GetString(read.GetOrdinal("ClassRequired"));
+                obj.Conquest = read.GetInt32(read.GetOrdinal("Conquest"));
+                obj.FlagNeeded = read.GetInt32(read.GetOrdinal("FlagNeeded"));
+
+                obj.CollectQuestIndexes= JsonConvert.DeserializeObject< List< int >>(read.GetString(read.GetOrdinal("CollectQuestIndexes")));
+                obj.FinishQuestIndexes = JsonConvert.DeserializeObject<List<int>>(read.GetString(read.GetOrdinal("FinishQuestIndexes")));
+
+
+
+                DBObjectUtils.updateObjState(obj, obj.Index);
+                list.Add(obj);
+            }
+            return list;
+        }
+
         public NPCInfo(BinaryReader reader)
         {
             if (Envir.LoadVersion > 33)
@@ -134,77 +190,58 @@ namespace Server.MirDatabase
         //保存到数据库
         public void SaveDB()
         {
-            StringBuilder sb = new StringBuilder();
-            List<SQLiteParameter> lp = new List<SQLiteParameter>();
-            sb.Append("update NPCInfo set ");
-
-            sb.Append(" MapIndex=@MapIndex, "); lp.Add(new SQLiteParameter("MapIndex", MapIndex));
-            sb.Append(" FileName=@FileName, "); lp.Add(new SQLiteParameter("FileName", FileName));
-            sb.Append(" Name=@Name, "); lp.Add(new SQLiteParameter("Name", Name));
-            sb.Append(" Location_X=@Location_X, "); lp.Add(new SQLiteParameter("Location_X", Location.X));
-            sb.Append(" Location_Y=@Location_Y, "); lp.Add(new SQLiteParameter("Location_Y", Location.Y));
-            sb.Append(" Image=@Image, "); lp.Add(new SQLiteParameter("Image", Image));
-            sb.Append(" Rate=@Rate, "); lp.Add(new SQLiteParameter("Rate", Rate));
-
-            sb.Append(" TimeVisible=@TimeVisible, "); lp.Add(new SQLiteParameter("TimeVisible", TimeVisible));
-            sb.Append(" HourStart=@HourStart, "); lp.Add(new SQLiteParameter("HourStart", HourStart));
-            sb.Append(" MinuteStart=@MinuteStart, "); lp.Add(new SQLiteParameter("MinuteStart", MinuteStart));
-            sb.Append(" HourEnd=@HourEnd, "); lp.Add(new SQLiteParameter("HourEnd", HourEnd));
-            sb.Append(" MinuteEnd=@MinuteEnd, "); lp.Add(new SQLiteParameter("MinuteEnd", MinuteEnd));
-
-            sb.Append(" MinLev=@MinLev, "); lp.Add(new SQLiteParameter("MinLev", MinLev));
-            sb.Append(" MaxLev=@MaxLev, "); lp.Add(new SQLiteParameter("MaxLev", MaxLev));
-
-            sb.Append(" DayofWeek=@DayofWeek, "); lp.Add(new SQLiteParameter("DayofWeek", DayofWeek));
-            sb.Append(" ClassRequired=@ClassRequired, "); lp.Add(new SQLiteParameter("ClassRequired", ClassRequired));
-            sb.Append(" Conquest=@Conquest, "); lp.Add(new SQLiteParameter("Conquest", Conquest));
-            sb.Append(" FlagNeeded=@FlagNeeded, "); lp.Add(new SQLiteParameter("FlagNeeded", FlagNeeded));
-
-            List<string> newList = CollectQuestIndexes.ConvertAll<string>(x => x.ToString());
-            string cqidexs = string.Join(",", newList.ToArray());
-            sb.Append(" CollectQuestIndexes=@CollectQuestIndexes, "); lp.Add(new SQLiteParameter("CollectQuestIndexes", cqidexs));
-            newList = FinishQuestIndexes.ConvertAll<string>(x => x.ToString());
-            string fqidexs = string.Join(",", newList.ToArray());
-            sb.Append(" FinishQuestIndexes=@FinishQuestIndexes "); lp.Add(new SQLiteParameter("FinishQuestIndexes", fqidexs));
-  
-            sb.Append(" where  Idx=@Idx "); lp.Add(new SQLiteParameter("Idx", Index));
-            //执行更新
-            int ucount = MirConfigDB.Execute(sb.ToString(), lp.ToArray());
-
-            //没有得更新，则执行插入
-            if (ucount <= 0)
+            byte state = DBObjectUtils.ObjState(this, Index);
+            if (state == 0)//没有改变
             {
-                sb.Clear();
-                lp.Clear();
-                sb.Append("insert into NPCInfo(Idx,MapIndex,FileName,Name,Location_X,Location_Y,Image,Rate,TimeVisible,HourStart,MinuteStart,HourEnd,MinuteEnd,MinLev,MaxLev,DayofWeek,ClassRequired,Conquest,FlagNeeded) values(@Idx,@MapIndex,@FileName,@Name,@Location_X,@Location_Y,@Image,@Rate,@TimeVisible,@HourStart,@MinuteStart,@HourEnd,@MinuteEnd,@MinLev,@MaxLev,@DayofWeek,@ClassRequired,@Conquest,@FlagNeeded) ");
-
-                lp.Add(new SQLiteParameter("Idx", Index));
-                lp.Add(new SQLiteParameter("MapIndex", MapIndex));
-                lp.Add(new SQLiteParameter("FileName", FileName));
-                lp.Add(new SQLiteParameter("Name", Name));
-                lp.Add(new SQLiteParameter("Location_X", Location.X));
-                lp.Add(new SQLiteParameter("Location_Y", Location.Y));
-                lp.Add(new SQLiteParameter("Image", Image));
-                lp.Add(new SQLiteParameter("Rate", Rate));
-
-                lp.Add(new SQLiteParameter("TimeVisible", TimeVisible));
-                lp.Add(new SQLiteParameter("HourStart", HourStart));
-                lp.Add(new SQLiteParameter("MinuteStart", MinuteStart));
-                lp.Add(new SQLiteParameter("HourEnd", HourEnd));
-                lp.Add(new SQLiteParameter("MinuteEnd", MinuteEnd));
-
-                lp.Add(new SQLiteParameter("MinLev", MinLev));
-                lp.Add(new SQLiteParameter("MaxLev", MaxLev));
-
-                lp.Add(new SQLiteParameter("DayofWeek", DayofWeek));
-                lp.Add(new SQLiteParameter("ClassRequired", ClassRequired));
-                lp.Add(new SQLiteParameter("Conquest", Conquest));
-                lp.Add(new SQLiteParameter("FlagNeeded", FlagNeeded));
-               
-
-                //执行插入
-                MirConfigDB.Execute(sb.ToString(), lp.ToArray());
+                return;
             }
+            SMain.Enqueue("NPCInfo change state:" + state);
+            List<SQLiteParameter> lp = new List<SQLiteParameter>();
+            lp.Add(new SQLiteParameter("MapIndex", MapIndex));
+            lp.Add(new SQLiteParameter("FileName", FileName));
+            lp.Add(new SQLiteParameter("Name", Name));
+            lp.Add(new SQLiteParameter("Location_X", Location.X));
+            lp.Add(new SQLiteParameter("Location_Y", Location.Y));
+            lp.Add(new SQLiteParameter("Image", Image));
+            lp.Add(new SQLiteParameter("Rate", Rate));
+
+            lp.Add(new SQLiteParameter("TimeVisible", TimeVisible));
+            lp.Add(new SQLiteParameter("HourStart", HourStart));
+            lp.Add(new SQLiteParameter("MinuteStart", MinuteStart));
+            lp.Add(new SQLiteParameter("HourEnd", HourEnd));
+            lp.Add(new SQLiteParameter("MinuteEnd", MinuteEnd));
+
+            lp.Add(new SQLiteParameter("MinLev", MinLev));
+            lp.Add(new SQLiteParameter("MaxLev", MaxLev));
+
+            lp.Add(new SQLiteParameter("DayofWeek", DayofWeek));
+            lp.Add(new SQLiteParameter("ClassRequired", ClassRequired));
+            lp.Add(new SQLiteParameter("Conquest", Conquest));
+            lp.Add(new SQLiteParameter("FlagNeeded", FlagNeeded));
+
+            lp.Add(new SQLiteParameter("CollectQuestIndexes", JsonConvert.SerializeObject(CollectQuestIndexes)));
+            lp.Add(new SQLiteParameter("FinishQuestIndexes", JsonConvert.SerializeObject(FinishQuestIndexes)));
+
+            //新增
+            if (state == 1)
+            {
+                if (Index > 0)
+                {
+                    lp.Add(new SQLiteParameter("Idx", Index));
+                }
+                string sql = "insert into NPCInfo" + SQLiteHelper.createInsertSql(lp.ToArray()); ;
+                MirConfigDB.Execute(sql, lp.ToArray());
+            }
+            //修改
+            if (state == 2)
+            {
+                string sql = "update NPCInfo set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where Idx=@Idx";
+                lp.Add(new SQLiteParameter("Idx", Index));
+                MirConfigDB.Execute(sql, lp.ToArray());
+            }
+            
+            DBObjectUtils.updateObjState(this, Index);
+
         }
 
         public static void FromText(string text)
@@ -230,7 +267,7 @@ namespace Server.MirDatabase
             if (!ushort.TryParse(data[5], out info.Image)) return;
             if (!ushort.TryParse(data[6], out info.Rate)) return;
 
-            info.Index = ++SMain.EditEnvir.NPCIndex;
+            info.Index = DBObjectUtils.getObjNextId(info);
             SMain.EditEnvir.NPCInfoList.Add(info);
         }
         public string ToText()

@@ -7,6 +7,7 @@ using Server.MirEnvir;
 using System.Data.SQLite;
 using System.Text;
 using Newtonsoft.Json;
+using System.Data.Common;
 
 namespace Server.MirDatabase
 {
@@ -52,186 +53,133 @@ namespace Server.MirDatabase
 
         }
 
-        public MapInfo(BinaryReader reader)
+        /// <summary>
+        /// 加载所有数据
+        /// </summary>
+        /// <returns></returns>
+        public static List<MapInfo> loadAll()
         {
-            Index = reader.ReadInt32();
-            FileName = reader.ReadString();
-            Title = reader.ReadString();
-            MiniMap = reader.ReadUInt16();
-            Light = (LightSetting) reader.ReadByte();
+            List<MapInfo> list = new List<MapInfo>();
+            DbDataReader read = MirConfigDB.ExecuteReader("select * from MapInfo");
 
-            if (Envir.LoadVersion >= 3) BigMap = reader.ReadUInt16();
-
-            int count = reader.ReadInt32();
-            for (int i = 0; i < count; i++)
-                SafeZones.Add(new SafeZoneInfo(reader) { Info = this });
-
-            count = reader.ReadInt32();
-            for (int i = 0; i < count; i++)
-                Respawns.Add(new RespawnInfo(reader, Envir.LoadVersion, Envir.LoadCustomVersion));
-
-            if (Envir.LoadVersion <= 33)
+            while (read.Read())
             {
-                count = reader.ReadInt32();
-                for (int i = 0; i < count; i++)
-                    NPCs.Add(new NPCInfo(reader));
+                MapInfo obj = new MapInfo();
+                if (read.IsDBNull(read.GetOrdinal("FileName")))
+                {
+                    continue;
+                }
+                obj.FileName = read.GetString(read.GetOrdinal("FileName"));
+                if (obj.FileName == null)
+                {
+                    continue;
+                }
+                obj.Index = read.GetInt32(read.GetOrdinal("Idx"));
+                obj.Title = read.GetString(read.GetOrdinal("Title"));
+
+                obj.MiniMap = (ushort)read.GetInt16(read.GetOrdinal("MiniMap"));
+                obj.Light = (LightSetting)read.GetByte(read.GetOrdinal("Light"));
+                obj.BigMap = (ushort)read.GetInt16(read.GetOrdinal("BigMap"));
+
+                
+                obj.NoTeleport = read.GetBoolean(read.GetOrdinal("NoTeleport"));
+                obj.NoReconnect = read.GetBoolean(read.GetOrdinal("NoReconnect"));
+                obj.NoReconnectMap = read.GetString(read.GetOrdinal("NoReconnectMap"));
+                obj.NoRandom = read.GetBoolean(read.GetOrdinal("NoRandom"));
+                obj.NoEscape = read.GetBoolean(read.GetOrdinal("NoEscape"));
+                obj.NoRecall = read.GetBoolean(read.GetOrdinal("NoRecall"));
+                obj.NoDrug = read.GetBoolean(read.GetOrdinal("NoDrug"));
+                obj.NoPosition = read.GetBoolean(read.GetOrdinal("NoPosition"));
+                obj.NoThrowItem = read.GetBoolean(read.GetOrdinal("NoThrowItem"));
+                obj.NoDropPlayer = read.GetBoolean(read.GetOrdinal("NoDropPlayer"));
+                obj.NoDropMonster = read.GetBoolean(read.GetOrdinal("NoDropMonster"));
+                obj.NoNames = read.GetBoolean(read.GetOrdinal("NoNames"));
+                obj.Fight = read.GetBoolean(read.GetOrdinal("Fight"));
+                obj.Fire = read.GetBoolean(read.GetOrdinal("Fire"));
+                obj.FireDamage = read.GetInt32(read.GetOrdinal("FireDamage"));
+                obj.Lightning = read.GetBoolean(read.GetOrdinal("Lightning"));
+                obj.LightningDamage = read.GetInt32(read.GetOrdinal("LightningDamage"));
+                obj.MapDarkLight = read.GetByte(read.GetOrdinal("MapDarkLight"));
+                obj.MineIndex = read.GetByte(read.GetOrdinal("MineIndex"));
+                obj.NoMount = read.GetBoolean(read.GetOrdinal("NoMount"));
+                obj.NeedBridle = read.GetBoolean(read.GetOrdinal("NeedBridle"));
+                obj.NoFight = read.GetBoolean(read.GetOrdinal("NoFight"));
+                obj.Music = (ushort)read.GetInt16(read.GetOrdinal("Music"));
+
+                obj.SafeZones = JsonConvert.DeserializeObject<List<SafeZoneInfo>>(read.GetString(read.GetOrdinal("SafeZones")));
+                obj.Movements = JsonConvert.DeserializeObject<List<MovementInfo>>(read.GetString(read.GetOrdinal("Movements")));
+                obj.Respawns = JsonConvert.DeserializeObject<List<RespawnInfo>>(read.GetString(read.GetOrdinal("Respawns")));
+                obj.MineZones = JsonConvert.DeserializeObject<List<MineZone>>(read.GetString(read.GetOrdinal("MineZones")));
+                
+                DBObjectUtils.updateObjState(obj, obj.Index);
+                list.Add(obj);
             }
-
-            count = reader.ReadInt32();
-            for (int i = 0; i < count; i++)
-                Movements.Add(new MovementInfo(reader));
-
-            if (Envir.LoadVersion < 14) return;
-
-            NoTeleport = reader.ReadBoolean();
-            NoReconnect = reader.ReadBoolean();
-            NoReconnectMap = reader.ReadString();
-            NoRandom = reader.ReadBoolean();
-            NoEscape = reader.ReadBoolean();
-            NoRecall = reader.ReadBoolean();
-            NoDrug = reader.ReadBoolean();
-            NoPosition = reader.ReadBoolean();
-            NoThrowItem = reader.ReadBoolean();
-            NoDropPlayer = reader.ReadBoolean();
-            NoDropMonster = reader.ReadBoolean();
-            NoNames = reader.ReadBoolean();
-            Fight = reader.ReadBoolean();
-            if (Envir.LoadVersion == 14) NeedHole = reader.ReadBoolean();
-            Fire = reader.ReadBoolean();
-            FireDamage = reader.ReadInt32();
-            Lightning = reader.ReadBoolean();
-            LightningDamage = reader.ReadInt32();
-            if (Envir.LoadVersion < 23) return;
-            MapDarkLight = reader.ReadByte();
-            if (Envir.LoadVersion < 26) return;
-            count = reader.ReadInt32();
-            for (int i = 0; i < count; i++)
-                MineZones.Add(new MineZone(reader));
-            if (Envir.LoadVersion < 27) return;
-            MineIndex = reader.ReadByte();
-
-            if (Envir.LoadVersion < 33) return;
-            NoMount = reader.ReadBoolean();
-            NeedBridle = reader.ReadBoolean();
-
-            if (Envir.LoadVersion < 42) return;
-            NoFight = reader.ReadBoolean();
-
-            if (Envir.LoadVersion < 53) return;
-                Music = reader.ReadUInt16(); 
-
+            return list;
         }
 
-        public void Save(BinaryWriter writer)
-        {
-            writer.Write(Index);
-            writer.Write(FileName);
-            writer.Write(Title);
-            writer.Write(MiniMap);
-            writer.Write((byte)Light);
-            writer.Write(BigMap);
-            writer.Write(SafeZones.Count);
-
-            for (int i = 0; i < SafeZones.Count; i++)
-                SafeZones[i].Save(writer);
-
-            writer.Write(Respawns.Count);
-            for (int i = 0; i < Respawns.Count; i++)
-                Respawns[i].Save(writer);
-
-            writer.Write(Movements.Count);
-            for (int i = 0; i < Movements.Count; i++)
-                Movements[i].Save(writer);
-
-            writer.Write(NoTeleport);
-            writer.Write(NoReconnect);
-            writer.Write(NoReconnectMap);
-            writer.Write(NoRandom);
-            writer.Write(NoEscape);
-            writer.Write(NoRecall);
-            writer.Write(NoDrug);
-            writer.Write(NoPosition);
-            writer.Write(NoThrowItem);
-            writer.Write(NoDropPlayer);
-            writer.Write(NoDropMonster);
-            writer.Write(NoNames);
-            writer.Write(Fight);
-            writer.Write(Fire);
-            writer.Write(FireDamage);
-            writer.Write(Lightning);
-            writer.Write(LightningDamage);
-            writer.Write(MapDarkLight);
-            writer.Write(MineZones.Count);
-            for (int i = 0; i < MineZones.Count; i++)
-                MineZones[i].Save(writer);
-            writer.Write(MineIndex);
-
-            writer.Write(NoMount);
-            writer.Write(NeedBridle);
-
-            writer.Write(NoFight);
-
-            writer.Write(Music);
-            SaveDB();
-        }
-
+      
         //保存到数据库
         public void SaveDB()
         {
-            StringBuilder sb = new StringBuilder();
-            List<SQLiteParameter> lp = new List<SQLiteParameter>();
-            sb.Append("update MapInfo set ");
-
-            sb.Append(" FileName=@FileName, "); lp.Add(new SQLiteParameter("FileName", FileName));
-            sb.Append(" Title=@Title, "); lp.Add(new SQLiteParameter("Title", Title));
-            sb.Append(" MiniMap=@MiniMap, "); lp.Add(new SQLiteParameter("MiniMap", MiniMap));
-            sb.Append(" Light=@Light, "); lp.Add(new SQLiteParameter("Light", Light));
-            sb.Append(" BigMap=@BigMap, "); lp.Add(new SQLiteParameter("BigMap", BigMap));
-            sb.Append(" NoTeleport=@NoTeleport, "); lp.Add(new SQLiteParameter("NoTeleport", NoTeleport));
-            sb.Append(" NoReconnect=@NoReconnect, "); lp.Add(new SQLiteParameter("NoReconnect", NoReconnect));
-            sb.Append(" NoReconnectMap=@NoReconnectMap, "); lp.Add(new SQLiteParameter("NoReconnectMap", NoReconnectMap));
-            sb.Append(" NoRandom=@NoRandom, "); lp.Add(new SQLiteParameter("NoRandom", NoRandom));
-            sb.Append(" NoEscape=@NoEscape, "); lp.Add(new SQLiteParameter("NoEscape", NoEscape));
-            sb.Append(" NoRecall=@NoRecall, "); lp.Add(new SQLiteParameter("NoRecall", NoRecall));
-            sb.Append(" NoDrug=@NoDrug, "); lp.Add(new SQLiteParameter("NoDrug", NoDrug));
-            sb.Append(" NoPosition=@NoPosition, "); lp.Add(new SQLiteParameter("NoPosition", NoPosition));
-            sb.Append(" NoThrowItem=@NoThrowItem, "); lp.Add(new SQLiteParameter("NoThrowItem", NoThrowItem));
-            sb.Append(" NoDropPlayer=@NoDropPlayer, "); lp.Add(new SQLiteParameter("NoDropPlayer", NoDropPlayer));
-            sb.Append(" NoDropMonster=@NoDropMonster, "); lp.Add(new SQLiteParameter("NoDropMonster", NoDropMonster));
-            sb.Append(" NoNames=@NoNames, "); lp.Add(new SQLiteParameter("NoNames", NoNames));
-            sb.Append(" Fight=@Fight, "); lp.Add(new SQLiteParameter("Fight", Fight));
-            sb.Append(" Fire=@Fire, "); lp.Add(new SQLiteParameter("Fire", Fire));
-            sb.Append(" FireDamage=@FireDamage, "); lp.Add(new SQLiteParameter("FireDamage", FireDamage));
-            sb.Append(" Lightning=@Lightning, "); lp.Add(new SQLiteParameter("Lightning", Lightning));
-            sb.Append(" LightningDamage=@LightningDamage, "); lp.Add(new SQLiteParameter("LightningDamage", LightningDamage));
-            sb.Append(" MapDarkLight=@MapDarkLight, "); lp.Add(new SQLiteParameter("MapDarkLight", MapDarkLight));
-            sb.Append(" MineIndex=@MineIndex, "); lp.Add(new SQLiteParameter("MineIndex", MineIndex));
-            sb.Append(" NoMount=@NoMount, "); lp.Add(new SQLiteParameter("NoMount", NoMount));
-            sb.Append(" NeedBridle=@NeedBridle, "); lp.Add(new SQLiteParameter("NeedBridle", NeedBridle));
-            sb.Append(" NoFight=@NoFight, "); lp.Add(new SQLiteParameter("NoFight", NoFight));
-            sb.Append(" Music=@Music, "); lp.Add(new SQLiteParameter("Music", Music));
-
-        
-          
-            sb.Append(" SafeZones=@SafeZones, "); lp.Add(new SQLiteParameter("SafeZones", JsonConvert.SerializeObject(SafeZones)));
-            sb.Append(" Movements=@Movements, "); lp.Add(new SQLiteParameter("Movements", JsonConvert.SerializeObject(Movements)));
-            sb.Append(" Respawns=@Respawns, "); lp.Add(new SQLiteParameter("Respawns", JsonConvert.SerializeObject(Respawns)));
-            sb.Append(" MineZones=@MineZones "); lp.Add(new SQLiteParameter("MineZones", JsonConvert.SerializeObject(MineZones)));
-
-            sb.Append(" where Idx=@Idx "); lp.Add(new SQLiteParameter("Idx", Index));
-
-
-            //执行更新
-            int ucount = MirConfigDB.Execute(sb.ToString(), lp.ToArray());
-
-            //没有得更新，则执行插入
-            if (ucount <= 0)
+            byte state = DBObjectUtils.ObjState(this, Index);
+            if (state == 0)//没有改变
             {
-                sb.Clear();
-                sb.Append("insert into MapInfo(Idx,FileName,Title,MiniMap,Light,BigMap,NoTeleport,NoReconnect,NoReconnectMap,NoRandom,NoEscape,NoRecall,NoDrug,NoPosition,NoThrowItem,NoDropPlayer,NoDropMonster,NoNames,Fight,Fire,FireDamage,Lightning,LightningDamage,MapDarkLight,MineIndex,NoMount,NeedBridle,NoFight,Music,SafeZones,Movements,Respawns,MineZones) values(@Idx,@FileName,@Title,@MiniMap,@Light,@BigMap,@NoTeleport,@NoReconnect,@NoReconnectMap,@NoRandom,@NoEscape,@NoRecall,@NoDrug,@NoPosition,@NoThrowItem,@NoDropPlayer,@NoDropMonster,@NoNames,@Fight,@Fire,@FireDamage,@Lightning,@LightningDamage,@MapDarkLight,@MineIndex,@NoMount,@NeedBridle,@NoFight,@Music,@SafeZones,@Movements,@Respawns,@MineZones) ");
-                //执行插入
-                MirConfigDB.Execute(sb.ToString(), lp.ToArray());
+                return;
             }
+            SMain.Enqueue("MapInfo change state:"+ state);
+            List<SQLiteParameter> lp = new List<SQLiteParameter>();
+            lp.Add(new SQLiteParameter("FileName", FileName));
+            lp.Add(new SQLiteParameter("Title", Title));
+            lp.Add(new SQLiteParameter("MiniMap", MiniMap));
+            lp.Add(new SQLiteParameter("Light", Light));
+            lp.Add(new SQLiteParameter("BigMap", BigMap));
+            lp.Add(new SQLiteParameter("NoTeleport", NoTeleport));
+            lp.Add(new SQLiteParameter("NoReconnect", NoReconnect));
+            lp.Add(new SQLiteParameter("NoReconnectMap", NoReconnectMap));
+            lp.Add(new SQLiteParameter("NoRandom", NoRandom));
+            lp.Add(new SQLiteParameter("NoEscape", NoEscape));
+            lp.Add(new SQLiteParameter("NoRecall", NoRecall));
+            lp.Add(new SQLiteParameter("NoDrug", NoDrug));
+            lp.Add(new SQLiteParameter("NoPosition", NoPosition));
+            lp.Add(new SQLiteParameter("NoThrowItem", NoThrowItem));
+            lp.Add(new SQLiteParameter("NoDropPlayer", NoDropPlayer));
+            lp.Add(new SQLiteParameter("NoDropMonster", NoDropMonster));
+            lp.Add(new SQLiteParameter("NoNames", NoNames));
+            lp.Add(new SQLiteParameter("Fight", Fight));
+            lp.Add(new SQLiteParameter("Fire", Fire));
+            lp.Add(new SQLiteParameter("FireDamage", FireDamage));
+            lp.Add(new SQLiteParameter("Lightning", Lightning));
+            lp.Add(new SQLiteParameter("LightningDamage", LightningDamage));
+            lp.Add(new SQLiteParameter("MapDarkLight", MapDarkLight));
+            lp.Add(new SQLiteParameter("MineIndex", MineIndex));
+            lp.Add(new SQLiteParameter("NoMount", NoMount));
+            lp.Add(new SQLiteParameter("NeedBridle", NeedBridle));
+            lp.Add(new SQLiteParameter("NoFight", NoFight));
+            lp.Add(new SQLiteParameter("Music", Music));
+
+            lp.Add(new SQLiteParameter("SafeZones", JsonConvert.SerializeObject(SafeZones)));
+            lp.Add(new SQLiteParameter("Movements", JsonConvert.SerializeObject(Movements)));
+            lp.Add(new SQLiteParameter("Respawns", JsonConvert.SerializeObject(Respawns)));
+            lp.Add(new SQLiteParameter("MineZones", JsonConvert.SerializeObject(MineZones)));
+
+            //新增
+            if (state == 1)
+            {
+                if (Index > 0)
+                {
+                    lp.Add(new SQLiteParameter("Idx", Index));
+                }
+                string sql = "insert into MapInfo" + SQLiteHelper.createInsertSql(lp.ToArray()); 
+                MirConfigDB.Execute(sql, lp.ToArray());
+            }
+            //修改
+            if (state == 2)
+            {
+                string sql = "update MapInfo set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where Idx=@Idx";
+                lp.Add(new SQLiteParameter("Idx", Index));
+                MirConfigDB.Execute(sql, lp.ToArray());
+            }
+            DBObjectUtils.updateObjState(this, Index);
         }
 
         //创建地图信息(非常消耗内存)
@@ -279,7 +227,7 @@ namespace Server.MirDatabase
 
         public void CreateRespawnInfo()
         {
-            Respawns.Add(new RespawnInfo { RespawnIndex = ++SMain.EditEnvir.RespawnIndex });
+            Respawns.Add(new RespawnInfo());
         }
 
         public override string ToString()
@@ -371,7 +319,7 @@ namespace Server.MirDatabase
                 if (!ushort.TryParse(data[start + 4 + (i * 7)], out temp.Spread)) return;
                 if (!ushort.TryParse(data[start + 5 + (i * 7)], out temp.Delay)) return;
                 if (!byte.TryParse(data[start + 6 + (i * 7)], out temp.Direction)) return;
-                if (!int.TryParse(data[start + 7 + (i * 7)], out temp.RespawnIndex)) return;
+                //if (!int.TryParse(data[start + 7 + (i * 7)], out temp.RespawnIndex)) return;
                 if (!bool.TryParse(data[start + 8 + (i * 7)], out temp.SaveRespawnTime)) return;
                 if (!ushort.TryParse(data[start + 9 + (i * 7)], out temp.RespawnTicks)) return;
 
@@ -398,7 +346,7 @@ namespace Server.MirDatabase
 
 
 
-            info.Index = ++SMain.EditEnvir.MapIndex;
+            info.Index = DBObjectUtils.getObjNextId(info);
             SMain.EditEnvir.MapInfoList.Add(info);
         }
     }

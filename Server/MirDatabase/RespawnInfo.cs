@@ -31,35 +31,7 @@ namespace Server.MirDatabase
         {
 
         }
-        public RespawnInfo(BinaryReader reader, int Version, int Customversion)
-        {
-            MonsterIndex = reader.ReadInt32();
-
-            Location = new Point(reader.ReadInt32(), reader.ReadInt32());
-
-            Count = reader.ReadUInt16();
-            Spread = reader.ReadUInt16();
-
-            Delay = reader.ReadUInt16();
-            Direction = reader.ReadByte();
-
-            if (Envir.LoadVersion >= 36)
-            {
-                RoutePath = reader.ReadString();
-            }
-
-            if (Version > 67)
-            {
-                RandomDelay = reader.ReadUInt16();
-                RespawnIndex = reader.ReadInt32();
-                SaveRespawnTime = reader.ReadBoolean();
-                RespawnTicks = reader.ReadUInt16();
-            }
-            else
-            {
-                RespawnIndex = ++SMain.Envir.RespawnIndex;
-            }
-        }
+        
 
         public static RespawnInfo FromText(string text)
         {
@@ -82,7 +54,7 @@ namespace Server.MirDatabase
             if (!ushort.TryParse(data[5], out info.Delay)) return null;
             if (!byte.TryParse(data[6], out info.Direction)) return null;
             if (!ushort.TryParse(data[7], out info.RandomDelay)) return null;
-            if (!int.TryParse(data[8], out info.RespawnIndex)) return null;
+            //if (!int.TryParse(data[8], out info.RespawnIndex)) return null;
             if (!bool.TryParse(data[9], out info.SaveRespawnTime)) return null;
             if (!ushort.TryParse(data[10], out info.RespawnTicks)) return null;
 

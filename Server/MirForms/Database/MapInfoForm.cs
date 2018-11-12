@@ -585,7 +585,7 @@ namespace Server
 
             for (int i = 0; i < _selectedMapInfos.Count; i++) Envir.Remove(_selectedMapInfos[i]);
 
-            if (Envir.MapInfoList.Count == 0) Envir.MapIndex = 0;
+            //if (Envir.MapInfoList.Count == 0) Envir.MapIndex = 0;
 
             MapTabs.SelectTab(0);
 
@@ -1380,7 +1380,7 @@ namespace Server
 
                 MapInfo mi = new MapInfo
                 {
-                    Index = ++Envir.MapIndex,
+                    Index = DBObjectUtils.getObjNextId(new MapInfo()),
                     FileName = MirForms.ConvertMapInfo.MapInfo[i].MapFile,
                     Title = MirForms.ConvertMapInfo.MapInfo[i].MapName.Replace('*', ' '),
                     NoTeleport = MirForms.ConvertMapInfo.MapInfo[i].NoTeleport,
@@ -1588,7 +1588,7 @@ namespace Server
                         Spread = (ushort)MirForms.ConvertMonGenInfo.monGenList[i].Range,
                         Delay = (ushort)MirForms.ConvertMonGenInfo.monGenList[i].Delay,
                         Direction = (byte)MirForms.ConvertMonGenInfo.monGenList[i].Direction,
-                        RespawnIndex = ++Envir.RespawnIndex
+                        RespawnIndex = 0
                     };
 
                     int index = Envir.MapInfoList.FindIndex(a => a.FileName == MirForms.ConvertMonGenInfo.monGenList[i].Map);

@@ -54,7 +54,7 @@ namespace Server
 
             for (int i = 0; i < _selectedNPCInfos.Count; i++) Envir.Remove(_selectedNPCInfos[i]);
 
-            if (Envir.NPCInfoList.Count == 0) Envir.NPCIndex = 0;
+            //if (Envir.NPCInfoList.Count == 0) Envir.NPCIndex = 0;
 
             UpdateInterface();
         }

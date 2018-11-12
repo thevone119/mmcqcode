@@ -626,7 +626,7 @@ namespace Server.MirEnvir
         {
             Add(mapObject.CurrentLocation.X, mapObject.CurrentLocation.Y, mapObject);
         }
-        //添加对象进地图
+        //添加对象进地图(地图的格子中)
         public void Add(int x,int y,MapObject mapObject)
         {
             if (Objects[x, y] == null)
@@ -665,6 +665,7 @@ namespace Server.MirEnvir
         //安全区
         private void CreateSafeZone(SafeZoneInfo info)
         {
+            //安全区的边框
             if (Settings.SafeZoneBorder)
             {
                 for (int y = info.Location.Y - info.Size; y <= info.Location.Y + info.Size; y++)
@@ -692,7 +693,7 @@ namespace Server.MirEnvir
                     }
                 }
             }
-
+            //安全区的治疗效果
             if (Settings.SafeZoneHealing)
             {
                 for (int y = info.Location.Y - info.Size; y <= info.Location.Y + info.Size; y++)
@@ -901,9 +902,9 @@ namespace Server.MirEnvir
                 if ((respawn.Info.RespawnTicks != 0) && (Envir.RespawnTick.CurrentTickcounter < respawn.NextSpawnTick)) continue;
                 if ((respawn.Info.RespawnTicks == 0) && (Envir.Time < respawn.RespawnTime)) continue;
 
-                if (respawn.Count < (respawn.Info.Count * Envir.spawnmultiplyer))
+                if (respawn.Count < (respawn.Info.Count * Settings.MonsterRate))
                 {
-                    int count = (respawn.Info.Count * Envir.spawnmultiplyer) - respawn.Count;
+                    int count = (int)(respawn.Info.Count * Settings.MonsterRate) - respawn.Count;
 
                     for (int c = 0; c < count; c++)
                         Success = respawn.Spawn();
@@ -2449,43 +2450,17 @@ namespace Server.MirEnvir
     }
 
 
-    public class Cell
-    {
-        public static Cell LowWall { get { return new Cell { Attribute = CellAttribute.LowWall }; } }
-        public static Cell HighWall { get { return new Cell { Attribute = CellAttribute.HighWall }; } }
-
-        public bool Valid
-        {
-            get {
-                return Attribute == CellAttribute.Walk;
-            }
-        }
-
-        public List<MapObject> Objects;
-        public CellAttribute Attribute;
-        public sbyte FishingAttribute = -1;
-
-        public void Add(MapObject mapObject)
-        {
-            if (Objects == null) Objects = new List<MapObject>();
-
-            Objects.Add(mapObject);
-        }
-        public void Remove(MapObject mapObject)
-        {
-            Objects.Remove(mapObject);
-            if (Objects.Count == 0) Objects = null;
-        }
-    }
+    
     public class MapRespawn
     {
-        public RespawnInfo Info;
-        public MonsterInfo Monster;
-        public Map Map;
-        public int Count;
-        public long RespawnTime;
-        public ulong NextSpawnTick;
-        public byte ErrorCount = 0;
+        public RespawnInfo Info;//刷怪信息
+        public MonsterInfo Monster;//怪物信息
+        public Map Map;//刷怪地图
+        public int Count;//当前的怪物数(每次刷怪都是总数减去当前的怪物数)
+
+        public long RespawnTime;//刷怪时间
+        public ulong NextSpawnTick;//下次刷怪间隔
+        public byte ErrorCount = 0;//错误数,刷怪刷不到具体的位置，则错误
 
         public List<RouteInfo> Route;
 

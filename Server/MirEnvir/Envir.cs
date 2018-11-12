@@ -37,7 +37,7 @@ namespace Server.MirEnvir
         //相关配置
         public const int Version = 77;
         public const int CustomVersion = 0;
-        public const string DatabasePath = @".\Server.MirDB";
+        //public const string DatabasePath = @".\Server.MirDB";
         public const string AccountPath = @".\Server.MirADB";
         public const string BackUpPath = @".\Back Up\";
         public bool ResetGS = false;
@@ -85,7 +85,7 @@ namespace Server.MirEnvir
         
         //服务器数据
         //Server DB
-        public int MapIndex, ItemIndex, MonsterIndex, NPCIndex, QuestIndex, GameshopIndex, ConquestIndex, RespawnIndex;
+        //public int MapIndex, ItemIndex, MonsterIndex, NPCIndex, QuestIndex, GameshopIndex, ConquestIndex, RespawnIndex;
         public List<MapInfo> MapInfoList = new List<MapInfo>();
         public List<ItemInfo> ItemInfoList = new List<ItemInfo>();
         public List<MonsterInfo> MonsterInfoList = new List<MonsterInfo>();
@@ -127,9 +127,7 @@ namespace Server.MirEnvir
         readonly object _locker = new object();
         public MobThread[] MobThreads = new MobThread[Settings.ThreadLimit];
         private Thread[] MobThreading = new Thread[Settings.ThreadLimit];
-        //多线程数，如果设置为2，系统会比较慢？
-        public int spawnmultiplyer = 1;//set this to 2 if you want double spawns (warning this can easely lag your server far beyond what you imagine)
-
+    
         public List<string> CustomCommands = new List<string>();
         public Dragon DragonSystem;
         //这3个是什么啊？默认NPC,怪物NPC，机器人NPC?
@@ -389,7 +387,7 @@ namespace Server.MirEnvir
                             //run the first loop in the main thread so the main thread automaticaly 'halts' untill the other threads are finished
                             ThreadLoop(MobThreads[0]);
                         }
-                        //这个是否放在地图处理里比较好呢
+                        //这个是否放在地图处理里比较好呢(20毫秒内，对所有的MapObject处理一次)
                         Boolean TheEnd = false;
                         long Start = Stopwatch.ElapsedMilliseconds;
                         while ((!TheEnd) && (Stopwatch.ElapsedMilliseconds - Start < 20))
@@ -447,7 +445,7 @@ namespace Server.MirEnvir
                                 });
                         }
 
-                        //这几个不知道干嘛的
+                        //这几个不知道干嘛的，每10秒进行重生处理？
                         if (Time >= SpawnTime)
                         {
                             SpawnTime = Time + (Settings.Second * 10);//technicaly this limits the respawn tick code to a minimum of 10 second each but lets assume it's not meant to be this accurate
@@ -682,55 +680,45 @@ namespace Server.MirEnvir
 
         public void SaveDB()
         {
-            using (FileStream stream = File.Create(DatabasePath))
-            using (BinaryWriter writer = new BinaryWriter(stream))
+            //地图数据
+            for (int i = 0; i < MapInfoList.Count; i++)
             {
-                writer.Write(Version);
-                writer.Write(CustomVersion);
-                writer.Write(MapIndex);
-                writer.Write(ItemIndex);
-                writer.Write(MonsterIndex);
-                writer.Write(NPCIndex);
-                writer.Write(QuestIndex);
-                writer.Write(GameshopIndex);
-                writer.Write(ConquestIndex);
-                writer.Write(RespawnIndex);
-
-                writer.Write(MapInfoList.Count);
-                for (int i = 0; i < MapInfoList.Count; i++)
-                    MapInfoList[i].Save(writer);
-
-                writer.Write(ItemInfoList.Count);
-                for (int i = 0; i < ItemInfoList.Count; i++)
-                    ItemInfoList[i].Save(writer);
-
-                writer.Write(MonsterInfoList.Count);
-                for (int i = 0; i < MonsterInfoList.Count; i++)
-                    MonsterInfoList[i].Save(writer);
-
-                writer.Write(NPCInfoList.Count);
-                for (int i = 0; i < NPCInfoList.Count; i++)
-                    NPCInfoList[i].Save(writer);
-
-                writer.Write(QuestInfoList.Count);
-                for (int i = 0; i < QuestInfoList.Count; i++)
-                    QuestInfoList[i].Save(writer);
-
-                DragonInfo.Save(writer);
-
-                writer.Write(MagicInfoList.Count);
-                for (int i = 0; i < MagicInfoList.Count; i++)
-                    MagicInfoList[i].Save(writer);
-
-                writer.Write(GameShopList.Count);
-                for (int i = 0; i < GameShopList.Count; i++)
-                    GameShopList[i].Save(writer);
-
-                writer.Write(ConquestInfos.Count);
-                for (int i = 0; i < ConquestInfos.Count; i++)
-                    ConquestInfos[i].Save(writer);
-
-                RespawnTick.Save(writer);
+                MapInfoList[i].SaveDB();
+            }
+            //物品数据
+            for (int i = 0; i < ItemInfoList.Count; i++)
+            {
+                ItemInfoList[i].SaveDB();
+            }
+            //怪物数据
+            for (int i = 0; i < MonsterInfoList.Count; i++)
+            {
+                MonsterInfoList[i].SaveDB();
+            }
+            //NPC数据
+            for (int i = 0; i < NPCInfoList.Count; i++)
+            {
+                NPCInfoList[i].SaveDB();
+            }
+            //任务数据
+            for (int i = 0; i < QuestInfoList.Count; i++)
+            {
+                QuestInfoList[i].SaveDB();
+            }
+            //魔法技能数据
+            for (int i = 0; i < MagicInfoList.Count; i++)
+            {
+                MagicInfoList[i].SaveDB();
+            }
+            //商店数据
+            for (int i = 0; i < GameShopList.Count; i++)
+            {
+                GameShopList[i].SaveDB();
+            }
+            //领地数据
+            for (int i = 0; i < ConquestInfos.Count; i++)
+            {
+                ConquestInfos[i].SaveDB();
             }
         }
         public void SaveAccounts()
@@ -789,7 +777,7 @@ namespace Server.MirEnvir
                 writer.Write(SavedSpawns.Count);
                 foreach (MapRespawn Spawn in SavedSpawns)
                 {
-                    RespawnSave Save = new RespawnSave { RespawnIndex = Spawn.Info.RespawnIndex, NextSpawnTick = Spawn.NextSpawnTick, Spawned = (Spawn.Count >= (Spawn.Info.Count * spawnmultiplyer)) };
+                    RespawnSave Save = new RespawnSave { RespawnIndex = Spawn.Info.RespawnIndex, NextSpawnTick = Spawn.NextSpawnTick, Spawned = (Spawn.Count >= (Spawn.Info.Count * Settings.MonsterRate)) };
                     Save.save(writer);
                 }
             }
@@ -997,119 +985,42 @@ namespace Server.MirEnvir
         {
             lock (LoadLock)
             {
-                if (!File.Exists(DatabasePath))
-                    SaveDB();
-
-                using (FileStream stream = File.OpenRead(DatabasePath))
-                using (BinaryReader reader = new BinaryReader(stream))
+                //地图数据
+                MapInfoList.Clear();
+                MapInfoList = MapInfo.loadAll();
+                //物品数据
+                ItemInfoList.Clear();
+                ItemInfoList = ItemInfo.loadAll();
+                for (int i = 0; i < ItemInfoList.Count; i++)
                 {
-                    LoadVersion = reader.ReadInt32();
-                    if (LoadVersion > 57)
-                        LoadCustomVersion = reader.ReadInt32();
-                    //先读取各种id的最大值，后面保存的时候，就用这个++？
-                    MapIndex = reader.ReadInt32();
-                    ItemIndex = reader.ReadInt32();
-                    MonsterIndex = reader.ReadInt32();
-
-                    if (LoadVersion > 33)
+                    if ((ItemInfoList[i] != null) && (ItemInfoList[i].RandomStatsId < Settings.RandomItemStatsList.Count))
                     {
-                        NPCIndex = reader.ReadInt32();
-                        QuestIndex = reader.ReadInt32();
+                        ItemInfoList[i].RandomStats = Settings.RandomItemStatsList[ItemInfoList[i].RandomStatsId];
                     }
-                    if (LoadVersion >= 63)
-                    {
-                        GameshopIndex = reader.ReadInt32();
-                    }
-
-                    if (LoadVersion >= 66)
-                    {
-                        ConquestIndex = reader.ReadInt32();
-                    }
-
-                    if (LoadVersion >= 68)
-                        RespawnIndex = reader.ReadInt32();
-
-                    //地图数据
-                    int count = reader.ReadInt32();
-                    MapInfoList.Clear();
-                    for (int i = 0; i < count; i++)
-                        MapInfoList.Add(new MapInfo(reader));
-                    //物品数据
-                    count = reader.ReadInt32();
-                    ItemInfoList.Clear();
-                    for (int i = 0; i < count; i++)
-                    {
-                        ItemInfoList.Add(new ItemInfo(reader, LoadVersion, LoadCustomVersion));
-                        if ((ItemInfoList[i] != null) && (ItemInfoList[i].RandomStatsId < Settings.RandomItemStatsList.Count))
-                        {
-                            ItemInfoList[i].RandomStats = Settings.RandomItemStatsList[ItemInfoList[i].RandomStatsId];
-                        }
-                    }
-                    //怪物数据
-                    count = reader.ReadInt32();
-                    MonsterInfoList.Clear();
-                    for (int i = 0; i < count; i++)
-                        MonsterInfoList.Add(new MonsterInfo(reader));
-
-                    if (LoadVersion > 33)
-                    {
-                        //NPC数据
-                        count = reader.ReadInt32();
-                        NPCInfoList.Clear();
-                        for (int i = 0; i < count; i++)
-                            NPCInfoList.Add(new NPCInfo(reader));
-                        //任务数据
-                        count = reader.ReadInt32();
-                        QuestInfoList.Clear();
-                        for (int i = 0; i < count; i++)
-                            QuestInfoList.Add(new QuestInfo(reader));
-                    }
-                    //龙数据？
-                    if (LoadVersion >= 11) DragonInfo = new DragonInfo(reader);
-                    else DragonInfo = new DragonInfo();
-
-                    //魔法技能数据
-                    if (LoadVersion >= 58)
-                    {
-                        count = reader.ReadInt32();
-                        for (int i = 0; i < count; i++)
-                        {
-                            var m = new MagicInfo(reader, LoadVersion, LoadCustomVersion);
-                            if(!MagicExists(m.Spell))
-                                MagicInfoList.Add(m);
-                        }
-                    }
-                    FillMagicInfoList();
-
-                    //商店数据
-                    if (LoadVersion >= 63)
-                    {
-                        count = reader.ReadInt32();
-                        GameShopList.Clear();
-                        for (int i = 0; i < count; i++)
-                        {
-                            GameShopItem item = new GameShopItem(reader, LoadVersion, LoadCustomVersion);
-                            if (SMain.Envir.BindGameShop(item))
-                            {
-                                GameShopList.Add(item);
-                            }
-                        }
-                    }
-
-                    if (LoadVersion >= 66)
-                    {
-                        ConquestInfos.Clear();
-                        count = reader.ReadInt32();
-                        for (int i = 0; i < count; i++)
-                        {
-                            ConquestInfos.Add(new ConquestInfo(reader));
-                        }
-                    }
-
-                    if (LoadVersion > 67)
-                        RespawnTick = new RespawnTimer(reader);
-
                 }
+                //怪物数据
+                MonsterInfoList.Clear();
+                MonsterInfoList = MonsterInfo.loadAll();
+                //NPC数据
+                NPCInfoList.Clear();
+                NPCInfoList = NPCInfo.loadAll();
+
+                //任务数据
+                QuestInfoList.Clear();
+                QuestInfoList = QuestInfo.loadAll();
+
+                //龙数据？
+                DragonInfo = new DragonInfo();
+
+                //魔法技能数据
+                MagicInfoList.Clear();
+                MagicInfoList = MagicInfo.loadAll();
+
+                //商店数据
+                GameShopList.Clear();
+                GameShopList = GameShopItem.loadAll();
+                //领地数据
+                ConquestInfos = ConquestInfo.loadAll();
 
                 Settings.LinkGuildCreationItems(ItemInfoList);
             }
@@ -1227,9 +1138,9 @@ namespace Server.MirEnvir
                                 if (Respawn.Info.RespawnIndex == Saved.RespawnIndex)
                                 {
                                     Respawn.NextSpawnTick = Saved.NextSpawnTick;
-                                    if ((Saved.Spawned) && ((Respawn.Info.Count * spawnmultiplyer) > Respawn.Count))
+                                    if ((Saved.Spawned) && ((Respawn.Info.Count * Settings.MonsterRate) > Respawn.Count))
                                     {
-                                        int mobcount = (Respawn.Info.Count * spawnmultiplyer) - Respawn.Count;
+                                        int mobcount = (int)(Respawn.Info.Count * Settings.MonsterRate) - Respawn.Count;
                                         for (int j = 0; j < mobcount; j++)
                                         {
                                             Respawn.Spawn();
@@ -1622,7 +1533,8 @@ namespace Server.MirEnvir
             return false;
 
         }
-
+        
+        //线程启动
         public void Start()
         {
             if (Running || _thread != null) return;
@@ -1631,8 +1543,8 @@ namespace Server.MirEnvir
 
             _thread = new Thread(WorkLoop) {IsBackground = true};
             _thread.Start();
-
         }
+
         public void Stop()
         {
             Running = false;
@@ -1656,7 +1568,7 @@ namespace Server.MirEnvir
 
 
                 while (_thread != null)
-                    Thread.Sleep(1);
+                    Thread.Sleep(10);
         }
 
         public void Reboot()
@@ -2269,28 +2181,28 @@ namespace Server.MirEnvir
         }
         public void CreateMapInfo()
         {
-            MapInfoList.Add(new MapInfo {Index = ++MapIndex});
+            MapInfoList.Add(new MapInfo {Index = DBObjectUtils.getObjNextId(new MapInfo()) });
         }
         public void CreateItemInfo(ItemType type = ItemType.Nothing)
         {
-            ItemInfoList.Add(new ItemInfo { Index = ++ItemIndex, Type = type, RandomStatsId = 255});
+            ItemInfoList.Add(new ItemInfo { Index = DBObjectUtils.getObjNextId(new ItemInfo()), Type = type, RandomStatsId = 255});
         }
         public void CreateMonsterInfo()
         {
-            MonsterInfoList.Add(new MonsterInfo {Index = ++MonsterIndex});
+            MonsterInfoList.Add(new MonsterInfo {Index = DBObjectUtils.getObjNextId(new MonsterInfo()) });
         }
         public void CreateNPCInfo()
         {
-            NPCInfoList.Add(new NPCInfo { Index = ++NPCIndex });
+            NPCInfoList.Add(new NPCInfo { Index = DBObjectUtils.getObjNextId(new NPCInfo()) });
         }
         public void CreateQuestInfo()
         {
-            QuestInfoList.Add(new QuestInfo { Index = ++QuestIndex });
+            QuestInfoList.Add(new QuestInfo { Index = DBObjectUtils.getObjNextId(new QuestInfo()) });
         }
 
         public void AddToGameShop(ItemInfo Info)
         {
-            GameShopList.Add(new GameShopItem { GIndex = ++GameshopIndex, GoldPrice = (uint)(1000 * Settings.CredxGold), CreditPrice = 1000, ItemIndex = Info.Index, Info = Info, Date = DateTime.Now, Class = "All", Category = Info.Type.ToString() });
+            GameShopList.Add(new GameShopItem { GIndex = DBObjectUtils.getObjNextId(new GameShopItem()), GoldPrice = (uint)(1000 * Settings.CredxGold), CreditPrice = 1000, ItemIndex = Info.Index, Info = Info, Date = DateTime.Now, Class = "All", Category = Info.Type.ToString() });
         }
 
         public void Remove(MapInfo info)
@@ -2324,7 +2236,7 @@ namespace Server.MirEnvir
 
             if (GameShopList.Count == 0)
             {
-                GameshopIndex = 0;
+                //GameshopIndex = 0;
             }
                 
             //Desync all objects\
