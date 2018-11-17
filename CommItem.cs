@@ -9,6 +9,8 @@ using S = ServerPackets;
 using System.Linq;
 using System.Data.SQLite;
 using System.Text;
+using System.Data.Common;
+using Newtonsoft.Json;
 
 
 //定义物品信息(这里应该分为2类，一类是装备，一类是物品)
@@ -27,6 +29,8 @@ using System.Text;
 //物品有期限？期限怎么处理，比如时装，比如租借的物品等
 public class ItemInfo
 {
+    public static List<ItemInfo> _listAll = new List<ItemInfo>();
+
     public int Index;
     public string Name = string.Empty;
     public ItemType Type;
@@ -236,7 +240,140 @@ public class ItemInfo
         }
     }
 
+    //根据ID查找物品
+    //后面如果使用得比较多，则改成hash结构
+    public static ItemInfo getItem(int idx)
+    {
+        if (_listAll == null || _listAll.Count == 0)
+        {
+            loadAll();
+        }
+        for(int i=0;i< _listAll.Count; i++)
+        {
+            if(_listAll[i].Index== idx)
+            {
+                return _listAll[i];
+            }
+        }
+        return null;
+    }
 
+    //通过名称取物品，不区分大小写
+    public static ItemInfo getItem(string name)
+    {
+        if (_listAll == null || _listAll.Count == 0)
+        {
+            loadAll();
+        }
+        for (int i = 0; i < _listAll.Count; i++)
+        {
+            ItemInfo info = _listAll[i];
+            if (String.Compare(info.Name.Replace(" ", ""), name, StringComparison.OrdinalIgnoreCase) != 0) continue;
+            return info;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 加载所有数据
+    /// </summary>
+    /// <returns></returns>
+    public static List<ItemInfo> loadAll()
+    {
+        if(_listAll!=null&& _listAll.Count > 0)
+        {
+            return _listAll;
+        }
+        DbDataReader read = MirConfigDB.ExecuteReader("select * from ItemInfo");
+
+        while (read.Read())
+        {
+            ItemInfo obj = new ItemInfo();
+            if (read.IsDBNull(read.GetOrdinal("Name")))
+            {
+                continue;
+            }
+            obj.Name = read.GetString(read.GetOrdinal("Name"));
+            if (obj.Name == null)
+            {
+                continue;
+            }
+            obj.Index = read.GetInt32(read.GetOrdinal("Idx"));
+
+
+            obj.Type = (ItemType)read.GetByte(read.GetOrdinal("Type"));
+            obj.Grade = (ItemGrade)read.GetByte(read.GetOrdinal("Grade"));
+            obj.RequiredType = (RequiredType)read.GetByte(read.GetOrdinal("RequiredType"));
+            obj.RequiredClass = (RequiredClass)read.GetByte(read.GetOrdinal("RequiredClass"));
+            obj.RequiredGender = (RequiredGender)read.GetByte(read.GetOrdinal("RequiredGender"));
+            obj.Set = (ItemSet)read.GetByte(read.GetOrdinal("ItemSet"));
+            obj.Shape = (short)read.GetInt32(read.GetOrdinal("Shape"));
+            obj.Weight = read.GetByte(read.GetOrdinal("Weight"));
+            obj.Light = read.GetByte(read.GetOrdinal("Light"));
+            obj.RequiredAmount = read.GetByte(read.GetOrdinal("RequiredAmount"));
+
+            obj.Image = (ushort)read.GetInt32(read.GetOrdinal("Image"));
+            obj.Durability = (ushort)read.GetInt32(read.GetOrdinal("Durability"));
+            obj.StackSize = (uint)read.GetInt32(read.GetOrdinal("StackSize"));
+            obj.Price = (uint)read.GetInt32(read.GetOrdinal("Price"));
+       
+            obj.MinAC = read.GetByte(read.GetOrdinal("MinAC"));
+            obj.MaxAC = read.GetByte(read.GetOrdinal("MaxAC"));
+
+            obj.MinMAC = read.GetByte(read.GetOrdinal("MinMAC"));
+            obj.MaxMAC = read.GetByte(read.GetOrdinal("MaxMAC"));
+
+            obj.MinDC = read.GetByte(read.GetOrdinal("MinDC"));
+            obj.MaxDC = read.GetByte(read.GetOrdinal("MaxDC"));
+
+            obj.MinMC = read.GetByte(read.GetOrdinal("MinMC"));
+            obj.MaxMC = read.GetByte(read.GetOrdinal("MaxMC"));
+
+            obj.MinSC = read.GetByte(read.GetOrdinal("MinSC"));
+            obj.MaxSC = read.GetByte(read.GetOrdinal("MaxSC"));
+
+            obj.HP = (ushort)read.GetInt32(read.GetOrdinal("HP"));
+            obj.MP = (ushort)read.GetInt32(read.GetOrdinal("MP"));
+
+            obj.Accuracy = read.GetByte(read.GetOrdinal("Accuracy"));
+            obj.Agility = read.GetByte(read.GetOrdinal("Agility"));
+            obj.Luck = (sbyte)read.GetByte(read.GetOrdinal("Luck"));
+            obj.AttackSpeed = (sbyte)read.GetByte(read.GetOrdinal("AttackSpeed"));
+            obj.StartItem = read.GetBoolean(read.GetOrdinal("StartItem"));
+            obj.BagWeight = read.GetByte(read.GetOrdinal("BagWeight"));
+            obj.HandWeight = read.GetByte(read.GetOrdinal("HandWeight"));
+            obj.WearWeight = read.GetByte(read.GetOrdinal("WearWeight"));
+            obj.Effect = read.GetByte(read.GetOrdinal("Effect"));
+            obj.Strong = read.GetByte(read.GetOrdinal("Strong"));
+            obj.MagicResist = read.GetByte(read.GetOrdinal("MagicResist"));
+            obj.PoisonResist = read.GetByte(read.GetOrdinal("PoisonResist"));
+            obj.HealthRecovery = read.GetByte(read.GetOrdinal("HealthRecovery"));
+            obj.SpellRecovery = read.GetByte(read.GetOrdinal("SpellRecovery"));
+            obj.PoisonRecovery = read.GetByte(read.GetOrdinal("PoisonRecovery"));
+            obj.HPrate = read.GetByte(read.GetOrdinal("HPrate"));
+            obj.MPrate = read.GetByte(read.GetOrdinal("MPrate"));
+            obj.CriticalRate = read.GetByte(read.GetOrdinal("CriticalRate"));
+            obj.CriticalDamage = read.GetByte(read.GetOrdinal("CriticalDamage"));
+            obj.bools = read.GetByte(read.GetOrdinal("bools"));
+            obj.MaxAcRate = read.GetByte(read.GetOrdinal("MaxAcRate"));
+            obj.MaxMacRate = read.GetByte(read.GetOrdinal("MaxMacRate"));
+            obj.Holy = read.GetByte(read.GetOrdinal("Holy"));
+            obj.Freezing = read.GetByte(read.GetOrdinal("Freezing"));
+            obj.PoisonAttack = read.GetByte(read.GetOrdinal("PoisonAttack"));
+            obj.Bind = (BindMode)read.GetByte(read.GetOrdinal("Bind"));
+            obj.Reflect = read.GetByte(read.GetOrdinal("Reflect"));
+            obj.HpDrainRate = read.GetByte(read.GetOrdinal("HpDrainRate"));
+            obj.Unique = (SpecialItemMode)read.GetByte(read.GetOrdinal("SpecialItemMode"));
+            obj.RandomStatsId = read.GetByte(read.GetOrdinal("RandomStatsId"));
+            obj.CanFastRun = read.GetBoolean(read.GetOrdinal("CanFastRun"));
+            obj.CanAwakening = read.GetBoolean(read.GetOrdinal("CanAwakening"));
+            obj.ToolTip = read.GetString(read.GetOrdinal("ToolTip"));
+
+            DBObjectUtils.updateObjState(obj, obj.Index);
+            _listAll.Add(obj);
+        }
+        return _listAll;
+    }
 
     public void Save(BinaryWriter writer)
     {
@@ -318,149 +455,92 @@ public class ItemInfo
     //保存到数据库
     public void SaveDB()
     {
-        StringBuilder sb = new StringBuilder();
-        List<SQLiteParameter> lp = new List<SQLiteParameter>();
-        sb.Append("update ItemInfo set ");
-
-
-        sb.Append(" Name=@Name, "); lp.Add(new SQLiteParameter("Name", Name));
-        sb.Append(" Type=@Type, "); lp.Add(new SQLiteParameter("Type", Type));
-        sb.Append(" Grade=@Grade, "); lp.Add(new SQLiteParameter("Grade", Grade));
-        sb.Append(" RequiredType=@RequiredType, "); lp.Add(new SQLiteParameter("RequiredType", RequiredType));
-        sb.Append(" RequiredClass=@RequiredClass, "); lp.Add(new SQLiteParameter("RequiredClass", RequiredClass));
-        sb.Append(" RequiredGender=@RequiredGender, "); lp.Add(new SQLiteParameter("RequiredGender", RequiredGender));
-        sb.Append(" ItemSet=@ItemSet, "); lp.Add(new SQLiteParameter("ItemSet", Set));
-        sb.Append(" Shape=@Shape, "); lp.Add(new SQLiteParameter("Shape", Shape));
-        sb.Append(" Weight=@Weight, "); lp.Add(new SQLiteParameter("Weight", Weight));
-        sb.Append(" Light=@Light, "); lp.Add(new SQLiteParameter("Light", Light));
-        sb.Append(" RequiredAmount=@RequiredAmount, "); lp.Add(new SQLiteParameter("RequiredAmount", RequiredAmount));
-        sb.Append(" Image=@Image, "); lp.Add(new SQLiteParameter("Image", Image));
-        sb.Append(" Durability=@Durability, "); lp.Add(new SQLiteParameter("Durability", Durability));
-        sb.Append(" StackSize=@StackSize, "); lp.Add(new SQLiteParameter("StackSize", StackSize));
-        sb.Append(" Price=@Price, "); lp.Add(new SQLiteParameter("Price", Price));
-        sb.Append(" MinAC=@MinAC, "); lp.Add(new SQLiteParameter("MinAC", MinAC));
-        sb.Append(" MaxAC=@MaxAC, "); lp.Add(new SQLiteParameter("MaxAC", MaxAC));
-        sb.Append(" MinMAC=@MinMAC, "); lp.Add(new SQLiteParameter("MinMAC", MinMAC));
-        sb.Append(" MaxMAC=@MaxMAC, "); lp.Add(new SQLiteParameter("MaxMAC", MaxMAC));
-        sb.Append(" MinDC=@MinDC, "); lp.Add(new SQLiteParameter("MinDC", MinDC));
-        sb.Append(" MaxDC=@MaxDC, "); lp.Add(new SQLiteParameter("MaxDC", MaxDC));
-        sb.Append(" MinMC=@MinMC, "); lp.Add(new SQLiteParameter("MinMC", MinMC));
-        sb.Append(" MaxMC=@MaxMC, "); lp.Add(new SQLiteParameter("MaxMC", MaxMC));
-        sb.Append(" MinSC=@MinSC, "); lp.Add(new SQLiteParameter("MinSC", MinSC));
-        sb.Append(" MaxSC=@MaxSC, "); lp.Add(new SQLiteParameter("MaxSC", MaxSC));
-        sb.Append(" HP=@HP, "); lp.Add(new SQLiteParameter("HP", HP));
-        sb.Append(" MP=@MP, "); lp.Add(new SQLiteParameter("MP", MP));
-        sb.Append(" Accuracy=@Accuracy, "); lp.Add(new SQLiteParameter("Accuracy", Accuracy));
-        sb.Append(" Agility=@Agility, "); lp.Add(new SQLiteParameter("Agility", Agility));
-        sb.Append(" Luck=@Luck, "); lp.Add(new SQLiteParameter("Luck", Luck));
-        sb.Append(" AttackSpeed=@AttackSpeed, "); lp.Add(new SQLiteParameter("AttackSpeed", AttackSpeed));
-        sb.Append(" StartItem=@StartItem, "); lp.Add(new SQLiteParameter("StartItem", StartItem));
-        sb.Append(" BagWeight=@BagWeight, "); lp.Add(new SQLiteParameter("BagWeight", BagWeight));
-        sb.Append(" HandWeight=@HandWeight, "); lp.Add(new SQLiteParameter("HandWeight", HandWeight));
-        sb.Append(" WearWeight=@WearWeight, "); lp.Add(new SQLiteParameter("WearWeight", WearWeight));
-        sb.Append(" Effect=@Effect, "); lp.Add(new SQLiteParameter("Effect", Effect));
-        sb.Append(" Strong=@Strong, "); lp.Add(new SQLiteParameter("Strong", Strong));
-        sb.Append(" MagicResist=@MagicResist, "); lp.Add(new SQLiteParameter("MagicResist", MagicResist));
-        sb.Append(" PoisonResist=@PoisonResist, "); lp.Add(new SQLiteParameter("PoisonResist", PoisonResist));
-        sb.Append(" HealthRecovery=@HealthRecovery, "); lp.Add(new SQLiteParameter("HealthRecovery", HealthRecovery));
-        sb.Append(" SpellRecovery=@SpellRecovery, "); lp.Add(new SQLiteParameter("SpellRecovery", SpellRecovery));
-        sb.Append(" PoisonRecovery=@PoisonRecovery, "); lp.Add(new SQLiteParameter("PoisonRecovery", PoisonRecovery));
-        sb.Append(" HPrate=@HPrate, "); lp.Add(new SQLiteParameter("HPrate", HPrate));
-        sb.Append(" MPrate=@MPrate, "); lp.Add(new SQLiteParameter("MPrate", MPrate));
-        sb.Append(" CriticalRate=@CriticalRate, "); lp.Add(new SQLiteParameter("CriticalRate", CriticalRate));
-        sb.Append(" CriticalDamage=@CriticalDamage, "); lp.Add(new SQLiteParameter("CriticalDamage", CriticalDamage));
-        sb.Append(" bools=@bools, "); lp.Add(new SQLiteParameter("bools", bools));
-        sb.Append(" MaxAcRate=@MaxAcRate, "); lp.Add(new SQLiteParameter("MaxAcRate", MaxAcRate));
-        sb.Append(" MaxMacRate=@MaxMacRate, "); lp.Add(new SQLiteParameter("MaxMacRate", MaxMacRate));
-        sb.Append(" Holy=@Holy, "); lp.Add(new SQLiteParameter("Holy", Holy));
-        sb.Append(" Freezing=@Freezing, "); lp.Add(new SQLiteParameter("Freezing", Freezing));
-        sb.Append(" PoisonAttack=@PoisonAttack, "); lp.Add(new SQLiteParameter("PoisonAttack", PoisonAttack));
-        sb.Append(" Bind=@Bind, "); lp.Add(new SQLiteParameter("Bind", Bind));
-        sb.Append(" Reflect=@Reflect, "); lp.Add(new SQLiteParameter("Reflect", Reflect));
-        sb.Append(" HpDrainRate=@HpDrainRate, "); lp.Add(new SQLiteParameter("HpDrainRate", HpDrainRate));
-        sb.Append(" SpecialItemMode=@SpecialItemMode, "); lp.Add(new SQLiteParameter("SpecialItemMode", Unique));
-        sb.Append(" RandomStatsId=@RandomStatsId, "); lp.Add(new SQLiteParameter("RandomStatsId", RandomStatsId));
-        sb.Append(" CanFastRun=@CanFastRun, "); lp.Add(new SQLiteParameter("CanFastRun", CanFastRun));
-        sb.Append(" CanAwakening=@CanAwakening, "); lp.Add(new SQLiteParameter("CanAwakening", CanAwakening));
-        sb.Append(" ToolTip=@ToolTip "); lp.Add(new SQLiteParameter("ToolTip", ToolTip));
-
-        sb.Append(" where  Idx=@Idx "); lp.Add(new SQLiteParameter("Idx", Index));
-
-        //执行更新
-        int ucount = MirConfigDB.Execute(sb.ToString(), lp.ToArray());
-
-        //没有得更新，则执行插入
-        if (ucount <= 0)
+        byte state = DBObjectUtils.ObjState(this, Index);
+        if (state == 0)//没有改变
         {
-            sb.Clear();
-            lp.Clear();
-            sb.Append("insert into ItemInfo(Idx,Name,Type,Grade,RequiredType,RequiredClass,RequiredGender,ItemSet,Shape,Weight,Light,RequiredAmount     ,Image,Durability,StackSize,Price,MinAC,MaxAC,MinMAC,MaxMAC,MinDC,MaxDC,MinMC,MaxMC,MinSC,MaxSC,HP,MP,Accuracy,Agility,Luck,AttackSpeed,StartItem,BagWeight,HandWeight,WearWeight,Effect,Strong,MagicResist,PoisonResist,HealthRecovery,SpellRecovery,PoisonRecovery,HPrate,MPrate,CriticalRate,CriticalDamage,bools,MaxAcRate,MaxMacRate,Holy,Freezing,PoisonAttack,Bind,Reflect,HpDrainRate,SpecialItemMode,RandomStatsId,CanFastRun,CanAwakening,ToolTip) values(@Idx,@Name,@Type,@Grade,@RequiredType,@RequiredClass,@RequiredGender,@ItemSet,@Shape,@Weight,@Light,@RequiredAmount     ,@Image,@Durability,@StackSize,@Price,@MinAC,@MaxAC,@MinMAC,@MaxMAC,@MinDC,@MaxDC,@MinMC,@MaxMC,@MinSC,@MaxSC,@HP,@MP,@Accuracy,@Agility,@Luck,@AttackSpeed,@StartItem,@BagWeight,@HandWeight,@WearWeight,@Effect,@Strong,@MagicResist,@PoisonResist,@HealthRecovery,@SpellRecovery,@PoisonRecovery,@HPrate,@MPrate,@CriticalRate,@CriticalDamage,@bools,@MaxAcRate,@MaxMacRate,@Holy,@Freezing,@PoisonAttack,@Bind,@Reflect,@HpDrainRate,@SpecialItemMode,@RandomStatsId,@CanFastRun,@CanAwakening,@ToolTip) ");
-
-            lp.Add(new SQLiteParameter("Idx", Index));
-            lp.Add(new SQLiteParameter("Name", Name));
-            lp.Add(new SQLiteParameter("Type", Type));
-            lp.Add(new SQLiteParameter("Grade", Grade));
-            lp.Add(new SQLiteParameter("RequiredType", RequiredType));
-            lp.Add(new SQLiteParameter("RequiredClass", RequiredClass));
-            lp.Add(new SQLiteParameter("RequiredGender", RequiredGender));
-            lp.Add(new SQLiteParameter("ItemSet", Set));
-            lp.Add(new SQLiteParameter("Shape", Shape));
-            lp.Add(new SQLiteParameter("Weight", Weight));
-            lp.Add(new SQLiteParameter("Light", Light));
-            lp.Add(new SQLiteParameter("RequiredAmount", RequiredAmount));
-            lp.Add(new SQLiteParameter("Image", Image));
-            lp.Add(new SQLiteParameter("Durability", Durability));
-            lp.Add(new SQLiteParameter("StackSize", StackSize));
-            lp.Add(new SQLiteParameter("Price", Price));
-            lp.Add(new SQLiteParameter("MinAC", MinAC));
-            lp.Add(new SQLiteParameter("MaxAC", MaxAC));
-            lp.Add(new SQLiteParameter("MinMAC", MinMAC));
-            lp.Add(new SQLiteParameter("MaxMAC", MaxMAC));
-            lp.Add(new SQLiteParameter("MinDC", MinDC));
-            lp.Add(new SQLiteParameter("MaxDC", MaxDC));
-            lp.Add(new SQLiteParameter("MinMC", MinMC));
-            lp.Add(new SQLiteParameter("MaxMC", MaxMC));
-            lp.Add(new SQLiteParameter("MinSC", MinSC));
-            lp.Add(new SQLiteParameter("MaxSC", MaxSC));
-            lp.Add(new SQLiteParameter("HP", HP));
-            lp.Add(new SQLiteParameter("MP", MP));
-            lp.Add(new SQLiteParameter("Accuracy", Accuracy));
-            lp.Add(new SQLiteParameter("Agility", Agility));
-            lp.Add(new SQLiteParameter("Luck", Luck));
-            lp.Add(new SQLiteParameter("AttackSpeed", AttackSpeed));
-            lp.Add(new SQLiteParameter("StartItem", StartItem));
-            lp.Add(new SQLiteParameter("BagWeight", BagWeight));
-            lp.Add(new SQLiteParameter("HandWeight", HandWeight));
-            lp.Add(new SQLiteParameter("WearWeight", WearWeight));
-            lp.Add(new SQLiteParameter("Effect", Effect));
-            lp.Add(new SQLiteParameter("Strong", Strong));
-            lp.Add(new SQLiteParameter("MagicResist", MagicResist));
-            lp.Add(new SQLiteParameter("PoisonResist", PoisonResist));
-            lp.Add(new SQLiteParameter("HealthRecovery", HealthRecovery));
-            lp.Add(new SQLiteParameter("SpellRecovery", SpellRecovery));
-            lp.Add(new SQLiteParameter("PoisonRecovery", PoisonRecovery));
-            lp.Add(new SQLiteParameter("HPrate", HPrate));
-            lp.Add(new SQLiteParameter("MPrate", MPrate));
-            lp.Add(new SQLiteParameter("CriticalRate", CriticalRate));
-            lp.Add(new SQLiteParameter("CriticalDamage", CriticalDamage));
-            lp.Add(new SQLiteParameter("bools", bools));
-            lp.Add(new SQLiteParameter("MaxAcRate", MaxAcRate));
-            lp.Add(new SQLiteParameter("MaxMacRate", MaxMacRate));
-            lp.Add(new SQLiteParameter("Holy", Holy));
-            lp.Add(new SQLiteParameter("Freezing", Freezing));
-            lp.Add(new SQLiteParameter("PoisonAttack", PoisonAttack));
-            lp.Add(new SQLiteParameter("Bind", Bind));
-            lp.Add(new SQLiteParameter("Reflect", Reflect));
-            lp.Add(new SQLiteParameter("HpDrainRate", HpDrainRate));
-            lp.Add(new SQLiteParameter("SpecialItemMode", Unique));
-            lp.Add(new SQLiteParameter("RandomStatsId", RandomStatsId));
-            lp.Add(new SQLiteParameter("CanFastRun", CanFastRun));
-            lp.Add(new SQLiteParameter("CanAwakening", CanAwakening));
-            lp.Add(new SQLiteParameter("ToolTip", ToolTip));
-
-            //执行插入
-            MirConfigDB.Execute(sb.ToString(), lp.ToArray());
+            return;
         }
+        List<SQLiteParameter> lp = new List<SQLiteParameter>();
+        lp.Add(new SQLiteParameter("Name", Name));
+        lp.Add(new SQLiteParameter("Type", Type));
+        lp.Add(new SQLiteParameter("Grade", Grade));
+        lp.Add(new SQLiteParameter("RequiredType", RequiredType));
+        lp.Add(new SQLiteParameter("RequiredClass", RequiredClass));
+        lp.Add(new SQLiteParameter("RequiredGender", RequiredGender));
+        lp.Add(new SQLiteParameter("ItemSet", Set));
+        lp.Add(new SQLiteParameter("Shape", Shape));
+        lp.Add(new SQLiteParameter("Weight", Weight));
+        lp.Add(new SQLiteParameter("Light", Light));
+        lp.Add(new SQLiteParameter("RequiredAmount", RequiredAmount));
+        lp.Add(new SQLiteParameter("Image", Image));
+        lp.Add(new SQLiteParameter("Durability", Durability));
+        lp.Add(new SQLiteParameter("StackSize", StackSize));
+        lp.Add(new SQLiteParameter("Price", Price));
+        lp.Add(new SQLiteParameter("MinAC", MinAC));
+        lp.Add(new SQLiteParameter("MaxAC", MaxAC));
+        lp.Add(new SQLiteParameter("MinMAC", MinMAC));
+        lp.Add(new SQLiteParameter("MaxMAC", MaxMAC));
+        lp.Add(new SQLiteParameter("MinDC", MinDC));
+        lp.Add(new SQLiteParameter("MaxDC", MaxDC));
+        lp.Add(new SQLiteParameter("MinMC", MinMC));
+        lp.Add(new SQLiteParameter("MaxMC", MaxMC));
+        lp.Add(new SQLiteParameter("MinSC", MinSC));
+        lp.Add(new SQLiteParameter("MaxSC", MaxSC));
+        lp.Add(new SQLiteParameter("HP", HP));
+        lp.Add(new SQLiteParameter("MP", MP));
+        lp.Add(new SQLiteParameter("Accuracy", Accuracy));
+        lp.Add(new SQLiteParameter("Agility", Agility));
+        lp.Add(new SQLiteParameter("Luck", Luck));
+        lp.Add(new SQLiteParameter("AttackSpeed", AttackSpeed));
+        lp.Add(new SQLiteParameter("StartItem", StartItem));
+        lp.Add(new SQLiteParameter("BagWeight", BagWeight));
+        lp.Add(new SQLiteParameter("HandWeight", HandWeight));
+        lp.Add(new SQLiteParameter("WearWeight", WearWeight));
+        lp.Add(new SQLiteParameter("Effect", Effect));
+        lp.Add(new SQLiteParameter("Strong", Strong));
+        lp.Add(new SQLiteParameter("MagicResist", MagicResist));
+        lp.Add(new SQLiteParameter("PoisonResist", PoisonResist));
+        lp.Add(new SQLiteParameter("HealthRecovery", HealthRecovery));
+        lp.Add(new SQLiteParameter("SpellRecovery", SpellRecovery));
+        lp.Add(new SQLiteParameter("PoisonRecovery", PoisonRecovery));
+        lp.Add(new SQLiteParameter("HPrate", HPrate));
+        lp.Add(new SQLiteParameter("MPrate", MPrate));
+        lp.Add(new SQLiteParameter("CriticalRate", CriticalRate));
+        lp.Add(new SQLiteParameter("CriticalDamage", CriticalDamage));
+        lp.Add(new SQLiteParameter("bools", bools));
+        lp.Add(new SQLiteParameter("MaxAcRate", MaxAcRate));
+        lp.Add(new SQLiteParameter("MaxMacRate", MaxMacRate));
+        lp.Add(new SQLiteParameter("Holy", Holy));
+        lp.Add(new SQLiteParameter("Freezing", Freezing));
+        lp.Add(new SQLiteParameter("PoisonAttack", PoisonAttack));
+        lp.Add(new SQLiteParameter("Bind", Bind));
+        lp.Add(new SQLiteParameter("Reflect", Reflect));
+        lp.Add(new SQLiteParameter("HpDrainRate", HpDrainRate));
+        lp.Add(new SQLiteParameter("SpecialItemMode", Unique));
+        lp.Add(new SQLiteParameter("RandomStatsId", RandomStatsId));
+        lp.Add(new SQLiteParameter("CanFastRun", CanFastRun));
+        lp.Add(new SQLiteParameter("CanAwakening", CanAwakening));
+        lp.Add(new SQLiteParameter("ToolTip", ToolTip));
+
+        //新增
+        if (state == 1)
+        {
+            if (Index > 0)
+            {
+                lp.Add(new SQLiteParameter("Idx", Index));
+            }
+            string sql = "insert into ItemInfo" + SQLiteHelper.createInsertSql(lp.ToArray()); ;
+            MirConfigDB.Execute(sql, lp.ToArray());
+        }
+        //修改
+        if (state == 2)
+        {
+            string sql = "update ItemInfo set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where Idx=@Idx";
+            lp.Add(new SQLiteParameter("Idx", Index));
+            MirConfigDB.Execute(sql, lp.ToArray());
+        }
+        DBObjectUtils.updateObjState(this, Index);
+
     }
 
     public static ItemInfo FromText(string text)
@@ -582,6 +662,52 @@ public class ItemInfo
         return string.Format("{0}: {1}", Index, Name);
     }
 
+    //掉落物品
+    public UserItem CreateDropItem()
+    {
+        UserItem item = new UserItem(this)
+        {
+            UniqueID = (ulong)UniqueKeyHelper.UniqueNext(),
+            MaxDura = Durability,
+            CurrentDura = (ushort)Math.Min(Durability, RandomUtils.Next(Durability) + 1000)
+        };
+
+        item.UpgradeItem();
+
+        item.UpdateItemExpiry();
+
+        if (!NeedIdentify) item.Identified = true;
+        return item;
+    }
+
+    //新鲜的物品
+    public UserItem CreateFreshItem()
+    {
+        UserItem item = new UserItem(this)
+        {
+            UniqueID = (ulong)UniqueKeyHelper.UniqueNext(),
+            CurrentDura = Durability,
+            MaxDura = Durability
+        };
+
+        item.UpdateItemExpiry();
+
+        return item;
+    }
+
+    //商店物品
+    public UserItem CreateShopItem()
+    {
+        UserItem item = new UserItem(this)
+        {
+            UniqueID = (ulong)UniqueKeyHelper.UniqueNext(),
+            CurrentDura = Durability,
+            MaxDura = Durability,
+        };
+        return item;
+    }
+
+
     /// <summary>
     ///不同等级名称的颜色,这个就放物品里比较好吧？坑死咩。
     /// </summary>
@@ -611,13 +737,18 @@ public class ItemInfo
     }
 }
 
+/// <summary>
+/// 这个是用户的物品，需要长期保存的
+/// 
+/// </summary>
 public class UserItem
 {
     //这里2个ID，一个是地图上的唯一ID，多次重启可能会重复？
     public ulong UniqueID;
-
+    //这个是物品引用的ID
     public int ItemIndex;
     //这个是具体的物品的引用
+    [JsonIgnore]
     public ItemInfo Info;
     //持久是每个装备都不一样的属性，当前持久，和最大持久放在具体的装备上
     public ushort CurrentDura, MaxDura;
@@ -631,11 +762,11 @@ public class UserItem
     public byte RefineAdded = 0;
 
     public bool DuraChanged;
-    public int SoulBoundId = -1;
+    public long SoulBoundId = -1;
     public bool Identified = false;
     public bool Cursed = false;
 
-    public int WeddingRing = -1;
+    public long WeddingRing = -1;
 
     public UserItem[] Slots = new UserItem[5];
 
@@ -671,6 +802,12 @@ public class UserItem
         get { return Count > 1 ? string.Format("{0} ({1})", Info.FriendlyName, Count) : Info.FriendlyName; }
     }
 
+ 
+    public UserItem()
+    {
+
+    }
+
     public UserItem(ItemInfo info)
     {
         SoulBoundId = -1;
@@ -704,7 +841,8 @@ public class UserItem
         Luck = reader.ReadSByte();
 
         if (version <= 19) return;
-        SoulBoundId = reader.ReadInt32();
+        //这里要改
+        SoulBoundId = reader.ReadInt64();
         byte Bools = reader.ReadByte();
         Identified = (Bools & 0x01) == 0x01;
         Cursed = (Bools & 0x02) == 0x02;
@@ -743,7 +881,7 @@ public class UserItem
         RefinedValue = (RefinedValue)reader.ReadByte();
         RefineAdded = reader.ReadByte();
         if (version < 60) return;
-        WeddingRing = reader.ReadInt32();
+        WeddingRing = reader.ReadInt64();
 
         if (version < 65) return;
 
@@ -755,6 +893,98 @@ public class UserItem
 
         if (reader.ReadBoolean())
             RentalInformation = new RentalInformation(reader, version, Customversion);
+    }
+
+    /// <summary>
+    /// 加载所有数据库中加载
+    /// 作废，不单独加载
+    /// </summary>
+    /// <returns></returns>
+    public static List<UserItem> loadAll()
+    {
+        List<UserItem> list = new List<UserItem>();
+        DbDataReader read = MirRunDB.ExecuteReader("select * from UserItem");
+        while (read.Read())
+        {
+            UserItem obj = new UserItem();
+            obj.UniqueID = (ulong)read.GetInt64(read.GetOrdinal("UniqueID"));
+            obj.ItemIndex = read.GetInt32(read.GetOrdinal("ItemIndex"));
+            obj.CurrentDura = (ushort)read.GetInt16(read.GetOrdinal("CurrentDura"));
+            obj.MaxDura = (ushort)read.GetInt16(read.GetOrdinal("MaxDura"));
+            obj.Count = (uint)read.GetInt32(read.GetOrdinal("Count"));
+            obj.AC = read.GetByte(read.GetOrdinal("AC"));
+            obj.MAC = read.GetByte(read.GetOrdinal("MAC"));
+            obj.DC = read.GetByte(read.GetOrdinal("DC"));
+            obj.MC = read.GetByte(read.GetOrdinal("MC"));
+            obj.SC = read.GetByte(read.GetOrdinal("SC"));
+
+            obj.Accuracy = read.GetByte(read.GetOrdinal("Accuracy"));
+            obj.Agility = read.GetByte(read.GetOrdinal("Agility"));
+            obj.HP = read.GetByte(read.GetOrdinal("HP"));
+            obj.MP = read.GetByte(read.GetOrdinal("MP"));
+            obj.AttackSpeed = (sbyte)read.GetByte(read.GetOrdinal("AttackSpeed"));
+            obj.Luck = (sbyte)read.GetByte(read.GetOrdinal("Luck"));
+            obj.SoulBoundId = read.GetInt32(read.GetOrdinal("SoulBoundId"));
+           
+            byte Bools = read.GetByte(read.GetOrdinal("Bools"));
+            obj.Identified = (Bools & 0x01) == 0x01;
+            obj.Cursed = (Bools & 0x02) == 0x02;
+
+            obj.Strong = read.GetByte(read.GetOrdinal("Strong"));
+            obj.MagicResist = read.GetByte(read.GetOrdinal("MagicResist"));
+            obj.PoisonResist = read.GetByte(read.GetOrdinal("PoisonResist"));
+            obj.HealthRecovery = read.GetByte(read.GetOrdinal("HealthRecovery"));
+            obj.ManaRecovery = read.GetByte(read.GetOrdinal("ManaRecovery"));
+            obj.PoisonRecovery = read.GetByte(read.GetOrdinal("PoisonRecovery"));
+            obj.CriticalRate = read.GetByte(read.GetOrdinal("CriticalRate"));
+            obj.CriticalDamage = read.GetByte(read.GetOrdinal("CriticalDamage"));
+            obj.Freezing = read.GetByte(read.GetOrdinal("Freezing"));
+            obj.PoisonAttack = read.GetByte(read.GetOrdinal("PoisonAttack"));
+
+ 
+            string _Slots = read.GetString(read.GetOrdinal("Slots"));
+            //obj.Slots = UserItem.ParseUserItemIds2(_Slots);
+
+            obj.GemCount = (uint)read.GetInt32(read.GetOrdinal("GemCount"));
+            obj.Awake = JsonConvert.DeserializeObject<Awake>(read.GetString(read.GetOrdinal("Awake")));
+            obj.RefinedValue = (RefinedValue)read.GetByte(read.GetOrdinal("RefinedValue"));
+            obj.RefineAdded = read.GetByte(read.GetOrdinal("RefineAdded"));
+
+            obj.WeddingRing = read.GetByte(read.GetOrdinal("WeddingRing"));
+            DateTime edate = read.GetDateTime(read.GetOrdinal("ExpireInfo"));
+            if (edate != null)
+            {
+                obj.ExpireInfo = new ExpireInfo { ExpiryDate = edate };
+            }
+            obj.RentalInformation=JsonConvert.DeserializeObject<RentalInformation>(read.GetString(read.GetOrdinal("RentalInformation")));
+
+            DBObjectUtils.updateObjState(obj, obj.UniqueID);
+            list.Add(obj);
+        }
+        return list;
+    }
+
+    //重新绑定关联，关联具体的物品
+    public bool BindItem()
+    {
+        Info = ItemInfo.getItem(ItemIndex);
+        if (Info == null)
+        {
+            return false;
+        }
+        return BindSlotItems();
+    }
+
+    public bool BindSlotItems()
+    {
+        for (int i = 0; i < Slots.Length; i++)
+        {
+            if (Slots[i] == null) continue;
+
+            if (!Slots[i].BindItem()) return false;
+        }
+        SetSlotSize();
+        return true;
     }
 
     public void Save(BinaryWriter writer)
@@ -820,8 +1050,85 @@ public class UserItem
 
         writer.Write(RentalInformation != null);
         RentalInformation?.Save(writer);
+
     }
 
+    //作废，不单独保存
+    //保存到数据库
+    public void SaveDB()
+    {
+        byte state = DBObjectUtils.ObjState(this, UniqueID);
+        if (state == 0)//没有改变
+        {
+            return;
+        }
+        List<SQLiteParameter> lp = new List<SQLiteParameter>();
+        lp.Add(new SQLiteParameter("ItemIndex", ItemIndex));
+        lp.Add(new SQLiteParameter("CurrentDura", CurrentDura));
+        lp.Add(new SQLiteParameter("MaxDura", MaxDura));
+        lp.Add(new SQLiteParameter("Count", Count));
+
+        lp.Add(new SQLiteParameter("AC", AC));
+        lp.Add(new SQLiteParameter("MAC", MAC));
+        lp.Add(new SQLiteParameter("DC", DC));
+        lp.Add(new SQLiteParameter("MC", MC));
+        lp.Add(new SQLiteParameter("SC", SC));
+
+        lp.Add(new SQLiteParameter("Accuracy", Accuracy));
+        lp.Add(new SQLiteParameter("Agility", Agility));
+        lp.Add(new SQLiteParameter("HP", HP));
+        lp.Add(new SQLiteParameter("MP", MP));
+
+        lp.Add(new SQLiteParameter("AttackSpeed", AttackSpeed));
+        lp.Add(new SQLiteParameter("Luck", Luck));
+        lp.Add(new SQLiteParameter("SoulBoundId", SoulBoundId));
+        byte Bools = 0;
+        if (Identified) Bools |= 0x01;
+        if (Cursed) Bools |= 0x02;
+        
+        lp.Add(new SQLiteParameter("Bools", Bools));
+        lp.Add(new SQLiteParameter("Strong", Strong));
+        lp.Add(new SQLiteParameter("MagicResist", MagicResist));
+        lp.Add(new SQLiteParameter("PoisonResist", PoisonResist));
+        lp.Add(new SQLiteParameter("HealthRecovery", HealthRecovery));
+        lp.Add(new SQLiteParameter("ManaRecovery", ManaRecovery)); 
+        lp.Add(new SQLiteParameter("PoisonRecovery", PoisonRecovery));
+        lp.Add(new SQLiteParameter("CriticalRate", CriticalRate));
+        lp.Add(new SQLiteParameter("CriticalDamage", CriticalDamage));
+        lp.Add(new SQLiteParameter("Freezing", Freezing));
+        lp.Add(new SQLiteParameter("PoisonAttack", PoisonAttack));
+        //lp.Add(new SQLiteParameter("Slots", UserItem.getUserItemIds(Slots)));
+        lp.Add(new SQLiteParameter("GemCount", GemCount));
+        lp.Add(new SQLiteParameter("Awake", JsonConvert.SerializeObject(Awake)));
+        lp.Add(new SQLiteParameter("RefinedValue", (byte)RefinedValue));
+        lp.Add(new SQLiteParameter("RefineAdded", RefineAdded)); 
+        lp.Add(new SQLiteParameter("WeddingRing", WeddingRing));
+        if (ExpireInfo != null)
+        {
+            lp.Add(new SQLiteParameter("ExpireInfo", ExpireInfo.ExpiryDate));
+        }
+      
+        lp.Add(new SQLiteParameter("RentalInformation", JsonConvert.SerializeObject(RentalInformation)));
+
+        //新增
+        if (state == 1)
+        {
+            if (UniqueID > 0)
+            {
+                lp.Add(new SQLiteParameter("UniqueID", UniqueID));
+            }
+            string sql = "insert into UserItem" + SQLiteHelper.createInsertSql(lp.ToArray());
+            MirRunDB.Execute(sql, lp.ToArray());
+        }
+        //修改
+        if (state == 2)
+        {
+            string sql = "update UserItem set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where UniqueID=@UniqueID";
+            lp.Add(new SQLiteParameter("UniqueID", UniqueID));
+            MirRunDB.Execute(sql, lp.ToArray());
+        }
+        DBObjectUtils.updateObjState(this, UniqueID);
+    }
 
     public uint Price()
     {
@@ -957,17 +1264,17 @@ public class UserItem
                     {
                         switch (Info.Shape)
                         {
-                            case 0: //Amulet
+                            case 0: //Amulet护身符
                                 if (Count >= 300) return 3662;
                                 if (Count >= 200) return 3661;
                                 if (Count >= 100) return 3660;
                                 return 3660;
-                            case 1: //Grey Poison
+                            case 1: //Grey Poison绿毒
                                 if (Count >= 150) return 3675;
                                 if (Count >= 100) return 2960;
                                 if (Count >= 50) return 3674;
                                 return 3673;
-                            case 2: //Yellow Poison
+                            case 2: //Yellow Poison黄毒
                                 if (Count >= 150) return 3672;
                                 if (Count >= 100) return 2961;
                                 if (Count >= 50) return 3671;
@@ -982,7 +1289,7 @@ public class UserItem
             return Info.Image;
         }
     }
-
+    //物品的副本
     public UserItem Clone()
     {
         UserItem item = new UserItem(Info)

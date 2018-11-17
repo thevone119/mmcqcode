@@ -13,7 +13,7 @@ namespace Client.MirObjects
     /// </summary>
     public class UserObject : PlayerObject
     {
-        public uint Id;
+        public ulong Id;
 
         public ushort HP, MaxHP, MP, MaxMP;
 
@@ -75,6 +75,7 @@ namespace Client.MirObjects
 
         public UserObject(uint objectID) : base(objectID)
         {
+
         }
 
         public void Load(S.UserInformation info)

@@ -10,6 +10,8 @@ using S = ServerPackets;
 using System.Linq;
 using System.Data.SQLite;
 using System.Text;
+using System.Data.Common;
+using Newtonsoft.Json;
 
 //这个应该是NPC面板类型了，客户端的NPC交易面板的类型弹出面板的类型
 public enum PanelType : byte
@@ -848,10 +850,10 @@ public enum ItemType : byte
 public enum MirGridType : byte
 {
     None = 0,
-    Inventory = 1,//库存
-    Equipment = 2,//设备
-    Trade = 3,//贸易
-    Storage = 4,//保管部
+    Inventory = 1,//库存(F9角色的背包)
+    Equipment = 2,//设备(这个是角色的装备栏)
+    Trade = 3,//贸易(角色的交易栏)
+    Storage = 4,//保管部(这个是账号的仓库，多角色共享的)
     BuyBack = 5,//回购
     DropPanel = 6,//跌落面板？
     Inspect = 7,//检查
@@ -2601,7 +2603,7 @@ public static class Functions
 
 public class SelectInfo
 {
-    public int Index;
+    public ulong Index;
     public string Name = string.Empty;
     public ushort Level;
     public MirClass Class;
@@ -2612,7 +2614,7 @@ public class SelectInfo
         { }
         public SelectInfo(BinaryReader reader)
         {
-            Index = reader.ReadInt32();
+            Index = (ulong)reader.ReadInt64();
             Name = reader.ReadString();
             Level = reader.ReadUInt16();
             Class = (MirClass)reader.ReadByte();
@@ -2657,10 +2659,15 @@ public class RentalInformation
     }
 }
 
+/// <summary>
+/// 商店物品
+/// 
+/// </summary>
 public class GameShopItem
 {
     public int ItemIndex;
     public int GIndex;
+    [JsonIgnore]
     public ItemInfo Info;
     public uint GoldPrice = 0;
     public uint CreditPrice = 0;
@@ -2675,7 +2682,21 @@ public class GameShopItem
     
     public GameShopItem()
     {
+
     }
+
+
+    //重新绑定关联，关联具体的物品
+    public bool BindItem()
+    {
+        Info = ItemInfo.getItem(ItemIndex);
+        if (Info != null)
+        {
+            return true;
+        }
+        return false;
+    }
+
 
     public GameShopItem(BinaryReader reader, int version = int.MaxValue, int Customversion = int.MaxValue)
     {
@@ -2724,8 +2745,96 @@ public class GameShopItem
         writer.Write(iStock);
         writer.Write(Deal);
         writer.Write(TopItem);
+        
         writer.Write(Date.ToBinary());
+
+        SaveDB();
     }
+
+    /// <summary>
+    /// 加载所有数据
+    /// </summary>
+    /// <returns></returns>
+    public static List<GameShopItem> loadAll()
+    {
+        List<GameShopItem> list = new List<GameShopItem>();
+        DbDataReader read = MirConfigDB.ExecuteReader("select * from GameShopItem");
+
+        while (read.Read())
+        {
+            GameShopItem obj = new GameShopItem();
+  
+            obj.GIndex = read.GetInt32(read.GetOrdinal("GIndex"));
+            obj.ItemIndex = read.GetInt32(read.GetOrdinal("ItemIndex"));
+            obj.Info = ItemInfo.getItem(obj.ItemIndex);
+            if (obj.Info == null)
+            {
+                continue;
+            }
+
+
+            obj.GoldPrice = (uint)read.GetInt32(read.GetOrdinal("GoldPrice"));
+            obj.CreditPrice = (uint)read.GetInt32(read.GetOrdinal("CreditPrice"));
+            obj.Count = (uint)read.GetInt32(read.GetOrdinal("Count"));
+            obj.Class = read.GetString(read.GetOrdinal("Class"));
+            obj.Category = read.GetString(read.GetOrdinal("Category"));
+            obj.Stock = read.GetInt32(read.GetOrdinal("Stock"));
+            obj.iStock = read.GetBoolean(read.GetOrdinal("iStock"));
+            obj.Deal = read.GetBoolean(read.GetOrdinal("Deal"));
+            obj.TopItem = read.GetBoolean(read.GetOrdinal("TopItem"));
+            obj.Date = read.GetDateTime(read.GetOrdinal("endDate"));
+            DBObjectUtils.updateObjState(obj, obj.GIndex);
+            list.Add(obj);
+        }
+        return list;
+    }
+
+    //保存到数据库
+    public void SaveDB()
+    {
+        byte state = DBObjectUtils.ObjState(this, GIndex);
+        if (state == 0)//没有改变
+        {
+            return;
+        }
+        List<SQLiteParameter> lp = new List<SQLiteParameter>();
+        lp.Add(new SQLiteParameter("ItemIndex", ItemIndex));
+        lp.Add(new SQLiteParameter("ItemIdx", Info.Index));
+        lp.Add(new SQLiteParameter("GoldPrice", GoldPrice));
+        lp.Add(new SQLiteParameter("CreditPrice", CreditPrice));
+        lp.Add(new SQLiteParameter("Count", Count));
+        lp.Add(new SQLiteParameter("Class", Class));
+        lp.Add(new SQLiteParameter("Category", Category));
+
+        lp.Add(new SQLiteParameter("Stock", Stock));
+        lp.Add(new SQLiteParameter("iStock", iStock));
+
+        lp.Add(new SQLiteParameter("Deal", Deal));
+        lp.Add(new SQLiteParameter("TopItem", TopItem));
+        lp.Add(new SQLiteParameter("endDate", Date));
+
+        //新增
+        if (state == 1)
+        {
+            if (GIndex > 0)
+            {
+                lp.Add(new SQLiteParameter("GIndex", GIndex));
+            }
+            string sql = "insert into GameShopItem" + SQLiteHelper.createInsertSql(lp.ToArray()); ;
+            MirConfigDB.Execute(sql, lp.ToArray());
+        }
+        //修改
+        if (state == 2)
+        {
+            string sql = "update GameShopItem set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where GIndex=@GIndex";
+            lp.Add(new SQLiteParameter("GIndex", GIndex));
+            MirConfigDB.Execute(sql, lp.ToArray());
+        }
+        DBObjectUtils.updateObjState(this, GIndex);
+
+       
+    }
+
 
     public override string ToString()
     {
@@ -3330,7 +3439,7 @@ public class ClientMail
 
 public class ClientFriend
 {
-    public int Index;
+    public ulong Index;
     public string Name;
     public string Memo = "";
     public bool Blocked;
@@ -3341,7 +3450,7 @@ public class ClientFriend
 
     public ClientFriend(BinaryReader reader)
     {
-        Index = reader.ReadInt32();
+        Index = (ulong)reader.ReadInt64();
         Name = reader.ReadString();
         Memo = reader.ReadString();
         Blocked = reader.ReadBoolean();
@@ -3621,17 +3730,16 @@ public abstract class Packet
         using (MemoryStream stream = new MemoryStream(rawBytes, 2, length - 2))
         using (BinaryReader reader = new BinaryReader(stream))
         {
+            short id = reader.ReadInt16();
             try
             {
-                short id = reader.ReadInt16();
-
                 p = (IsServer ? GetClientPacket(id) : GetServerPacket(id));
                 if (p == null) return null;
-
                 p.ReadPacket(reader);
             }
             catch
             {
+                Console.WriteLine("数据包异常结束:" + id);
                 return null;
                 //return new C.Disconnect();
             }
@@ -5045,7 +5153,7 @@ public class ItemVolume
     public string ItemName;
     public uint Amount;
 }
-
+//等级，军阶，行会成员的等级，不同等级的权限不一样
 public class Rank
 {
     public List<GuildMember> Members = new List<GuildMember>();
@@ -5099,7 +5207,7 @@ public class GuildStorageItem
 public class GuildMember
 {
     public string name = "";
-    public int Id;
+    public ulong Id;
     public object Player;
     public DateTime LastLogin;
     public bool hasvoted;
@@ -5110,7 +5218,7 @@ public class GuildMember
     public GuildMember(BinaryReader reader, bool Offline = false)
     {
         name = reader.ReadString();
-        Id = reader.ReadInt32();
+        Id = (ulong)reader.ReadInt64();
         LastLogin = DateTime.FromBinary(reader.ReadInt64());
         hasvoted = reader.ReadBoolean();
         Online = reader.ReadBoolean();
@@ -5471,7 +5579,7 @@ public class GuildBuffOld
 //等级排名信息？
 public class Rank_Character_Info
 {
-    public long PlayerId;
+    public ulong PlayerId;
     public string Name;
     public MirClass Class;
     public int level;
@@ -5487,7 +5595,7 @@ public class Rank_Character_Info
     public Rank_Character_Info(BinaryReader reader)
     {
         //rank = reader.ReadInt32();
-        PlayerId = reader.ReadInt64();
+        PlayerId = (ulong)reader.ReadInt64();
         Name = reader.ReadString();
         level = reader.ReadInt32();
         Class = (MirClass)reader.ReadByte();
@@ -5510,7 +5618,7 @@ public class Door
     public byte index;
     public byte DoorState;//0: closed, 1: opening, 2: open, 3: closing
     public byte ImageIndex;
-    public long LastTick;
+    public long LastTick;//最后的期限，超过最后期限的5秒就关闭了
     public Point Location;
 }
 

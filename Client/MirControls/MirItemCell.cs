@@ -316,7 +316,7 @@ namespace Client.MirControls
 
             CharacterDialog dialog = GameScene.Scene.CharacterDialog;
 
-            if ((Item.SoulBoundId != -1)  && (MapObject.User.Id != Item.SoulBoundId))
+            if ((Item.SoulBoundId != -1)  && (MapObject.User.Id != (ulong)Item.SoulBoundId))
                 return;
             switch (Item.Info.Type)
             {

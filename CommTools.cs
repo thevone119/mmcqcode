@@ -9,12 +9,15 @@ using System.Reflection.Emit;
 using System.Data.SQLite;
 using System.Data;
 using System.Data.Common;
+using System.IO;
+using System.Security.Cryptography;
+using Newtonsoft.Json;
 
 /// <summary>
 /// 唯一值工具类
 /// 构建一个多个服务器，多个线程并都不太可能重复的值(4位的随机ID+毫秒时间+递增数)
 /// 固定部分（年月日时分秒+4位随机数+递增数（0-））
-/// uint型为无符号32位整数，占4个字节，取值范围在0~4,294,967,295之间。
+/// uint型为无符号32位整数，占4个字节，取值范围在0~4,294,967,295之间。10位
 //long型为64位有符号整数，占8个字节，取值范围在9,223,372,036,854,775,808~9,223,372,036,854,775,807之间。19位
 //ulong型为64位无符号整数，占8个字节，取值范围在0 ~18,446,744,073,709,551,615之间。20位
 /// </summary>
@@ -91,27 +94,29 @@ public static class UniqueKeyHelper
 
 
 //快速随机函数的工具而已嘛，需要搞什么线程么。
+//不用线程产生的随机数竟然有问题。坑爹啊,还是用线程变量吧
 public class RandomUtils
 {
-
-    private static Random random = new Random();
+    private static int seed = Environment.TickCount;
+    private static ThreadLocal<Random> RandomWrapper = new ThreadLocal<Random>(() => new Random(Interlocked.Increment(ref seed)));
+    //private static Random random = new Random();
 
 
     public static int Next()
     {
-        return random.Next();
+        return RandomWrapper.Value.Next();
     }
     public static int Next(int maxValue)
     {
-        return random.Next(maxValue);
+        return RandomWrapper.Value.Next(maxValue);
     }
     public static int Next(int minValue, int maxValue)
     {
-        return random.Next(minValue, maxValue);
+        return RandomWrapper.Value.Next(minValue, maxValue);
     }
     public static double NextDouble()
     {
-        return random.NextDouble();
+        return RandomWrapper.Value.NextDouble();
     }
 
     //最大增加数，增加几率1/x
@@ -126,6 +131,176 @@ public class RandomUtils
 
 }
 
+/// <summary>
+/// MD5的工具类
+/// </summary>
+public class MD5Utils
+{
+    private static JsonSerializerSettings settings = new JsonSerializerSettings()
+    {
+        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+    };
+
+
+    public static string GetMD5HashFromFile(string fileName)
+    {
+        long filelong = 0;
+        try
+        {
+            FileInfo f = new FileInfo(fileName);
+            if (!f.Exists)
+            {
+                return null;
+            }
+            filelong = f.Length;
+            FileStream file = new FileStream(fileName, FileMode.Open);
+            System.Security.Cryptography.MD5 md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
+            byte[] retVal = md5.ComputeHash(file);
+            file.Close();
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < retVal.Length; i++)
+            {
+                sb.Append(retVal[i].ToString("x2"));
+            }
+            return sb.ToString();
+        }
+        catch (Exception )
+        {
+        }
+
+        return "ERROR:" + filelong;
+    }
+
+    public static string MD5Encode(String origin)
+    {
+        byte[] result = Encoding.UTF8.GetBytes(origin);    //utf-8的字符串
+        System.Security.Cryptography.MD5 md5 = new MD5CryptoServiceProvider();
+        byte[] output = md5.ComputeHash(result);
+        return BitConverter.ToString(output).Replace("-", "");  //tbMd5pass为输出加密文本
+    }
+    /// <summary>
+    /// 用来判断对象中的数据是否发生变化
+    /// </summary>
+    /// <param name="o"></param>
+    /// <returns></returns>
+    public static string ObjectMD5(Object o)
+    {
+         string ojson = JsonConvert.SerializeObject(o,settings);
+         return MD5Encode(ojson);
+    }
+}
+/// <summary>
+/// 数据库对象工具，用于判断某个数据库对象是否发生改变
+/// 记录数据库对象的状态
+/// 0：没有变化
+/// 1：新增
+/// 2：修改
+/// </summary>
+public class DBObjectUtils
+{
+    //对象锁
+    private static object lockobj = new object();
+
+    //用这个来记录，保存对象是否发生变化 
+    private static Dictionary<string, string> dbstate= new Dictionary<string, string>();
+    //记录数据库的最大ID
+    private static Dictionary<string, ulong> dbMAXid = new Dictionary<string, ulong>();
+
+
+
+    /// <summary>
+    /// 记录数据库对象的状态
+    /// 0：没有变化
+    /// 1：新增
+    /// 2：修改
+    /// </summary>
+    /// <param name="o"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public static byte ObjState(Object o, object id)
+    {
+        string key = o.GetType().Name + id;
+        string md5 = MD5Utils.ObjectMD5(o);
+        if (dbstate.ContainsKey(key))
+        {
+            if(dbstate[key]== md5)
+            {
+                return 0;
+            }else
+            {
+                return 2;
+            }
+        }
+        return 1;
+    }
+    //取下一个ID
+    public static ulong getObjNextId(Object o)
+    {
+        lock (lockobj)
+        {
+            if (dbMAXid.ContainsKey(o.GetType().Name))
+            {
+                dbMAXid[o.GetType().Name] = dbMAXid[o.GetType().Name] + 1;
+                return dbMAXid[o.GetType().Name];
+            }
+            else
+            {
+                dbMAXid.Add(o.GetType().Name, 1);
+                return 1;
+            }
+        }
+    }
+
+    //取当前最大ID
+    public static ulong getObjCurrMaxId(Object o)
+    {
+        if (dbMAXid.ContainsKey(o.GetType().Name))
+        {
+            dbMAXid[o.GetType().Name] = dbMAXid[o.GetType().Name] + 1;
+            return dbMAXid[o.GetType().Name];
+        }
+        return 0;
+    }
+
+    //更新对象状态
+    public static void updateObjState(Object o, object id)
+    {
+        ulong cid = ulong.Parse(id.ToString());
+        //更新ID
+        if (dbMAXid.ContainsKey(o.GetType().Name))
+        {
+            ulong lastid = dbMAXid[o.GetType().Name];
+            
+            if (cid > lastid)
+            {
+                dbMAXid[o.GetType().Name] = lastid;
+            }
+        }
+        else
+        {
+            dbMAXid[o.GetType().Name] = cid;
+        }
+        //更新MD5
+        string key = o.GetType().Name + id;
+        string md5 = MD5Utils.ObjectMD5(o);
+        if (dbstate.ContainsKey(key))
+        {
+            dbstate[key] = md5;
+            return;
+        }
+        dbstate.Add(key, md5);
+    }
+}
+
+//自定义注解类
+class DBField : Attribute
+{
+    public Boolean PrimaryKey = false;
+    //1:bool,2:byte,3:short,4:int,5:long,6:float,7:double,
+    //11:string,12:jsonstring
+    public byte Type = 1;
+}
 
 ///
 /// SQLiteHelper类
@@ -250,6 +425,48 @@ public class SQLiteHelper : System.IDisposable
         }
     }
 
+    public static string createInsertSql(params SQLiteParameter[] paras) { 
+        StringBuilder sb = new StringBuilder();
+        StringBuilder sb2 = new StringBuilder();
+        sb.Append("(");
+        sb2.Append("(");
+        for (int i=0;i< paras.Length; i++)
+        {
+            if(i!= paras.Length - 1)
+            {
+                sb.Append(paras[i].ParameterName + ",");
+                sb2.Append("@"+paras[i].ParameterName + ",");
+            }
+            else
+            {
+                sb.Append(paras[i].ParameterName );
+                sb2.Append("@" + paras[i].ParameterName);
+            }
+        }
+        sb.Append(")");
+        sb2.Append(")");
+
+        return sb.ToString()+" values"+sb2.ToString();
+    }
+
+    public static string createUpdateSql(params SQLiteParameter[] paras)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < paras.Length; i++)
+        {
+            if (i != paras.Length - 1)
+            {
+                sb.Append(paras[i].ParameterName + "=@"+ paras[i].ParameterName+",");
+
+            }
+            else
+            {
+                sb.Append(paras[i].ParameterName + "=@" + paras[i].ParameterName );
+            }
+        }
+        return sb.ToString() ;
+    }
+
 
 
 
@@ -342,7 +559,7 @@ public class SQLiteHelper : System.IDisposable
                 _SQLiteConn.Close();
             }
         }
-        catch (Exception e)
+        catch (Exception )
         {
 
         }
@@ -399,6 +616,8 @@ public class MirConfigDB
             sqlHelper = new SQLiteHelper(connectionString);
         }
     }
+
+
 
     public static int Execute(string command, params SQLiteParameter[] parameter)
     {

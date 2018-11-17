@@ -123,8 +123,11 @@ namespace Client.MirNetwork
             Buffer.BlockCopy(rawBytes, 0, _rawData, temp.Length, dataRead);
 
             Packet p;
+            
             while ((p = Packet.ReceivePacket(_rawData, out _rawData)) != null)
+            {
                 _receiveList.Enqueue(p);
+            }
 
             //这里又调用接受数据？嵌套调用,不断的进行异步接受数据
             BeginReceive();

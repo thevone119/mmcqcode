@@ -332,7 +332,7 @@ namespace Client.MirScenes.Dialogs
                 LevelLabel.Text = Listing.level.ToString();
                 ClassLabel.Text = Listing.Class.ToString();
                 NameLabel.Text = listing.Name;
-                Index = listing.PlayerId;
+                Index = (long)listing.PlayerId;
                 if (RankLabel.Text == "1")
                 {
                     RankLabel.ForeColour = Color.Gold;

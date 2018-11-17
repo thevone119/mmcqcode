@@ -160,11 +160,11 @@ namespace ClientPackets
     {
         public override short Index { get { return (short)ClientPacketIds.DeleteCharacter; } }
 
-        public int CharacterIndex;
+        public ulong CharacterIndex;
 
         protected override void ReadPacket(BinaryReader reader)
         {
-            CharacterIndex = reader.ReadInt32();
+            CharacterIndex = (ulong)reader.ReadInt64();
         }
         protected override void WritePacket(BinaryWriter writer)
         {
@@ -175,11 +175,11 @@ namespace ClientPackets
     {
         public override short Index { get { return (short)ClientPacketIds.StartGame; } }
 
-        public int CharacterIndex;
+        public ulong CharacterIndex;
 
         protected override void ReadPacket(BinaryReader reader)
         {
-            CharacterIndex = reader.ReadInt32();
+            CharacterIndex = (ulong)reader.ReadInt64();
         }
         protected override void WritePacket(BinaryWriter writer)
         {
@@ -2021,11 +2021,11 @@ namespace ClientPackets
     {
         public override short Index { get { return (short)ClientPacketIds.RemoveFriend; } }
 
-        public int CharacterIndex;
+        public ulong CharacterIndex;
 
         protected override void ReadPacket(BinaryReader reader)
         {
-            CharacterIndex = reader.ReadInt32();
+            CharacterIndex = (ulong)reader.ReadInt64();
         }
 
         protected override void WritePacket(BinaryWriter writer)
@@ -2052,12 +2052,12 @@ namespace ClientPackets
     {
         public override short Index { get { return (short)ClientPacketIds.AddMemo; } }
 
-        public int CharacterIndex;
+        public ulong CharacterIndex;
         public string Memo;
 
         protected override void ReadPacket(BinaryReader reader)
         {
-            CharacterIndex = reader.ReadInt32();
+            CharacterIndex = (ulong)reader.ReadInt64();
             Memo = reader.ReadString();
         }
 

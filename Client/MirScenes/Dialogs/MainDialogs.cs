@@ -476,7 +476,10 @@ namespace Client.MirScenes.Dialogs
         private void HealthOrb_BeforeDraw(object sender, EventArgs e)
         {
             if (Libraries.Prguse == null) return;
-
+            if (User == null)
+            {
+                return;
+            }
             int height;
             if (User != null && User.HP != User.MaxHP)
                 height = (int)(80 * User.HP / (float)User.MaxHP);

@@ -342,7 +342,7 @@ namespace Client.MirScenes
             if (_selected < 0 || _selected >= Characters.Count) return;
 
             MirMessageBox message = new MirMessageBox(string.Format("Are you sure you want to Delete the character {0}?", Characters[_selected].Name), MirMessageBoxButtons.YesNo);
-            int index = Characters[_selected].Index;
+            ulong index = Characters[_selected].Index;
 
             message.YesButton.Click += (o, e) =>
             {

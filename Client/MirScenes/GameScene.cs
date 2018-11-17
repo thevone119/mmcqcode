@@ -1025,15 +1025,18 @@ namespace Client.MirScenes
         //处理数据包
         public override void ProcessPacket(Packet p)
         {
+            MirLog.info("p.Index:"+ p.Index);
             switch (p.Index)
             {
                 case (short)ServerPacketIds.KeepAlive:
                     KeepAlive((S.KeepAlive)p);
                     break;
                 case (short)ServerPacketIds.MapInformation: //MapInfo
+                    MirLog.info("MapInformation");
                     MapInformation((S.MapInformation)p);
                     break;
                 case (short)ServerPacketIds.UserInformation:
+                    MirLog.info("UserInformation");
                     UserInformation((S.UserInformation)p);
                     break;
                 case (short)ServerPacketIds.UserLocation:

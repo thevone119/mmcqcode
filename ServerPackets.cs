@@ -333,11 +333,11 @@ namespace ServerPackets
             get { return (short)ServerPacketIds.DeleteCharacterSuccess; }
         }
 
-        public int CharacterIndex;
+        public ulong CharacterIndex;
 
         protected override void ReadPacket(BinaryReader reader)
         {
-            CharacterIndex = reader.ReadInt32();
+            CharacterIndex = (ulong)reader.ReadInt64();
         }
 
         protected override void WritePacket(BinaryWriter writer)
@@ -473,7 +473,7 @@ namespace ServerPackets
         }
 
         public uint ObjectID;
-        public uint RealId;
+        public ulong RealId;
         public string Name = string.Empty;
         public string GuildName = string.Empty;
         public string GuildRank = string.Empty;
@@ -506,7 +506,7 @@ namespace ServerPackets
         protected override void ReadPacket(BinaryReader reader)
         {
             ObjectID = reader.ReadUInt32();
-            RealId = reader.ReadUInt32();
+            RealId = reader.ReadUInt64();
             Name = reader.ReadString();
             GuildName = reader.ReadString();
             GuildRank = reader.ReadString();
@@ -4011,7 +4011,7 @@ namespace ServerPackets
     public sealed class GuildStorageItemChange : Packet
     {
         public override short Index { get { return (short)ServerPacketIds.GuildStorageItemChange; } }
-        public int User = 0;
+        public ulong User = 0;
         public byte Type = 0;
         public int To = 0;
         public int From = 0;
@@ -4021,7 +4021,7 @@ namespace ServerPackets
             Type = reader.ReadByte();
             To = reader.ReadInt32();
             From = reader.ReadInt32();
-            User = reader.ReadInt32();
+            User = (ulong)reader.ReadInt64();
             if (!reader.ReadBoolean()) return;
             Item = new GuildStorageItem();
             Item.UserId = reader.ReadInt64();
