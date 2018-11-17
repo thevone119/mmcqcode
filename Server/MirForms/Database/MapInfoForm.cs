@@ -1380,7 +1380,7 @@ namespace Server
 
                 MapInfo mi = new MapInfo
                 {
-                    Index = DBObjectUtils.getObjNextId(new MapInfo()),
+                    Index = (int)DBObjectUtils.getObjNextId(new MapInfo()),
                     FileName = MirForms.ConvertMapInfo.MapInfo[i].MapFile,
                     Title = MirForms.ConvertMapInfo.MapInfo[i].MapName.Replace('*', ' '),
                     NoTeleport = MirForms.ConvertMapInfo.MapInfo[i].NoTeleport,

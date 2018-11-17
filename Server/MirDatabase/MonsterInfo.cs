@@ -183,12 +183,13 @@ namespace Server.MirDatabase
             //修改
             if (state == 2)
             {
-                string sql = "update MapInfo set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where Idx=@Idx"; 
+                string sql = "update MonsterInfo set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where Idx=@Idx"; 
                 lp.Add(new SQLiteParameter("Idx", Index));
                 MirConfigDB.Execute(sql, lp.ToArray());
             }
             DBObjectUtils.updateObjState(this, Index);
         }
+
         //加载怪物的掉落物品数据
         public void LoadDrops()
         {
@@ -293,7 +294,7 @@ namespace Server.MirDatabase
 
             //if (28 + count * 3 > data.Length) return;
 
-            info.Index = DBObjectUtils.getObjNextId(info);
+            info.Index = (int)DBObjectUtils.getObjNextId(info);
             SMain.EditEnvir.MonsterInfoList.Add(info);
         }
         public string ToText()
@@ -335,7 +336,7 @@ namespace Server.MirDatabase
             }
             else
             {
-                info.Item = SMain.Envir.GetItemInfo(parts[1]);
+                info.Item = ItemInfo.getItem(parts[1]);
                 if (info.Item == null) return null;
 
                 if (parts.Length > 2)

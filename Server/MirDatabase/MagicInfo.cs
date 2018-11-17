@@ -7,6 +7,7 @@ using Server.MirEnvir;
 using S = ServerPackets;
 using System.Data.SQLite;
 using System.Data.Common;
+using Newtonsoft.Json;
 
 namespace Server.MirDatabase
 {
@@ -36,59 +37,6 @@ namespace Server.MirDatabase
 
         }
 
-        //作废
-        public MagicInfo (BinaryReader reader, int version = int.MaxValue, int Customversion = int.MaxValue)
-        {
-            Name = reader.ReadString();
-            Spell = (Spell)reader.ReadByte();
-            BaseCost = reader.ReadByte();
-            LevelCost = reader.ReadByte();
-            Icon = reader.ReadByte();
-            Level1 = reader.ReadByte();
-            Level2 = reader.ReadByte();
-            Level3 = reader.ReadByte();
-            Need1 = reader.ReadUInt16();
-            Need2 = reader.ReadUInt16();
-            Need3 = reader.ReadUInt16();
-            DelayBase = reader.ReadUInt32();
-            DelayReduction = reader.ReadUInt32();
-            PowerBase = reader.ReadUInt16();
-            PowerBonus = reader.ReadUInt16();
-            MPowerBase = reader.ReadUInt16();
-            MPowerBonus = reader.ReadUInt16();
-
-            if (version > 66)
-                Range = reader.ReadByte();
-            if (version > 70)
-            {
-                MultiplierBase = reader.ReadSingle();
-                MultiplierBonus = reader.ReadSingle();
-            }
-        }
-        //作废
-        public void Save(BinaryWriter writer)
-        {
-            writer.Write(Name);
-            writer.Write((byte)Spell);
-            writer.Write(BaseCost);
-            writer.Write(LevelCost);
-            writer.Write(Icon);
-            writer.Write(Level1);
-            writer.Write(Level2);
-            writer.Write(Level3);
-            writer.Write(Need1);
-            writer.Write(Need2);
-            writer.Write(Need3);
-            writer.Write(DelayBase);
-            writer.Write(DelayReduction);
-            writer.Write(PowerBase);
-            writer.Write(PowerBonus);
-            writer.Write(MPowerBase);
-            writer.Write(MPowerBonus);
-            writer.Write(Range);
-            writer.Write(MultiplierBase);
-            writer.Write(MultiplierBonus);
-        }
 
 
         /// <summary>
@@ -193,14 +141,33 @@ namespace Server.MirDatabase
     //用户释放的魔法，这个是捆绑到快捷键的
     public class UserMagic
     {
-        public int userid;//添加字段，这个是用户ID
+        public int Index;//添加字段，这个是主键ID
+        public ulong userid;//添加字段，这个是用户ID
         public Spell Spell;
+        [JsonIgnore]
         public MagicInfo Info;
 
         public byte Level, Key;
         public ushort Experience;
         public bool IsTempSpell;
         public long CastTime;
+
+        public UserMagic()
+        {
+
+        }
+
+        //绑定魔法信息
+        public bool BindInfo()
+        {
+            Info = GetMagicInfo(Spell);
+            if (Info == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
 
         private MagicInfo GetMagicInfo(Spell spell)
         {
@@ -220,6 +187,8 @@ namespace Server.MirDatabase
             Info = GetMagicInfo(Spell);
         }
 
+
+
         //这个后续作废
         public UserMagic(int back,BinaryReader reader)
         {
@@ -236,9 +205,9 @@ namespace Server.MirDatabase
             if (Envir.LoadVersion < 65) return;
             CastTime = reader.ReadInt64();
         }
-
-
-       public static List<UserMagic> loadByUserid(int userid)
+        //作废，不单独保存
+       //根据用户ID查找用户的魔法设置
+       public static List<UserMagic> loadByUserid(ulong userid)
        {
             List<UserMagic> list = new List<UserMagic>();
             DbDataReader read = MirRunDB.ExecuteReader("select * from UserMagic where userid=@userid", new SQLiteParameter("userid", userid));
@@ -250,11 +219,14 @@ namespace Server.MirDatabase
                 }
                 UserMagic magic = new UserMagic((Spell)read.GetByte(read.GetOrdinal("Spell")));
                 magic.userid = userid;
+                magic.Index = read.GetInt32(read.GetOrdinal("Idx"));
                 magic.Level = read.GetByte(read.GetOrdinal("Level"));
                 magic.Key = read.GetByte(read.GetOrdinal("Key"));
                 magic.Experience = (ushort)read.GetInt32(read.GetOrdinal("Experience"));
                 magic.CastTime = read.GetInt64(read.GetOrdinal("CastTime"));
                 magic.IsTempSpell = read.GetBoolean(read.GetOrdinal("IsTempSpell"));
+
+                DBObjectUtils.updateObjState(magic, magic.Index);
                 list.Add(magic);
             }
             return list;
@@ -272,40 +244,42 @@ namespace Server.MirDatabase
             writer.Write(CastTime);
         }
 
+        //作废，不单独保存
         //保存到数据库
         public void SaveDB()
         {
-            StringBuilder sb = new StringBuilder();
-            List<SQLiteParameter> lp = new List<SQLiteParameter>();
-            sb.Append("update UserMagic set ");
-
-            sb.Append(" Level=@Level, "); lp.Add(new SQLiteParameter("Level", Level));
-            sb.Append(" Key=@Key, "); lp.Add(new SQLiteParameter("Key", Key));
-            sb.Append(" Experience=@Experience, "); lp.Add(new SQLiteParameter("Experience", Experience));
-            sb.Append(" IsTempSpell=@IsTempSpell, "); lp.Add(new SQLiteParameter("IsTempSpell", IsTempSpell));
-            sb.Append(" CastTime=@CastTime "); lp.Add(new SQLiteParameter("CastTime", CastTime));
-            
-            sb.Append(" where  Spell=@Spell and userid=@userid"); lp.Add(new SQLiteParameter("Spell", Spell)); lp.Add(new SQLiteParameter("userid", userid));
-            //执行更新
-            int ucount = MirRunDB.Execute(sb.ToString(), lp.ToArray());
-
-            //没有得更新，则执行插入
-            if (ucount <= 0)
+            byte state = DBObjectUtils.ObjState(this, Index);
+            if (state == 0)//没有改变
             {
-                sb.Clear();
-                lp.Clear();
-                sb.Append("insert into UserMagic(Level,Key,Experience,IsTempSpell,CastTime,Spell,userid) values(@Level,@Key,@Experience,@IsTempSpell,@CastTime,@Spell,@userid) ");
-
-                lp.Add(new SQLiteParameter("Level", Level));
-                lp.Add(new SQLiteParameter("Key", Key));
-                lp.Add(new SQLiteParameter("Experience", Experience));
-                lp.Add(new SQLiteParameter("IsTempSpell", IsTempSpell));
-                lp.Add(new SQLiteParameter("CastTime", CastTime));
-
-                lp.Add(new SQLiteParameter("Spell", Spell)); lp.Add(new SQLiteParameter("userid", userid));
-                //执行插入
-                MirRunDB.Execute(sb.ToString(), lp.ToArray());
+                return;
             }
+            List<SQLiteParameter> lp = new List<SQLiteParameter>();
+            lp.Add(new SQLiteParameter("Level", Level));
+            lp.Add(new SQLiteParameter("Key", Key));
+            lp.Add(new SQLiteParameter("Experience", Experience));
+            lp.Add(new SQLiteParameter("IsTempSpell", IsTempSpell));
+            lp.Add(new SQLiteParameter("CastTime", CastTime));
+            lp.Add(new SQLiteParameter("Spell", Spell));
+            lp.Add(new SQLiteParameter("userid", userid));
+
+            //新增
+            if (state == 1)
+            {
+                if (Index > 0)
+                {
+                    lp.Add(new SQLiteParameter("Idx", Index));
+                }
+                string sql = "insert into UserMagic" + SQLiteHelper.createInsertSql(lp.ToArray());
+                MirRunDB.Execute(sql, lp.ToArray());
+            }
+            //修改
+            if (state == 2)
+            {
+                string sql = "update UserMagic set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where Idx=@Idx";
+                lp.Add(new SQLiteParameter("Idx", Index));
+                MirRunDB.Execute(sql, lp.ToArray());
+            }
+            DBObjectUtils.updateObjState(this, Index);
         }
 
         public Packet GetInfo()

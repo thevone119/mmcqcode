@@ -330,7 +330,7 @@ namespace Server
 
         private void AddConq_button_Click(object sender, EventArgs e)
         {
-            Envir.ConquestInfos.Add(new ConquestInfo { Index = DBObjectUtils.getObjNextId(new ConquestInfo()), Location = new Point(0, 0), Size = 10, Name = "Conquest Wall", MapIndex = 1, PalaceIndex = 2});
+            Envir.ConquestInfos.Add(new ConquestInfo { Index = (int)DBObjectUtils.getObjNextId(new ConquestInfo()), Location = new Point(0, 0), Size = 10, Name = "Conquest Wall", MapIndex = 1, PalaceIndex = 2});
             UpdateInterface();
         }
 

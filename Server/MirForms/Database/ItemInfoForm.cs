@@ -1054,7 +1054,7 @@ namespace Server
                 ItemInfo info = ItemInfo.FromText(items[i]);
 
                 if (info == null) continue;
-                info.Index = DBObjectUtils.getObjNextId(info);
+                info.Index = (int)DBObjectUtils.getObjNextId(info);
                 Envir.ItemInfoList.Add(info);
 
             }
@@ -1113,7 +1113,7 @@ namespace Server
             foreach (var info in items.Select(ItemInfo.FromText).Where(info => info != null))
             {
                 count++;
-                info.Index = DBObjectUtils.getObjNextId(info);
+                info.Index = (int)DBObjectUtils.getObjNextId(info);
                 Envir.ItemInfoList.Add(info);
             }
 

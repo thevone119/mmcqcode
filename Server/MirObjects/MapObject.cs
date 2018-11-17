@@ -7,6 +7,7 @@ using Server.MirObjects.Monsters;
 using S = ServerPackets;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace Server.MirObjects
 {
@@ -764,6 +765,8 @@ namespace Server.MirObjects
     public class Buff
     {
         public BuffType Type;
+
+        [JsonIgnore]
         public MapObject Caster;
         public bool Visible;
         public uint ObjectID;

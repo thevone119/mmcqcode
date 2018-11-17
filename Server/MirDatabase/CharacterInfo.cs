@@ -6,18 +6,22 @@ using Server.MirEnvir;
 using Server.MirNetwork;
 using Server.MirObjects;
 using System.Windows.Forms;
+using System.Data.SQLite;
+using Newtonsoft.Json;
+using System.Data.Common;
 
 namespace Server.MirDatabase
 {   //角色信息
     public class CharacterInfo
     {
-        public int Index;
+        public ulong accIndex;//账号的索引，ID,增加的关联字段
+        public ulong Index;
         public string Name;
         public ushort Level;
         public MirClass Class;
         public MirGender Gender;
         public byte Hair;
-        public int GuildIndex = -1;
+        public long GuildIndex = -1;
 
         public string CreationIP;
         public DateTime CreationDate;
@@ -38,11 +42,11 @@ namespace Server.MirDatabase
         public ListViewItem ListItem;
 
         //Marriage
-        public int Married = 0;
+        public ulong Married = 0;
         public DateTime MarriedDate;
 
         //Mentor
-        public int Mentor = 0;
+        public ulong Mentor = 0;
         public DateTime MentorDate;
         public bool isMentor;
         public long MentorExp = 0;
@@ -80,7 +84,9 @@ namespace Server.MirDatabase
         public List<UserMagic> Magics = new List<UserMagic>();
         public List<PetInfo> Pets = new List<PetInfo>();
         public List<Buff> Buffs = new List<Buff>();
+        //这个应该没用了？
         public List<Poison> Poisons = new List<Poison>();
+
         public List<MailInfo> Mail = new List<MailInfo>();
         public List<FriendInfo> Friends = new List<FriendInfo>();
 
@@ -92,8 +98,9 @@ namespace Server.MirDatabase
         public List<int> CompletedQuests = new List<int>();
 
         public bool[] Flags = new bool[Globals.FlagIndexCount];
-
+        //账号信息
         public AccountInfo AccountInfo;
+        //玩家
         public PlayerObject Player;
         public MountInfo Mount;
 
@@ -113,416 +120,313 @@ namespace Server.MirDatabase
             CreationIP = c.IPAddress;
             CreationDate = SMain.Envir.Now;
         }
-
-        public CharacterInfo(BinaryReader reader)
+        
+    
+        /// <summary>
+        /// 查询所有角色信息
+        /// </summary>
+        /// <returns></returns>
+        public static List<CharacterInfo> loadAll()
         {
-            Index = reader.ReadInt32();
-            Name = reader.ReadString();
+            List<CharacterInfo> list = new List<CharacterInfo>();
+            DbDataReader read = MirRunDB.ExecuteReader("select * from CharacterInfo ");
+            while (read.Read())
+            {
+                CharacterInfo obj = new CharacterInfo();
+                obj.Index= (ulong)read.GetInt64(read.GetOrdinal("Idx"));
+                obj.accIndex = (ulong)read.GetInt64(read.GetOrdinal("accIndex"));
+                obj.Name = read.GetString(read.GetOrdinal("Name"));
+                obj.Level = (ushort)read.GetInt16(read.GetOrdinal("Level"));
+                obj.Class = (MirClass)read.GetInt16(read.GetOrdinal("Class"));
+                obj.Gender = (MirGender)read.GetInt16(read.GetOrdinal("Gender"));
 
-             if (Envir.LoadVersion < 62)
-             {
-                 Level = (ushort)reader.ReadByte();
-             }
-             else
-             {
-                 Level = reader.ReadUInt16();
-             }
+                obj.Hair = read.GetByte(read.GetOrdinal("Hair"));
+                obj.CreationIP = read.GetString(read.GetOrdinal("CreationIP"));
+                obj.CreationDate = read.GetDateTime(read.GetOrdinal("CreationDate"));
+                obj.Banned = read.GetBoolean(read.GetOrdinal("Banned"));
+                obj.BanReason = read.GetString(read.GetOrdinal("BanReason"));
+                obj.ExpiryDate = read.GetDateTime(read.GetOrdinal("ExpiryDate"));
+                obj.LastIP = read.GetString(read.GetOrdinal("LastIP"));
+                obj.LastDate = read.GetDateTime(read.GetOrdinal("LastDate"));
+                obj.Deleted = read.GetBoolean(read.GetOrdinal("Deleted"));
+                obj.DeleteDate = read.GetDateTime(read.GetOrdinal("DeleteDate"));
+                obj.CurrentMapIndex = read.GetInt32(read.GetOrdinal("CurrentMapIndex"));
+                obj.CurrentLocation = new Point(read.GetInt32(read.GetOrdinal("CurrentLocation_X")), read.GetInt32(read.GetOrdinal("CurrentLocation_Y")));
+                obj.Direction = (MirDirection)read.GetByte(read.GetOrdinal("Direction"));
+                obj.BindMapIndex = read.GetInt32(read.GetOrdinal("BindMapIndex"));
+                obj.BindLocation = new Point(read.GetInt32(read.GetOrdinal("BindLocation_X")), read.GetInt32(read.GetOrdinal("BindLocation_Y")));
+
+                obj.HP = (ushort)read.GetInt32(read.GetOrdinal("HP"));
+                obj.MP = (ushort)read.GetInt32(read.GetOrdinal("MP"));
+                obj.Experience = read.GetInt32(read.GetOrdinal("Experience"));
+                obj.AMode = (AttackMode)read.GetByte(read.GetOrdinal("AMode"));
+                obj.PMode = (PetMode)read.GetByte(read.GetOrdinal("PMode"));
+                obj.PKPoints = read.GetInt32(read.GetOrdinal("PKPoints"));
+                //扩展背包的容量
+                int Inventory_len = read.GetInt32(read.GetOrdinal("Inventory_len"));
+                obj.Inventory = JsonConvert.DeserializeObject<UserItem[]>(read.GetString(read.GetOrdinal("Inventory")));
+                Array.Resize(ref obj.Inventory, Inventory_len);
+                for (int i = 0; i < obj.Inventory.Length; i++)
+                {
+                    if (obj.Inventory[i] != null)
+                    {
+                        if (!obj.Inventory[i].BindItem())
+                        {
+                            obj.Inventory[i] = null;
+                        }
+                    }
+                }
+                //装备栏
+                obj.Equipment = JsonConvert.DeserializeObject<UserItem[]>(read.GetString(read.GetOrdinal("Equipment")));
+                for (int i = 0; i < obj.Equipment.Length; i++)
+                {
+                    if (obj.Equipment[i] != null)
+                    {
+                        if (!obj.Equipment[i].BindItem())
+                        {
+                            obj.Equipment[i] = null;
+                        }
+                    }
+                }
+                //仓库
+                obj.QuestInventory = JsonConvert.DeserializeObject<UserItem[]>(read.GetString(read.GetOrdinal("QuestInventory")));
+                for (int i = 0; i < obj.QuestInventory.Length; i++)
+                {
+                    if (obj.QuestInventory[i] != null)
+                    {
+                        if (!obj.QuestInventory[i].BindItem())
+                        {
+                            obj.QuestInventory[i] = null;
+                        }
+                    }
+                }
+                //魔法技能
+                obj.Magics = JsonConvert.DeserializeObject<List<UserMagic>>(read.GetString(read.GetOrdinal("Magics")));
+                for (int i = 0; i < obj.Magics.Count; i++)
+                {
+                    if (!obj.Magics[i].BindInfo())
+                    {
+                        obj.Magics.RemoveAt(i);
+                        i--;
+                        continue;
+                    }
+                    obj.Magics[i].CastTime = 0;
+                }
+
+                obj.HalfMoon = read.GetBoolean(read.GetOrdinal("HalfMoon"));
+                obj.CrossHalfMoon = read.GetBoolean(read.GetOrdinal("CrossHalfMoon"));
+                obj.DoubleSlash = read.GetBoolean(read.GetOrdinal("DoubleSlash"));
+                obj.MentalState = read.GetByte(read.GetOrdinal("MentalState"));
  
-            Class = (MirClass) reader.ReadByte();
-            Gender = (MirGender) reader.ReadByte();
-            Hair = reader.ReadByte();
+                obj.Pets = JsonConvert.DeserializeObject<List<PetInfo>>(read.GetString(read.GetOrdinal("Pets")));
+                obj.AllowGroup = read.GetBoolean(read.GetOrdinal("AllowGroup"));
+                obj.Flags = JsonConvert.DeserializeObject<bool[]>(read.GetString(read.GetOrdinal("Flags")));
 
-            CreationIP = reader.ReadString();
-            CreationDate = DateTime.FromBinary(reader.ReadInt64());
-
-            Banned = reader.ReadBoolean();
-            BanReason = reader.ReadString();
-            ExpiryDate = DateTime.FromBinary(reader.ReadInt64());
-
-            LastIP = reader.ReadString();
-            LastDate = DateTime.FromBinary(reader.ReadInt64());
-
-            Deleted = reader.ReadBoolean();
-            DeleteDate = DateTime.FromBinary(reader.ReadInt64());
-
-            CurrentMapIndex = reader.ReadInt32();
-            CurrentLocation = new Point(reader.ReadInt32(), reader.ReadInt32());
-            Direction = (MirDirection)reader.ReadByte();
-            BindMapIndex = reader.ReadInt32();
-            BindLocation = new Point(reader.ReadInt32(), reader.ReadInt32());
-
-            HP = reader.ReadUInt16();
-            MP = reader.ReadUInt16();
-            Experience = reader.ReadInt64();
-            
-            AMode = (AttackMode) reader.ReadByte();
-            PMode = (PetMode) reader.ReadByte();
-
-            if (Envir.LoadVersion > 34)
-            {
-                PKPoints = reader.ReadInt32();
-            }
-
-            int count = reader.ReadInt32();
-
-            Array.Resize(ref Inventory, count);
-
-            for (int i = 0; i < count; i++)
-            {
-                if (!reader.ReadBoolean()) continue;
-                UserItem item = new UserItem(reader, Envir.LoadVersion, Envir.LoadCustomVersion);
-                if (SMain.Envir.BindItem(item) && i < Inventory.Length)
-                    Inventory[i] = item;
-            }
-
-            count = reader.ReadInt32();
-            for (int i = 0; i < count; i++)
-            {
-                if (!reader.ReadBoolean()) continue;
-                UserItem item = new UserItem(reader, Envir.LoadVersion, Envir.LoadCustomVersion);
-                if (SMain.Envir.BindItem(item) && i < Equipment.Length)
-                    Equipment[i] = item;
-            }
-
-            count = reader.ReadInt32();
-            for (int i = 0; i < count; i++)
-            {
-                if (!reader.ReadBoolean()) continue;
-                UserItem item = new UserItem(reader, Envir.LoadVersion, Envir.LoadCustomVersion);
-                if (SMain.Envir.BindItem(item) && i < QuestInventory.Length)
-                    QuestInventory[i] = item;
-            }
-
-            count = reader.ReadInt32();
-            for (int i = 0; i < count; i++)
-            {
-                UserMagic magic = new UserMagic(1,reader);
-                if (magic.Info == null) continue;
-                //Magics.Add(magic);
-            }
-            Magics = UserMagic.loadByUserid(Index);
-            //reset all magic cooldowns on char loading < stops ppl from having none working skills after a server crash
-            for (int i = 0; i < Magics.Count; i++)
-            {
-                Magics[i].CastTime = 0;
-            }
-
-            if (Envir.LoadVersion < 2) return;
-
-            Thrusting = reader.ReadBoolean();
-            HalfMoon = reader.ReadBoolean();
-            CrossHalfMoon = reader.ReadBoolean();
-            DoubleSlash = reader.ReadBoolean();
-
-            if(Envir.LoadVersion > 46)
-            {
-                MentalState = reader.ReadByte();
-            }
-
-            if (Envir.LoadVersion < 4) return;
-
-            count = reader.ReadInt32();
-            for (int i = 0; i < count; i++)
-                Pets.Add(new PetInfo(reader));
-
-
-            if (Envir.LoadVersion < 5) return;
-
-            AllowGroup = reader.ReadBoolean();
-
-            if (Envir.LoadVersion < 12) return;
-
-            if (Envir.LoadVersion == 12) count = reader.ReadInt32();
-
-            for (int i = 0; i < Globals.FlagIndexCount; i++)
-                Flags[i] = reader.ReadBoolean();
-
-            if (Envir.LoadVersion > 27)
-                GuildIndex = reader.ReadInt32();
-
-            if (Envir.LoadVersion > 30)
-                AllowTrade = reader.ReadBoolean();
-
-            if (Envir.LoadVersion > 33)
-            {
-                count = reader.ReadInt32();
-
-                for (int i = 0; i < count; i++)
+                obj.GuildIndex = read.GetInt32(read.GetOrdinal("GuildIndex"));
+                obj.AllowTrade = read.GetBoolean(read.GetOrdinal("AllowTrade"));
+                obj.CurrentQuests = JsonConvert.DeserializeObject<List<QuestProgressInfo>>(read.GetString(read.GetOrdinal("CurrentQuests")));
+                if (obj.CurrentQuests != null)
                 {
-                    QuestProgressInfo quest = new QuestProgressInfo(reader);
-                    if (SMain.Envir.BindQuest(quest))
-                        CurrentQuests.Add(quest);
-                }
-            }
-
-            if(Envir.LoadVersion > 42)
-            {
-                count = reader.ReadInt32();
-                for (int i = 0; i < count; i++)
-                {
-                    Buff buff = new Buff(reader);
-
-                    if (Envir.LoadVersion == 51)
+                    for (int i = 0; i < obj.CurrentQuests.Count; i++)
                     {
-                        buff.Caster = SMain.Envir.GetObject(reader.ReadUInt32());
+                        SMain.Envir.BindQuest(obj.CurrentQuests[i]);
                     }
-
-                    Buffs.Add(buff);
                 }
-            }
-
-            if(Envir.LoadVersion > 43)
-            {
-                count = reader.ReadInt32();
-                for (int i = 0; i < count; i++)
-                    Mail.Add(new MailInfo(reader, Envir.LoadVersion, Envir.LoadCustomVersion));
-            }
-
-            //IntelligentCreature
-            if (Envir.LoadVersion > 44)
-            {
-                count = reader.ReadInt32();
-                for (int i = 0; i < count; i++)
-                {
-                    UserIntelligentCreature creature = new UserIntelligentCreature(reader);
-                    if (creature.Info == null) continue;
-                    IntelligentCreatures.Add(creature);
-                }
-
-                if (Envir.LoadVersion == 45)
-                {
-                    var old1 = (IntelligentCreatureType)reader.ReadByte();
-                    var old2 = reader.ReadBoolean();
-                }
-
-                PearlCount = reader.ReadInt32();
-            }
-
-            if (Envir.LoadVersion > 49)
-            {
-                count = reader.ReadInt32();
-                for (int i = 0; i < count; i++)
-                    CompletedQuests.Add(reader.ReadInt32());
-            }
-
-            if (Envir.LoadVersion > 50 && Envir.LoadVersion < 54)
-            {
-                count = reader.ReadInt32();
-                for (int i = 0; i < count; i++)
-                {
-                    Poison poison = new Poison(reader);
-
-                    if (Envir.LoadVersion == 51)
-                    {
-                        poison.Owner = SMain.Envir.GetObject(reader.ReadUInt32());
-                    }
-
-                    Poisons.Add(poison);
-                }
-            }
-
-            if (Envir.LoadVersion > 56)
-            {
-                if (reader.ReadBoolean()) CurrentRefine = new UserItem(reader, Envir.LoadVersion, Envir.LoadCustomVersion);
-                  if (CurrentRefine != null)
-                    SMain.Envir.BindItem(CurrentRefine);
-
-                CollectTime = reader.ReadInt64();
-                CollectTime += SMain.Envir.Time;
-            }
-
-            if (Envir.LoadVersion > 58)
-            {
-                count = reader.ReadInt32();
-                for (int i = 0; i < count; i++)
-                    Friends.Add(new FriendInfo(reader));
-            }
-
-            if (Envir.LoadVersion > 75)
-            {
-                count = reader.ReadInt32();
-                for (var i = 0; i < count; i++)
-                    RentedItems.Add(new ItemRentalInformation(reader));
-
-                HasRentedItem = reader.ReadBoolean();
-            }
-
-            if (Envir.LoadVersion > 59)
-            {
-                Married = reader.ReadInt32();
-                MarriedDate = DateTime.FromBinary(reader.ReadInt64());
-                Mentor = reader.ReadInt32();
-                MentorDate = DateTime.FromBinary(reader.ReadInt64());
-                isMentor = reader.ReadBoolean();
-                MentorExp = reader.ReadInt64();
-            }
-
-            if (Envir.LoadVersion >= 63)
-            {
-                int logCount = reader.ReadInt32();
-
-                for (int i = 0; i < logCount; i++)
-                {
-                    GSpurchases.Add(reader.ReadInt32(), reader.ReadInt32());
-                }
-            }
-        }
-
-        public void Save(BinaryWriter writer)
-        {
-            writer.Write(Index);
-            writer.Write(Name);
-            writer.Write(Level);
-            writer.Write((byte) Class);
-            writer.Write((byte) Gender);
-            writer.Write(Hair);
-
-            writer.Write(CreationIP);
-            writer.Write(CreationDate.ToBinary());
-
-            writer.Write(Banned);
-            writer.Write(BanReason);
-            writer.Write(ExpiryDate.ToBinary());
-
-            writer.Write(LastIP);
-            writer.Write(LastDate.ToBinary());
-
-            writer.Write(Deleted);
-            writer.Write(DeleteDate.ToBinary());
-
-            writer.Write(CurrentMapIndex);
-            writer.Write(CurrentLocation.X);
-            writer.Write(CurrentLocation.Y);
-            writer.Write((byte)Direction);
-            writer.Write(BindMapIndex);
-            writer.Write(BindLocation.X);
-            writer.Write(BindLocation.Y);
-
-            writer.Write(HP);
-            writer.Write(MP);
-            writer.Write(Experience);
-
-            writer.Write((byte) AMode);
-            writer.Write((byte) PMode);
-
-            writer.Write(PKPoints);
-
-            writer.Write(Inventory.Length);
-            for (int i = 0; i < Inventory.Length; i++)
-            {
-                writer.Write(Inventory[i] != null);
-                if (Inventory[i] == null) continue;
-
-                Inventory[i].Save(writer);
-            }
-
-            writer.Write(Equipment.Length);
-            for (int i = 0; i < Equipment.Length; i++)
-            {
-                writer.Write(Equipment[i] != null);
-                if (Equipment[i] == null) continue;
-
-                Equipment[i].Save(writer);
-            }
-
-            writer.Write(QuestInventory.Length);
-            for (int i = 0; i < QuestInventory.Length; i++)
-            {
-                writer.Write(QuestInventory[i] != null);
-                if (QuestInventory[i] == null) continue;
-
-                QuestInventory[i].Save(writer);
-            }
-
-            writer.Write(Magics.Count);
-            for (int i = 0; i < Magics.Count; i++)
-            {
-                Magics[i].Save(writer);
-
-                Magics[i].userid = Index;
-                Magics[i].SaveDB();
-            }
                 
 
-            writer.Write(Thrusting);
-            writer.Write(HalfMoon);
-            writer.Write(CrossHalfMoon);
-            writer.Write(DoubleSlash);
-            writer.Write(MentalState);
+                obj.Buffs = JsonConvert.DeserializeObject<List<Buff>>(read.GetString(read.GetOrdinal("Buffs")));
+                obj.Mail = JsonConvert.DeserializeObject<List<MailInfo>>(read.GetString(read.GetOrdinal("Mail")));
+                for (int i = 0; i < obj.Mail.Count; i++)
+                {
+                    obj.Mail[i].BindItems();
+                }
 
-            writer.Write(Pets.Count);
-            for (int i = 0; i < Pets.Count; i++)
-                Pets[i].Save(writer);
+                obj.IntelligentCreatures = JsonConvert.DeserializeObject<List<UserIntelligentCreature>>(read.GetString(read.GetOrdinal("IntelligentCreatures")));
+                obj.PearlCount = read.GetInt32(read.GetOrdinal("PearlCount"));
+                obj.CompletedQuests = JsonConvert.DeserializeObject<List<int>>(read.GetString(read.GetOrdinal("CompletedQuests")));
+                obj.CurrentRefine = JsonConvert.DeserializeObject<UserItem>(read.GetString(read.GetOrdinal("CurrentRefine")));
+                if (obj.CurrentRefine != null)
+                {
+                    if (!obj.CurrentRefine.BindItem())
+                    {
+                        obj.CurrentRefine = null;
+                    }
+                }
+                obj.CollectTime = read.GetInt64(read.GetOrdinal("CollectTime"));
+                //这里的时间要重置的
+                obj.CollectTime += SMain.Envir.Time;
 
-            writer.Write(AllowGroup);
-
-            for (int i = 0; i < Flags.Length; i++)
-                writer.Write(Flags[i]);
-            writer.Write(GuildIndex);
-
-            writer.Write(AllowTrade);
-
-            writer.Write(CurrentQuests.Count);
-            for (int i = 0; i < CurrentQuests.Count; i++)
-                CurrentQuests[i].Save(writer);
-
-            writer.Write(Buffs.Count);
-            for (int i = 0; i < Buffs.Count; i++)
-            {
-                Buffs[i].Save(writer);
+                obj.Friends = JsonConvert.DeserializeObject<List<FriendInfo>>(read.GetString(read.GetOrdinal("Friends")));
+                obj.RentedItems = JsonConvert.DeserializeObject<List<ItemRentalInformation>>(read.GetString(read.GetOrdinal("RentedItems")));
+                obj.HasRentedItem = read.GetBoolean(read.GetOrdinal("HasRentedItem"));
+                obj.Married = (ulong)read.GetInt64(read.GetOrdinal("Married"));
+                obj.MarriedDate = read.GetDateTime(read.GetOrdinal("MarriedDate"));
+                obj.Mentor = (ulong)read.GetInt64(read.GetOrdinal("Mentor"));
+                obj.MentorDate = read.GetDateTime(read.GetOrdinal("MentorDate"));
+                obj.isMentor = read.GetBoolean(read.GetOrdinal("isMentor"));
+                obj.MentorExp = (long)read.GetInt64(read.GetOrdinal("MentorExp"));
+                obj.GSpurchases = JsonConvert.DeserializeObject<Dictionary<int, int>>(read.GetString(read.GetOrdinal("GSpurchases")));
+                
+                DBObjectUtils.updateObjState(obj, obj.Index);
+                list.Add(obj);
             }
+            return list;
+        }
+        
+        /// <summary>
+        /// 全职业的排行榜
+        /// 前10
+        /// </summary>
+        /// <returns></returns>
+        public static List<Rank_Character_Info> getRankTop()
+        {
+            List<Rank_Character_Info> list = new List<Rank_Character_Info>();
+            DbDataReader read = MirRunDB.ExecuteReader("select * from CharacterInfo order by Level desc limit 10 ");
+            while (read.Read())
+            {
+                Rank_Character_Info obj = new Rank_Character_Info();
+                obj.Class = (MirClass)read.GetInt16(read.GetOrdinal("Class"));
+                obj.Name = read.GetString(read.GetOrdinal("Name"));
+                obj.PlayerId = (ulong)read.GetInt64(read.GetOrdinal("Idx"));
+                obj.Experience = (long)read.GetInt64(read.GetOrdinal("Experience"));
+                list.Add(obj);
+            }
+            return list;
+        }
 
-            writer.Write(Mail.Count);
-            for (int i = 0; i < Mail.Count; i++)
-                Mail[i].Save(writer);
+        /// <summary>
+        /// 5职业的排行榜
+        /// </summary>
+        /// <returns></returns>
+        public static List<Rank_Character_Info>[] getRankClass()
+        {
+            List<Rank_Character_Info>[] list = new List<Rank_Character_Info>[5];
+            for(int i = 0; i < 5; i++)
+            {
+                DbDataReader read = MirRunDB.ExecuteReader("select * from CharacterInfo where class=@class order by Level desc  limit 10 ",new SQLiteParameter("class", i));
+                while (read.Read())
+                {
+                    Rank_Character_Info obj = new Rank_Character_Info();
+                    obj.Class = (MirClass)read.GetInt16(read.GetOrdinal("Class"));
+                    obj.Name = read.GetString(read.GetOrdinal("Name"));
+                    obj.PlayerId = (ulong)read.GetInt64(read.GetOrdinal("Idx"));
+                    obj.Experience = (long)read.GetInt64(read.GetOrdinal("Experience"));
+                    list[i].Add(obj);
+                }
+            }
+            return list;
+        }
 
-            //IntelligentCreature
-            writer.Write(IntelligentCreatures.Count);
-            for (int i = 0; i < IntelligentCreatures.Count; i++)
-                IntelligentCreatures[i].Save(writer);
-            writer.Write(PearlCount);
+        //保存到数据库
+        public void SaveDB()
+        {
+            byte state = DBObjectUtils.ObjState(this, Index);
+            if (state == 0)//没有改变
+            {
+                return;
+            }
+            List<SQLiteParameter> lp = new List<SQLiteParameter>();
+            lp.Add(new SQLiteParameter("Name", Name));
+            lp.Add(new SQLiteParameter("accIndex", accIndex));
+            lp.Add(new SQLiteParameter("Level", Level));
+            lp.Add(new SQLiteParameter("Class", (byte)Class));
+            lp.Add(new SQLiteParameter("Gender", (byte)Gender));
+            lp.Add(new SQLiteParameter("Hair", Hair));
+            lp.Add(new SQLiteParameter("CreationIP", CreationIP));
+            lp.Add(new SQLiteParameter("CreationDate", CreationDate));
+            lp.Add(new SQLiteParameter("Banned", Banned));
+            lp.Add(new SQLiteParameter("BanReason", BanReason));
+            lp.Add(new SQLiteParameter("ExpiryDate", ExpiryDate));
+            lp.Add(new SQLiteParameter("LastIP", LastIP));
+            lp.Add(new SQLiteParameter("LastDate", LastDate));
+            lp.Add(new SQLiteParameter("Deleted", Deleted));
+            lp.Add(new SQLiteParameter("DeleteDate", DeleteDate));
+            lp.Add(new SQLiteParameter("CurrentMapIndex", CurrentMapIndex));
+            lp.Add(new SQLiteParameter("CurrentLocation_X", CurrentLocation.X));
+            lp.Add(new SQLiteParameter("CurrentLocation_Y", CurrentLocation.Y));
+            lp.Add(new SQLiteParameter("Direction", Direction));
+            lp.Add(new SQLiteParameter("BindMapIndex", BindMapIndex));
+            lp.Add(new SQLiteParameter("BindLocation_X", BindLocation.X));
+            lp.Add(new SQLiteParameter("BindLocation_Y", BindLocation.Y));
+            lp.Add(new SQLiteParameter("HP", HP));
+            lp.Add(new SQLiteParameter("MP", MP));
+            lp.Add(new SQLiteParameter("Experience", Experience));
+            lp.Add(new SQLiteParameter("AMode", (byte)AMode));
+            lp.Add(new SQLiteParameter("PMode", (byte)PMode));
+            lp.Add(new SQLiteParameter("PKPoints", PKPoints));
+            
+            lp.Add(new SQLiteParameter("Inventory", JsonConvert.SerializeObject(Inventory)));
+            lp.Add(new SQLiteParameter("Inventory_len", Inventory.Length));//背包的容量
+            lp.Add(new SQLiteParameter("Equipment", JsonConvert.SerializeObject(Equipment)));
+            lp.Add(new SQLiteParameter("QuestInventory", JsonConvert.SerializeObject(QuestInventory)));
+            lp.Add(new SQLiteParameter("Magics", JsonConvert.SerializeObject(Magics)));
 
-            writer.Write(CompletedQuests.Count);
-            for (int i = 0; i < CompletedQuests.Count; i++)
-                writer.Write(CompletedQuests[i]);
+            lp.Add(new SQLiteParameter("Thrusting", Thrusting));
+            lp.Add(new SQLiteParameter("HalfMoon", HalfMoon));
+            lp.Add(new SQLiteParameter("CrossHalfMoon", CrossHalfMoon));
+            lp.Add(new SQLiteParameter("DoubleSlash", DoubleSlash));
+            lp.Add(new SQLiteParameter("MentalState", MentalState));
 
+            lp.Add(new SQLiteParameter("Pets", JsonConvert.SerializeObject(Pets)));
+   
+            lp.Add(new SQLiteParameter("AllowGroup", AllowGroup));
 
-            writer.Write(CurrentRefine != null);
-            if (CurrentRefine != null)
-                CurrentRefine.Save(writer);
+            lp.Add(new SQLiteParameter("Flags", JsonConvert.SerializeObject(Flags)));
+
+            lp.Add(new SQLiteParameter("GuildIndex", GuildIndex));
+            lp.Add(new SQLiteParameter("AllowTrade", AllowTrade));
+            lp.Add(new SQLiteParameter("CurrentQuests", JsonConvert.SerializeObject(CurrentQuests)));
+            lp.Add(new SQLiteParameter("Buffs", JsonConvert.SerializeObject(Buffs)));
+            lp.Add(new SQLiteParameter("Mail", JsonConvert.SerializeObject(Mail)));
+
+            lp.Add(new SQLiteParameter("IntelligentCreatures", JsonConvert.SerializeObject(IntelligentCreatures)));
+            
+            lp.Add(new SQLiteParameter("PearlCount", PearlCount));
+            lp.Add(new SQLiteParameter("CompletedQuests", JsonConvert.SerializeObject(CompletedQuests)));
+
+            lp.Add(new SQLiteParameter("CurrentRefine", JsonConvert.SerializeObject(CurrentRefine)));
 
             if ((CollectTime - SMain.Envir.Time) < 0)
                 CollectTime = 0;
             else
                 CollectTime = CollectTime - SMain.Envir.Time;
 
-            writer.Write(CollectTime);
 
-            writer.Write(Friends.Count);
-            for (int i = 0; i < Friends.Count; i++)
-                Friends[i].Save(writer);
+            lp.Add(new SQLiteParameter("CollectTime", CollectTime));
+            lp.Add(new SQLiteParameter("Friends", JsonConvert.SerializeObject(Friends)));
 
-            writer.Write(RentedItems.Count);
-            foreach (var rentedItemInformation in RentedItems)
-                rentedItemInformation.Save(writer);
+            lp.Add(new SQLiteParameter("RentedItems", JsonConvert.SerializeObject(RentedItems)));
+            lp.Add(new SQLiteParameter("HasRentedItem", HasRentedItem));
+            lp.Add(new SQLiteParameter("Married", Married));
+            lp.Add(new SQLiteParameter("MarriedDate", MarriedDate));
+            lp.Add(new SQLiteParameter("Mentor", Mentor));
+            lp.Add(new SQLiteParameter("MentorDate", MentorDate));
+            lp.Add(new SQLiteParameter("isMentor", isMentor));
+            lp.Add(new SQLiteParameter("MentorExp", MentorExp));
+            lp.Add(new SQLiteParameter("GSpurchases", JsonConvert.SerializeObject(GSpurchases)));
 
-            writer.Write(HasRentedItem);
 
-            writer.Write(Married);
-            writer.Write(MarriedDate.ToBinary());
-            writer.Write(Mentor);
-            writer.Write(MentorDate.ToBinary());
-            writer.Write(isMentor);
-            writer.Write(MentorExp);
-
-            writer.Write(GSpurchases.Count);
-
-            foreach (var item in GSpurchases)
+            //新增
+            if (state == 1)
             {
-                writer.Write(item.Key);
-                writer.Write(item.Value);
+                if (Index > 0)
+                {
+                    lp.Add(new SQLiteParameter("Idx", Index));
+                }
+                string sql = "insert into CharacterInfo" + SQLiteHelper.createInsertSql(lp.ToArray());
+                MirRunDB.Execute(sql, lp.ToArray());
             }
+            //修改
+            if (state == 2)
+            {
+                string sql = "update CharacterInfo set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where Idx=@Idx";
+                lp.Add(new SQLiteParameter("Idx", Index));
+                MirRunDB.Execute(sql, lp.ToArray());
+            }
+            DBObjectUtils.updateObjState(this, Index);
         }
+
+
 
         public ListViewItem CreateListView()
         {
@@ -659,9 +563,11 @@ namespace Server.MirDatabase
     //好友
     public class FriendInfo
     {
-        public int Index;
+        public ulong Index;
 
+        [JsonIgnore]
         private CharacterInfo _Info;
+        [JsonIgnore]
         public CharacterInfo Info
         {
             get 
@@ -685,7 +591,7 @@ namespace Server.MirDatabase
 
         public FriendInfo(BinaryReader reader)
         {
-            Index = reader.ReadInt32();
+            Index = (ulong)reader.ReadInt32();
             Blocked = reader.ReadBoolean();
             Memo = reader.ReadString();
         }

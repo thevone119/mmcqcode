@@ -1,7 +1,10 @@
-﻿using Server.MirDatabase;
+﻿using Newtonsoft.Json;
+using Server.MirDatabase;
 using Server.MirObjects;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Data.SQLite;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,11 +18,14 @@ namespace Server.MirEnvir
 
         public string Sender;
 
-        public int RecipientIndex;
+        public ulong RecipientIndex;
+
+        [JsonIgnore]
         public CharacterInfo RecipientInfo;
 
         public string Message = string.Empty;
         public uint Gold = 0;
+
         public List<UserItem> Items = new List<UserItem>();
 
         public DateTime DateSent, DateOpened;
@@ -45,9 +51,14 @@ namespace Server.MirEnvir
 
         public bool CanReply;
 
-        public MailInfo(int recipientIndex, bool canReply = false)
+        public MailInfo()
         {
-            MailID = ++SMain.Envir.NextMailID;
+
+        }
+
+        public MailInfo(ulong recipientIndex, bool canReply = false)
+        {
+            MailID = (ulong)UniqueKeyHelper.UniqueNext();
             RecipientIndex = recipientIndex;
 
             CanReply = canReply;
@@ -57,7 +68,7 @@ namespace Server.MirEnvir
         {
             MailID = reader.ReadUInt64();
             Sender = reader.ReadString();
-            RecipientIndex = reader.ReadInt32();
+            RecipientIndex = (ulong)reader.ReadInt32();
             Message = reader.ReadString();
             Gold = reader.ReadUInt32();
 
@@ -66,7 +77,7 @@ namespace Server.MirEnvir
             for (int i = 0; i < count; i++)
             {
                 UserItem item = new UserItem(reader, version, customversion);
-                if (SMain.Envir.BindItem(item))
+                if (item.BindItem())
                     Items.Add(item);
             }
 
@@ -98,6 +109,93 @@ namespace Server.MirEnvir
             writer.Write(CanReply);
         }
 
+        public void BindItems()
+        {
+            for (int i = 0; i < Items.Count && i >= 0; i++)
+            {
+                if (!Items[i].BindItem())
+                {
+                    Items.RemoveAt(i);
+                    i--;
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// 加载所有数据库中加载
+        /// </summary>
+        /// <returns></returns>
+        public static List<MailInfo> loadAll()
+        {
+            List<MailInfo> list = new List<MailInfo>();
+            DbDataReader read = MirRunDB.ExecuteReader("select * from MailInfo");
+            while (read.Read())
+            {
+                MailInfo obj = new MailInfo();
+
+                obj.MailID = (ulong)read.GetInt64(read.GetOrdinal("MailID"));
+                obj.Sender = read.GetString(read.GetOrdinal("Sender"));
+                obj.RecipientIndex = (ulong)read.GetInt64(read.GetOrdinal("RecipientIndex"));
+                obj.Message = read.GetString(read.GetOrdinal("Message"));
+                obj.Gold = (uint)read.GetInt32(read.GetOrdinal("Gold"));
+                obj.DateSent = read.GetDateTime(read.GetOrdinal("Gold"));
+                obj.DateOpened = read.GetDateTime(read.GetOrdinal("DateOpened"));
+                obj.Locked = read.GetBoolean(read.GetOrdinal("Locked"));
+                obj.Collected = read.GetBoolean(read.GetOrdinal("Collected"));
+                obj.CanReply = read.GetBoolean(read.GetOrdinal("CanReply"));
+                obj.CanReply = read.GetBoolean(read.GetOrdinal("CanReply"));
+
+                obj.Items = JsonConvert.DeserializeObject<List<UserItem>>(read.GetString(read.GetOrdinal("Items")));
+                obj.BindItems();
+
+
+                DBObjectUtils.updateObjState(obj, obj.MailID);
+                list.Add(obj);
+            }
+            return list;
+        }
+
+        //保存到数据库
+        public void SaveDB()
+        {
+            byte state = DBObjectUtils.ObjState(this, MailID);
+            if (state == 0)//没有改变
+            {
+                return;
+            }
+            List<SQLiteParameter> lp = new List<SQLiteParameter>();
+            lp.Add(new SQLiteParameter("Sender", Sender));
+            lp.Add(new SQLiteParameter("RecipientIndex", RecipientIndex));
+            lp.Add(new SQLiteParameter("Message", Message));
+            lp.Add(new SQLiteParameter("Gold", Gold));
+            lp.Add(new SQLiteParameter("DateSent", DateSent));
+            lp.Add(new SQLiteParameter("DateOpened", DateOpened));
+            lp.Add(new SQLiteParameter("Locked", Locked));
+            lp.Add(new SQLiteParameter("Collected", Collected));
+            lp.Add(new SQLiteParameter("CanReply", CanReply));
+
+            lp.Add(new SQLiteParameter("Items", JsonConvert.SerializeObject(Items)));
+            //新增
+            if (state == 1)
+            {
+                if (MailID > 0)
+                {
+                    lp.Add(new SQLiteParameter("MailID", MailID));
+                }
+                string sql = "insert into MailInfo" + SQLiteHelper.createInsertSql(lp.ToArray());
+                MirRunDB.Execute(sql, lp.ToArray());
+            }
+            //修改
+            if (state == 2)
+            {
+                string sql = "update MailInfo set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where MailID=@MailID";
+                lp.Add(new SQLiteParameter("MailID", MailID));
+                MirRunDB.Execute(sql, lp.ToArray());
+            }
+            DBObjectUtils.updateObjState(this, MailID);
+        }
+        //发送邮件
         public void Send()
         {
             if (Sent) return;
@@ -135,7 +233,7 @@ namespace Server.MirEnvir
 
             DateSent = DateTime.Now;
         }
-
+        //接受邮件
         public bool Receive()
         {
             if (!Sent) return false; //mail not sent yet

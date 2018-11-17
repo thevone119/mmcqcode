@@ -20,10 +20,10 @@ namespace Server.MirObjects
 
         public ConquestInfo Info;
 
-        public int Owner = 0;
+        public long Owner = 0;
         public GuildObject Guild;
 
-        public int AttackerID;
+        public long AttackerID;
 
         public Map ConquestMap;
         public Map PalaceMap;
@@ -76,7 +76,7 @@ namespace Server.MirObjects
         }
         public ConquestObject(BinaryReader reader)
         {
-            Owner = reader.ReadInt32();
+            Owner = (long)reader.ReadInt64();
             ArcherCount = reader.ReadInt32();
             for (int i = 0; i < ArcherCount; i++)
             {
@@ -99,7 +99,7 @@ namespace Server.MirObjects
             }
             GoldStorage = reader.ReadUInt32();
             npcRate = reader.ReadByte();
-            AttackerID = reader.ReadInt32();
+            AttackerID = reader.ReadInt64();
         }
         public void Save(BinaryWriter writer)
         {

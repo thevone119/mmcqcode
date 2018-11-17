@@ -329,7 +329,7 @@ namespace Server.MirObjects
         public bool ItemRentalFeeLocked = false;
         public bool ItemRentalItemLocked = false;
 
-        private long LastRankUpdate = Envir.Time;
+        //private long LastRankUpdate = Envir.Time;
 
         public List<QuestProgressInfo> CurrentQuests
         {
@@ -1678,6 +1678,7 @@ namespace Server.MirObjects
                 GainExp((uint)expPoint);
         }
 
+        //增益的经验
         public void GainExp(uint amount)
         {
             if (!CanGainExp) return;
@@ -1753,14 +1754,7 @@ namespace Server.MirObjects
             LevelUp();
 
             if (IsGM) return;
-            if ((LastRankUpdate + 3600 * 1000) > Envir.Time)
-            {
-                LastRankUpdate = Envir.Time;
-                if ((Level >= SMain.Envir.RankBottomLevel[0]) || (Level >= SMain.Envir.RankBottomLevel[(byte)Class + 1]))
-                {
-                    SMain.Envir.CheckRankUpdate(Info);
-                }
-            }
+            
         }
 
         public void LevelUp()
@@ -1788,11 +1782,7 @@ namespace Server.MirObjects
             }
             Report.Levelled(Level);
             if (IsGM) return;
-            if ((Level >= SMain.Envir.RankBottomLevel[0]) || (Level >= SMain.Envir.RankBottomLevel[(byte)Class + 1]))
-            {
-
-                SMain.Envir.CheckRankUpdate(Info);
-            }
+            
         }
 
         private static int FreeSpace(IList<UserItem> array)
@@ -1932,6 +1922,8 @@ namespace Server.MirObjects
 
             return true;
         }
+
+        //检测物品是否已发送到客户端，如果没有发送过的，发送到客户端
         public void CheckItemInfo(ItemInfo info, bool dontLoop = false)
         {
             if ((dontLoop == false) && (info.ClassBased | info.LevelBased)) //send all potential data so client can display it
@@ -2203,11 +2195,8 @@ namespace Server.MirObjects
             SMain.Enqueue(string.Format("{0} has connected.", Info.Name));
             
             if (IsGM) return;
-            LastRankUpdate = Envir.Time;
-            if ((Level >= SMain.Envir.RankBottomLevel[0]) || (Level >= SMain.Envir.RankBottomLevel[(byte)Class + 1]))
-            {
-                SMain.Envir.CheckRankUpdate(Info);
-            }
+            //LastRankUpdate = Envir.Time;
+            
 
         }
         private void StartGameFailed()
@@ -2374,7 +2363,7 @@ namespace Server.MirObjects
             S.UserInformation packet = new S.UserInformation
             {
                 ObjectID = ObjectID,
-                RealId = (uint)Info.Index,
+                RealId = Info.Index,
                 Name = Name,
                 GuildName = guildname,
                 GuildRank = guildrank,
@@ -3462,7 +3451,7 @@ namespace Server.MirObjects
                     IsGM = true;
                     SMain.Enqueue(string.Format("{0} is now a GM", Name));
                     ReceiveChat("You have been made a GM", ChatType.System);
-                    Envir.RemoveRank(Info);//remove gm chars from ranking to avoid causing bugs in rank list
+                    //Envir.RemoveRank(Info);//remove gm chars from ranking to avoid causing bugs in rank list
                 }
                 else
                 {
@@ -3828,7 +3817,7 @@ namespace Server.MirObjects
                     case "MAKE"://GM创建一件装备,物品命令为MARK 
                         if ((!IsGM && !Settings.TestServer) || parts.Length < 2) return;
 
-                        ItemInfo iInfo = Envir.GetItemInfo(parts[1]);
+                        ItemInfo iInfo = ItemInfo.getItem(parts[1]);
                         if (iInfo == null) return;
 
                         uint count = 1;
@@ -4043,7 +4032,7 @@ namespace Server.MirObjects
                         }
 
 
-                        if (Info.Equipment[(int)EquipmentSlot.RingL].WeddingRing == Info.Married)
+                        if (Info.Equipment[(int)EquipmentSlot.RingL].WeddingRing == (long)Info.Married)
                         {
                             CharacterInfo Lover = Envir.GetCharacterInfo(Info.Married);
 
@@ -4070,7 +4059,7 @@ namespace Server.MirObjects
                                 return;
                             }
 
-                            if (player.Info.Equipment[(int)EquipmentSlot.RingL].WeddingRing != player.Info.Married)
+                            if (player.Info.Equipment[(int)EquipmentSlot.RingL].WeddingRing != (long)player.Info.Married)
                             {
                                 player.ReceiveChat((string.Format("You need to wear a Wedding Ring on your left finger for recall.", Lover.Name)), ChatType.System);
                                 ReceiveChat((string.Format("{0} Isn't wearing a Wedding Ring.", Lover.Name)), ChatType.System);
@@ -4130,28 +4119,7 @@ namespace Server.MirObjects
 
                         if (parts.Length < 2) return;
 
-                        CharacterInfo tempInfo = null;
-
-                        System.IO.Directory.CreateDirectory("Character Backups");
-
-                        for (int i = 0; i < Envir.AccountList.Count; i++)
-                        {
-                            for (int j = 0; j < Envir.AccountList[i].Characters.Count; j++)
-                            {
-                                if (String.Compare(Envir.AccountList[i].Characters[j].Name, parts[1], StringComparison.OrdinalIgnoreCase) != 0) continue;
-
-                                tempInfo = Envir.AccountList[i].Characters[j];
-                                break;
-                            }
-                        }
                         
-                        using (System.IO.FileStream stream = System.IO.File.Create(string.Format("Character Backups/{0}", tempInfo.Name)))
-                        {
-                            using (System.IO.BinaryWriter writer = new System.IO.BinaryWriter(stream))
-                            {
-                                tempInfo.Save(writer);
-                            }
-                        }
 
                         break;
 
@@ -4160,37 +4128,10 @@ namespace Server.MirObjects
 
                         if (parts.Length < 2) return;
 
-                        tempInfo = null;
-
-                        System.IO.Directory.CreateDirectory("Character Backups");
-
-                        for (int i = 0; i < Envir.AccountList.Count; i++)
-                        {
-                            for (int j = 0; j < Envir.AccountList[i].Characters.Count; j++)
-                            {
-                                if (String.Compare(Envir.AccountList[i].Characters[j].Name, parts[1], StringComparison.OrdinalIgnoreCase) != 0) continue;
-
-                                tempInfo = Envir.AccountList[i].Characters[j];
-
-                                using (System.IO.FileStream stream = System.IO.File.OpenRead(string.Format("Character Backups/{0}", tempInfo.Name)))
-                                {
-                                    using (System.IO.BinaryReader reader = new System.IO.BinaryReader(stream))
-                                    {
-                                        CharacterInfo tt = new CharacterInfo(reader);
-
-                                        if(Envir.AccountList[i].Characters[j].Index != tt.Index)
-                                        {
-                                            ReceiveChat("Player name was matched however IDs did not. Likely due to player being recreated. Player not restored", ChatType.System);
-                                            return;
-                                        }
-
-                                        Envir.AccountList[i].Characters[j] = tt;
-                                    }
-                                }
-                            }
-                        }
                         
-                        Envir.BeginSaveAccounts();
+                        
+                        
+                      
                     break;
 
                     case "MOVE":
@@ -10578,7 +10519,7 @@ namespace Server.MirObjects
                 return;
             }
 
-            if ((temp.SoulBoundId != -1) && (temp.SoulBoundId != Info.Index))
+            if ((temp.SoulBoundId != -1) && (temp.SoulBoundId != (long)Info.Index))
             {
                 Enqueue(p);
                 return;
@@ -11091,7 +11032,7 @@ namespace Server.MirObjects
                 return;
             }
 
-            if ((temp.SoulBoundId != -1) && (temp.SoulBoundId != Info.Index))
+            if ((temp.SoulBoundId != -1) && (temp.SoulBoundId != (long)Info.Index))
             {
                 Enqueue(p);
                 return;
@@ -11114,7 +11055,7 @@ namespace Server.MirObjects
                 }
                 if ((temp.Info.Bind.HasFlag(BindMode.BindOnEquip)) && (temp.SoulBoundId == -1))
                 {
-                    temp.SoulBoundId = Info.Index;
+                    temp.SoulBoundId = (long)Info.Index;
                     Enqueue(new S.RefreshItem { Item = temp });
                 }
 
@@ -12605,6 +12546,7 @@ namespace Server.MirObjects
             Enqueue(new S.GainedCredit { Credit = credit });
         }
 
+        //检测是否能携带此物品，检测负重，检测包裹
         public bool CanGainItem(UserItem item, bool useWeight = true)
         {
             if (item.Info.Type == ItemType.Amulet)
@@ -13335,7 +13277,7 @@ namespace Server.MirObjects
         private void DamageItem(UserItem item, int amount, bool isChanged = false)
         {
             if (item == null || item.CurrentDura == 0 || item.Info.Type == ItemType.Amulet) return;
-            if ((item.WeddingRing == Info.Married) && (Info.Equipment[(int)EquipmentSlot.RingL].UniqueID == item.UniqueID)) return;
+            if ((item.WeddingRing == (long)Info.Married) && (Info.Equipment[(int)EquipmentSlot.RingL].UniqueID == item.UniqueID)) return;
             if (item.Info.Strong > 0) amount = Math.Max(1, amount - item.Info.Strong);
             item.CurrentDura = (ushort)Math.Max(ushort.MinValue, item.CurrentDura - amount);
             item.DuraChanged = true;
@@ -13418,7 +13360,7 @@ namespace Server.MirObjects
 
         public void RequestUserName(uint id)
         {
-            CharacterInfo Character = Envir.GetCharacterInfo((int)id);
+            CharacterInfo Character = Envir.GetCharacterInfo((ulong)id);
             if (Character != null)
                 Enqueue(new S.UserName { Id = (uint)Character.Index, Name = Character.Name });
         }
@@ -13435,7 +13377,7 @@ namespace Server.MirObjects
             if (player == null) return;
             Inspect(player.Info.Index);
         }
-        public void Inspect(int id)
+        public void Inspect(ulong id)
         {
             if (ObjectID == id) return;
             CharacterInfo player = Envir.GetCharacterInfo(id);
@@ -14593,7 +14535,7 @@ namespace Server.MirObjects
 
                 AuctionInfo auction = new AuctionInfo
                 {
-                    AuctionID = ++Envir.NextAuctionID,
+                    AuctionID = (ulong)UniqueKeyHelper.UniqueNext(),
                     CharacterIndex = Info.Index,
                     CharacterInfo = Info,
                     ConsignmentDate = Envir.Now,
@@ -14720,13 +14662,14 @@ namespace Server.MirObjects
                 GetMarket(string.Empty, MatchType);
             }
         }
+        //市场买东西
+        //这个是玩家市场
         public void MarketBuy(ulong auctionID)
         {
             if (Dead)
             {
                 Enqueue(new S.MarketFail { Reason = 0 });
                 return;
-
             }
 
             if (NPCPage == null || !String.Equals(NPCPage.Key, NPCObject.MarketKey, StringComparison.CurrentCultureIgnoreCase))
@@ -15550,7 +15493,7 @@ namespace Server.MirObjects
         {
             if (Envir.GetGuild(GuildName) != null) return;
             //make the guild
-            GuildObject guild = new GuildObject(this, GuildName) { Guildindex = ++Envir.NextGuildID };
+            GuildObject guild = new GuildObject(this, GuildName) { Guildindex = UniqueKeyHelper.UniqueNext() };
             guild.Ranks[0].Members.Clear();
             guild.Membercount--;
             Envir.GuildList.Add(guild);
@@ -15653,7 +15596,7 @@ namespace Server.MirObjects
             }
             RefreshStats();
             //make the guild
-            GuildObject guild = new GuildObject(this, GuildName) { Guildindex = ++Envir.NextGuildID };
+            GuildObject guild = new GuildObject(this, GuildName) { Guildindex = UniqueKeyHelper.UniqueNext() };
             Envir.GuildList.Add(guild);
             Info.GuildIndex = guild.Guildindex;
             MyGuild = guild;
@@ -15994,7 +15937,7 @@ namespace Server.MirObjects
                         Enqueue(p);
                         return;
                     }
-                    MyGuild.StoredItems[to] = new GuildStorageItem() { Item = Info.Inventory[from], UserId = Info.Index };
+                    MyGuild.StoredItems[to] = new GuildStorageItem() { Item = Info.Inventory[from], UserId = (long)Info.Index };
                     Info.Inventory[from] = null;
                     RefreshBagWeight();
                     MyGuild.SendItemInfo(MyGuild.StoredItems[to].Item);
@@ -17500,7 +17443,7 @@ namespace Server.MirObjects
             //Create parcel
             MailInfo mail = new MailInfo(player.Index, true)
             {
-                MailID = ++Envir.NextMailID,
+                MailID = (ulong)UniqueKeyHelper.UniqueNext(),
                 Sender = Info.Name,
                 Message = message,
                 Gold = gold,
@@ -17939,7 +17882,7 @@ namespace Server.MirObjects
         }
         public bool IntelligentCreatureProduceBlackStone()
         {
-            ItemInfo iInfo = Envir.GetItemInfo(Settings.CreatureBlackStoneName);
+            ItemInfo iInfo = ItemInfo.getItem(Settings.CreatureBlackStoneName);
             if (iInfo == null) return false;
 
             UserItem item = iInfo.CreateDropItem();
@@ -18170,7 +18113,7 @@ namespace Server.MirObjects
             GetFriends();
         }
 
-        public void RemoveFriend(int index)
+        public void RemoveFriend(ulong index)
         {
             FriendInfo friend = Info.Friends.FirstOrDefault(e => e.Index == index);
 
@@ -18184,7 +18127,7 @@ namespace Server.MirObjects
             GetFriends();
         }
 
-        public void AddMemo(int index, string memo)
+        public void AddMemo(ulong index, string memo)
         {
             if (memo.Length > 200) return;
 
@@ -18767,7 +18710,7 @@ namespace Server.MirObjects
         {
             if (CheckMakeWeddingRing())
             {
-                Info.Equipment[(int)EquipmentSlot.RingL].WeddingRing = Info.Married;
+                Info.Equipment[(int)EquipmentSlot.RingL].WeddingRing = (long)Info.Married;
                 Enqueue(new S.RefreshItem { Item = Info.Equipment[(int)EquipmentSlot.RingL] });
             }
         }
@@ -18838,7 +18781,7 @@ namespace Server.MirObjects
             Enqueue(new S.LoseGold { Gold = cost });
 
 
-            temp.WeddingRing = Info.Married;
+            temp.WeddingRing = (long)Info.Married;
             CurrentRing.WeddingRing = -1;
 
             Info.Equipment[(int)EquipmentSlot.RingL] = temp;
@@ -19633,7 +19576,7 @@ namespace Server.MirObjects
 
             MailInfo mail = new MailInfo(Info.Index)
                 {
-                    MailID = ++Envir.NextMailID,
+                    MailID = (ulong)UniqueKeyHelper.UniqueNext(),
                     Sender = "Gameshop",
                     Message = "Thank you for your purchase from the Gameshop. Your item(s) are enclosed.",
                     Items = mailItems,

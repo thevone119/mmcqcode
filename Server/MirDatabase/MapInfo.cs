@@ -45,7 +45,9 @@ namespace Server.MirDatabase
         public List<MineZone> MineZones = new List<MineZone>();
         //活动的坐标？非数据库字段
         public List<Point> ActiveCoords = new List<Point>();
+
         //实例包裹
+        [JsonIgnore]
         public InstanceInfo Instance;
 
         public MapInfo()
@@ -107,6 +109,15 @@ namespace Server.MirDatabase
                 obj.Music = (ushort)read.GetInt16(read.GetOrdinal("Music"));
 
                 obj.SafeZones = JsonConvert.DeserializeObject<List<SafeZoneInfo>>(read.GetString(read.GetOrdinal("SafeZones")));
+                //反向引用
+                if (obj.SafeZones != null)
+                {
+                    for(int i=0;i< obj.SafeZones.Count; i++)
+                    {
+                        obj.SafeZones[i].Info = obj;
+                    }
+                }
+
                 obj.Movements = JsonConvert.DeserializeObject<List<MovementInfo>>(read.GetString(read.GetOrdinal("Movements")));
                 obj.Respawns = JsonConvert.DeserializeObject<List<RespawnInfo>>(read.GetString(read.GetOrdinal("Respawns")));
                 obj.MineZones = JsonConvert.DeserializeObject<List<MineZone>>(read.GetString(read.GetOrdinal("MineZones")));
@@ -346,7 +357,7 @@ namespace Server.MirDatabase
 
 
 
-            info.Index = DBObjectUtils.getObjNextId(info);
+            info.Index = (int)DBObjectUtils.getObjNextId(info);
             SMain.EditEnvir.MapInfoList.Add(info);
         }
     }

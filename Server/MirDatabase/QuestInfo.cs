@@ -18,7 +18,7 @@ namespace Server.MirDatabase
         public int Index;
 
         public uint NpcIndex;
-        public NPCInfo NpcInfo;
+        //public NPCInfo NpcInfo;
 
         private uint _finishNpcIndex;
 
@@ -92,6 +92,8 @@ namespace Server.MirDatabase
                 obj.RequiredMinLevel = read.GetInt32(read.GetOrdinal("RequiredMinLevel"));
                 obj.RequiredMaxLevel = read.GetInt32(read.GetOrdinal("RequiredMaxLevel"));
 
+                if (obj.RequiredMaxLevel == 0) obj.RequiredMaxLevel = ushort.MaxValue;
+
                 obj.RequiredQuest = read.GetInt32(read.GetOrdinal("RequiredQuest"));
                 obj.RequiredClass = (RequiredClass)read.GetInt32(read.GetOrdinal("RequiredClass"));
                 obj.Type = (QuestType)read.GetInt32(read.GetOrdinal("Type"));
@@ -100,7 +102,8 @@ namespace Server.MirDatabase
                 obj.KillMessage = read.GetString(read.GetOrdinal("KillMessage"));
                 obj.ItemMessage = read.GetString(read.GetOrdinal("ItemMessage"));
                 obj.FlagMessage = read.GetString(read.GetOrdinal("FlagMessage"));
-
+                //加载脚本
+                obj.LoadInfo();
                 
                 DBObjectUtils.updateObjState(obj, obj.Index);
                 list.Add(obj);
@@ -331,14 +334,14 @@ namespace Server.MirDatabase
 
             if (split.Length > 1) uint.TryParse(split[1], out count);
 
-            ItemInfo mInfo = SMain.Envir.GetItemInfo(split[0]);
+            ItemInfo mInfo = ItemInfo.getItem(split[0]);
 
             if (mInfo == null)
             {
-                mInfo = SMain.Envir.GetItemInfo(split[0] + "(M)");
+                mInfo = ItemInfo.getItem(split[0] + "(M)");
                 if (mInfo != null) list.Add(new QuestItemReward() { Item = mInfo, Count = count });
 
-                mInfo = SMain.Envir.GetItemInfo(split[0] + "(F)");
+                mInfo = ItemInfo.getItem(split[0] + "(F)");
                 if (mInfo != null) list.Add(new QuestItemReward() { Item = mInfo, Count = count });
             }
             else
@@ -375,7 +378,7 @@ namespace Server.MirDatabase
             uint count = 1;
             string message = "";
 
-            ItemInfo mInfo = SMain.Envir.GetItemInfo(split[0]);
+            ItemInfo mInfo = ItemInfo.getItem(split[0]);
             if (split.Length > 1) uint.TryParse(split[1], out count);
 
             var match = _regexMessage.Match(line);
@@ -504,7 +507,7 @@ namespace Server.MirDatabase
 
             info.RequiredClass = (RequiredClass)temp;
 
-            info.Index = DBObjectUtils.getObjNextId(info);
+            info.Index = (int)DBObjectUtils.getObjNextId(info);
             SMain.EditEnvir.QuestInfoList.Add(info);
         }
 

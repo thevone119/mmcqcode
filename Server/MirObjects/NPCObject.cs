@@ -77,7 +77,7 @@ namespace Server.MirObjects
         public List<QuestInfo> Quests = new List<QuestInfo>();
         public List<RecipeInfo> CraftGoods = new List<RecipeInfo>();
 
-        public Dictionary<int, bool> VisibleLog = new Dictionary<int, bool>();
+        public Dictionary<ulong, bool> VisibleLog = new Dictionary<ulong, bool>();
 
         public List<NPCPage> NPCPages = new List<NPCPage>();
 
@@ -171,7 +171,7 @@ namespace Server.MirObjects
                     for (int k = 0; k < count; k++)
                     {
                         UserItem item = new UserItem(reader, version, customversion);
-                        if (SMain.Envir.BindItem(item))
+                        if (item.BindItem())
                             UsedGoods.Add(item);
                     }
                 }
@@ -613,7 +613,7 @@ namespace Server.MirObjects
 
                     var data = lines[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                    ItemInfo info = SMain.Envir.GetItemInfo(data[0]);
+                    ItemInfo info = ItemInfo.getItem(data[0]);
                     if (info == null)
                         continue;
                     UserItem goods = new UserItem(info) { CurrentDura = info.Durability, MaxDura = info.Durability };
@@ -676,7 +676,7 @@ namespace Server.MirObjects
 
                     var data = lines[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                    ItemInfo info = SMain.Envir.GetItemInfo(data[0]);
+                    ItemInfo info = ItemInfo.getItem(data[0]);
                     if (info == null)
                         continue;
 

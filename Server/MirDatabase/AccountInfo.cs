@@ -5,14 +5,22 @@ using System.Windows.Forms;
 using Server.MirNetwork;
 using Server.MirEnvir;
 using C = ClientPackets;
-
+using Newtonsoft.Json;
+using System.Data.SQLite;
+using System.Data.Common;
 
 namespace Server.MirDatabase
 {
     //账号信息
+    //看怎么和平台整合才可以
+    //账号应该独立，不要和具体游戏的内容捆绑。
+    //把仓库，金币，信用等游戏内的信息，迁移到角色上去。
     public class AccountInfo
     {
-        public int Index;
+        //缓存数据
+        private static Dictionary<string, AccountInfo> dbtemp = new Dictionary<string, AccountInfo>();
+
+        public ulong Index;
 
         public string AccountID = string.Empty;
         public string Password = string.Empty;
@@ -34,17 +42,20 @@ namespace Server.MirDatabase
         public string LastIP = string.Empty;
         public DateTime LastDate;
 
+        [JsonIgnore]
         public List<CharacterInfo> Characters = new List<CharacterInfo>();
-        //账号里怎么会有用户物品呢？
+        //这个是仓库物品存储，仓库关联到账号上，不关联到角色，这样多个角色间可以共享仓库
+        //默认这个共享只能存储80个物品，可以扩展仓库，扩展仓库后可以存储160个物品
         public UserItem[] Storage = new UserItem[80];
         public bool HasExpandedStorage;
         public DateTime ExpandedStorageExpiryDate;
-        public uint Gold;
-        public uint Credit;
+        public uint Gold;//金币,金币是账号上的金币，多角色共享
+        public uint Credit;//积分，信用,也可称作元宝
 
         public ListViewItem ListItem;
         public MirConnection Connection;
-        
+
+        [JsonIgnore]
         public LinkedList<AuctionInfo> Auctions = new LinkedList<AuctionInfo>();
         public bool AdminAccount;
 
@@ -64,113 +75,116 @@ namespace Server.MirDatabase
             BirthDate = p.BirthDate;
             CreationDate = SMain.Envir.Now;
         }
-        public AccountInfo(BinaryReader reader)
+        
+
+
+
+
+        /// <summary>
+        /// 根据账号ID查找账号
+        /// </summary>
+        /// <param name="AccountID"></param>
+        /// <returns></returns>
+        public static List<AccountInfo> loadAll()
         {
-            Index = reader.ReadInt32();
-
-            AccountID = reader.ReadString();
-            Password = reader.ReadString();
-
-            UserName = reader.ReadString();
-            BirthDate = DateTime.FromBinary(reader.ReadInt64());
-            SecretQuestion = reader.ReadString();
-            SecretAnswer = reader.ReadString();
-            EMailAddress = reader.ReadString();
-
-            CreationIP = reader.ReadString();
-            CreationDate = DateTime.FromBinary(reader.ReadInt64());
-
-            Banned = reader.ReadBoolean();
-            BanReason = reader.ReadString();
-            ExpiryDate = DateTime.FromBinary(reader.ReadInt64());
-
-            LastIP = reader.ReadString();
-            LastDate = DateTime.FromBinary(reader.ReadInt64());
-
-            int count = reader.ReadInt32();
-
-            for (int i = 0; i < count; i++)
+            List<AccountInfo> list = new List<AccountInfo>();
+            DbDataReader read = MirRunDB.ExecuteReader("select * from AccountInfo ");
+            if (read.Read())
             {
-                Characters.Add(new CharacterInfo(reader) { AccountInfo = this });
-            }
+                AccountInfo obj = new AccountInfo();
+                obj.Index = (ulong)read.GetInt64(read.GetOrdinal("Idx"));
+                obj.AccountID = read.GetString(read.GetOrdinal("AccountID"));
+                obj.Password = read.GetString(read.GetOrdinal("Password"));
+                obj.UserName = read.GetString(read.GetOrdinal("UserName"));
+                obj.BirthDate = read.GetDateTime(read.GetOrdinal("BirthDate"));
+                obj.SecretQuestion = read.GetString(read.GetOrdinal("SecretQuestion"));
+                obj.SecretAnswer = read.GetString(read.GetOrdinal("SecretAnswer"));
+                obj.EMailAddress = read.GetString(read.GetOrdinal("EMailAddress"));
 
-            if (Envir.LoadVersion > 75)
-            {
-                HasExpandedStorage = reader.ReadBoolean();
-                ExpandedStorageExpiryDate = DateTime.FromBinary(reader.ReadInt64());
-            }
-            
-            Gold = reader.ReadUInt32();
-            if (Envir.LoadVersion >= 63) Credit = reader.ReadUInt32();
+                obj.CreationIP = read.GetString(read.GetOrdinal("CreationIP"));
+                obj.CreationDate = read.GetDateTime(read.GetOrdinal("CreationDate"));
 
-            count = reader.ReadInt32();
+                obj.Banned = read.GetBoolean(read.GetOrdinal("Banned"));
+                obj.BanReason = read.GetString(read.GetOrdinal("BanReason"));
+                obj.ExpiryDate = read.GetDateTime(read.GetOrdinal("ExpiryDate"));
 
-            Array.Resize(ref Storage, count);
+                obj.LastIP = read.GetString(read.GetOrdinal("LastIP"));
+                obj.LastDate = read.GetDateTime(read.GetOrdinal("LastDate"));
 
-            for (int i = 0; i < count; i++)
-            {
-                if (!reader.ReadBoolean()) continue;
-                UserItem item = new UserItem(reader, Envir.LoadVersion, Envir.LoadCustomVersion);
-                if (SMain.Envir.BindItem(item) && i < Storage.Length)
-                    Storage[i] = item;
-            }
 
-            if (Envir.LoadVersion >= 10) AdminAccount = reader.ReadBoolean();
-            if (!AdminAccount)
-            {
-                for (int i = 0; i < Characters.Count; i++)
+                obj.HasExpandedStorage = read.GetBoolean(read.GetOrdinal("HasExpandedStorage"));
+                obj.ExpandedStorageExpiryDate = read.GetDateTime(read.GetOrdinal("ExpandedStorageExpiryDate"));
+
+                obj.Gold = (uint)read.GetInt32(read.GetOrdinal("Gold"));
+                obj.Credit = (uint)read.GetInt32(read.GetOrdinal("Credit"));
+                obj.AdminAccount = read.GetBoolean(read.GetOrdinal("AdminAccount"));
+
+                obj.Storage = JsonConvert.DeserializeObject<UserItem[]>(read.GetString(read.GetOrdinal("Storage")));
+                if (obj.Storage != null)
                 {
-                    if (Characters[i] == null) continue;
-                    if (Characters[i].Deleted) continue;
-                    if ((DateTime.Now - Characters[i].LastDate).TotalDays > 13) continue;
-                    if ((Characters[i].Level >= SMain.Envir.RankBottomLevel[0]) || (Characters[i].Level >= SMain.Envir.RankBottomLevel[(byte)Characters[i].Class + 1]))
+                    for(int i=0;i< obj.Storage.Length; i++)
                     {
-                        SMain.Envir.CheckRankUpdate(Characters[i]);
+                        if (obj.Storage[i] != null)
+                        {
+                            obj.Storage[i].BindItem();
+                        }
                     }
                 }
+                DBObjectUtils.updateObjState(obj, obj.Index);
+                list.Add(obj);
             }
+            return list;
         }
 
-
-        public void Save(BinaryWriter writer)
+        //保存到数据库
+        public void SaveDB()
         {
-            writer.Write(Index);
-            writer.Write(AccountID);
-            writer.Write(Password);
-
-            writer.Write(UserName);
-            writer.Write(BirthDate.ToBinary());
-            writer.Write(SecretQuestion);
-            writer.Write(SecretAnswer);
-            writer.Write(EMailAddress);
-
-            writer.Write(CreationIP);
-            writer.Write(CreationDate.ToBinary());
-
-            writer.Write(Banned);
-            writer.Write(BanReason);
-            writer.Write(ExpiryDate.ToBinary());
-
-            writer.Write(LastIP);
-            writer.Write(LastDate.ToBinary());
-
-            writer.Write(Characters.Count);
-            for (int i = 0; i < Characters.Count; i++)
-                Characters[i].Save(writer);
-
-            writer.Write(HasExpandedStorage);
-            writer.Write(ExpandedStorageExpiryDate.ToBinary());
-            writer.Write(Gold);
-            writer.Write(Credit);
-            writer.Write(Storage.Length);
-            for (int i = 0; i < Storage.Length; i++)
+            byte state = DBObjectUtils.ObjState(this, Index);
+            if (state == 0)//没有改变
             {
-                writer.Write(Storage[i] != null);
-                if (Storage[i] == null) continue;
-
-                Storage[i].Save(writer);
+                return;
             }
-            writer.Write(AdminAccount);
+            List<SQLiteParameter> lp = new List<SQLiteParameter>();
+            lp.Add(new SQLiteParameter("AccountID", AccountID));
+            lp.Add(new SQLiteParameter("Password", Password));
+            lp.Add(new SQLiteParameter("UserName", UserName));
+            lp.Add(new SQLiteParameter("BirthDate", BirthDate));
+            lp.Add(new SQLiteParameter("SecretQuestion", SecretQuestion));
+            lp.Add(new SQLiteParameter("SecretAnswer", SecretAnswer));
+            lp.Add(new SQLiteParameter("EMailAddress", EMailAddress));
+            lp.Add(new SQLiteParameter("CreationIP", CreationIP));
+            lp.Add(new SQLiteParameter("CreationDate", CreationDate));
+            lp.Add(new SQLiteParameter("ExpiryDate", ExpiryDate));
+            lp.Add(new SQLiteParameter("Banned", Banned));
+            lp.Add(new SQLiteParameter("BanReason", BanReason));
+            lp.Add(new SQLiteParameter("ExpiryDate", ExpiryDate));
+            lp.Add(new SQLiteParameter("LastIP", LastIP));
+            lp.Add(new SQLiteParameter("LastDate", LastDate));
+            lp.Add(new SQLiteParameter("HasExpandedStorage", HasExpandedStorage));
+            lp.Add(new SQLiteParameter("ExpandedStorageExpiryDate", ExpandedStorageExpiryDate));
+            lp.Add(new SQLiteParameter("Gold", Gold));
+            lp.Add(new SQLiteParameter("Credit", Credit));
+            lp.Add(new SQLiteParameter("AdminAccount", AdminAccount));
+            lp.Add(new SQLiteParameter("Storage", JsonConvert.SerializeObject(Storage)));
+
+            //新增
+            if (state == 1)
+            {
+                if (Index > 0)
+                {
+                    lp.Add(new SQLiteParameter("Idx", Index));
+                }
+                string sql = "insert into AccountInfo" + SQLiteHelper.createInsertSql(lp.ToArray());
+                MirRunDB.Execute(sql, lp.ToArray());
+            }
+            //修改
+            if (state == 2)
+            {
+                string sql = "update AccountInfo set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where Idx=@Idx";
+                lp.Add(new SQLiteParameter("Idx", Index));
+                MirRunDB.Execute(sql, lp.ToArray());
+            }
+            DBObjectUtils.updateObjState(this, Index);
         }
 
         public ListViewItem CreateListView()

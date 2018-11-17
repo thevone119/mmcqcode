@@ -1888,7 +1888,7 @@ namespace Server.MirObjects
 
                         bool checkDura = ushort.TryParse(param[2], out dura);
 
-                        var info = SMain.Envir.GetItemInfo(param[0]);
+                        var info = ItemInfo.getItem(param[0]);
 
                         foreach (var item in player.Info.Inventory.Where(item => item != null && item.Info == info))
                         {
@@ -2648,7 +2648,7 @@ namespace Server.MirObjects
                     case ActionType.GiveItem:
                         if (param.Count < 2 || !uint.TryParse(param[1], out count)) count = 1;
 
-                        info = SMain.Envir.GetItemInfo(param[0]);
+                        info = ItemInfo.getItem(param[0]);
 
                         if (info == null)
                         {
@@ -2684,7 +2684,7 @@ namespace Server.MirObjects
 
                     case ActionType.TakeItem:
                         if (param.Count < 2 || !uint.TryParse(param[1], out count)) count = 1;
-                        info = SMain.Envir.GetItemInfo(param[0]);
+                        info = ItemInfo.getItem(param[0]);
 
                         ushort dura;
                         bool checkDura = ushort.TryParse(param[2], out dura);
@@ -3264,7 +3264,7 @@ namespace Server.MirObjects
 
                         if (param.Count < 2 || !uint.TryParse(param[1], out count)) count = 1;
 
-                        info = SMain.Envir.GetItemInfo(param[0]);
+                        info = ItemInfo.getItem(param[0]);
 
                         if (info == null)
                         {

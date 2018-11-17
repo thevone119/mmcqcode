@@ -27,7 +27,7 @@ namespace Server.MirDatabase
 
         public RecipeInfo(string name)
         {
-            ItemInfo itemInfo = SMain.Envir.GetItemInfo(name);
+            ItemInfo itemInfo = ItemInfo.getItem(name);
             if (itemInfo == null)
             {
                 SMain.Enqueue(string.Format("Could not find Item: {0}", name));
@@ -63,7 +63,7 @@ namespace Server.MirDatabase
                         {
                             var data = lines[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                            ItemInfo info = SMain.Envir.GetItemInfo(data[0]);
+                            ItemInfo info = ItemInfo.getItem(data[0]);
 
                             if (info == null)
                             {

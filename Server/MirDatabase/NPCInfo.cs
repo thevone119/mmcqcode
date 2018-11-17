@@ -267,7 +267,7 @@ namespace Server.MirDatabase
             if (!ushort.TryParse(data[5], out info.Image)) return;
             if (!ushort.TryParse(data[6], out info.Rate)) return;
 
-            info.Index = DBObjectUtils.getObjNextId(info);
+            info.Index = (int)DBObjectUtils.getObjNextId(info);
             SMain.EditEnvir.NPCInfoList.Add(info);
         }
         public string ToText()

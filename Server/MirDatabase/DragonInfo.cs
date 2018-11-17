@@ -161,7 +161,7 @@ namespace Server.MirDatabase
                 else
                 {
                     if (parts.Length < 3) return null;
-                    info.Item = SMain.Envir.GetItemInfo(parts[1]);
+                    info.Item = ItemInfo.getItem(parts[1]);
                     if (info.Item == null) return null;
                     if (!byte.TryParse(parts[2], out info.level)) return null;
                 }

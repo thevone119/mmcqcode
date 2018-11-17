@@ -802,7 +802,7 @@ namespace Server.MirNetwork
 
             temp.Deleted = true;
             temp.DeleteDate = SMain.Envir.Now;
-            SMain.Envir.RemoveRank(temp);
+            //SMain.Envir.RemoveRank(temp);
             Enqueue(new S.DeleteCharacterSuccess { CharacterIndex = temp.Index });
         }
         private void StartGame(C.StartGame p)
@@ -1055,7 +1055,7 @@ namespace Server.MirNetwork
             if (Stage != GameStage.Game) return;
 
             if (p.Ranking)
-                Player.Inspect((int)p.ObjectID);
+                Player.Inspect((ulong)p.ObjectID);
             else
                 Player.Inspect(p.ObjectID);
         }

@@ -5,6 +5,7 @@ using System.Linq;
 using Server.MirObjects;
 using System.Text.RegularExpressions;
 using Server.MirEnvir;
+using Newtonsoft.Json;
 
 namespace Server.MirDatabase
 {
@@ -12,6 +13,7 @@ namespace Server.MirDatabase
     {
         public int Index;
 
+        [JsonIgnore]
         public QuestInfo Info;
 
         public DateTime StartDateTime = DateTime.MinValue;
@@ -36,6 +38,11 @@ namespace Server.MirDatabase
         public bool New
         {
             get { return StartDateTime > DateTime.Now.AddDays(-1); }
+        }
+
+        public QuestProgressInfo()
+        {
+
         }
 
         public QuestProgressInfo(int index)

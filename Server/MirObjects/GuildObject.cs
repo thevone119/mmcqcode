@@ -5,10 +5,15 @@ using System.Text;
 using System.IO;
 using Server.MirEnvir;
 using System.Drawing;
+using System.Data.SQLite;
+using Newtonsoft.Json;
+using System.Data.Common;
 
 namespace Server.MirObjects
 {
-
+    /// <summary>
+    /// 行会对象
+    /// </summary>
     public class GuildObject
     {
         protected static Envir Envir
@@ -16,7 +21,7 @@ namespace Server.MirObjects
             get { return SMain.Envir; }
         }
 
-        public int Guildindex = 0;
+        public long Guildindex = 0;
         public string Name = "";
         public byte Level = 0;
         public byte SparePoints = 0;
@@ -34,13 +39,14 @@ namespace Server.MirObjects
         public long NextExpUpdate = 0;
         public int MemberCap = 0;
         public List<string> Notice = new List<string>();
+        //交战行会
         public List<GuildObject> WarringGuilds = new List<GuildObject>();
 
         public ushort FlagImage = 1000;
         public Color FlagColour = Color.White;
 
         public ConquestObject Conquest;
-
+        //同盟行会
         public List<GuildObject> AllyGuilds = new List<GuildObject>();
         public int AllyCount;
 
@@ -64,128 +70,106 @@ namespace Server.MirObjects
 
             FlagColour = Color.FromArgb(255, RandomUtils.Next(255), RandomUtils.Next(255), RandomUtils.Next(255));
         }
-
-        public GuildObject(BinaryReader reader) 
+        
+        /// <summary>
+        /// 加载所有数据库中加载
+        /// </summary>
+        /// <returns></returns>
+        public static List<GuildObject> loadAll()
         {
-            int customversion = Envir.LoadCustomVersion;
-            int version = reader.ReadInt32();
-            Guildindex = version;
-            if (version == int.MaxValue)
+            List<GuildObject> list = new List<GuildObject>();
+            DbDataReader read = MirRunDB.ExecuteReader("select * from GuildObject");
+            while (read.Read())
             {
-                version = reader.ReadInt32();
-                customversion = reader.ReadInt32();
-                Guildindex = reader.ReadInt32();
-            }
-            else
-            {
-                version = Envir.LoadVersion;
-                NeedSave = true;
-            }
-            Name = reader.ReadString();
-            Level = reader.ReadByte();
-            SparePoints = reader.ReadByte();
-            Experience = reader.ReadInt64();
-            Gold = reader.ReadUInt32();
-            Votes = reader.ReadInt32();
-            LastVoteAttempt = DateTime.FromBinary(reader.ReadInt64());
-            Voting = reader.ReadBoolean();
-            int RankCount = reader.ReadInt32();
-            Membercount = 0;
-            for (int i = 0; i < RankCount; i++)
-            {
-                int index = i;
-                Ranks.Add(new Rank(reader, true) { Index = index });
-                Membercount += Ranks[i].Members.Count;
-            }
-            int ItemCount = reader.ReadInt32();
-            for (int j = 0; j < ItemCount; j++)
-            {
-                if (Envir.Version > 28)
-                    if (!reader.ReadBoolean()) continue;
-                GuildStorageItem Guilditem = new GuildStorageItem()
+                GuildObject obj = new GuildObject();
+
+                obj.Guildindex = (long)read.GetInt64(read.GetOrdinal("Guildindex"));
+                obj.Name = read.GetString(read.GetOrdinal("Name"));
+                obj.Level = read.GetByte(read.GetOrdinal("Level"));
+                obj.SparePoints = read.GetByte(read.GetOrdinal("SparePoints"));
+                obj.Experience = read.GetInt64(read.GetOrdinal("Experience"));
+                obj.Gold = (uint)read.GetInt32(read.GetOrdinal("Gold"));
+                obj.Votes = read.GetInt32(read.GetOrdinal("Votes"));
+                obj.LastVoteAttempt = read.GetDateTime(read.GetOrdinal("LastVoteAttempt"));
+                obj.Voting = read.GetBoolean(read.GetOrdinal("Voting"));
+
+                obj.Membercount = 0;
+                obj.Ranks = JsonConvert.DeserializeObject<List<Rank>>(read.GetString(read.GetOrdinal("Ranks")));
+                for (int i = 0; i < obj.Ranks.Count; i++)
                 {
-                    Item = new UserItem(reader, version, customversion),
-                    UserId = reader.ReadInt64()
-                };
+                    obj.Membercount += obj.Ranks[i].Members.Count;
+                }
+                obj.StoredItems = JsonConvert.DeserializeObject<GuildStorageItem[]>(read.GetString(read.GetOrdinal("StoredItems")));
+                for (int i = 0; i < obj.StoredItems.Length; i++)
+                {
+                    if (obj.StoredItems != null&& obj.StoredItems[i].Item!=null)
+                    {
+                        obj.StoredItems[i].Item.BindItem();
+                    }
+                }
+                obj.BuffList = JsonConvert.DeserializeObject<List<GuildBuff>>(read.GetString(read.GetOrdinal("BuffList")));
+                obj.Notice = JsonConvert.DeserializeObject<List<string>>(read.GetString(read.GetOrdinal("Notice")));
+                obj.MaxExperience = read.GetInt64(read.GetOrdinal("MaxExperience"));
+                obj.MemberCap = read.GetInt32(read.GetOrdinal("MemberCap"));
+                obj.FlagImage = (ushort)read.GetInt16(read.GetOrdinal("FlagImage"));
+                obj.FlagColour = Color.FromArgb(read.GetInt32(read.GetOrdinal("FlagColour")));
+
                 
-                if (SMain.Envir.BindItem(Guilditem.Item) && j < StoredItems.Length)
-                    StoredItems[j] = Guilditem;
+                DBObjectUtils.updateObjState(obj, obj.Guildindex);
+                list.Add(obj);
             }
-            int BuffCount = reader.ReadInt32();
-            if (version < 61)
-            {
-                for (int j = 0; j < BuffCount; j++)
-                    new GuildBuffOld(reader);
-            }
-            else
-            {
-                for (int j = 0; j < BuffCount; j++)
-                {
-                    //new GuildBuff(reader);
-                    BuffList.Add(new GuildBuff(reader));
-                }
-            }
-            for (int j = 0; j < BuffList.Count; j++)
-                BuffList[j].Info = Envir.FindGuildBuffInfo(BuffList[j].Id);
-            int  NoticeCount = reader.ReadInt32();
-            for (int j = 0; j < NoticeCount; j++)
-                Notice.Add(reader.ReadString());
-            if (Level < Settings.Guild_ExperienceList.Count)
-                MaxExperience = Settings.Guild_ExperienceList[Level];
-            if (Level < Settings.Guild_MembercapList.Count)
-                MemberCap = Settings.Guild_MembercapList[Level];
-
-            if (version > 72)
-            {
-                FlagImage = reader.ReadUInt16();
-                FlagColour = Color.FromArgb(reader.ReadInt32());
-            }
+            return list;
         }
-        public void Save(BinaryWriter writer)
+
+        //保存到数据库
+        public void SaveDB()
         {
-            int temp = int.MaxValue;
-            writer.Write(temp);
-            writer.Write(Envir.Version);
-            writer.Write(Envir.LoadVersion);
-
-            int RankCount = 0;
-            for (int i = Ranks.Count - 1; i >= 0; i--)
-                if (Ranks[i].Members.Count > 0)
-                    RankCount++;
-
-            writer.Write(Guildindex);
-            writer.Write(Name);
-            writer.Write(Level);
-            writer.Write(SparePoints);
-            writer.Write(Experience);
-            writer.Write(Gold);
-            writer.Write(Votes);
-            writer.Write(LastVoteAttempt.ToBinary());
-            writer.Write(Voting);
-            writer.Write(RankCount);
-            for (int i = 0; i < Ranks.Count; i++)
-                if (Ranks[i].Members.Count > 0)
-                    Ranks[i].Save(writer,true);
-            writer.Write(StoredItems.Length);
-            for (int i = 0; i < StoredItems.Length; i++)
+            byte state = DBObjectUtils.ObjState(this, Guildindex);
+            if (state == 0)//没有改变
             {
-                writer.Write(StoredItems[i] != null);
-                if (StoredItems[i] != null)
-                {
-                    StoredItems[i].Item.Save(writer);
-                    writer.Write(StoredItems[i].UserId);
-                }
+                return;
             }
-            writer.Write(BuffList.Count);
-            for (int i = 0; i < BuffList.Count; i++)
-                BuffList[i].Save(writer);
-            writer.Write(Notice.Count);
-            for (int i = 0; i < Notice.Count; i++)
-                writer.Write(Notice[i]);
+            List<SQLiteParameter> lp = new List<SQLiteParameter>();
+            lp.Add(new SQLiteParameter("Name", Name));
+            lp.Add(new SQLiteParameter("Level", Level));
+            lp.Add(new SQLiteParameter("SparePoints", SparePoints));
+            lp.Add(new SQLiteParameter("Experience", Experience));
+            lp.Add(new SQLiteParameter("Gold", Gold));
+            lp.Add(new SQLiteParameter("Votes", Votes));
+            lp.Add(new SQLiteParameter("LastVoteAttempt", LastVoteAttempt));
 
-            writer.Write(FlagImage);
-            writer.Write(FlagColour.ToArgb());   
+            lp.Add(new SQLiteParameter("Voting", Voting));
+            lp.Add(new SQLiteParameter("Ranks", JsonConvert.SerializeObject(Ranks)));
+            lp.Add(new SQLiteParameter("StoredItems", JsonConvert.SerializeObject(StoredItems)));
+            lp.Add(new SQLiteParameter("BuffList", JsonConvert.SerializeObject(BuffList)));
+            lp.Add(new SQLiteParameter("Notice", JsonConvert.SerializeObject(Notice)));
+
+            lp.Add(new SQLiteParameter("FlagImage", FlagImage));
+            lp.Add(new SQLiteParameter("FlagColour", FlagColour.ToArgb()));
+
+           
+            //新增
+            if (state == 1)
+            {
+                if (Guildindex > 0)
+                {
+                    lp.Add(new SQLiteParameter("Guildindex", Guildindex));
+                }
+                string sql = "insert into GuildObject" + SQLiteHelper.createInsertSql(lp.ToArray());
+                MirRunDB.Execute(sql, lp.ToArray());
+            }
+            //修改
+            if (state == 2)
+            {
+                string sql = "update GuildObject set " + SQLiteHelper.createUpdateSql(lp.ToArray()) + " where Guildindex=@Guildindex";
+                lp.Add(new SQLiteParameter("Guildindex", Guildindex));
+                MirRunDB.Execute(sql, lp.ToArray());
+            }
+            DBObjectUtils.updateObjState(this, Guildindex);
         }
+
+
+        
 
         public void SendMessage(string message, ChatType Type = ChatType.Guild)
         {
