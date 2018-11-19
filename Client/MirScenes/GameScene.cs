@@ -8607,7 +8607,7 @@ namespace Client.MirScenes
             RouteList = ar.FindeWay(User.CurrentLocation, RouteTarget);
             if (RouteList.Count <= 0)
             {
-                GameScene.Scene.ChatDialog.ReceiveChat("自动寻路失败，请重新选择路径", ChatType.System);
+                GameScene.Scene.ChatDialog.ReceiveChat("自动寻路失败，找不到合适的路径", ChatType.System);
                 return false;
             }
             return true;
@@ -9412,7 +9412,7 @@ namespace Client.MirScenes
                 if (RouteList.Count > 0)
                 {
                     RouteList.Clear();
-                    GameScene.Scene.ChatDialog.ReceiveChat("[自动寻路关闭]", ChatType.Hint);
+                    GameScene.Scene.ChatDialog.ReceiveChat("[自动寻路:关闭]", ChatType.Hint);
                 }
             }
             if (!CanRideAttack()) AutoHit = false;

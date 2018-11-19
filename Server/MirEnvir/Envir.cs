@@ -463,15 +463,16 @@ namespace Server.MirEnvir
                             SaveConquests();
                         }
 
-                        //每5分钟发送在线人数的广播？
+                        //每10分钟发送在线人数的广播？
                         if (Time >= userTime)
                         {
-                            userTime = Time + Settings.Minute * 5;
-                            Broadcast(new S.Chat
+                            userTime = Time + Settings.Minute * 10;
+                            //小于10个人不发送
+                            if (Players.Count > 10)
                             {
-                                Message = string.Format("Online Players: {0}", Players.Count),
-                                Type = ChatType.Hint
-                            });
+                                userTime = Time + Settings.Minute * 5;
+                                Broadcast(new S.Chat{Message = string.Format("当前在线人数: {0}", Players.Count+10),Type = ChatType.Hint});
+                            }
                         }
 
                         //这几个不知道干嘛的，每10秒进行重生处理？

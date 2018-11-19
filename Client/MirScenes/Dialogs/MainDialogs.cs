@@ -4975,7 +4975,7 @@ namespace Client.MirScenes.Dialogs
             map.RouteTarget = new Point(x, y);
             if (map.StartRoute())
             {
-                GameScene.Scene.ChatDialog.ReceiveChat("[自动寻路开启]", ChatType.Hint);
+                GameScene.Scene.ChatDialog.ReceiveChat("[自动寻路:开启]", ChatType.Hint);
             }
         }
 

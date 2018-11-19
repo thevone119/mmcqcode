@@ -1012,12 +1012,12 @@ public enum RequiredGender : byte
 public enum RequiredType : byte
 {
     Level = 0,
-    MaxAC = 1,
-    MaxMAC = 2,
-    MaxDC = 3,
-    MaxMC = 4,
-    MaxSC = 5,
-    MaxLevel = 6,
+    MaxAC = 1,//防御
+    MaxMAC = 2,//魔御
+    MaxDC = 3,//攻击
+    MaxMC = 4,//魔法
+    MaxSC = 5,//道术
+    MaxLevel = 6,//最大等级
     MinAC = 7,
     MinMAC = 8,
     MinDC = 9,
