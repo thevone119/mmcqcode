@@ -451,13 +451,13 @@ namespace Client
                 return null;
             }
             //自定义键，0：没有按住。1：必须按住，2：按不按都可以
-            MirLog.debug("key" + key);
+            //MirLog.debug("key" + key);
             KeyBind kb = keydict[key];
             if (kb == null)
             {
                 return null;
             }
-            MirLog.debug("kb" + kb.ToString());
+            //MirLog.debug("kb" + kb.ToString());
             if (kb.RequireShift != 2 && kb.RequireShift != (Shift ? 1 : 0))
             {
                 return null;

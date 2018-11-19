@@ -80,7 +80,7 @@ namespace Server
         {
             try
             {
-                Text = string.Format("Total: {0}, Real: {1}", Envir.LastCount, Envir.LastRealCount);
+                Text = string.Format("Total: {0}W, Real: {1}W,RunTime:{2}分钟", Envir.LastCount / 10000, Envir.LastRealCount/10000, Envir.Stopwatch.ElapsedMilliseconds/1000/60);
                 PlayersLabel.Text = string.Format("Players: {0}", Envir.Players.Count);
                 MonsterLabel.Text = string.Format("Monsters: {0}", Envir.MonsterCount);
                 ConnectionsLabel.Text = string.Format("Connections: {0}", Envir.Connections.Count);

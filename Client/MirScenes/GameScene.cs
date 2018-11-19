@@ -164,6 +164,7 @@ namespace Client.MirScenes
         //这个控制这个消息的延时，比如释放魔法过于频繁，则提示，但是一秒内只允许提示一次
         public long OutputDelay;
 
+
         public GameScene()
         {
             MapControl.AutoRun = false;
@@ -1025,18 +1026,15 @@ namespace Client.MirScenes
         //处理数据包
         public override void ProcessPacket(Packet p)
         {
-            MirLog.info("p.Index:"+ p.Index);
             switch (p.Index)
             {
                 case (short)ServerPacketIds.KeepAlive:
                     KeepAlive((S.KeepAlive)p);
                     break;
                 case (short)ServerPacketIds.MapInformation: //MapInfo
-                    MirLog.info("MapInformation");
                     MapInformation((S.MapInformation)p);
                     break;
                 case (short)ServerPacketIds.UserInformation:
-                    MirLog.info("UserInformation");
                     UserInformation((S.UserInformation)p);
                     break;
                 case (short)ServerPacketIds.UserLocation:
@@ -2731,11 +2729,12 @@ namespace Client.MirScenes
                 return;
             }
         }
+        //被击中
         private void Struck(S.Struck p)
         {
             LogTime = CMain.Time + Globals.LogDelay;
-
-            NextRunTime = CMain.Time + 2500;
+            //被击中下次跑步要2秒之后才可以跑步？注销掉，直接可以跑步了
+            //NextRunTime = CMain.Time + 2500;
             User.BlizzardStopTime = 0;
             User.ClearMagic();
             if (User.ReincarnationStopTime > CMain.Time)
@@ -8371,14 +8370,14 @@ namespace Client.MirScenes
         public static int ViewRangeY;
 
 
-
+        //鼠标的地图上的位置，网格位置
         public static Point MapLocation
         {
             get { return GameScene.User == null ? Point.Empty : new Point(MouseLocation.X / CellWidth - OffSetX, MouseLocation.Y / CellHeight - OffSetY).Add(GameScene.User.CurrentLocation); }
         }
 
         public static MouseButtons MapButtons;
-        //鼠标的位置，这个不是有个静态变量存放的么？这个是鼠标在地图上的位置
+        //鼠标的位置，这个x,y的像素点
         public static Point MouseLocation;
         public static long InputDelay;
         public static long NextAction;
@@ -8430,12 +8429,17 @@ namespace Client.MirScenes
                 if (GameScene.Scene != null)
                     GameScene.Scene.ChatDialog.ReceiveChat(value ? "[自动跑步: 开启]" : "[自动跑步: 关闭]", ChatType.Hint);
             }
-
         }
+        //这个是自动挖矿？
         public static bool AutoHit;
 
         public int AnimationCount;
-        
+
+
+        //自动寻路
+        public List<Point> RouteList = new List<Point>();//路径列表
+        public Point RouteTarget;//目的地
+
         public static List<Effect> Effects = new List<Effect>();
 
         public MapControl()
@@ -8464,6 +8468,8 @@ namespace Client.MirScenes
             Objects.Clear();
             Effects.Clear();
             Doors.Clear();
+            //换了地图，要重新清空这个自动寻路
+            RouteList.Clear();
 
             if (User != null)
                 Objects.Add(User);
@@ -8515,7 +8521,7 @@ namespace Client.MirScenes
             //技能处理
             for (int i = Effects.Count - 1; i >= 0; i--)
                 Effects[i].Process();
-            //这2个不知道是什么
+            //这2个不知道是什么,针对64的怪物进行特殊处理，无法选中
             if (MapObject.TargetObject != null && MapObject.TargetObject is MonsterObject && MapObject.TargetObject.AI == 64)
                 MapObject.TargetObject = null;
 
@@ -8571,6 +8577,40 @@ namespace Client.MirScenes
                 MapObject.MouseObject = null;
                 Redraw();
             }
+        }
+
+        //开启自动行走
+        public bool StartRoute()
+        {
+            if (RouteTarget == null)
+            {
+                return false;
+            }
+            RouteList.Clear();
+            byte[,] R = new byte[Width, Height];
+            for (int w = 0; w < Width; w++)
+            {
+                for (int h = 0; h < Height; h++)
+                {
+                    if (M2CellInfo[w, h].EmptyCell())
+                    {
+                        R[w, h] = 1;
+                    }
+                    else
+                    {
+                        R[w, h] = 0;
+                    }
+                }
+            }
+
+            AutoRoute ar = new AutoRoute(R);
+            RouteList = ar.FindeWay(User.CurrentLocation, RouteTarget);
+            if (RouteList.Count <= 0)
+            {
+                GameScene.Scene.ChatDialog.ReceiveChat("自动寻路失败，请重新选择路径", ChatType.System);
+                return false;
+            }
+            return true;
         }
 
         public static MapObject GetObject(uint targetID)
@@ -9215,7 +9255,7 @@ namespace Client.MirScenes
             DXManager.Sprite.End();
             DXManager.Sprite.Begin(SpriteFlags.AlphaBlend);
         }
-
+        //鼠标点击，左右键点击事件处理
         private static void OnMouseClick(object sender, EventArgs e)
         {
             MouseEventArgs me = e as MouseEventArgs;
@@ -9255,6 +9295,7 @@ namespace Client.MirScenes
                     break;
                 case MouseButtons.Right:
                     {
+                        //查看用户装备
                         AutoRun = false;
                         if (MapObject.MouseObject == null) return;
                         PlayerObject player = MapObject.MouseObject as PlayerObject;
@@ -9271,7 +9312,7 @@ namespace Client.MirScenes
                     break;
             }
         }
-
+        //鼠标按下事件处理
         private static void OnMouseDown(object sender, MouseEventArgs e)
         {
             MapButtons |= e.Button;
@@ -9292,14 +9333,14 @@ namespace Client.MirScenes
                 MirItemCell cell = GameScene.SelectedCell;
                 if (cell.Item.Info.Bind.HasFlag(BindMode.DontDrop))
                 {
-                    MirMessageBox messageBox = new MirMessageBox(string.Format("You cannot drop {0}", cell.Item.Name), MirMessageBoxButtons.OK);
+                    MirMessageBox messageBox = new MirMessageBox(string.Format("你不能丢弃 {0}", cell.Item.Name), MirMessageBoxButtons.OK);
                     messageBox.Show();
                     GameScene.SelectedCell = null;
                     return;
                 }
                 if (cell.Item.Count == 1)
                 {
-                    MirMessageBox messageBox = new MirMessageBox(string.Format("Are you sure you want to drop {0}?", cell.Item.FriendlyName), MirMessageBoxButtons.YesNo);
+                    MirMessageBox messageBox = new MirMessageBox(string.Format("你确定要丢弃 {0} 吗?", cell.Item.FriendlyName), MirMessageBoxButtons.YesNo);
 
                     messageBox.YesButton.Click += (o, a) =>
                     {
@@ -9311,7 +9352,7 @@ namespace Client.MirScenes
                 }
                 else
                 {
-                    MirAmountBox amountBox = new MirAmountBox("Drop Amount:", cell.Item.Info.Image, cell.Item.Count);
+                    MirAmountBox amountBox = new MirAmountBox("丢弃数量:", cell.Item.Info.Image, cell.Item.Count);
 
                     amountBox.OKButton.Click += (o, a) =>
                     {
@@ -9333,7 +9374,7 @@ namespace Client.MirScenes
             }
             if (GameScene.PickedUpGold)
             {
-                MirAmountBox amountBox = new MirAmountBox("Drop Amount:", 116, GameScene.Gold);
+                MirAmountBox amountBox = new MirAmountBox("丢弃数量:", 116, GameScene.Gold);
 
                 amountBox.OKButton.Click += (o, a) =>
                 {
@@ -9360,14 +9401,22 @@ namespace Client.MirScenes
             else
                 MapObject.TargetObject = null;
         }
-
+        //输入检测(一直循环进行处理)
         private void CheckInput()
         {
             if (AwakeningAction == true) return;
-
-            if ((MouseControl == this) && (MapButtons != MouseButtons.None)) AutoHit = false;//mouse actions stop mining even when frozen!
+            //有鼠标点击了地图，自动挖矿，自动寻路都要取消
+            if ((MouseControl == this) && (MapButtons != MouseButtons.None))
+            {
+                AutoHit = false;//mouse actions stop mining even when frozen!
+                if (RouteList.Count > 0)
+                {
+                    RouteList.Clear();
+                    GameScene.Scene.ChatDialog.ReceiveChat("[自动寻路关闭]", ChatType.Hint);
+                }
+            }
             if (!CanRideAttack()) AutoHit = false;
-            
+            //不大于400毫秒，直接返回
             if (CMain.Time < InputDelay || User.Poison.HasFlag(PoisonType.Paralysis) || User.Poison.HasFlag(PoisonType.LRParalysis) || User.Poison.HasFlag(PoisonType.Frozen) || User.Fishing) return;
             
             if (User.NextMagic != null && !User.RidingMount)
@@ -9428,6 +9477,98 @@ namespace Client.MirScenes
                     return;
                 }
             }
+            
+            //自动行走
+            if (RouteList.Count > 0)
+            {
+                //1.先清除多余的点
+                int remidx = RouteList.Count;//需要删除的index;
+                for (int i = RouteList.Count-1; i >= 0 && i > RouteList.Count - 4; i--)
+                {
+                    Point xp = RouteList[i];
+                    //忽略自身
+                    if (User.CurrentLocation==xp)
+                    {
+                        remidx = i;
+                        break;
+                    }
+                }
+                
+                for(int i = RouteList.Count - 1; i >= remidx; i--)
+                {
+                    RouteList.RemoveAt(i);
+                }
+                
+
+                int distance = User.RidingMount || User.Sprint && !User.Sneaking ? 3 : 2;//可以走动的步数
+                
+                int realdist = 1;//实际走动的步数
+                MirDirection tdir;//朝向
+                Point p1= Point.Empty, p2= Point.Empty, p3= Point.Empty;//最多一次跑3个点
+                //一次最多取2-3个点
+                for (int i= RouteList.Count-1; i>=0 && i > RouteList.Count-4; i--)
+                {
+                    Point xp = RouteList[i];
+                    if (p1 == Point.Empty)
+                    {
+                        p1 = xp;
+                    }else if (p2 == Point.Empty)
+                    {
+                        p2 = xp;
+                    }else if (p3 == Point.Empty)
+                    {
+                        p3 = xp;
+                    }
+                }
+                if (p1 == Point.Empty)
+                {
+                    return;
+                }
+                tdir = Functions.DirectionFromPoint(User.CurrentLocation, p1);
+                if (distance == 2 && p1!= Point.Empty && p2!= Point.Empty)
+                {
+                    if(tdir == Functions.DirectionFromPoint(p1, p2) )
+                    {
+                        realdist = 2;
+                    }
+                }
+                
+                if (distance == 3 && p1 != Point.Empty && p2 != Point.Empty && p2 != Point.Empty)
+                {
+                    if (tdir == Functions.DirectionFromPoint(p1, p2) && tdir== Functions.DirectionFromPoint(p2, p3))
+                    {
+                        realdist = 3;
+                    }
+                }
+                //MirLog.info("realdist:"+ realdist);
+                if (realdist > 1)
+                {
+                    if (GameScene.CanRun && CanRun(tdir) && CMain.Time > GameScene.NextRunTime && User.HP >= 10 && (!User.Sneaking || (User.Sneaking && User.Sprint)))
+                    {
+                        User.QueuedAction = new QueuedAction { Action = MirAction.Running, Direction = tdir, Location = Functions.PointMove(User.CurrentLocation, tdir, realdist) };
+                    }
+                    else
+                    {
+                        realdist = 1;
+                    }
+                }
+                if(realdist==1)
+                {
+                    if ((CanWalk(tdir)) && (CheckDoorOpen(Functions.PointMove(User.CurrentLocation, tdir, 1))))
+                    {
+                        User.QueuedAction = new QueuedAction { Action = MirAction.Walking, Direction = tdir, Location = Functions.PointMove(User.CurrentLocation, tdir, realdist) };
+                    }
+                    else
+                    {
+                        //重新规划路线
+                        StartRoute();
+                        MirLog.info("重新规划路线:" + realdist);
+                    }
+                }
+                return;
+            }
+
+
 
             //这里进行各种鼠标动作处理？
             MirDirection direction;
@@ -9468,21 +9609,23 @@ namespace Client.MirScenes
                 switch (MapButtons)
                 {
                     case MouseButtons.Left://左键点击，这个是攻击？
+
                         if (MapObject.MouseObject is NPCObject || (MapObject.MouseObject is PlayerObject && MapObject.MouseObject != User)) break;
                         if (MapObject.MouseObject is MonsterObject && MapObject.MouseObject.AI == 70) break;
-
+                        //挖肉
                         if (CMain.Alt && !User.RidingMount)
                         {
                             User.QueuedAction = new QueuedAction { Action = MirAction.Harvest, Direction = direction, Location = User.CurrentLocation };
                             return;
                         }
+
                         if (CMain.Shift)
                         {
                             if (CMain.Time > GameScene.AttackTime && CanRideAttack()) //ArcherTest - shift click
                             {
                                 MapObject target = null;
                                 if (MapObject.MouseObject is MonsterObject || MapObject.MouseObject is PlayerObject) target = MapObject.MouseObject;
-
+                                //弓箭手的攻击,shift攻击，可以对着某个方向放箭？
                                 if (User.Class == MirClass.Archer && User.HasClassWeapon && !User.RidingMount)
                                 {
                                     if (target != null)
@@ -9497,7 +9640,7 @@ namespace Client.MirScenes
                                             return;
                                         }
                                     }
-
+                                    //MirLog.info("放空箭");
                                     User.QueuedAction = new QueuedAction { Action = MirAction.AttackRange1, Direction = MouseDirection(), Location = User.CurrentLocation, Params = new List<object>() };
                                     User.QueuedAction.Params.Add(target != null ? target.ObjectID : (uint)0);
                                     User.QueuedAction.Params.Add(Functions.PointMove(User.CurrentLocation, MouseDirection(), 9));
@@ -9511,7 +9654,7 @@ namespace Client.MirScenes
                             }
                             return;
                         }
-
+                        //这个又是弓箭手的攻击
                         if (MapObject.MouseObject is MonsterObject && User.Class == MirClass.Archer && MapObject.TargetObject != null && !MapObject.TargetObject.Dead && User.HasClassWeapon && !User.RidingMount) //ArcherTest - range attack
                         {
                             if (Functions.InRange(MapObject.MouseObject.CurrentLocation, User.CurrentLocation, Globals.MaxAttackRange))
@@ -9533,7 +9676,7 @@ namespace Client.MirScenes
                             }
                             return;
                         }
-
+                        //点自己，捡取物品
                         if (MapLocation == User.CurrentLocation)
                         {
                             if (CMain.Time > GameScene.PickUpTime)
@@ -9544,7 +9687,7 @@ namespace Client.MirScenes
                             return;
                         }
 
-                        //mine
+                        //mine 挖矿
                         if (!ValidPoint(Functions.PointMove(User.CurrentLocation, direction, 1)))
                         {
                             if ((MapObject.User.Equipment[(int)EquipmentSlot.Weapon] != null) && (MapObject.User.Equipment[(int)EquipmentSlot.Weapon].Info.CanMine))
@@ -9592,9 +9735,6 @@ namespace Client.MirScenes
                         }
 
                         GameScene.CanRun = User.FastRun ? true : GameScene.CanRun;
-                        //把免助跑去掉？服务器也要相应的去掉才可以的
-                        
-
                         if (GameScene.CanRun && CanRun(direction) && CMain.Time > GameScene.NextRunTime && User.HP >= 10 && (!User.Sneaking || (User.Sneaking && User.Sprint))) //slow removed
                         {
                             int distance = User.RidingMount || User.Sprint && !User.Sneaking ? 3 : 2;
@@ -9623,19 +9763,40 @@ namespace Client.MirScenes
                         break;
                 }
             }
-
+            //没有目标
             if (MapObject.TargetObject == null || MapObject.TargetObject.Dead) return;
+            //这个逻辑几把复杂
             if (((!MapObject.TargetObject.Name.EndsWith(")") && !(MapObject.TargetObject is PlayerObject)) || !CMain.Shift) &&
                 (MapObject.TargetObject.Name.EndsWith(")") || !(MapObject.TargetObject is MonsterObject))) return;
+            //目标就在身边
             if (Functions.InRange(MapObject.TargetObject.CurrentLocation, User.CurrentLocation, 1)) return;
+            //弓箭手，不走向目标
             if (User.Class == MirClass.Archer && User.HasClassWeapon && (MapObject.TargetObject is MonsterObject || MapObject.TargetObject is PlayerObject)) return; //ArcherTest - stop walking
+            //朝向为选中的目标为朝向
             direction = Functions.DirectionFromPoint(User.CurrentLocation, MapObject.TargetObject.CurrentLocation);
-
             if (!CanWalk(direction)) return;
-
+            //增加跑步追踪目标的代码
+            GameScene.CanRun = User.FastRun ? true : GameScene.CanRun;
+            if (GameScene.CanRun && CanRun(direction)  && User.HP >= 10) //slow removed
+            {
+                int distance = User.RidingMount || User.Sprint && !User.Sneaking ? 3 : 2;
+                bool fail = false;
+                for (int i = 0; i <= distance; i++)
+                {
+                    if (!CheckDoorOpen(Functions.PointMove(User.CurrentLocation, direction, i)))
+                        fail = true;
+                }
+                if (!fail)
+                {
+                    User.QueuedAction = new QueuedAction { Action = MirAction.Running, Direction = direction, Location = Functions.PointMove(User.CurrentLocation, direction, User.RidingMount || (User.Sprint && !User.Sneaking) ? 3 : 2) };
+                    return;
+                }
+            }
+            //这里是走向目标,优化这里，改成跑向目标
             User.QueuedAction = new QueuedAction { Action = MirAction.Walking, Direction = direction, Location = Functions.PointMove(User.CurrentLocation, direction, 1) };
         }
 
+        //释放技能
         private void UseMagic(ClientMagic magic)
         {
             if (CMain.Time < GameScene.SpellTime || User.Poison.HasFlag(PoisonType.Stun))
@@ -9649,7 +9810,7 @@ namespace Client.MirScenes
                 if (CMain.Time >= OutputDelay)
                 {
                     OutputDelay = CMain.Time + 1000;
-                    GameScene.Scene.OutputMessage(string.Format("You cannot cast {0} for another {1} seconds.", magic.Spell.ToString(), ((magic.CastTime + magic.Delay) - CMain.Time - 1) / 1000 + 1));
+                    //GameScene.Scene.OutputMessage(string.Format("You cannot cast {0} for another {1} seconds.", magic.Spell.ToString(), ((magic.CastTime + magic.Delay) - CMain.Time - 1) / 1000 + 1));
                 }
 
                 User.ClearMagic();
@@ -9723,7 +9884,7 @@ namespace Client.MirScenes
                 case Spell.SummonSnakes:
                     if (!User.HasClassWeapon)
                     {
-                        GameScene.Scene.OutputMessage("You must be wearing a bow to perform this skill.");
+                        GameScene.Scene.OutputMessage("你必须戴上弓才能完成这个技能.");
                         User.ClearMagic();
                         return;
                     }
@@ -9911,6 +10072,10 @@ namespace Client.MirScenes
             if ((M2CellInfo[p.X, p.Y].BackImage & 0x20000000) != 0 || (M2CellInfo[p.X, p.Y].FrontImage & 0x8000) != 0) // + (M2CellInfo[P.X, P.Y].FrontImage & 0x7FFF) != 0)
                 return false;
 
+            if (Objects == null)
+            {
+                return true;
+            }
             //是否有物体阻挡
             for (int i = 0; i < Objects.Count; i++)
             {

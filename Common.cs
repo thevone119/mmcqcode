@@ -730,7 +730,7 @@ public enum LightType : byte
 public enum RunType : byte
 {
     Normal = 0,//正常跑步，需要起步
-    noWalk = 1,//不需要起步，直接跑步
+    FastRun = 1,//不需要起步，直接跑步
 }
 
 //退出游戏类型，是否需要等待脱战才可以退出,这个主要逻辑是服务器端的逻辑
@@ -787,7 +787,7 @@ public enum ChatType : byte
     Normal = 0,//正常
     Shout = 1,//叫喊
     System = 2,//系统
-    Hint = 3,//私聊
+    Hint = 3,//这个是操作的提醒，比如允许天人合一，允许组队等
     Announcement = 4,//公告
     Group = 5,//组内聊天
     WhisperIn = 6,//耳语
@@ -2159,7 +2159,7 @@ public static class Globals
 
         MaxConcurrentQuests = 20,
 
-        LogDelay = 10000,//这个影响到游戏退出的时间
+        LogDelay = 5000,//这个影响到游戏退出的时间
 
         DataRange = 16;//Was 24
 
@@ -5742,9 +5742,9 @@ public class NameChange
 public class ServerConfig
 {
     public static LightType lightType = LightType.none;//
-    public static RunType runType = RunType.noWalk;//
+    public static RunType runType = RunType.FastRun;//
     public static ExitGameType exitGameType = ExitGameType.noWait;
-    public static int serverDropRate = 1;//服务器装备的整体爆率，默认是1
+    
 
 
 

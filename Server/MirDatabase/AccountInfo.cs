@@ -52,7 +52,9 @@ namespace Server.MirDatabase
         public uint Gold;//金币,金币是账号上的金币，多角色共享
         public uint Credit;//积分，信用,也可称作元宝
 
+        [JsonIgnore]
         public ListViewItem ListItem;
+        [JsonIgnore]
         public MirConnection Connection;
 
         [JsonIgnore]

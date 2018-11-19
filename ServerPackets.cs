@@ -5161,6 +5161,7 @@ namespace ServerPackets
             Creature.Save(writer);
         }
     }
+    //这个是干嘛，拼命的发送这个包
     public sealed class UpdateIntelligentCreatureList : Packet//IntelligentCreature
     {
         public override short Index

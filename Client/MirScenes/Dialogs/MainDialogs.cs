@@ -19,6 +19,7 @@ using Effect = Client.MirObjects.Effect;
 
 using Client.MirScenes.Dialogs;
 using System.Drawing.Imaging;
+using System.Threading;
 
 namespace Client.MirScenes.Dialogs
 {
@@ -4802,7 +4803,8 @@ namespace Client.MirScenes.Dialogs
     public sealed class BigMapDialog : MirControl
     {
         private MirLabel pointlab;
-        
+
+
         public BigMapDialog()
         {
             //NotControl = true;
@@ -4824,7 +4826,6 @@ namespace Client.MirScenes.Dialogs
             //鼠标移动事件监听，鼠标移动的时候，显示坐标变换
             this.MouseMove += (o, e) => OnMouseMove();
             this.MouseDown += (o, e) => OnMouseDown(o,e);
-
         }
 
         private void OnBeforeDraw()
@@ -4906,6 +4907,14 @@ namespace Client.MirScenes.Dialogs
 
                 DXManager.Sprite.Draw2D(DXManager.RadarTexture, Point.Empty, 0, new PointF((int)(x - 0.5F), (int)(y - 0.5F)), colour);
             }
+            //这里画自动寻路的路径
+            for (int i = 0; i< map.RouteList.Count;i++)
+            {
+                Color colour = Color.White;
+                float x = ((map.RouteList[i].X - startPointX) * scaleX) + Location.X;
+                float y = ((map.RouteList[i].Y - startPointY) * scaleY) + Location.Y;
+                DXManager.Sprite.Draw2D(DXManager.RadarTexture3, Point.Empty, 0, new PointF((int)(x - 0.5F), (int)(y - 0.5F)), colour);
+            }
         }
 
         //重写鼠标移动事件
@@ -4939,10 +4948,38 @@ namespace Client.MirScenes.Dialogs
             }
             //开启自动寻址
             MapControl map = GameScene.Scene.MapControl;
-            CellInfo[,] CL = map.M2CellInfo;
-            MirLog.debug("X:"+ e.X);
-            
+            if (map == null || !Visible) return;
+            float scaleX = Size.Width / (float)map.Width;
+            float scaleY = Size.Height / (float)map.Height;
+            int x = CMain.MPoint.X - Location.X;
+
+            if (x > 0)
+            {
+                x = (int)(x / scaleX);
+            }
+            int y = CMain.MPoint.Y - Location.Y;
+            if (y > 0)
+            {
+                y = (int)(y / scaleY);
+            }
+            if (x > map.Width || y > map.Height)
+            {
+                return;
+            }
+            if (!map.M2CellInfo[x, y].CanWalk())
+            {
+                GameScene.Scene.ChatDialog.ReceiveChat("自动寻路目标不可达", ChatType.System);
+                return;
+            }
+            //目标位置
+            map.RouteTarget = new Point(x, y);
+            if (map.StartRoute())
+            {
+                GameScene.Scene.ChatDialog.ReceiveChat("[自动寻路开启]", ChatType.Hint);
+            }
         }
+
+      
 
         public void Toggle()
         {

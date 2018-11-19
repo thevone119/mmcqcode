@@ -258,10 +258,7 @@ namespace Client.MirGraphics
 
             Prguse.Initialize();
             Progress++;
-            MirLog.debug("Prguse 68 Height:" + Prguse.GetSize(68).Height);
-            MirLog.debug("Prguse 16 Height:" + Prguse.GetSize(16).Height);
-            MirLog.debug("Prguse 1 Height:" + Prguse.GetSize(1).Height);
-            MirLog.debug("Prguse 69 Height:" + Prguse.GetSize(69).Height);
+            
 
 
             Prguse2.Initialize();

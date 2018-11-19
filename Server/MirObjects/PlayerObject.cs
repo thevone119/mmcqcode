@@ -1756,7 +1756,7 @@ namespace Server.MirObjects
             if (IsGM) return;
             
         }
-
+        //升级
         public void LevelUp()
         {
             RefreshStats();
@@ -1980,6 +1980,7 @@ namespace Server.MirObjects
             BindMapIndex = szi.Info.Index;
             BindLocation = szi.Location;
         }
+        //开始游戏
         public void StartGame()
         {
             Map temp = Envir.GetMap(CurrentMapIndex);
@@ -2678,6 +2679,10 @@ namespace Server.MirObjects
             SkillNeckBoost = 1;
             NoDuraLoss = false;
             FastRun = false;
+            if (ServerConfig.runType == RunType.FastRun)
+            {
+                FastRun = true;//可以免助跑
+            }
 
             var skillsToAdd = new List<string>();
             var skillsToRemove = new List<string> { Settings.HealRing, Settings.FireRing, Settings.BlinkSkill };
@@ -5285,7 +5290,7 @@ namespace Server.MirObjects
                 Broadcast(p);
             }
         }
-
+        //转朝向
         public void Turn(MirDirection dir)
         {
             _stepCounter = 0;
@@ -5330,6 +5335,7 @@ namespace Server.MirObjects
 
             Enqueue(new S.UserLocation { Direction = Direction, Location = CurrentLocation });
         }
+        //采集？
         public void Harvest(MirDirection dir)
         {
             if (!CanMove)
@@ -5383,6 +5389,7 @@ namespace Server.MirObjects
             if (send)
                 ReceiveChat("You do not own any nearby carcasses.", ChatType.System);
         }
+        //步行
         public void Walk(MirDirection dir)
         {
 
@@ -5505,6 +5512,7 @@ namespace Server.MirObjects
             }
 
         }
+        //跑步
         public void Run(MirDirection dir)
         {
             var steps = RidingMount || ActiveSwiftFeet && !Sneaking? 3 : 2;
@@ -5652,6 +5660,7 @@ namespace Server.MirObjects
             }
 
         }
+        //推动
         public override int Pushed(MapObject pusher, MirDirection dir, int distance)
         {
             int result = 0;
@@ -17611,7 +17620,7 @@ namespace Server.MirObjects
 
         #endregion
 
-        #region IntelligentCreatures
+        #region IntelligentCreatures 智能生物？
 
         public void SummonIntelligentCreature(IntelligentCreatureType pType)
         {
@@ -18082,7 +18091,7 @@ namespace Server.MirObjects
 
         #endregion
 
-        #region Friends
+        #region Friends 好友系统
 
         public void AddFriend(string name, bool blocked = false)
         {
@@ -18157,7 +18166,7 @@ namespace Server.MirObjects
 
         #endregion
 
-        #region Refining
+        #region Refining 武器升级
 
         public void DepositRefineItem(int from, int to)
         {
@@ -18629,10 +18638,10 @@ namespace Server.MirObjects
             return;
         }
 
-        #endregion
+        #endregion 
 
-        #region Relationship
-
+        #region Relationship 关系，结婚
+        //离婚
         public void NPCDivorce()
         {
             if (Info.Married == 0)
@@ -19116,7 +19125,7 @@ namespace Server.MirObjects
 
         #endregion
 
-        #region Mentorship
+        #region Mentorship 师徒
 
         public void MentorBreak(bool Force = false)
         {

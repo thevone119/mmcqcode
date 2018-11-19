@@ -99,10 +99,14 @@ namespace Server.MirDatabase
 
         public bool[] Flags = new bool[Globals.FlagIndexCount];
         //账号信息
+        [JsonIgnore]
         public AccountInfo AccountInfo;
         //玩家
+        [JsonIgnore]
         public PlayerObject Player;
+        [JsonIgnore]
         public MountInfo Mount;
+
 
         public Dictionary<int, int> GSpurchases = new Dictionary<int, int>();
         public int[] Rank = new int[2];//dont save this in db!(and dont send it to clients :p)

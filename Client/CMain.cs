@@ -707,7 +707,7 @@ namespace Client
 
         private void CMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (CMain.Time < GameScene.LogTime)
+            if (ServerConfig.exitGameType == ExitGameType.Normal && CMain.Time < GameScene.LogTime && GameScene.Scene!=null && GameScene.Scene.ChatDialog!=null)
             {
                 GameScene.Scene.ChatDialog.ReceiveChat("Cannot leave game for " + (GameScene.LogTime - CMain.Time) / 1000 + " seconds.", ChatType.System);
                 e.Cancel = true;

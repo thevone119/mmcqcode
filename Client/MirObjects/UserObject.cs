@@ -282,6 +282,10 @@ namespace Client.MirObjects
             HasSkillNecklace = false;
             NoDuraLoss = false;
             FastRun = false;//默认不能免助跑
+            if (ServerConfig.runType == RunType.FastRun)
+            {
+                FastRun = true;//可以免助跑
+            }
             short Macrate = 0, Acrate = 0, HPrate = 0, MPrate = 0;
 
             ItemSets.Clear();
@@ -909,7 +913,7 @@ namespace Client.MirObjects
 
                 if (min == 0)
                 {
-                    GameScene.Scene.ChatDialog.ReceiveChat(FreeSpace(Inventory) == 0 ? "You do not have enough space." : "You do not have enough weight.", ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat(FreeSpace(Inventory) == 0 ? "你没有足够的背包空间." : "你的背包负重不够.", ChatType.System);
 
                     item.Count = 0;
                     return;
@@ -918,14 +922,14 @@ namespace Client.MirObjects
                 item.Count = min;
                 return;
             }
-
+            //背包负重 负重量 腕力 
             if (CurrentBagWeight + item.Weight > MaxBagWeight)
             {
                 item.Count = (uint)(Math.Max((MaxBagWeight - CurrentBagWeight), uint.MinValue) / item.Info.Weight);
                 max = item.Count;
                 if (item.Count == 0)
                 {
-                    GameScene.Scene.ChatDialog.ReceiveChat("You do not have enough weight.", ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat("你的背包负重不够.", ChatType.System);
                     return;
                 }
             }
@@ -956,13 +960,13 @@ namespace Client.MirObjects
 
                 if (min == 0)
                 {
-                    GameScene.Scene.ChatDialog.ReceiveChat("You do not have enough space.", ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat("你没有足够的背包空间.", ChatType.System);
                     item.Count = 0;
                 }
             }
             else
             {
-                GameScene.Scene.ChatDialog.ReceiveChat("You do not have enough space.", ChatType.System);
+                GameScene.Scene.ChatDialog.ReceiveChat("你没有足够的背包空间.", ChatType.System);
                 item.Count = 0;
             }
 

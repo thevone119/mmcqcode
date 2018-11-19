@@ -41,6 +41,8 @@ namespace Client.MirGraphics
 
         //这是雷达？小地图上的点？2*2大小的点
         public static Texture RadarTexture;
+        //定义一个3*3的点
+        public static Texture RadarTexture3;
         //这个是灯光
         public static List<Texture> Lights = new List<Texture>();
         //5*5的点
@@ -161,6 +163,17 @@ namespace Client.MirGraphics
                 using (Graphics graphics = Graphics.FromImage(image))
                     graphics.Clear(Color.White);
             }
+
+            if (RadarTexture3 == null || RadarTexture3.Disposed)
+            {
+                RadarTexture3 = new Texture(Device, 2, 2, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);
+
+                using (GraphicsStream stream = RadarTexture3.LockRectangle(0, LockFlags.Discard))
+                using (Bitmap image = new Bitmap(2, 2, 8, PixelFormat.Format32bppArgb, (IntPtr)stream.InternalDataPointer))
+                using (Graphics graphics = Graphics.FromImage(image))
+                    graphics.Clear(Color.White);
+            }
+
             if (PoisonDotBackground == null || PoisonDotBackground.Disposed)
             {
                 PoisonDotBackground = new Texture(Device, 5, 5, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);

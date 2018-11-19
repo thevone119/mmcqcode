@@ -266,6 +266,8 @@ namespace Server.MirEnvir
             return "true";
         }
 
+  
+
         //工作线程,此方法采用线程调度
         //只调用一次，通过这个方法开启其他线程循环
         private void WorkLoop()
@@ -324,12 +326,19 @@ namespace Server.MirEnvir
 
                 try
                 {
+                  
                     //这里死循环，每秒循环一次？
                     while (Running)
                     {
-                        //这里睡眠10-50毫秒，可以减少大量的CPU消耗
-                        //Thread.Sleep(10);
-                        Time = Stopwatch.ElapsedMilliseconds;
+                        long lasttime = Time;//上次时间
+                        Time = Stopwatch.ElapsedMilliseconds;//当前时间
+                        long usertime = Time - lasttime;//消耗的时间
+                        //20-50毫秒执行一次就可以了。
+                        if (usertime < 50)
+                        {
+                            Thread.Sleep((int)(50 - usertime));
+                        }
+                       
                         if (Time >= processTime)
                         {
                             LastCount = processCount;
@@ -397,8 +406,18 @@ namespace Server.MirEnvir
                         //这个是否放在地图处理里比较好呢(20毫秒内，对所有的MapObject处理一次)
                         Boolean TheEnd = false;
                         long Start = Stopwatch.ElapsedMilliseconds;
-                        while ((!TheEnd) && (Stopwatch.ElapsedMilliseconds - Start < 20))
+                        while ((!TheEnd))
                         {
+                            //每10次才取一次时间，避免频繁取时间，消耗CPU
+                            if (processCount  % 100 == 0)
+                            {
+                                if(Stopwatch.ElapsedMilliseconds - Start > 20)
+                                {
+                                    TheEnd = true;
+                                    break;
+                                }
+                            }
+                            
                             if (current == null)
                             {
                                 TheEnd = true;
@@ -423,7 +442,10 @@ namespace Server.MirEnvir
 
                         //地图处理
                         for (int i = 0; i < MapList.Count; i++)
+                        {
                             MapList[i].Process();
+                        }
+                            
 
                         //后面这些都是写无关紧要的处理了
 
@@ -687,51 +709,76 @@ namespace Server.MirEnvir
 
         public void SaveDB()
         {
-            //地图数据
-            for (int i = 0; i < MapInfoList.Count; i++)
-            {
-                MapInfoList[i].SaveDB();
-            }
-            //物品数据
-            for (int i = 0; i < ItemInfoList.Count; i++)
-            {
-                ItemInfoList[i].SaveDB();
-            }
-            //怪物数据
-            for (int i = 0; i < MonsterInfoList.Count; i++)
-            {
-                MonsterInfoList[i].SaveDB();
-            }
-            //NPC数据
-            for (int i = 0; i < NPCInfoList.Count; i++)
-            {
-                NPCInfoList[i].SaveDB();
-            }
-            //任务数据
-            for (int i = 0; i < QuestInfoList.Count; i++)
-            {
-                QuestInfoList[i].SaveDB();
-            }
-            //魔法技能数据
-            for (int i = 0; i < MagicInfoList.Count; i++)
-            {
-                MagicInfoList[i].SaveDB();
-            }
-            //商店数据
-            for (int i = 0; i < GameShopList.Count; i++)
-            {
-                GameShopList[i].SaveDB();
-            }
-            //领地数据
-            for (int i = 0; i < ConquestInfos.Count; i++)
-            {
-                ConquestInfos[i].SaveDB();
-            }
+            Thread t = new Thread(() => SaveDBThread());
+            t.IsBackground = true;
+            t.Start();
         }
-        public void SaveAccounts()
+        public void SaveDBThread()
         {
             try
             {
+                SMain.Enqueue("SaveDBThread start");
+                MirConfigDB.BeginTransaction();
+                //地图数据
+                for (int i = 0; i < MapInfoList.Count; i++)
+                {
+                    MapInfoList[i].SaveDB();
+                }
+                //物品数据
+                for (int i = 0; i < ItemInfoList.Count; i++)
+                {
+                    ItemInfoList[i].SaveDB();
+                }
+                //怪物数据
+                for (int i = 0; i < MonsterInfoList.Count; i++)
+                {
+                    MonsterInfoList[i].SaveDB();
+                }
+                //NPC数据
+                for (int i = 0; i < NPCInfoList.Count; i++)
+                {
+                    NPCInfoList[i].SaveDB();
+                }
+                //任务数据
+                for (int i = 0; i < QuestInfoList.Count; i++)
+                {
+                    QuestInfoList[i].SaveDB();
+                }
+                //魔法技能数据
+                for (int i = 0; i < MagicInfoList.Count; i++)
+                {
+                    MagicInfoList[i].SaveDB();
+                }
+                //商店数据
+                for (int i = 0; i < GameShopList.Count; i++)
+                {
+                    GameShopList[i].SaveDB();
+                }
+                //领地数据
+                for (int i = 0; i < ConquestInfos.Count; i++)
+                {
+                    ConquestInfos[i].SaveDB();
+                }
+            }
+            catch (Exception ex)
+            {
+                SMain.Enqueue(ex);
+            }
+            MirConfigDB.Commit();
+            SMain.Enqueue("SaveDBThread end");
+        }
+        public void SaveAccounts()
+        {
+            Thread t = new Thread(() => SaveAccountsThread());
+            t.IsBackground = true;
+            t.Start();
+        }
+        public void SaveAccountsThread()
+        {
+            try
+            {
+                SMain.Enqueue("SaveAccountsThread start!");
+                MirRunDB.BeginTransaction();
                 for (int i = 0; i < AccountList.Count; i++)
                 {
                     AccountList[i].SaveDB();
@@ -753,6 +800,8 @@ namespace Server.MirEnvir
             {
                 SMain.Enqueue(ex);
             }
+            MirRunDB.Commit();
+            SMain.Enqueue("SaveAccountsThread end!");
         }
 
         private void SaveGuilds()

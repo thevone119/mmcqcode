@@ -15,6 +15,8 @@ namespace Client.MirNetwork
     /// </summary>
     static class Network
     {
+        //所有接受数据的长度
+        private static long ReceiveDataLen = 0;
         //TPC客户端连接
         private static TcpClient _client;
         //连接次数
@@ -121,7 +123,9 @@ namespace Client.MirNetwork
             Buffer.BlockCopy(temp, 0, _rawData, 0, temp.Length);
             //复制当前数据
             Buffer.BlockCopy(rawBytes, 0, _rawData, temp.Length, dataRead);
-
+            //统计
+            ReceiveDataLen += dataRead;
+            //MirLog.info("ReceiveDataLen:" + ReceiveDataLen);
             Packet p;
             
             while ((p = Packet.ReceivePacket(_rawData, out _rawData)) != null)
@@ -203,7 +207,8 @@ namespace Client.MirNetwork
                         return;
                     }
 
-                    MirMessageBox.Show("Lost connection with the server.", true);
+                    //MirMessageBox.Show("Lost connection with the server.", true);
+                    MirMessageBox.Show("与服务器失去连接.", true);
                     Disconnect();
                     return;
                 }
@@ -250,7 +255,10 @@ namespace Client.MirNetwork
         public static void Enqueue(Packet p)
         {
             if (_sendList != null && p != null)
+            {
                 _sendList.Enqueue(p);
+                //MirLog.info("send idx:" + p.Index);
+            }
         }
     }
 }

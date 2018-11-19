@@ -32,7 +32,7 @@ namespace Client
             //Settings.UseTestConfig = true;
             #endif
 
-            MirLog.debug("DEBUG:" + Settings.UseTestConfig);
+            //MirLog.debug("DEBUG:" + Settings.UseTestConfig);
             try
             {
                 if (UpdatePatcher()) return;

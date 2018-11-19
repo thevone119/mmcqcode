@@ -59,7 +59,7 @@ namespace Client
             while(_reader.BaseStream.Position<= _reader.BaseStream.Length - 4)
             {
                 int idx = _reader.ReadInt32();
-                MirLog.info("idx:" + idx);
+                
                 IndexList.Add(_reader.ReadInt32());
                 Images.Add(null);
             }
@@ -84,7 +84,7 @@ namespace Client
                 Shadow = _reader.ReadByte();
                 Length = _reader.ReadInt32();
                 //byte[] FBytes = _reader.ReadBytes(Length);
-                MirLog.info("Length:" + Length);
+                //MirLog.info("Length:" + Length);
                 //pictureBox1.Image = System.Drawing.Image.FromStream(new MemoryStream(FBytes));
                 bool HasMask = ((Shadow >> 7) == 1) ? true : false;
                 if (HasMask)
@@ -94,11 +94,11 @@ namespace Client
                     MaskX = _reader.ReadInt16();
                     MaskY = _reader.ReadInt16();
                     int MaskLength = _reader.ReadInt32();
-                    MirLog.info("MaskLength:" + MaskLength);
+                    //MirLog.info("MaskLength:" + MaskLength);
                     //MaskFBytes = _reader.ReadBytes(MaskLength);
                 }
-                MirLog.info("MaskWidth:" + MaskWidth);
-                MirLog.info("MaskHeight:" + MaskHeight);
+                //MirLog.info("MaskWidth:" + MaskWidth);
+                //MirLog.info("MaskHeight:" + MaskHeight);
             }
   
 
