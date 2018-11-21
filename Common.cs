@@ -1235,8 +1235,8 @@ public enum BuffType : byte
     TemporalFlux,//瞬移？
     Hiding,//隐藏
     Haste,//匆忙
-    SwiftFeet,//跳脚
-    Fury,//愤怒
+    SwiftFeet,//轻盈，增加移动速度
+    Fury,//愤怒,增加攻击速度
     SoulShield,//灵魂盾牌
     BlessedArmour,//美甲
     LightBody,//光体
@@ -5410,92 +5410,92 @@ public class GuildBuffInfo
         //text = name + "\n";
         if (BuffAc > 0)
         {
-            text += string.Format("Increases AC by: 0-{0}.", BuffAc);
+            text += LanguageUtils.Format("Increases AC by: 0-{0}.", BuffAc);
             if (text != "") text += "\n";
         }
         if (BuffMac > 0)
         {
-            text += string.Format("Increases MAC by: 0-{0}.", BuffMac);
+            text += LanguageUtils.Format("Increases MAC by: 0-{0}.", BuffMac);
             if (text != "") text += "\n";
         }
         if (BuffDc > 0)
         {
-            text += string.Format("Increases DC by: 0-{0}.", BuffDc);
+            text += LanguageUtils.Format("Increases DC by: 0-{0}.", BuffDc);
             if (text != "") text += "\n";
         }
         if (BuffMc > 0)
         {
-            text += string.Format("Increases MC by: 0-{0}.", BuffMc);
+            text += LanguageUtils.Format("Increases MC by: 0-{0}.", BuffMc);
             if (text != "") text += "\n";
         }
         if (BuffSc > 0)
         {
-            text += string.Format("Increases SC by: 0-{0}.", BuffSc);
+            text += LanguageUtils.Format("Increases SC by: 0-{0}.", BuffSc);
             if (text != "") text += "\n";
         }
         if (BuffMaxHp > 0)
         {
-            text += string.Format("Increases Hp by: {0}.", BuffMaxHp);
+            text += LanguageUtils.Format("Increases Hp by: {0}.", BuffMaxHp);
             if (text != "") text += "\n";
         }
         if (BuffMaxMp > 0)
         {
-            text += string.Format("Increases MP by: {0}.", BuffMaxMp);
+            text += LanguageUtils.Format("Increases MP by: {0}.", BuffMaxMp);
             if (text != "") text += "\n";
         }
         if (BuffHpRegen > 0)
         {
-            text += string.Format("Increases Health regen by: {0}.", BuffHpRegen);
+            text += LanguageUtils.Format("Increases Health regen by: {0}.", BuffHpRegen);
             if (text != "") text += "\n";
         }
         if (BuffMPRegen > 0)
         {
-            text += string.Format("Increases Mana regen by: {0}.", BuffMPRegen);
+            text += LanguageUtils.Format("Increases Mana regen by: {0}.", BuffMPRegen);
             if (text != "") text += "\n";
         }
         if (BuffMineRate > 0)
         {
-            text += string.Format("Increases Mining success by: {0}%.", BuffMineRate * 5);
+            text += LanguageUtils.Format("Increases Mining success by: {0}%.", BuffMineRate * 5);
             if (text != "") text += "\n";
         }
         if (BuffGemRate > 0)
         {
-            text += string.Format("Increases Gem success by: {0}%.", BuffGemRate * 5);
+            text += LanguageUtils.Format("Increases Gem success by: {0}%.", BuffGemRate * 5);
             if (text != "") text += "\n";
         }
         if (BuffFishRate > 0)
         {
-            text += string.Format("Increases Fishing success by: {0}%.", BuffFishRate * 5);
+            text += LanguageUtils.Format("Increases Fishing success by: {0}%.", BuffFishRate * 5);
             if (text != "") text += "\n";
         }
         if (BuffExpRate > 0)
         {
-            text += string.Format("Increases Experience by: {0}%.", BuffExpRate);
+            text += LanguageUtils.Format("Increases Experience by: {0}%.", BuffExpRate);
             if (text != "") text += "\n";
         }
         if (BuffCraftRate > 0)
         {
-            text += string.Format("Increases Crafting success by: {0}%.", BuffCraftRate * 5);
+            text += LanguageUtils.Format("Increases Crafting success by: {0}%.", BuffCraftRate * 5);
             if (text != "") text += "\n";
         }
         if (BuffSkillRate > 0)
         {
-            text += string.Format("Increases Skill training by: {0}.", BuffSkillRate);
+            text += LanguageUtils.Format("Increases Skill training by: {0}.", BuffSkillRate);
             if (text != "") text += "\n";
         }
         if (BuffAttack > 0)
         {
-            text += string.Format("Increases Damage by: {0}.", BuffAttack);
+            text += LanguageUtils.Format("Increases Damage by: {0}.", BuffAttack);
             if (text != "") text += "\n";
         }
         if (BuffDropRate > 0)
         {
-            text += string.Format("Droprate increased by: {0}%.", BuffDropRate);
+            text += LanguageUtils.Format("Droprate increased by: {0}%.", BuffDropRate);
             if (text != "") text += "\n";
         }
         if (BuffGoldRate > 0)
         {
-            text += string.Format("Goldrate increased by: 0-{0}.", BuffGoldRate);
+            text += LanguageUtils.Format("Goldrate increased by: 0-{0}.", BuffGoldRate);
             if (text != "") text += "\n";
         }
 

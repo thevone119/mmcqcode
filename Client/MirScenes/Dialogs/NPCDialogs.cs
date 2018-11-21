@@ -833,7 +833,7 @@ namespace Client.MirScenes.Dialogs
                 case PanelType.Sell:
                     if (TargetItem.Info.Bind.HasFlag(BindMode.DontSell))
                     {
-                        GameScene.Scene.ChatDialog.ReceiveChat("Cannot sell this item.", ChatType.System);
+                        GameScene.Scene.ChatDialog.ReceiveChat("不能卖这个物品.", ChatType.System);
                         return;
                     }
                     if (GameScene.Gold + TargetItem.Price() / 2 <= uint.MaxValue)
@@ -842,12 +842,12 @@ namespace Client.MirScenes.Dialogs
                         TargetItem = null;
                         return;
                     }
-                    GameScene.Scene.ChatDialog.ReceiveChat("Cannot carry anymore gold.", ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat("无法携带更多的金币.", ChatType.System);
                     break;
                 case PanelType.Repair:
                     if (TargetItem.Info.Bind.HasFlag(BindMode.DontRepair))
                     {
-                        GameScene.Scene.ChatDialog.ReceiveChat("Cannot repair this item.", ChatType.System);
+                        GameScene.Scene.ChatDialog.ReceiveChat("无法修复此物品.", ChatType.System);
                         return;
                     }
                     if (GameScene.Gold >= TargetItem.RepairPrice() * GameScene.NPCRate)
@@ -856,12 +856,12 @@ namespace Client.MirScenes.Dialogs
                         TargetItem = null;
                         return;
                     }
-                    GameScene.Scene.ChatDialog.ReceiveChat("You do not have enough gold.", ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat("你没有足够的金币.", ChatType.System);
                     break;
                 case PanelType.SpecialRepair:
                     if ((TargetItem.Info.Bind.HasFlag(BindMode.DontRepair)) || (TargetItem.Info.Bind.HasFlag(BindMode.NoSRepair)))
                     {
-                        GameScene.Scene.ChatDialog.ReceiveChat("Cannot repair this item.", ChatType.System);
+                        GameScene.Scene.ChatDialog.ReceiveChat("无法修复此物品.", ChatType.System);
                         return;
                     }
                     if (GameScene.Gold >= (TargetItem.RepairPrice() * 3) * GameScene.NPCRate)
@@ -870,15 +870,15 @@ namespace Client.MirScenes.Dialogs
                         TargetItem = null;
                         return;
                     }
-                    GameScene.Scene.ChatDialog.ReceiveChat("You do not have enough gold.", ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat("你没有足够的金币.", ChatType.System);
                     break;
                 case PanelType.Consign:
                     if (TargetItem.Info.Bind.HasFlag(BindMode.DontStore))
                     {
-                        GameScene.Scene.ChatDialog.ReceiveChat("Cannot store this item.", ChatType.System);
+                        GameScene.Scene.ChatDialog.ReceiveChat("无法存储此物品.", ChatType.System);
                         return;
                     }
-                    MirAmountBox box = new MirAmountBox("Consignment Price:", TargetItem.Image, Globals.MaxConsignment, Globals.MinConsignment)
+                    MirAmountBox box = new MirAmountBox("寄售价格:", TargetItem.Image, Globals.MaxConsignment, Globals.MinConsignment)
                     {
                         InputTextBox = { Text = string.Empty },
                         Amount = 0
@@ -1064,19 +1064,19 @@ namespace Client.MirScenes.Dialogs
             switch (PType)
             {
                 case PanelType.Sell:
-                    text = "Sale: ";
+                    text = LanguageUtils.Format("Sale: ");
                     break;
                 case PanelType.Repair:
-                    text = "Repair: ";
+                    text = LanguageUtils.Format("Repair: ");
                     break;
                 case PanelType.SpecialRepair:
-                    text = "S. Repair: ";
+                    text = LanguageUtils.Format("S. Repair: ");
                     break;
                 case PanelType.Consign:
-                    InfoLabel.Text = "Consignment: ";
+                    InfoLabel.Text = LanguageUtils.Format("Consignment: ");
                     return;
                 case PanelType.Disassemble:
-                    text = "Item will be Destroyed\n\n\n\n\n\n\n\n         ";
+                    text = LanguageUtils.Format("Item will be Destroyed\n\n\n\n\n\n\n\n         ");
                     HoldButton.Visible = false;
                     Index = 711;
                     Library = Libraries.Title;
@@ -1089,26 +1089,26 @@ namespace Client.MirScenes.Dialogs
                     ItemCell.Location = new Point(83, 94);
                     break;
                 case PanelType.Downgrade:
-                    text = "Downgrade: ";
+                    text = LanguageUtils.Format("Downgrade: ");
                     HoldButton.Visible = false;
                     break;
                 case PanelType.Reset:
-                    text = "Reset: ";
+                    text = LanguageUtils.Format("Reset: ");
                     HoldButton.Visible = false;
                     break;
                 case PanelType.Refine:
-                    text = "Refine: ";
+                    text = LanguageUtils.Format("Refine: ");
                     HoldButton.Visible = false;
                     ConfirmButton.Visible = true;
                     GameScene.Scene.RefineDialog.Show();
                     break;
                 case PanelType.CheckRefine:
-                    text = "Check Refine";
+                    text = LanguageUtils.Format("Check Refine");
                     HoldButton.Visible = false;
                     ConfirmButton.Visible = true;
                     break;
                 case PanelType.ReplaceWedRing:
-                    text = "Replace: ";
+                    text = LanguageUtils.Format("Replace: ");
                     HoldButton.Visible = false;
                     ConfirmButton.Visible = true;
                     break;
@@ -1694,13 +1694,13 @@ namespace Client.MirScenes.Dialogs
 
             if (RecipeItem.Weight > (MapObject.User.MaxBagWeight - MapObject.User.CurrentBagWeight))
             {
-                GameScene.Scene.ChatDialog.ReceiveChat("You do not have enough weight.", ChatType.System);
+                GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("You do not have enough weight."), ChatType.System);
                 return;
             }
 
             if (max > 1)
             {
-                MirAmountBox amountBox = new MirAmountBox("Craft Amount:", RecipeItem.Info.Image, max, 0, max);
+                MirAmountBox amountBox = new MirAmountBox("加工数量:", RecipeItem.Info.Image, max, 0, max);
 
                 amountBox.OKButton.Click += (o, e) =>
                 {
@@ -1708,7 +1708,7 @@ namespace Client.MirScenes.Dialogs
                     {
                         if (!HasCraftItems(RecipeItem, amountBox.Amount))
                         {
-                            GameScene.Scene.ChatDialog.ReceiveChat("You do not have the required ingredients.", ChatType.System);
+                            GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("You do not have the required ingredients."), ChatType.System);
                             return;
                         }
 
@@ -1942,9 +1942,9 @@ namespace Client.MirScenes.Dialogs
                 MirMessageBox messageBox;
 
                 if (GameScene.User.HasExpandedStorage)
-                    messageBox = new MirMessageBox("Would you like to extend your rental period for 10 days at a cost of 1,000,000 gold?", MirMessageBoxButtons.OKCancel);
+                    messageBox = new MirMessageBox(LanguageUtils.Format("Would you like to extend your rental period for 10 days at a cost of 1,000,000 gold?"), MirMessageBoxButtons.OKCancel);
                 else
-                    messageBox = new MirMessageBox("Would you like to rent extra storage for 10 days at a cost of 1,000,000 gold?", MirMessageBoxButtons.OKCancel);
+                    messageBox = new MirMessageBox(LanguageUtils.Format("Would you like to rent extra storage for 10 days at a cost of 1,000,000 gold?"), MirMessageBoxButtons.OKCancel);
 
                 messageBox.OKButton.Click += (o1, a) =>
                 {
@@ -1983,7 +1983,7 @@ namespace Client.MirScenes.Dialogs
                 AutoSize = true,
                 DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter,
                 NotControl = true,
-                Text = "Expanded Storage Locked",
+                Text = LanguageUtils.Format("Expanded Storage Locked"),
                 ForeColour = Color.Red
             };
 
@@ -2060,12 +2060,12 @@ namespace Client.MirScenes.Dialogs
             {
                 RentButton.Visible = true;
                 LockedPage.Visible = false;
-                RentalLabel.Text = "Expanded Storage Expires On: " + GameScene.User.ExpandedStorageExpiryTime.ToString();
+                RentalLabel.Text = LanguageUtils.Format("Expanded Storage Expires On: ") + GameScene.User.ExpandedStorageExpiryTime.ToString();
                 RentalLabel.ForeColour = Color.White;
             }
             else
             {
-                RentalLabel.Text = "Expanded Storage Locked";
+                RentalLabel.Text = LanguageUtils.Format("Expanded Storage Locked");
                 RentalLabel.ForeColour = Color.Red;
                 RentButton.Visible = true;
                 LockedPage.Visible = true;

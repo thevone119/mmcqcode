@@ -54,7 +54,7 @@ namespace Client.MirScenes.Dialogs
                 PressedIndex = 752,
                 HoverIndex = 753,
                 Library = Libraries.Title,
-                Hint = "Overall TOP 20",
+                Hint = LanguageUtils.Format("Overall TOP 20"),
                 Location = new Point(10, 38),
                 Parent = this,
                 Sound = SoundList.ButtonA,
@@ -67,7 +67,7 @@ namespace Client.MirScenes.Dialogs
                 PressedIndex = 761,
                 HoverIndex = 762,
                 Library = Libraries.Title,
-                Hint = "TOP 20 Taoists",
+                Hint = LanguageUtils.Format("TOP 20 Taoists"),
                 Location = new Point(40, 38),
                 Parent = this,
                 Sound = SoundList.ButtonA,
@@ -79,7 +79,7 @@ namespace Client.MirScenes.Dialogs
                 PressedIndex = 755,
                 HoverIndex = 756,
                 Library = Libraries.Title,
-                Hint = "TOP 20 Warriors",
+                Hint = LanguageUtils.Format("TOP 20 Warriors"),
                 Location = new Point(60, 38),
                 Parent = this,
                 Sound = SoundList.ButtonA,
@@ -91,7 +91,7 @@ namespace Client.MirScenes.Dialogs
                 PressedIndex = 764,
                 HoverIndex = 765,
                 Library = Libraries.Title,
-                Hint = "TOP 20 Wizards",
+                Hint = LanguageUtils.Format("TOP 20 Wizards"),
                 Location = new Point(80, 38),
                 Parent = this,
                 Sound = SoundList.ButtonA,
@@ -103,7 +103,7 @@ namespace Client.MirScenes.Dialogs
                 PressedIndex = 758,
                 HoverIndex = 759,
                 Library = Libraries.Title,
-                Hint = "TOP 20 Assasins",
+                Hint = LanguageUtils.Format("TOP 20 Assasins"),
                 Location = new Point(100, 38),
                 Parent = this,
                 Sound = SoundList.ButtonA,
@@ -115,7 +115,7 @@ namespace Client.MirScenes.Dialogs
                 PressedIndex = 767,
                 HoverIndex = 768,
                 Library = Libraries.Title,
-                Hint = "TOP 20 Archers",
+                Hint = LanguageUtils.Format("TOP 20 Archers"),
                 Location = new Point(120, 38),
                 Parent = this,
                 Sound = SoundList.ButtonA,
@@ -253,9 +253,9 @@ namespace Client.MirScenes.Dialogs
                 Rows[i].Update(RankList[RankType][RowOffset + i], RowOffset + i + 1);
             }
             if (Rank[RankType] == 0)
-                MyRank.Text = "Not Listed";
+                MyRank.Text = LanguageUtils.Format("Not Listed");
             else
-                MyRank.Text = string.Format("Ranked: {0}", Rank[RankType]); ;
+                MyRank.Text = LanguageUtils.Format("Ranked: {0}", Rank[RankType]); ;
 
         }
 

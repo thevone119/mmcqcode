@@ -70,7 +70,8 @@ namespace Client.MirScenes
 
                 _ViewKey = new InputKeyDialog(_login) { Parent = _background };
             };
-
+            
+            //这个不显示哦
             Version = new MirLabel
             {
                 AutoSize = true,
@@ -80,6 +81,7 @@ namespace Client.MirScenes
                 Location = new Point(5, 580),
                 Parent = _background,
                 Text = string.Format("Version: {0}", Application.ProductVersion),
+                Visible = false,
             };
 
             TestLabel = new MirImageControl

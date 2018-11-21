@@ -936,8 +936,7 @@ public class AutoRoute
 
     //开启列表(这个开启列表其实还可以优化的)
     List<RoutePoint> Open_List = new List<RoutePoint>();
-
-
+  
 
     //从开启列表查找F值最小的节点(就是G+H最小的点)
     private RoutePoint GetMinFFromOpenList()
@@ -1055,20 +1054,99 @@ public class AutoRoute
                 }
             }
         }
-    
+        //终点在列表里，起点不在
         while (pb.father != null)
         {
             myp.Add(pb.getPoint());
             pb = pb.father;
         }
-      
         return myp;
     }
 
+}
+
+/// <summary>
+/// 文件的key，map加载器
+/// </summary>
+public class FileKVMap
+{
+    private  Dictionary<string, string> d = new Dictionary<string, string>();
 
 
+    public FileKVMap(string filepath)
+    {
 
-    
+        FileInfo fi = new FileInfo(filepath);
+        if (fi.Exists)
+        {
+            
+            FileStream fs = new FileStream(filepath, FileMode.Open, FileAccess.Read);
+            using (StreamReader m_streamReader = new StreamReader(fs, System.Text.Encoding.UTF8))
+            {
+                string strLine = null;
+                while ((strLine = m_streamReader.ReadLine()) != null)
+                {
+                    if(strLine==null|| strLine.Trim().Length < 3)
+                    {
+                        continue;
+                    }
+                    string[] sv= strLine.Trim().Split('=');
+                    if(sv==null || sv.Length != 2)
+                    {
+                        continue;
+                    }
+                    if(d.ContainsKey(sv[0]))
+                    {
+                        d[sv[0]] = sv[1];
+                    }
+                    else
+                    {
+                        d.Add(sv[0],sv[1]);
+                    }
+                }
+            }
+            
+        }
+    }
 
+    public string getValue(string key)
+    {
+        if (d.ContainsKey(key))
+        {
+            return d[key];
+        }
+        return null;
+    }
+}
 
+/// <summary>
+/// 语言包处理
+/// </summary>
+public class LanguageUtils
+{
+    private static FileKVMap fmap = new FileKVMap(@".\language.txt");
+
+    /// <summary>
+    /// 替换string.Format的方法
+    /// </summary>
+    /// <param name="format"></param>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    public static String Format(String format, params object[] args)
+    {
+        string v = fmap.getValue(format);
+        if (v == null)
+        {
+            if (args == null)
+            {
+                return format;
+            }
+            return string.Format(format, args);
+        }
+        if (args == null)
+        {
+            return v;
+        }
+        return string.Format(v, args);
+    }
 }

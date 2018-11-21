@@ -78,7 +78,7 @@ namespace Client.MirScenes.Dialogs
                 if (string.IsNullOrEmpty(SearchTextBox.Text)) return;
                 if (CMain.Time < SearchTime)
                 {
-                    GameScene.Scene.ChatDialog.ReceiveChat(string.Format("You can search again after {0} seconds.", Math.Ceiling((SearchTime - CMain.Time) / 1000D)), ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("You can search again after {0} seconds.", Math.Ceiling((SearchTime - CMain.Time) / 1000D)), ChatType.System);
                     return;
                 }
 
@@ -103,7 +103,7 @@ namespace Client.MirScenes.Dialogs
             {
                 if (CMain.Time < SearchTime)
                 {
-                    GameScene.Scene.ChatDialog.ReceiveChat(string.Format("You can search again after {0} seconds.", Math.Ceiling((SearchTime - CMain.Time) / 1000D)), ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("You can search again after {0} seconds.", Math.Ceiling((SearchTime - CMain.Time) / 1000D)), ChatType.System);
                     return;
                 }
                 SearchTime = CMain.Time + Globals.SearchDelay;
@@ -142,7 +142,7 @@ namespace Client.MirScenes.Dialogs
                 {
                     if (Selected.Listing.Seller == "For Sale")
                     {
-                        MirMessageBox box = new MirMessageBox(string.Format("{0} has not sold, Are you sure you want to get it back?", Selected.Listing.Item.FriendlyName), MirMessageBoxButtons.YesNo);
+                        MirMessageBox box = new MirMessageBox(LanguageUtils.Format("{0} has not sold, Are you sure you want to get it back?", Selected.Listing.Item.FriendlyName), MirMessageBoxButtons.YesNo);
                         box.YesButton.Click += (o1, e2) =>
                         {
                             MarketTime = CMain.Time + 3000;
@@ -159,7 +159,7 @@ namespace Client.MirScenes.Dialogs
                 }
                 else
                 {
-                    MirMessageBox box = new MirMessageBox(string.Format("Are you sure you want to buy {0} for {1}?", Selected.Listing.Item.FriendlyName, Selected.Listing.Price), MirMessageBoxButtons.YesNo);
+                    MirMessageBox box = new MirMessageBox(LanguageUtils.Format("Are you sure you want to buy {0} for {1}?", Selected.Listing.Item.FriendlyName, Selected.Listing.Price), MirMessageBoxButtons.YesNo);
                     box.YesButton.Click += (o1, e2) =>
                     {
                         MarketTime = CMain.Time + 3000;
@@ -371,18 +371,18 @@ namespace Client.MirScenes.Dialogs
 
             NameLabel.Text = Selected.Listing.Item.FriendlyName;
 
-            TotalPriceLabel.Text = string.Format("Price: {0:#,##0}", Selected.Listing.Price);
-            SplitPriceLabel.Text = string.Format("Each: {0:#,##0.#}", Selected.Listing.Price / (float)Selected.Listing.Item.Count);
+            TotalPriceLabel.Text = LanguageUtils.Format("Price: {0:#,##0}", Selected.Listing.Price);
+            SplitPriceLabel.Text = LanguageUtils.Format("Each: {0:#,##0.#}", Selected.Listing.Price / (float)Selected.Listing.Item.Count);
 
-            DateLabel.Text = string.Format("Start Date: {0}", Selected.Listing.ConsignmentDate);
-            ExpireLabel.Text = string.Format("Finish Date: {0}", Selected.Listing.ConsignmentDate.AddDays(Globals.ConsignmentLength));
+            DateLabel.Text = LanguageUtils.Format("Start Date: {0}", Selected.Listing.ConsignmentDate);
+            ExpireLabel.Text = LanguageUtils.Format("Finish Date: {0}", Selected.Listing.ConsignmentDate.AddDays(Globals.ConsignmentLength));
 
         }
         private void SearchTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (CMain.Time < SearchTime)
             {
-                GameScene.Scene.ChatDialog.ReceiveChat(string.Format("You can search again after {0} seconds.", Math.Ceiling((SearchTime - CMain.Time) / 1000D)), ChatType.System);
+                GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("You can search again after {0} seconds.", Math.Ceiling((SearchTime - CMain.Time) / 1000D)), ChatType.System);
                 return;
             }
 

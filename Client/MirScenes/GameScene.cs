@@ -2430,7 +2430,7 @@ namespace Client.MirScenes
             
             if (quest == null) return;
 
-            MirMessageBox messageBox = new MirMessageBox(string.Format("{0} would like to share a quest with you. Do you accept?", p.SharerName), MirMessageBoxButtons.YesNo);
+            MirMessageBox messageBox = new MirMessageBox(LanguageUtils.Format("{0} would like to share a quest with you. Do you accept?", p.SharerName), MirMessageBoxButtons.YesNo);
 
             messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.AcceptQuest { NPCIndex = 0, QuestIndex = quest.Index });
 
@@ -2901,10 +2901,10 @@ namespace Client.MirScenes
                 switch (item.Info.Type)
                 {
                     case ItemType.Mount:
-                        ChatDialog.ReceiveChat(string.Format("{0} is no longer loyal to you.", item.Info.Name), ChatType.System);
+                        ChatDialog.ReceiveChat(LanguageUtils.Format("{0} is no longer loyal to you.", item.Info.Name), ChatType.System);
                         break;
                     default:
-                        ChatDialog.ReceiveChat(string.Format("{0}'s dura has dropped to 0.", item.Info.Name), ChatType.System);
+                        ChatDialog.ReceiveChat(LanguageUtils.Format("{0}'s dura has dropped to 0.", item.Info.Name), ChatType.System);
                         break;
                 }
                 
@@ -3057,7 +3057,7 @@ namespace Client.MirScenes
         }
         private void GainExperience(S.GainExperience p)
         {
-            OutputMessage(string.Format("Experience Gained {0}.", p.Amount));
+            OutputMessage(string.Format("收获经验 {0}.", p.Amount));
             MapObject.User.Experience += p.Amount;
         }
         //升级？
@@ -5887,7 +5887,7 @@ namespace Client.MirScenes
                     OutLine = true,
                     Parent = ItemLabel,
                     //Text = string.Format("Holy + {0}", minValue + addValue)
-                    Text = string.Format(addValue > 0 ? "Holy: + {0} (+{1})" : "Holy: + {0}", minValue + addValue, addValue)
+                    Text = string.Format(addValue > 0 ? "神圣: + {0} (+{1})" : "神圣: + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, HOLYLabel.DisplayRectangle.Right + 4),
@@ -6066,7 +6066,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("反伤害: {0}", minValue)
+                    Text = string.Format("伤害反弹: {0}", minValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, ReflectLabel.DisplayRectangle.Right + 4),
@@ -6193,15 +6193,15 @@ namespace Client.MirScenes
                 {
                     if (HoverItem.Info.Type == ItemType.Float)
                     {
-                        ACLabel.Text = string.Format("Nibble Chance + " + (addValue > 0 ? "{0}~{1}% (+{2})" : "{0}~{1}%"), minValue, maxValue + addValue);
+                        ACLabel.Text = LanguageUtils.Format("Nibble Chance + " + (addValue > 0 ? "{0}~{1}% (+{2})" : "{0}~{1}%"), minValue, maxValue + addValue);
                     }
                     else if (HoverItem.Info.Type == ItemType.Finder)
                     {
-                        ACLabel.Text = string.Format("Finder Increase + " + (addValue > 0 ? "{0}~{1}% (+{2})" : "{0}~{1}%"), minValue, maxValue + addValue);
+                        ACLabel.Text = LanguageUtils.Format("Finder Increase + " + (addValue > 0 ? "{0}~{1}% (+{2})" : "{0}~{1}%"), minValue, maxValue + addValue);
                     }
                     else
                     {
-                        ACLabel.Text = string.Format("Success Chance + " + (addValue > 0 ? "{0}% (+{1})" : "{0}%"), maxValue, maxValue + addValue);
+                        ACLabel.Text = LanguageUtils.Format("Success Chance + " + (addValue > 0 ? "{0}% (+{1})" : "{0}%"), maxValue, maxValue + addValue);
                     }
                 }
 
@@ -6237,7 +6237,7 @@ namespace Client.MirScenes
 
                 if (fishingItem)
                 {
-                    MACLabel.Text = string.Format("AutoReel Chance + {0}%", maxValue + addValue);
+                    MACLabel.Text = LanguageUtils.Format("AutoReel Chance + {0}%", maxValue + addValue);
                 }
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, MACLabel.DisplayRectangle.Right + 4),
@@ -6523,7 +6523,7 @@ namespace Client.MirScenes
                     OutLine = true,
                     Parent = ItemLabel,
                     //Text = string.Format("Strong + {0}", minValue + addValue)
-                    Text = string.Format(addValue > 0 ? "Strong + {0} (+{1})" : "Strong + {0}", minValue + addValue, addValue)
+                    Text = LanguageUtils.Format(addValue > 0 ? "Strong + {0} (+{1})" : "Strong + {0}", minValue + addValue, addValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, STRONGLabel.DisplayRectangle.Right + 4),
@@ -6845,7 +6845,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format(realItem.Type != ItemType.Armour ? "{0} + {1}~{2}" : "MAX {0} + {1}", HoverItem.Awake.type.ToString(), HoverItem.Awake.getAwakeValue(), HoverItem.Awake.getAwakeValue())
+                    Text = LanguageUtils.Format(realItem.Type != ItemType.Armour ? "{0} + {1}~{2}" : "MAX {0} + {1}", HoverItem.Awake.type.ToString(), HoverItem.Awake.getAwakeValue(), HoverItem.Awake.getAwakeValue())
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, AWAKE_TOTAL_VALUELabel.DisplayRectangle.Right + 4),
@@ -7329,7 +7329,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("Soulbinds on equip")
+                    Text = LanguageUtils.Format("Soulbinds on equip")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, BOELabel.DisplayRectangle.Right + 4),
@@ -9833,7 +9833,7 @@ namespace Client.MirScenes
                 if (CMain.Time >= OutputDelay)
                 {
                     OutputDelay = CMain.Time + 1000;
-                    GameScene.Scene.OutputMessage("Not Enough Mana to cast.");
+                    GameScene.Scene.OutputMessage("MP不足.");
                 }
                 User.ClearMagic();
                 return;
@@ -10361,95 +10361,95 @@ namespace Client.MirScenes
             {
                 //magic
                 case BuffType.TemporalFlux:
-                    text = string.Format("Temporal Flux\nIncreases cost of next Teleport by: {0} MP.\n", (int)(MapObject.User.MaxMP * 0.3F));
+                    text = string.Format("增加下次传送消耗: {0} MP.\n", (int)(MapObject.User.MaxMP * 0.3F));
                     break;
                 case BuffType.Hiding://隐身
-                    text = "隐身\n很多怪物看不到你.\n";
+                    text = "隐 身 \n不会被大多数怪物发觉.\n";
                     break;
                 case BuffType.Haste://加速
-                    text = string.Format("Haste\n增加攻击速度: {0}.\n", Values[0]);
+                    text = string.Format("体 迅 风\n攻速提升: {0}.\n", Values[0]);
                     break;
                 case BuffType.SwiftFeet:
-                    text = string.Format("Swift Feet\n增加移动速度: {0}.\n", Values[0]);
+                    text = string.Format("轻 身 步\n移动速度提升: {0}.\n", Values[0]);
                     break;
                 case BuffType.Fury:
-                    text = string.Format("愤怒\n增加攻击速度: {0}.\n", Values[0]);
+                    text = string.Format("血龙剑法\n攻击速度提升: {0}.\n", Values[0]);
                     break;
                 case BuffType.LightBody:
-                    text = string.Format("Light Body\n增加敏捷: {0}.\n", Values[0]);
+                    text = string.Format("风 身 术\n敏捷提升: {0}.\n", Values[0]);
                     break;
                 case BuffType.SoulShield:
-                    text = string.Format("Soul Shield\nIncreases MAC by: 0-{0}.\n", Values[0]);
+                    text = string.Format("幽 灵 盾\n魔御提升: 0-{0}.\n", Values[0]);
                     break;
                 case BuffType.BlessedArmour:
-                    text = string.Format("Blessed Armour\nIncreases AC by: 0-{0}.\n", Values[0]);
+                    text = string.Format("神圣战甲术\n防御提升: 0-{0}.\n", Values[0]);
                     break;
                 case BuffType.ProtectionField:
-                    text = string.Format("Protection Field\nIncreases AC by: 0-{0}.\n", Values[0]);
+                    text = string.Format("铁 布 衫\n防御提升: 0-{0}.\n", Values[0]);
                     break;
                 case BuffType.Rage:
-                    text = string.Format("Rage\nIncreases DC by: 0-{0}.\n", Values[0]);
+                    text = string.Format("剑 气 爆\n攻击提升: 0-{0}.\n", Values[0]);
                     break;
                 case BuffType.ImmortalSkin:
-                    text = string.Format("ImmortalSkin\nIncreases AC by: 0-{0}.\nDecreases DC by: 0-{1}.\n", Values[0], Values[1]);
+                    text = string.Format("金刚不坏\n攻击降低:  {0}-{0}\n防御提升:  {1}-{1}\n", Values[0], Values[1]);
                     break;
                 case BuffType.CounterAttack:
-                    text = string.Format("Counter Attack\nIncreases AC/MAC by: {0}-{1}.\n", Values[0], Values[0]);
+                    text = string.Format("罗汉金身\n双防提升:  {0}−{1}\n受到伤害反弹\n", Values[0], Values[0]);
                     break;
                 case BuffType.UltimateEnhancer:
                     if (GameScene.User.Class == MirClass.Wizard || GameScene.User.Class == MirClass.Archer)
                     {
-                        text = string.Format("Ultimate Enhancer\nIncreases MC by: 0-{0}.\n", Values[0]);
+                        text = string.Format("无极真气\n魔法提升: 0-{0}.\n", Values[0]);
                     }
                     else if (GameScene.User.Class == MirClass.Taoist)
                     {
-                        text = string.Format("Ultimate Enhancer\nIncreases SC by: 0-{0}.\n", Values[0]);
+                        text = string.Format("无极真气\n道术提升: 0-{0}.\n", Values[0]);
                     }
                     else
                     {
-                        text = string.Format("Ultimate Enhancer\nIncreases DC by: 0-{0}.\n", Values[0]);
+                        text = string.Format("无极真气\n攻击提升: 0-{0}.\n", Values[0]);
                     }
                     break;
                 case BuffType.EnergyShield:
-                    text = string.Format("Energy Shield\n{0}% chance to gain {1} HP when attacked\n", Math.Round((1 / (decimal)Values[0]) * 100), Values[1]);
+                    text = string.Format("阴阳法盾\n被攻击{0}%的几率回复{1}点生命值\n", Math.Round((1 / (decimal)Values[0]) * 100), Values[1]);
                     break;
                 case BuffType.Curse:
-                    text = string.Format("Cursed\nDecreases DC/MC/SC/ASpeed by: {0}%.\n", Values[0]);
+                    text = string.Format("减少攻击魔法道术攻速:{0}%\n", Values[0]);
                     break;
                 case BuffType.MoonLight:
-                    text = "Moon Light\nInvisible to players and many\nmonsters when at a distance.\n";
+                    text = "隐身";
                     break;
                 case BuffType.DarkBody:
-                    text = "Dark Body\nInvisible to many monsters and able to move.\n";
+                    text = "隐身";
                     break;
                 case BuffType.VampireShot:
-                    text = string.Format("Vampire Shot\nGives you a vampiric ability\nthat can be released with\ncertain skills.\n", Values[0]);
+                    text = LanguageUtils.Format("Vampire Shot\nGives you a vampiric ability\nthat can be released with\ncertain skills.\n", Values[0]);
                     break;
                 case BuffType.PoisonShot:
-                    text = string.Format("Poison Shot\nGives you a poison ability\nthat can be released with\ncertain skills.\n", Values[0]);
+                    text = LanguageUtils.Format("Poison Shot\nGives you a poison ability\nthat can be released with\ncertain skills.\n", Values[0]);
                     break;
                 case BuffType.Concentration:
-                    text = "Concentrating\nIncreases chance on element extraction.\n";
+                    text = "增加元素抽取";
                     break;
                 case BuffType.MentalState:
                     switch (Values[0])
                     {
                         case 0:
-                            text = string.Format("Agressive (Full damage)\nCan't shoot over walls.\n", Values[0]);
+                            text = string.Format("不能穿墙.\n", Values[0]);
                             break;
                         case 1:
-                            text = string.Format("Trick shot (Minimal damage)\nCan shoot over walls.\n", Values[0]);
+                            text = string.Format("不能穿墙.\n", Values[0]);
                             break;
                         case 2:
-                            text = string.Format("Group Mode (Medium damage)\nDon't steal agro.\n", Values[0]);
+                            text = LanguageUtils.Format("Group Mode (Medium damage)\nDon't steal agro.\n", Values[0]);
                             break;
                     }
                     break;
                 case BuffType.MagicBooster:
-                    text = string.Format("Magic Booster\nIncreases MC by: {0}-{0}.\nIncreases consumption by {1}%.\n", Values[0], Values[1]);
+                    text = string.Format("增加魔法:{0}-{0}.增加消耗:{1}%\n", Values[0], Values[1]);
                     break;
                 case BuffType.MagicShield:
-                    text = string.Format("Magic Shield\nReduces damage by {0}%.\n", (Values[0] + 2) * 10);
+                    text = string.Format("减少伤害:{0}%\n", (Values[0] + 2) * 10);
                     break;
 
                 //special
@@ -10462,105 +10462,105 @@ namespace Client.MirScenes
                     if (options.HasFlag(GMOptions.Observer)) text += "-Observer\n";
                     break;
                 case BuffType.General:
-                    text = string.Format("Mirian Advantage\nExpRate increased by {0}%\n", Values[0]);
+                    text = string.Format("经验获得增加:{0}%\n", Values[0]);
 
                     if (Values.Length > 1)
-                        text += string.Format("DropRate increased by {0}%\n", Values[1]);
+                        text += string.Format("增加掉落:{0}%\n", Values[1]);
                     if (Values.Length > 2)
-                        text += string.Format("GoldRate increased by {0}%\n", Values[2]);
+                        text += string.Format("增加金币获得 {0}%\n", Values[2]);
                     break;
                 case BuffType.Exp:
-                    text = string.Format("Exp Rate\nIncreased by {0}%\n", Values[0]);
+                    text = string.Format("增加经验获得 {0}%\n", Values[0]);
                     break;
                 case BuffType.Gold:
-                    text = string.Format("Gold Rate\nIncreased by {0}%\n", Values[0]);
+                    text = string.Format("增加金币获得 {0}%\n", Values[0]);
                     break;
                 case BuffType.Drop:
-                    text = string.Format("Drop Rate\nIncreased by {0}%\n", Values[0]);
+                    text = string.Format("增加掉落 {0}%\n", Values[0]);
                     break;
                 case BuffType.BagWeight:
-                    text = string.Format("Bag Weight\nIncreases BagWeight by: {0}.\n", Values[0]);
+                    text = string.Format("增加负重: {0}.\n", Values[0]);
                     break;
                 case BuffType.Transform:
-                    text = string.Format("Transform\nDisguises your appearance.\n");
+                    text = string.Format("时装.\n");
                     break;
                 case BuffType.RelationshipEXP:
-                    text = string.Format("Love is in the Air\nExpRate increased by: {0}%.\n", Values[0]);
+                    text = string.Format("经验获得: {0}%.\n", Values[0]);
                     break;
                 case BuffType.Mentee:
-                    text = string.Format("In Training\nLearn skill points twice as quick.\nExpRate increased by: {0}%.\n", Values[0]);
+                    text = string.Format("经验获得: {0}%.\n", Values[0]);
                     break;
                 case BuffType.Mentor:
-                    text = string.Format("Mentorship Empowerment\nDamage to monsters increased by {0}%.\n", Values[0]);
+                    text = string.Format("增加对怪物的伤害 {0}%.\n", Values[0]);
                     break;
                 case BuffType.Guild:
-                    text = string.Format("Guild Charge\n");
+                    text = string.Format("公会\n");
                     text += GameScene.Scene.GuildDialog.ActiveStats;
                     break;
                 case BuffType.Rested:
-                    text = string.Format("Rested\nIncreases Exp Rate by {0}%\n", Values[0]);
+                    text = string.Format("增加经验获得 {0}%\n", Values[0]);
                     break;
 
                 //stats
                 case BuffType.Impact:
-                    text = string.Format("Impact\nIncreases DC by: 0-{0}.\n", Values[0]);
+                    text = string.Format("增加攻击: 0-{0}.\n", Values[0]);
                     break;
                 case BuffType.Magic:
-                    text = string.Format("Magic\nIncreases MC by: 0-{0}.\n", Values[0]);
+                    text = string.Format("增加魔法: 0-{0}.\n", Values[0]);
                     break;
                 case BuffType.Taoist:
-                    text = string.Format("Taoist\nIncreases SC by: 0-{0}.\n", Values[0]);
+                    text = string.Format("增加道术: 0-{0}.\n", Values[0]);
                     break;
                 case BuffType.Storm:
-                    text = string.Format("Storm\nIncreases A.Speed by: {0}.\n", Values[0]);
+                    text = string.Format("增加攻速: {0}.\n", Values[0]);
                     break;
                 case BuffType.HealthAid:
-                    text = string.Format("Health Aid\nIncreases HP by: {0}.\n", Values[0]);
+                    text = string.Format("增加HP: {0}.\n", Values[0]);
                     break;
                 case BuffType.ManaAid:
-                    text = string.Format("Mana Aid\nIncreases MP by: {0}.\n", Values[0]);
+                    text = string.Format("增加MP by: {0}.\n", Values[0]);
                     break;
                 case BuffType.Defence:
-                    text = string.Format("Defence\nIncreases Max AC by: {0}-{0}.\n", Values[0]);
+                    text = string.Format("增加最大防御: {0}-{0}.\n", Values[0]);
                     break;
                 case BuffType.MagicDefence:
-                    text = string.Format("Magic Defence\nIncreases Max MAC by: {0}-{0}.\n", Values[0]);
+                    text = string.Format("增加魔御: {0}-{0}.\n", Values[0]);
                     break;
                 case BuffType.WonderDrug:
-                    text = string.Format("Wonder Drug\n");
+                    text = string.Format("不错的酒\n");
                     switch (Values[0])
                     {
                         case 0:
-                            text += string.Format("Increases Exp Rate by {0}%\n", Values[1]);
+                            text += string.Format("增加经验获得 {0}%\n", Values[1]);
                             break;
                         case 1:
-                            text += string.Format("Increases Drop Rate by {0}%\n", Values[1]);
+                            text += string.Format("增加掉落 {0}%\n", Values[1]);
                             break;
                         case 2:
-                            text += string.Format("Increases HP by: {0}.\n", Values[1]);
+                            text += string.Format("增加 HP: {0}.\n", Values[1]);
                             break;
                         case 3:
-                            text += string.Format("Increases MP by: {0}.\n", Values[1]);
+                            text += string.Format("增加 MP: {0}.\n", Values[1]);
                             break;
                         case 4:
-                            text += string.Format("Increases Max AC by: {0}-{0}.\n", Values[1]);
+                            text += string.Format("增加最大防御: {0}-{0}.\n", Values[1]);
                             break;
                         case 5:
-                            text += string.Format("Increases Max MAC by: {0}-{0}.\n", Values[1]);
+                            text += string.Format("增加魔御: {0}-{0}.\n", Values[1]);
                             break;
                         case 6:
-                            text += string.Format("Increases A.Speed by: {0}.\n", Values[1]);
+                            text += string.Format("增加攻速: {0}.\n", Values[1]);
                             break;
                     }
                     break;
                 case BuffType.Knapsack:
-                    text = string.Format("Knapsack\nIncreases BagWeight by: {0}.\n", Values[0]);
+                    text = string.Format("增加负重: {0}.\n", Values[0]);
                     break;
             }
 
-            text += string.Format("Expire: {0}", Infinite ? "Never" : Functions.PrintTimeSpanFromSeconds(Math.Round((Expire - CMain.Time) / 1000D)));
+            text += string.Format("期限: {0}", Infinite ? "永久" : Functions.PrintTimeSpanFromSeconds(Math.Round((Expire - CMain.Time) / 1000D)));
 
-            if (Caster.Length > 0) text += string.Format("\nCaster: {0}", Caster);
+            if (Caster.Length > 0) text += string.Format("\n施法: {0}", Caster);
 
             return text;
         }

@@ -22,6 +22,7 @@ namespace Server.MirEnvir
         public long LastRunTime = 0;
         public long StartTime = 0;
         public long EndTime = 0;
+        public int LastCount = 0;//执行次数
         public LinkedList<MapObject> ObjectsList = new LinkedList<MapObject>();
         public LinkedListNode<MapObject> current = null;
         public Boolean Stop = false;
@@ -307,7 +308,7 @@ namespace Server.MirEnvir
                     Stop();
                     return;
                 }
-                //开启线程调用，第0个不管？
+                //开启线程调用，第0个不管？第0个是在主线程处理的
                 if (Settings.Multithreaded)
                 {
                     for (int j = 0; j < MobThreads.Length; j++)
@@ -326,7 +327,6 @@ namespace Server.MirEnvir
 
                 try
                 {
-                  
                     //这里死循环，每秒循环一次？
                     while (Running)
                     {
@@ -334,11 +334,12 @@ namespace Server.MirEnvir
                         Time = Stopwatch.ElapsedMilliseconds;//当前时间
                         long usertime = Time - lasttime;//消耗的时间
                         //20-50毫秒执行一次就可以了。
-                        if (usertime < 50)
+                        if (usertime < Settings.RefreshDelay)
                         {
-                            Thread.Sleep((int)(50 - usertime));
+                            Thread.Sleep ((int)(Settings.RefreshDelay - usertime));
                         }
-                       
+                        Time = Stopwatch.ElapsedMilliseconds;//当前时间
+
                         if (Time >= processTime)
                         {
                             LastCount = processCount;
@@ -385,13 +386,15 @@ namespace Server.MirEnvir
                         //多线程进行处理
                         if (Settings.Multithreaded)
                         {
+                            //这个是对非主线程的线程进行处理(,如果stop==ture,则再次开启)
                             for (int j = 1; j < MobThreads.Length; j++)
                             {
                                 MobThread Info = MobThreads[j];
-
+                                processCount += Info.LastCount;
+                                Info.LastCount = 0;
                                 if (Info.Stop == true)
                                 {
-                                    Info.EndTime = Time + 10;
+                                    Info.EndTime = Time + 20;
                                     Info.Stop = false;
                                 }
                             }
@@ -402,6 +405,8 @@ namespace Server.MirEnvir
                             }
                             //run the first loop in the main thread so the main thread automaticaly 'halts' untill the other threads are finished
                             ThreadLoop(MobThreads[0]);
+                            processCount += MobThreads[0].LastCount;
+                            MobThreads[0].LastCount = 0;
                         }
                         //这个是否放在地图处理里比较好呢(20毫秒内，对所有的MapObject处理一次)
                         Boolean TheEnd = false;
@@ -553,7 +558,7 @@ namespace Server.MirEnvir
                     else
                     {
                         LinkedListNode<MapObject> next = Info.current.Next;
-
+                        LastCount++;
                         //if we reach the end of our list > go back to the top (since we are running threaded, we dont want the system to sit there for xxms doing nothing)
                         if (Info.current == Info.ObjectsList.Last)
                         {
@@ -573,7 +578,7 @@ namespace Server.MirEnvir
                         Info.current = next;
                     }
                     //if it's the main thread > make it loop till the subthreads are done, else make it stop after 'endtime'
-                    if (Info.Id == 0)
+                    if (Info.Id == 0)//主线程,只要有一个非主线程完成了，他就退出。
                     {
                         stopping = true;
                         for (int x = 1; x < MobThreads.Length; x++)
@@ -585,17 +590,19 @@ namespace Server.MirEnvir
                             return;
                         }
                     }
-                    else
+                    else//非主线程，只要时间到了，就释放锁，让主线程继续执行
                     {
-                        if ((Stopwatch.ElapsedMilliseconds > Info.EndTime) && Running)
+                        if (LastCount % 100 == 0)
                         {
-                            Info.Stop = true;
-                            lock (_locker)
+                            if ((Stopwatch.ElapsedMilliseconds > Info.EndTime) && Running)
                             {
-                                while (Info.Stop) Monitor.Wait(_locker);
+                                Info.Stop = true;
+                                lock (_locker)
+                                {
+                                    while (Info.Stop) Monitor.Wait(_locker);
+                                }
                             }
                         }
-
                     }
                 }
             }

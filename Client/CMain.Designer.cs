@@ -41,6 +41,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "CMain";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Legend of Mir";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.CMain_FormClosing);
             this.Load += new System.EventHandler(this.CMain_Load);

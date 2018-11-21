@@ -409,7 +409,7 @@ namespace Client
         //这个是输出FPS等信息的，在左上角输出，这个和技能栏重复了。要调整下
         private static void CreateDebugLabel()
         {
-            //if (!Settings.DebugMode) return;
+            if (!Settings.DebugMode) return;
 
             if (DebugBaseLabel == null || DebugBaseLabel.IsDisposed)
             {
@@ -709,7 +709,7 @@ namespace Client
         {
             if (ServerConfig.exitGameType == ExitGameType.Normal && CMain.Time < GameScene.LogTime && GameScene.Scene!=null && GameScene.Scene.ChatDialog!=null)
             {
-                GameScene.Scene.ChatDialog.ReceiveChat("Cannot leave game for " + (GameScene.LogTime - CMain.Time) / 1000 + " seconds.", ChatType.System);
+                GameScene.Scene.ChatDialog.ReceiveChat("请在 " + (GameScene.LogTime - CMain.Time) / 1000 + " 秒后离开游戏.", ChatType.System);
                 e.Cancel = true;
             }
         }

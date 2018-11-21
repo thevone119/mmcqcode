@@ -38,7 +38,9 @@ namespace Server
         public static byte[] VersionHash;//这个应该是客户端exe的文件md5
         public static string GMPassword = "C#Mir 4.0";
         public static bool Multithreaded = false;//是否开启多线程进行处理
-        public static int ThreadLimit = 1;//开启的线程数
+        public static int ThreadLimit = 2;//开启的线程数
+        public static int RefreshDelay = 50;//刷新延时
+        
         public static bool TestServer = false;
         public static bool EnforceDBChecks = true;
 
@@ -282,6 +284,8 @@ namespace Server
             GMPassword = Reader.ReadString("General", "GMPassword", GMPassword);
             Multithreaded = Reader.ReadBoolean("General", "Multithreaded", Multithreaded);
             ThreadLimit = Reader.ReadInt32("General", "ThreadLimit", ThreadLimit);
+            RefreshDelay = Reader.ReadInt32("General", "RefreshDelay", RefreshDelay);
+            
             TestServer = Reader.ReadBoolean("General", "TestServer", TestServer);
             EnforceDBChecks = Reader.ReadBoolean("General", "EnforceDBChecks", EnforceDBChecks);
 
@@ -487,6 +491,7 @@ namespace Server
             Reader.Write("General", "RelogDelay", RelogDelay);
             Reader.Write("General", "Multithreaded", Multithreaded);
             Reader.Write("General", "ThreadLimit", ThreadLimit);
+            Reader.Write("General", "RefreshDelay", RefreshDelay);
             Reader.Write("General", "TestServer", TestServer);
             Reader.Write("General", "EnforceDBChecks", EnforceDBChecks);
             

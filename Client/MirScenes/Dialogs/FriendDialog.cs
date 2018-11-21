@@ -149,7 +149,7 @@ namespace Client.MirScenes.Dialogs
             AddButton.Click += (o, e) =>
             {
                 ;
-                string message = string.Format("Please enter the name of the person you would like to {0}.", _blockedTab ? "block" : "add");
+                string message = LanguageUtils.Format("Please enter the name of the person you would like to {0}.", _blockedTab ? "block" : "add");
 
                 MirInputBox inputBox = new MirInputBox(message);
 
@@ -176,7 +176,7 @@ namespace Client.MirScenes.Dialogs
             {
                 if (SelectedFriend == null) return;
 
-                MirMessageBox messageBox = new MirMessageBox(string.Format("Are you sure you wish to remove '{0}'?", SelectedFriend.Name), MirMessageBoxButtons.YesNo);
+                MirMessageBox messageBox = new MirMessageBox(LanguageUtils.Format("Are you sure you wish to remove '{0}'?", SelectedFriend.Name), MirMessageBoxButtons.YesNo);
 
                 messageBox.YesButton.Click += (o1, e1) =>
                 {
@@ -238,7 +238,7 @@ namespace Client.MirScenes.Dialogs
 
                 if (!SelectedFriend.Online)
                 {
-                    GameScene.Scene.ChatDialog.ReceiveChat("Player is not online", ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("Player is not online"), ChatType.System);
                     return;
                 }
 

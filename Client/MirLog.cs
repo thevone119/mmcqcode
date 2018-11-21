@@ -11,7 +11,7 @@ public class MirLog
     //日志级别，目前分为3级别，0:debug,1:info,2:error 
     private static readonly short msglevel = 0;
 
-    public static void info2(string msg)
+    public static void info(string msg)
     {
         if (msglevel > 1)
         {
