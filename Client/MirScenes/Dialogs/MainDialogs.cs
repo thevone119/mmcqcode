@@ -52,7 +52,7 @@ namespace Client.MirScenes.Dialogs
             PingLabel = new MirLabel
             {
                 AutoSize = true,
-                ForeColour = Color.Yellow,
+                ForeColour = Color.LimeGreen,
                 OutLineColour = Color.Black,
                 Parent = this,
                 Location = new Point(Settings.Resolution != 800 ? 899 : 675, Settings.Resolution != 800 ? -443 : -265),
@@ -413,11 +413,12 @@ namespace Client.MirScenes.Dialogs
                     break;
             }
 
-            if ((GameScene.Scene.PingTime) > 100)
+            if (GameScene.UserSet.ShowPing && (GameScene.Scene.PingTime) > 0)
             {
                 PingLabel.Text = LanguageUtils.Format("Ping: {0}", GameScene.Scene.PingTime);
                 //不显示ping的值了
-                PingLabel.Visible = false;
+                //PingLabel.Visible = false;
+                PingLabel.Visible = true;
             }
             else
             {
@@ -1474,6 +1475,7 @@ namespace Client.MirScenes.Dialogs
             AddButton.Click += (o1, e) =>
             {
                 int openLevel = (GameScene.User.Inventory.Length - 46) / 4;
+                //每4个100万，逐级递增
                 int openGold = (1000000 + openLevel * 1000000);
                 MirMessageBox messageBox = new MirMessageBox(LanguageUtils.Format("你想花费{0:###,###}金币解锁4个额外的格子吗 ?\n"  , openGold), MirMessageBoxButtons.OKCancel);
 
@@ -3382,20 +3384,20 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 PressedIndex = 433,
                 Sound = SoundList.ButtonA,
-                Hint = "Invite to Group",
+                Hint = LanguageUtils.Format("Invite to Group"),
             };
             GroupButton.Click += (o, e) =>
             {
 
                 if (GroupDialog.GroupList.Count >= Globals.MaxGroup)
                 {
-                    GameScene.Scene.ChatDialog.ReceiveChat("Your group already has the maximum number of members.", ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("Your group already has the maximum number of members."), ChatType.System);
                     return;
                 }
                 if (GroupDialog.GroupList.Count > 0 && GroupDialog.GroupList[0] != MapObject.User.Name)
                 {
 
-                    GameScene.Scene.ChatDialog.ReceiveChat("You are not the leader of your group.", ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("You are not the leader of your group."), ChatType.System);
                 }
 
                 Network.Enqueue(new C.AddMember { Name = Name });
@@ -3411,7 +3413,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 PressedIndex = 436,
                 Sound = SoundList.ButtonA,
-                Hint = "Add to Friends List",
+                Hint = LanguageUtils.Format("Add to Friends List"),
             };
             FriendButton.Click += (o, e) =>
             {
@@ -3427,7 +3429,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 PressedIndex = 439,
                 Sound = SoundList.ButtonA,
-                Hint = "Send Mail",
+                Hint = LanguageUtils.Format("Send Mail"),
             };
             MailButton.Click += (o, e) => GameScene.Scene.MailComposeLetterDialog.ComposeMail(Name);
 
@@ -3440,7 +3442,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 PressedIndex = 525,
                 Sound = SoundList.ButtonA,
-                Hint = "Trade",
+                Hint = "交易",
             };
             TradeButton.Click += (o, e) => Network.Enqueue(new C.TradeRequest());
 
@@ -3705,7 +3707,7 @@ namespace Client.MirScenes.Dialogs
             SkillModeOn.Click += (o, e) =>
             {
                 Settings.SkillMode = true;
-                GameScene.Scene.ChatDialog.ReceiveChat("<SkillMode 2>", ChatType.Hint);
+                GameScene.Scene.ChatDialog.ReceiveChat("<技能模式 2>", ChatType.Hint);
                 ToggleSkillButtons(false);
             };
 
@@ -3722,7 +3724,7 @@ namespace Client.MirScenes.Dialogs
             SkillModeOff.Click += (o, e) =>
             {
                 Settings.SkillMode = false;
-                GameScene.Scene.ChatDialog.ReceiveChat("<SkillMode 1>", ChatType.Hint);
+                GameScene.Scene.ChatDialog.ReceiveChat("<技能模式 1>", ChatType.Hint);
                 ToggleSkillButtons(true);
             };
 
@@ -3826,7 +3828,7 @@ namespace Client.MirScenes.Dialogs
             HPViewOn.Click += (o, e) =>
             {
                 Settings.HPView = true;
-                GameScene.Scene.ChatDialog.ReceiveChat("<HP/MP Mode 1>", ChatType.Hint);
+                GameScene.Scene.ChatDialog.ReceiveChat("<HP/MP 模式 1>", ChatType.Hint);
             };
 
             HPViewOff = new MirButton
@@ -3841,7 +3843,7 @@ namespace Client.MirScenes.Dialogs
             HPViewOff.Click += (o, e) =>
             {
                 Settings.HPView = false;
-                GameScene.Scene.ChatDialog.ReceiveChat("<HP/MP Mode 2>", ChatType.Hint);
+                GameScene.Scene.ChatDialog.ReceiveChat("<HP/MP 模式 2>", ChatType.Hint);
             };
 
             SoundBar = new MirImageControl
@@ -4834,9 +4836,9 @@ namespace Client.MirScenes.Dialogs
         {
             MapControl map = GameScene.Scene.MapControl;
             if (map == null || !Visible) return;
-
-            //int index = map.BigMap <= 0 ? map.MiniMap : map.BigMap;
-            int index = map.BigMap;
+            //如果没有配置大地图，就用小地图做大地图
+            int index = map.BigMap <= 0 ? map.MiniMap : map.BigMap;
+            //int index = map.BigMap;
 
             if (index <= 0)
             {

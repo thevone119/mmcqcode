@@ -24,6 +24,8 @@ namespace Client.MirScenes
 {
     /// <summary>
     /// 游戏的主界面
+    /// CheckInput:循环做一些处理，如走路，跑步，自动行走，隔位刺杀等。
+    /// 
     /// </summary>
     public sealed class GameScene : MirScene
     {
@@ -34,6 +36,20 @@ namespace Client.MirScenes
             get { return MapObject.User; }
             set { MapObject.User = value; }
         }
+
+        private static UserSettings _UserSet;
+        public static UserSettings UserSet
+        {
+            get {
+                if (_UserSet == null)
+                {
+                    _UserSet = new UserSettings(User.Id);
+                    _UserSet.Load();
+                    _UserSet.Save();
+                }
+                return _UserSet;
+            }
+        }
         //记录各种跑步，行走时间，攻击时间
         public static long MoveTime, AttackTime, NextRunTime, LogTime, LastRunTime;
         public static bool CanMove, CanRun;
@@ -42,10 +58,13 @@ namespace Client.MirScenes
         public MainDialog MainDialog;
         public ChatDialog ChatDialog;
         public ChatControlBar ChatControl;
+        //这个是背包
         public InventoryDialog InventoryDialog;
+
         public CharacterDialog CharacterDialog;
         public CraftDialog CraftDialog;
         public StorageDialog StorageDialog;
+        //这个是1-6按钮栏
         public BeltDialog BeltDialog;
         public MiniMapDialog MiniMapDialog;
         public InspectDialog InspectDialog;
@@ -119,9 +138,9 @@ namespace Client.MirScenes
         public static List<ClientQuestInfo> QuestInfoList = new List<ClientQuestInfo>();
         public static List<GameShopItem> GameShopInfoList = new List<GameShopItem>();
         public static List<ClientRecipeInfo> RecipeInfoList = new List<ClientRecipeInfo>();
-
+        //这个buff和用户中的buff有什么区别？
         public List<Buff> Buffs = new List<Buff>();
-
+        //
         public static UserItem[] Storage = new UserItem[80];
         public static UserItem[] GuildStorage = new UserItem[112];
         public static UserItem[] Refine = new UserItem[16];
@@ -150,12 +169,13 @@ namespace Client.MirScenes
         public static uint DefaultNPCID;
 
 
-        public long ToggleTime;
+        public long ToggleTime;//这个是针对部分开关类技能，比如开关刺杀，开关半月等的时间限制
         public static bool Slaying, Thrusting, HalfMoon, CrossHalfMoon, DoubleSlash, TwinDrakeBlade, FlamingSword;
-        public static long SpellTime;
+        public static long SpellTime;//这个时间是针对释放了某个技能，下个技能的时间限制
+
 
         //延时不用这个计算哦，直接用发包，收包计算即可哦
-        public long PingTime;
+        public long PingTime = 10;
         public long NextPing = 10000;
 
         //左上角的提示信息，如杀怪获得经验信息等临时提示信息
@@ -682,29 +702,31 @@ namespace Client.MirScenes
                 
             }
         }
-       
+
         //释放魔法控制，这个控制粗糙了。
         public void UseSpell(int key)
         {
-            if (User.RidingMount || User.Fishing) return;
-
-            if(!User.HasClassWeapon && User.Weapon >= 0)
-            {
-                ChatDialog.ReceiveChat("你必须佩戴合适的武器来完成这项技能", ChatType.System);
-                return;
-            }
-
-            if (CMain.Time < User.BlizzardStopTime || CMain.Time < User.ReincarnationStopTime) return;
-
             ClientMagic magic = null;
-
             for (int i = 0; i < User.Magics.Count; i++)
             {
                 if (User.Magics[i].Key != key) continue;
                 magic = User.Magics[i];
                 break;
             }
+            if (magic == null) return;
+            UseSpell(magic);
+        }
+        //释放魔法
+        public void UseSpell(ClientMagic magic)
+        {
+            if (User.RidingMount || User.Fishing) return;
 
+            if (!User.HasClassWeapon && User.Weapon >= 0)
+            {
+                ChatDialog.ReceiveChat("你必须佩戴合适的武器来完成这项技能", ChatType.System);
+                return;
+            }
+            if (CMain.Time < User.BlizzardStopTime || CMain.Time < User.ReincarnationStopTime) return;
             if (magic == null) return;
 
             switch (magic.Spell)
@@ -715,7 +737,7 @@ namespace Client.MirScenes
                         if (CMain.Time >= OutputDelay)
                         {
                             OutputDelay = CMain.Time + 1000;
-                            GameScene.Scene.OutputMessage(string.Format("您不能使用 {0} 在 {1} 秒内.", magic.Spell.ToString(), ((magic.CastTime + magic.Delay) - CMain.Time - 1) / 1000 + 1));
+                            GameScene.Scene.OutputMessage(string.Format("您不能使用 {0} 在 {1} 秒内.", magic.Name, ((magic.CastTime + magic.Delay) - CMain.Time - 1) / 1000 + 1));
                         }
 
                         return;
@@ -739,28 +761,28 @@ namespace Client.MirScenes
                 case Spell.Thrusting:
                     if (CMain.Time < ToggleTime) return;
                     Thrusting = !Thrusting;
-                    ChatDialog.ReceiveChat(Thrusting ? "使用野蛮冲撞." : "不能使用 野蛮冲撞.", ChatType.Hint);
+                    ChatDialog.ReceiveChat(Thrusting ? "开启刺杀剑法." : "关闭刺杀剑法.", ChatType.Hint);
                     ToggleTime = CMain.Time + 1000;
                     Network.Enqueue(new C.SpellToggle { Spell = magic.Spell, CanUse = Thrusting });
                     break;
                 case Spell.HalfMoon:
                     if (CMain.Time < ToggleTime) return;
                     HalfMoon = !HalfMoon;
-                    ChatDialog.ReceiveChat(HalfMoon ? "开启半月." : "关闭半月.", ChatType.Hint);
+                    ChatDialog.ReceiveChat(HalfMoon ? "开启半月弯刀." : "关闭半月弯刀.", ChatType.Hint);
                     ToggleTime = CMain.Time + 1000;
                     Network.Enqueue(new C.SpellToggle { Spell = magic.Spell, CanUse = HalfMoon });
                     break;
                 case Spell.CrossHalfMoon:
                     if (CMain.Time < ToggleTime) return;
                     CrossHalfMoon = !CrossHalfMoon;
-                    ChatDialog.ReceiveChat(CrossHalfMoon ? "开启十字半月." : "关闭十字半月.", ChatType.Hint);
+                    ChatDialog.ReceiveChat(CrossHalfMoon ? "开启狂风斩." : "关闭狂风斩.", ChatType.Hint);
                     ToggleTime = CMain.Time + 1000;
                     Network.Enqueue(new C.SpellToggle { Spell = magic.Spell, CanUse = CrossHalfMoon });
                     break;
                 case Spell.DoubleSlash:
                     if (CMain.Time < ToggleTime) return;
                     DoubleSlash = !DoubleSlash;
-                    ChatDialog.ReceiveChat(DoubleSlash ? "Use Double Slash." : "Do not use Double Slash.", ChatType.Hint);
+                    ChatDialog.ReceiveChat(DoubleSlash ? "开启风剑术." : "关闭风剑术.", ChatType.Hint);
                     ToggleTime = CMain.Time + 1000;
                     Network.Enqueue(new C.SpellToggle { Spell = magic.Spell, CanUse = DoubleSlash });
                     break;
@@ -778,10 +800,9 @@ namespace Client.MirScenes
                     Network.Enqueue(new C.SpellToggle { Spell = magic.Spell, CanUse = true });
                     User.Effects.Add(new Effect(Libraries.Magic2, 210, 6, 500, User));
                     break;
-                case Spell.FlamingSword:
+                case Spell.FlamingSword://烈火
                     if (CMain.Time < ToggleTime) return;
                     ToggleTime = CMain.Time + 500;
-
                     cost = magic.Level * magic.LevelCost + magic.BaseCost;
                     if (cost > MapObject.User.MP)
                     {
@@ -892,10 +913,11 @@ namespace Client.MirScenes
             else
                 CanMove = false;
 
-            //ping有个毛用,这里又发多一个心跳包，其实没必要吧,1分钟一个？
+            //发心跳包，这个可以检测时间差，把时间发送过去，返回后接受到的时间和当前时间差就是ping值？
+            //3秒发一个心跳包
             if (CMain.Time >= NextPing)
             {
-                NextPing = CMain.Time + 60000;
+                NextPing = CMain.Time + 3000;
                 Network.Enqueue(new C.KeepAlive() { Time = CMain.Time });
             }
             //as关键字是转换，可以将对象转换为指定类型,转换成功将会返回转换后的对象,不成功则返回null
@@ -996,6 +1018,161 @@ namespace Client.MirScenes
             DialogProcess();
 
             ProcessOuput();
+            //辅助，外挂处理
+            AutoHelpProcess();
+
+        }
+
+        //自动辅助处理，自动烈火，自动魔法盾，自动喝药等
+        public void AutoHelpProcess()
+        {
+            //死亡后不处理
+            if (User.Dead)
+            {
+                return;
+            }
+            //添加自动烈火处理,相当于2秒按一次
+            if (GameScene.UserSet.AutoFlaming && CMain.Time > GameScene.UserSet.LastFlamingTime)
+            {
+                GameScene.UserSet.LastFlamingTime = CMain.Time + 2000;
+                ClientMagic mag = User.GetMagic(Spell.FlamingSword);
+                if (mag != null)
+                {
+                    UseSpell(mag);
+                }
+            }
+            //添加魔法盾处理,相当于半秒检测1次，判断buff是否存在
+            if (GameScene.UserSet.AutoShield && CMain.Time > GameScene.UserSet.LastShieldTime)
+            {
+                GameScene.UserSet.LastShieldTime = CMain.Time + 500;
+                ClientMagic mag = User.GetMagic(Spell.MagicShield);
+                if (mag != null && (!Buffs.Any(a => a.Type == BuffType.MagicShield)))
+                {
+                    UseSpell(mag);
+                }
+            }
+            //自动喝药处理,
+            //1.快速恢复药 200毫秒喝一瓶。
+            //2.缓慢恢复的药，就2秒一瓶.
+            //3.如果是回城卷，就5秒一次
+            //最小间隔200毫秒检测一次血量，如果血量恢复后，重置时间
+            //先检查按钮栏BeltDialog，再检查背包
+            if (GameScene.UserSet.OpenProtect)
+            {
+                MirItemCell useCell = null;
+                //血量保护1普通喝药
+                if (CMain.Time > GameScene.UserSet.LastHPUse1Time && GameScene.UserSet.HPUse1!=null && GameScene.UserSet.HPUse1.Length>1 && GameScene.UserSet.HPLower1>0 && GameScene.UserSet.HPLower1<100)
+                {
+                    GameScene.UserSet.LastHPUse1Time = CMain.Time + 2000;
+                    if (User.HP * 1.0 / User.MaxHP < GameScene.UserSet.HPLower1 * 1.0 / 100)
+                    {
+                        useCell = getUseCell(GameScene.UserSet.HPUse1);
+                        if (useCell != null)
+                        {
+                            useCell.UseItem();
+                        }
+                    }
+                }
+                //血量保护2快速喝药
+                if (CMain.Time > GameScene.UserSet.LastHPUse2Time && GameScene.UserSet.HPUse2 != null && GameScene.UserSet.HPUse2.Length > 1 && GameScene.UserSet.HPLower2 > 0 && GameScene.UserSet.HPLower2 < 100)
+                {
+                    GameScene.UserSet.LastHPUse2Time = CMain.Time + 200;
+                    if(User.HP * 1.0 / User.MaxHP< GameScene.UserSet.HPLower2 * 1.0 / 100)
+                    {
+                        useCell = getUseCell(GameScene.UserSet.HPUse2);
+                        if (useCell != null)
+                        {
+                            useCell.UseItem();
+                        }
+                    }
+                }
+                //血量保护3卷轴
+                if (CMain.Time > GameScene.UserSet.LastHPUse3Time && GameScene.UserSet.HPUse3 != null && GameScene.UserSet.HPUse3.Length > 1 && GameScene.UserSet.HPLower3 > 0 && GameScene.UserSet.HPLower3 < 100)
+                {
+                    GameScene.UserSet.LastHPUse3Time = CMain.Time + 5000;
+                    if (User.HP * 1.0 / User.MaxHP < GameScene.UserSet.HPLower3 * 1.0 / 100)
+                    {
+                        useCell = getUseCell(GameScene.UserSet.HPUse3);
+                        if (useCell != null)
+                        {
+                            useCell.UseItem();
+                        }
+                    }
+                }
+                //蓝量保护
+                if (CMain.Time > GameScene.UserSet.LastMPUse1Time && GameScene.UserSet.MPUse1 != null && GameScene.UserSet.MPUse1.Length > 1 && GameScene.UserSet.MPLower1 > 0 && GameScene.UserSet.MPLower1 < 100)
+                {
+                    GameScene.UserSet.LastMPUse1Time = CMain.Time + 2000;
+                    if (User.MP*1.0 / User.MaxMP < GameScene.UserSet.MPLower1*1.0 / 100)
+                    {
+                        useCell = getUseCell(GameScene.UserSet.MPUse1);
+                        
+                        if (useCell != null)
+                        {
+                            useCell.UseItem();
+                        }
+                    }
+                }
+            }
+
+            //自动捡物品处理
+            if (GameScene.UserSet.AutoPickUp && GameScene.UserSet.PickUpList != null && GameScene.UserSet.PickUpList.Length > 0 && CMain.Time > GameScene.UserSet.AutoPickUpTime)
+            {
+                GameScene.UserSet.AutoPickUpTime = CMain.Time + 300;
+                //判断当前位置是否有需要的物品
+                List<MapObject> listitem = MapControl.M2CellInfo[User.CurrentLocation.X, User.CurrentLocation.Y].CellObjects;
+                if (listitem != null && listitem.Count > 0)
+                {
+                    for (int i = 0; i < listitem.Count; i++)
+                    {
+                         if (listitem[i] is ItemObject && GameScene.UserSet.PickUpList.IndexOf(listitem[i].Name + "_1;") != -1)
+                         {
+                            //这个是自动捡取
+                            if (CMain.Time > GameScene.PickUpTime)
+                            {
+                                GameScene.PickUpTime = CMain.Time + 200;
+                                Network.Enqueue(new C.PickUp());
+                            }
+                        }
+                    }
+                }
+            }
+
+
+        }
+
+        //先检查按钮栏BeltDialog，再检查背包InventoryDialog
+        private MirItemCell getUseCell(string itemname)
+        {
+            if (itemname == null)
+            {
+                return null;
+            }
+            itemname = itemname.Trim();
+            for (int i=0;i< BeltDialog.Grid.Length; i++)
+            {
+                if(BeltDialog.Grid[i]==null|| BeltDialog.Grid[i].Item == null || BeltDialog.Grid[i].Item.Info==null)
+                {
+                    continue;
+                }
+     
+                if (BeltDialog.Grid[i].Item.Info.Name== itemname)
+                {
+                    return BeltDialog.Grid[i];
+                }
+            }
+            for (int i = 0; i < InventoryDialog.Grid.Length; i++)
+            {
+                if (InventoryDialog.Grid[i] == null || InventoryDialog.Grid[i].Item == null|| InventoryDialog.Grid[i].Item.Info==null)
+                {
+                    continue;
+                }
+                if (InventoryDialog.Grid[i].Item.Info.Name == itemname)
+                {
+                    return InventoryDialog.Grid[i];
+                }
+            }
+            return null;
         }
 
         public void DialogProcess()
@@ -2576,7 +2753,7 @@ namespace Client.MirScenes
                     ChatDialog.ReceiveChat("[攻击模式: 行会]", ChatType.Hint);
                     break;
                 case AttackMode.EnemyGuild:
-                    ChatDialog.ReceiveChat("[攻击模式: 敌对行会]", ChatType.Hint);
+                    ChatDialog.ReceiveChat("[攻击模式: 敌对]", ChatType.Hint);
                     break;
                 case AttackMode.RedBrown:
                     ChatDialog.ReceiveChat("[攻击模式: 红名]", ChatType.Hint);
@@ -2593,16 +2770,16 @@ namespace Client.MirScenes
             switch (p.Mode)
             {
                 case PetMode.Both:
-                    ChatDialog.ReceiveChat("[宠物模式: 攻击移动]", ChatType.Hint);
+                    ChatDialog.ReceiveChat(LanguageUtils.Format("[Pet: Attack and Move]"), ChatType.Hint);
                     break;
                 case PetMode.MoveOnly:
-                    ChatDialog.ReceiveChat("[宠物模式: 仅移动]", ChatType.Hint);
+                    ChatDialog.ReceiveChat(LanguageUtils.Format("[Pet: Do Not Attack]"), ChatType.Hint);
                     break;
                 case PetMode.AttackOnly:
-                    ChatDialog.ReceiveChat("[宠物模式: 仅攻击]", ChatType.Hint);
+                    ChatDialog.ReceiveChat(LanguageUtils.Format("[Pet: Do Not Move]"), ChatType.Hint);
                     break;
                 case PetMode.None:
-                    ChatDialog.ReceiveChat("[宠物模式: 休息]", ChatType.Hint);
+                    ChatDialog.ReceiveChat(LanguageUtils.Format("[Pet: Do Not Attack or Move]"), ChatType.Hint);
                     break;
             }
 
@@ -2923,7 +3100,7 @@ namespace Client.MirScenes
             User.HP = p.HP;
             User.MP = p.MP;
 
-            User.PercentHealth = (byte)(User.HP / (float)User.MaxHP * 100);
+            //User.PercentHealth = (byte)(User.HP / (float)User.MaxHP * 100);
         }
 
         private void DeleteQuestItem(S.DeleteQuestItem p)
@@ -3946,26 +4123,26 @@ namespace Client.MirScenes
                     break;
                 case Spell.Thrusting:
                     Thrusting = p.CanUse;
-                    ChatDialog.ReceiveChat(Thrusting ? "Use Thrusting." : "Do not use Thrusting.", ChatType.Hint);
+                    ChatDialog.ReceiveChat(Thrusting ? LanguageUtils.Format("Use Thrusting.") : LanguageUtils.Format("Do not use Thrusting."), ChatType.Hint);
                     break;
                 case Spell.HalfMoon:
                     HalfMoon = p.CanUse;
-                    ChatDialog.ReceiveChat(HalfMoon ? "Use HalfMoon." : "Do not use HalfMoon.", ChatType.Hint);
+                    ChatDialog.ReceiveChat(HalfMoon ? LanguageUtils.Format("Use HalfMoon.") : LanguageUtils.Format("Do not use HalfMoon."), ChatType.Hint);
                     break;
                 case Spell.CrossHalfMoon:
                     CrossHalfMoon = p.CanUse;
-                    ChatDialog.ReceiveChat(CrossHalfMoon ? "Use CrossHalfMoon." : "Do not use CrossHalfMoon.", ChatType.Hint);
+                    ChatDialog.ReceiveChat(CrossHalfMoon ? "使用狂风斩." : "关闭狂风斩.", ChatType.Hint);
                     break;
                 case Spell.DoubleSlash:
                     DoubleSlash = p.CanUse;
-                    ChatDialog.ReceiveChat(DoubleSlash ? "Use DoubleSlash." : "Do not use DoubleSlash.", ChatType.Hint);
+                    ChatDialog.ReceiveChat(DoubleSlash ? LanguageUtils.Format("Use DoubleSlash." ): LanguageUtils.Format("Do not use DoubleSlash."), ChatType.Hint);
                     break;
                 case Spell.FlamingSword:
                     FlamingSword = p.CanUse;
                     if (FlamingSword)
-                        ChatDialog.ReceiveChat("Your weapon is glowed by spirit of fire.", ChatType.Hint);
+                        ChatDialog.ReceiveChat(LanguageUtils.Format("Your weapon is glowed by spirit of fire."), ChatType.Hint);
                     else
-                        ChatDialog.ReceiveChat("The spirits of fire disappeared.", ChatType.System);
+                        ChatDialog.ReceiveChat(LanguageUtils.Format("The spirits of fire disappeared."), ChatType.System);
                     break;
             }
         }
@@ -3976,7 +4153,8 @@ namespace Client.MirScenes
             {
                 MapObject ob = MapControl.Objects[i];
                 if (ob.ObjectID != p.ObjectID) continue;
-                ob.PercentHealth = p.Percent;
+                ob.HP = p.HP;
+                ob.MaxHP = p.MaxHP;
                 ob.HealthTime = CMain.Time + p.Expire * 1000;
                 return;
             }
@@ -4048,13 +4226,13 @@ namespace Client.MirScenes
                 switch (buff.Values[0])
                 {
                     case 0:
-                        ChatDialog.ReceiveChat("Mentalstate: Agressive.", ChatType.Hint);
+                        ChatDialog.ReceiveChat(LanguageUtils.Format("Mentalstate: Agressive."), ChatType.Hint);
                         break;
                     case 1:
-                        ChatDialog.ReceiveChat("Mentalstate: Trick shot.", ChatType.Hint);
+                        ChatDialog.ReceiveChat(LanguageUtils.Format("Mentalstate: Trick shot."), ChatType.Hint);
                         break;
                     case 2:
-                        ChatDialog.ReceiveChat("Mentalstate: Group mode.", ChatType.Hint);
+                        ChatDialog.ReceiveChat(LanguageUtils.Format("Mentalstate: Group mode."), ChatType.Hint);
                         break;
                 }
 
@@ -9425,14 +9603,21 @@ namespace Client.MirScenes
                 return;
             }
 
-            if (CMain.Time < User.BlizzardStopTime || CMain.Time < User.ReincarnationStopTime) return; 
+            if (CMain.Time < User.BlizzardStopTime || CMain.Time < User.ReincarnationStopTime) return;
 
+            //攻击距离，如果是隔位刺杀，则攻击距离是2
+            int AttackRange = 1;
+            if (GameScene.UserSet.Septum && User.GetMagic(Spell.Thrusting) != null)
+            {
+                AttackRange = 2;
+            }
+
+            //攻击怪物，玩家
             if (MapObject.TargetObject != null && !MapObject.TargetObject.Dead)
             {
-                if (((MapObject.TargetObject.Name.EndsWith(")") || MapObject.TargetObject is PlayerObject) && CMain.Shift) ||
+                if (((MapObject.TargetObject.Name.EndsWith(")") || MapObject.TargetObject is PlayerObject) && (CMain.Shift|| GameScene.UserSet.ExcuseShift)) ||
                     (!MapObject.TargetObject.Name.EndsWith(")") && MapObject.TargetObject is MonsterObject))
                 {
-
                     GameScene.LogTime = CMain.Time + Globals.LogDelay;
 
                     if (User.Class == MirClass.Archer && User.HasClassWeapon && !User.RidingMount && !User.Fishing)//ArcherTest - non aggressive targets (player / pets)
@@ -9458,15 +9643,17 @@ namespace Client.MirScenes
                         }
                         //  return;
                     }
-
-                    else if (Functions.InRange(MapObject.TargetObject.CurrentLocation, User.CurrentLocation, 1))
-                    {
-                        if (CMain.Time > GameScene.AttackTime && CanRideAttack())
+                    else {
+                        if (Functions.InAttackRange(MapObject.TargetObject.CurrentLocation, User.CurrentLocation, AttackRange))//改这个攻击距离，实现隔位刺杀
                         {
-                            User.QueuedAction = new QueuedAction { Action = MirAction.Attack1, Direction = Functions.DirectionFromPoint(User.CurrentLocation, MapObject.TargetObject.CurrentLocation), Location = User.CurrentLocation };
-                            return;
+                            if (CMain.Time > GameScene.AttackTime && CanRideAttack())
+                            {
+                                User.QueuedAction = new QueuedAction { Action = MirAction.Attack1, Direction = Functions.DirectionFromPoint(User.CurrentLocation, MapObject.TargetObject.CurrentLocation), Location = User.CurrentLocation };
+                                return;
+                            }
                         }
                     }
+                    
                 }
             }
             if (AutoHit && !User.RidingMount)
@@ -9568,6 +9755,7 @@ namespace Client.MirScenes
                 return;
             }
 
+           
 
 
             //这里进行各种鼠标动作处理？
@@ -9768,8 +9956,8 @@ namespace Client.MirScenes
             //这个逻辑几把复杂
             if (((!MapObject.TargetObject.Name.EndsWith(")") && !(MapObject.TargetObject is PlayerObject)) || !CMain.Shift) &&
                 (MapObject.TargetObject.Name.EndsWith(")") || !(MapObject.TargetObject is MonsterObject))) return;
-            //目标就在身边
-            if (Functions.InRange(MapObject.TargetObject.CurrentLocation, User.CurrentLocation, 1)) return;
+            //目标就在身边，对格位刺杀做处理
+            if (Functions.InAttackRange(MapObject.TargetObject.CurrentLocation, User.CurrentLocation, AttackRange)) return;
             //弓箭手，不走向目标
             if (User.Class == MirClass.Archer && User.HasClassWeapon && (MapObject.TargetObject is MonsterObject || MapObject.TargetObject is PlayerObject)) return; //ArcherTest - stop walking
             //朝向为选中的目标为朝向
@@ -9810,6 +9998,7 @@ namespace Client.MirScenes
                 if (CMain.Time >= OutputDelay)
                 {
                     OutputDelay = CMain.Time + 1000;
+                    //释放技能提醒
                     //GameScene.Scene.OutputMessage(string.Format("You cannot cast {0} for another {1} seconds.", magic.Spell.ToString(), ((magic.CastTime + magic.Delay) - CMain.Time - 1) / 1000 + 1));
                 }
 
@@ -10211,7 +10400,7 @@ namespace Client.MirScenes
             }
             return false;
         }
-        //能否十字半月，8个方向只要有一个方向有，就可以十字半月
+        //能否狂风斩，8个方向只要有一个方向有，就可以狂风斩
         public bool CanCrossHalfMoon(Point p)
         {
             MirDirection dir = MirDirection.Up;
