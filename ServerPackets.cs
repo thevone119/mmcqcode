@@ -2139,7 +2139,7 @@ namespace ServerPackets
             writer.Write(CurrentDura);
         }
     }
-    //血量变化
+    //血量变化,主要针对本玩家的
     public sealed class HealthChanged : Packet
     {
         public override short Index
@@ -3293,22 +3293,26 @@ namespace ServerPackets
             writer.Write(CanUse);
         }
     }
+    //对象的血量
     public sealed class ObjectHealth : Packet
     {
         public override short Index { get { return (short)ServerPacketIds.ObjectHealth; } }
         public uint ObjectID;
-        public byte Percent, Expire;
+        public uint HP,MaxHP;//具体的血量
+        public byte  Expire;//这个好像没什么用吧
 
         protected override void ReadPacket(BinaryReader reader)
         {
             ObjectID = reader.ReadUInt32();
-            Percent = reader.ReadByte();
+            HP = reader.ReadUInt32();
+            MaxHP= reader.ReadUInt32();
             Expire = reader.ReadByte();
         }
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(ObjectID);
-            writer.Write(Percent);
+            writer.Write(HP);
+            writer.Write(MaxHP);
             writer.Write(Expire);
         }
     }

@@ -117,7 +117,7 @@ namespace Client.MirScenes
             //    Location = new Point(684, 10)
             //};
 
-            _connectBox = new MirMessageBox("Attempting to connect to the server.", MirMessageBoxButtons.Cancel);
+            _connectBox = new MirMessageBox("尝试连接到服务器.", MirMessageBoxButtons.Cancel);
             _connectBox.CancelButton.Click += (o, e) => Program.Form.Close();
             Shown += (sender, args) =>
             {
@@ -129,7 +129,7 @@ namespace Client.MirScenes
         public override void Process()
         {
             if (!Network.Connected && _connectBox.Label != null)
-                _connectBox.Label.Text = string.Format("Attempting to connect to the server.\nAttempt:{0}", Network.ConnectAttempt);
+                _connectBox.Label.Text = string.Format("尝试连接到服务器.\n尝试:{0}", Network.ConnectAttempt);
         }
         public override void ProcessPacket(Packet p)
         {
@@ -191,7 +191,7 @@ namespace Client.MirScenes
             switch (p.Result)
             {
                 case 0:
-                    MirMessageBox.Show("Wrong version, please update your game.\nGame will now Close", true);
+                    MirMessageBox.Show("客户端版本不对, 请更新客户端版本后再进行游戏.", true);
 
                     Network.Disconnect();
                     break;
@@ -207,40 +207,40 @@ namespace Client.MirScenes
             switch (p.Result)
             {
                 case 0:
-                    MirMessageBox.Show("Account creation is currently disabled.");
+                    MirMessageBox.Show("当前帐户已被禁用.");
                     _account.Dispose();
                     break;
                 case 1:
-                    MirMessageBox.Show("Your AccountID is not acceptable.");
+                    MirMessageBox.Show("你的帐户不合法.");
                     _account.AccountIDTextBox.SetFocus();
                     break;
                 case 2:
-                    MirMessageBox.Show("Your Password is not acceptable.");
+                    MirMessageBox.Show("您的密码不合法.");
                     _account.Password1TextBox.SetFocus();
                     break;
                 case 3:
-                    MirMessageBox.Show("Your E-Mail Address is not acceptable.");
+                    MirMessageBox.Show("您的电子邮件地址无效.");
                     _account.EMailTextBox.SetFocus();
                     break;
                 case 4:
-                    MirMessageBox.Show("Your User Name is not acceptable.");
+                    MirMessageBox.Show("您的用户名是不可接受的.");
                     _account.UserNameTextBox.SetFocus();
                     break;
                 case 5:
-                    MirMessageBox.Show("Your Secret Question is not acceptable.");
+                    MirMessageBox.Show("你的密保问题是不可接受的。.");
                     _account.QuestionTextBox.SetFocus();
                     break;
                 case 6:
-                    MirMessageBox.Show("Your Secret Answer is not acceptable.");
+                    MirMessageBox.Show("你的密保答案是不可接受的.");
                     _account.AnswerTextBox.SetFocus();
                     break;
                 case 7:
-                    MirMessageBox.Show("An Account with this ID already exists.");
+                    MirMessageBox.Show("这个ID的帐户已经存在.");
                     _account.AccountIDTextBox.Text = string.Empty;
                     _account.AccountIDTextBox.SetFocus();
                     break;
                 case 8:
-                    MirMessageBox.Show("Your account was created successfully.");
+                    MirMessageBox.Show("您的帐户已成功创建.");
                     _account.Dispose();
                     break;
             }
@@ -252,32 +252,32 @@ namespace Client.MirScenes
             switch (p.Result)
             {
                 case 0:
-                    MirMessageBox.Show("Password Changing is currently disabled.");
+                    MirMessageBox.Show("当前禁用密码更改.");
                     _password.Dispose();
                     break;
                 case 1:
-                    MirMessageBox.Show("Your AccountID is not acceptable.");
+                    MirMessageBox.Show("你的账号是不可接受的。.");
                     _password.AccountIDTextBox.SetFocus();
                     break;
                 case 2:
-                    MirMessageBox.Show("The current Password is not acceptable.");
+                    MirMessageBox.Show("当前密码不可接受.");
                     _password.CurrentPasswordTextBox.SetFocus();
                     break;
                 case 3:
-                    MirMessageBox.Show("Your new Password is not acceptable.");
+                    MirMessageBox.Show("您的新密码不可接受");
                     _password.NewPassword1TextBox.SetFocus();
                     break;
                 case 4:
-                    MirMessageBox.Show("The AccountID does not exist.");
+                    MirMessageBox.Show("账号不存在.");
                     _password.AccountIDTextBox.SetFocus();
                     break;
                 case 5:
-                    MirMessageBox.Show("Incorrect Password and AccountID combination.");
+                    MirMessageBox.Show("账号或密码错误.");
                     _password.CurrentPasswordTextBox.SetFocus();
                     _password.CurrentPasswordTextBox.Text = string.Empty;
                     break;
                 case 6:
-                    MirMessageBox.Show("Your password was changed successfully.");
+                    MirMessageBox.Show("您的密码已成功更改.");
                     _password.Dispose();
                     break;
             }
@@ -287,7 +287,7 @@ namespace Client.MirScenes
             _password.Dispose();
 
             TimeSpan d = p.ExpiryDate - CMain.Now;
-            MirMessageBox.Show(string.Format("This account is banned.\n\nReason: {0}\nExpiryDate: {1}\nDuration: {2:#,##0} Hours, {3} Minutes, {4} Seconds", p.Reason,
+            MirMessageBox.Show(string.Format("这个账号被禁止了.\n\n原因: {0}\n期限: {1}\n持续: {2:#,##0} 时, {3} 分, {4} 秒", p.Reason,
                                              p.ExpiryDate, Math.Floor(d.TotalHours), d.Minutes, d.Seconds));
         }
         private void Login(S.Login p)
@@ -296,23 +296,23 @@ namespace Client.MirScenes
             switch (p.Result)
             {
                 case 0:
-                    MirMessageBox.Show("Logging in is currently disabled.");
+                    MirMessageBox.Show("当前登录已禁用.");
                     _login.Clear();
                     break;
                 case 1:
-                    MirMessageBox.Show("Your AccountID is not acceptable.");
+                    MirMessageBox.Show("账号或密码错误.");
                     _login.AccountIDTextBox.SetFocus();
                     break;
                 case 2:
-                    MirMessageBox.Show("Your Password is not acceptable.");
+                    MirMessageBox.Show("账号或密码错误.");
                     _login.PasswordTextBox.SetFocus();
                     break;
                 case 3:
-                    MirMessageBox.Show("The AccountID does not exist.");
+                    MirMessageBox.Show("账号或密码错误.");
                     _login.PasswordTextBox.SetFocus();
                     break;
                 case 4:
-                    MirMessageBox.Show("Incorrect Password and AccountID combination.");
+                    MirMessageBox.Show("账号或密码错误.");
                     _login.PasswordTextBox.Text = string.Empty;
                     _login.PasswordTextBox.SetFocus();
                     break;
@@ -323,7 +323,7 @@ namespace Client.MirScenes
             _login.OKButton.Enabled = true;
 
             TimeSpan d = p.ExpiryDate - CMain.Now;
-            MirMessageBox.Show(string.Format("This account is banned.\n\nReason: {0}\nExpiryDate: {1}\nDuration: {2:#,##0} Hours, {3} Minutes, {4} Seconds", p.Reason,
+            MirMessageBox.Show(string.Format("这个账号被禁止了.\n\n原因: {0}\n期限: {1}\n持续: {2:#,##0} 时, {3} 分, {4} 秒", p.Reason,
                                              p.ExpiryDate, Math.Floor(d.TotalHours), d.Minutes, d.Seconds));
         }
         private void Login(S.LoginSuccess p)
@@ -1100,45 +1100,45 @@ namespace Client.MirScenes
             private void AccountIDTextBox_GotFocus(object sender, EventArgs e)
             {
                 Description.Visible = true;
-                Description.Text = " Description: Account ID.\n Accepted characters: a-z A-Z 0-9.\n Length: between " +
-                                   Globals.MinAccountIDLength + " and " + Globals.MaxAccountIDLength + " characters.";
+                Description.Text = " 描述: 账号ID.\n 接受字符: a-z A-Z 0-9.\n 长度:  " +
+                                   Globals.MinAccountIDLength + " - " + Globals.MaxAccountIDLength + " 个字符.";
             }
             private void PasswordTextBox_GotFocus(object sender, EventArgs e)
             {
                 Description.Visible = true;
-                Description.Text = " Description: Password.\n Accepted characters: a-z A-Z 0-9.\n Length: between " +
-                                   Globals.MinPasswordLength + " and " + Globals.MaxPasswordLength + " characters.";
+                Description.Text = " 描述: 密码.\n 接受字符: a-z A-Z 0-9.\n 长度:  " +
+                                   Globals.MinPasswordLength + " - " + Globals.MaxPasswordLength + " 个字符.";
             }
             private void EMailTextBox_GotFocus(object sender, EventArgs e)
             {
                 Description.Visible = true;
                 Description.Text =
-                    " Description: E-Mail Address.\n Format: Example@Example.Com.\n Max Length: 50 characters.\n Optional Field.";
+                    " 描述: 邮箱地址.\n 参考: Example@Example.Com.\n 最大长度: 50 个字符.\n 可选字段.";
             }
             private void UserNameTextBox_GotFocus(object sender, EventArgs e)
             {
                 Description.Visible = true;
                 Description.Text =
-                    " Description: User Name.\n Accepted characters:All.\n Length: between 0 and 20 characters.\n Optional Field.";
+                    " 描述: 用户名.\n 接受字符:所有.\n 长度:  0 - 20 个字符.\n 可选字段.";
             }
             private void BirthDateTextBox_GotFocus(object sender, EventArgs e)
             {
                 Description.Visible = true;
                 Description.Text =
-                    string.Format(" Description: Birth Date.\n Format: {0}.\n Length: 10 characters.\n Optional Field.",
+                    string.Format(" 描述: 生日.\n 格式: {0}.\n 长度: 10 个字符.\n 可选字段.",
                                   Thread.CurrentThread.CurrentCulture.DateTimeFormat.ShortDatePattern.ToUpper());
             }
             private void QuestionTextBox_GotFocus(object sender, EventArgs e)
             {
                 Description.Visible = true;
                 Description.Text =
-                    " Description: Secret Question.\n Accepted characters: All.\n Length: between 0 and 30 characters.\n Optional Field.";
+                    " 描述: 密保问题.\n 接受字符: 所有.\n 长度: 0-30 个字符.\n 可选字段.";
             }
             private void AnswerTextBox_GotFocus(object sender, EventArgs e)
             {
                 Description.Visible = true;
                 Description.Text =
-                    " Description: Secret Answer.\n Accepted characters: All.\n Length: between 0 and 30 characters.\n Optional Field.";
+                    " 描述: 密保答案.\n接受字符: 所有.\n 长度: 0-30个字符.\n 可选字段.";
             }
 
             private void RefreshConfirmButton()

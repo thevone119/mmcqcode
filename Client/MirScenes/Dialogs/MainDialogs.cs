@@ -172,7 +172,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 PressedIndex = 1914,
                 Sound = SoundList.ButtonA,
-                Hint = "选项 (" + CMain.InputKeys.GetKey(KeybindOptions.Options) + ")"
+                Hint = "选项 (" + CMain.InputKeys.GetKey(KeybindOptions.Options2) + ")"
             };
             OptionButton.Click += (o, e) =>
             {
@@ -1579,8 +1579,8 @@ namespace Client.MirScenes.Dialogs
         {
             if (GameScene.User.Inventory.Length == 46 && sender == ItemButton2)
             {
-                MirMessageBox messageBox = new MirMessageBox("Are you sure you would like to buy 8 extra slots for 1,000,000 gold?\n" +
-                    "Next purchase you can unlock 4 extra slots up to a maximum of 40 slots.", MirMessageBoxButtons.OKCancel);
+                MirMessageBox messageBox = new MirMessageBox("你确定你想买8个扩展背包格子花费 1,000,000 黄金?\n" +
+                    "下一次购买，你可以解锁4个额外的格子最多40个格子.", MirMessageBoxButtons.OKCancel);
 
                 messageBox.OKButton.Click += (o, a) =>
                 {
@@ -4839,7 +4839,7 @@ namespace Client.MirScenes.Dialogs
             //如果没有配置大地图，就用小地图做大地图
             int index = map.BigMap <= 0 ? map.MiniMap : map.BigMap;
             //int index = map.BigMap;
-
+            //MirLog.info("BigMap:"+ map.BigMap+ ",MiniMap:"+ map.MiniMap);
             if (index <= 0)
             {
                 if (Visible)
@@ -4975,10 +4975,12 @@ namespace Client.MirScenes.Dialogs
                 GameScene.Scene.ChatDialog.ReceiveChat("自动寻路目标不可达", ChatType.System);
                 return;
             }
+            long startTime = CMain.Timer.ElapsedMilliseconds;
             //目标位置
             map.RouteTarget = new Point(x, y);
             if (map.StartRoute())
             {
+                long endTime = CMain.Timer.ElapsedMilliseconds;
                 GameScene.Scene.ChatDialog.ReceiveChat("[自动寻路:开启]", ChatType.Hint);
             }
         }
@@ -5011,7 +5013,7 @@ namespace Client.MirScenes.Dialogs
                 HoverIndex = 2111,
                 PressedIndex = 2112,
                 Sound = SoundList.ButtonA,
-                Hint = "Dura Panel"
+                Hint = "耐久面板"
             };
             Character.Click += (o, e) =>
             {

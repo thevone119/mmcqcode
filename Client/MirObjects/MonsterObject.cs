@@ -3747,7 +3747,7 @@ namespace Client.MirObjects
                 base.DrawName();
                 return;
             }
-
+            
             string[] splitName = Name.Split('_');
 
             //IntelligentCreature

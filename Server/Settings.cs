@@ -108,8 +108,8 @@ namespace Server
                           RestedExpBonus = 5,
                           RestedMaxBonus = 24;
 
-        public static string SkeletonName = "BoneFamiliar",
-                             ShinsuName = "Shinsu",
+        public static string SkeletonName = "BoneFamiliar",//召唤骷髅
+                             ShinsuName = "Shinsu",//召唤神兽
                              BugBatName = "BugBat",
                              Zuma1 = "ZumaStatue",
                              Zuma2 = "ZumaGuardian",
@@ -138,7 +138,7 @@ namespace Server
                              HellBomb2 = "HellBomb2",
                              HellBomb3 = "HellBomb3",
                              WhiteSnake = "WhiteSerpent",
-                             AngelName = "HolyDeva",
+                             AngelName = "HolyDeva",//召唤月灵
                              BombSpiderName = "BombSpider",
                              CloneName = "Clone",
                              AssassinCloneName = "AssassinClone",

@@ -83,6 +83,7 @@ namespace Client
 
             //这句话会卡屏？神经咯。
             //this.ControlBox = true;
+            this.Text = "夜火传奇";
             
         }
 

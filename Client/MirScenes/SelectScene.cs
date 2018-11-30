@@ -208,7 +208,7 @@ namespace Client.MirScenes
             {
                 Location = new Point(-80, -1),
                 Parent = LastAccessLabel,
-                Text = "Last Online:",
+                Text = "最后在线:",
                 Size = new Size(100, 21),
                 DrawFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter,
                 Border = true,
@@ -236,9 +236,9 @@ namespace Client.MirScenes
         {
             if (!Libraries.Loaded)
             {
-                MirMessageBox message = new MirMessageBox(string.Format("Please wait, The game is still loading... {0:##0}%", Libraries.Progress / (double)Libraries.Count * 100), MirMessageBoxButtons.Cancel);
+                MirMessageBox message = new MirMessageBox(LanguageUtils.Format("Please wait, The game is still loading... {0:##0}%", Libraries.Progress / (double)Libraries.Count * 100), MirMessageBoxButtons.Cancel);
 
-                message.BeforeDraw += (o, e) => message.Label.Text = string.Format("Please wait, The game is still loading... {0:##0}%", Libraries.Progress / (double)Libraries.Count * 100);
+                message.BeforeDraw += (o, e) => message.Label.Text = LanguageUtils.Format("Please wait, The game is still loading... {0:##0}%", Libraries.Progress / (double)Libraries.Count * 100);
 
                 message.AfterDraw += (o, e) =>
                 {
@@ -302,25 +302,25 @@ namespace Client.MirScenes
             switch (p.Result)
             {
                 case 0:
-                    MirMessageBox.Show("Creating new characters is currently disabled.");
+                    MirMessageBox.Show(LanguageUtils.Format("Creating new characters is currently disabled."));
                     _character.Dispose();
                     break;
                 case 1:
-                    MirMessageBox.Show("Your Character Name is not acceptable.");
+                    MirMessageBox.Show("你的角色名字是不可接受的.");
                     _character.NameTextBox.SetFocus();
                     break;
                 case 2:
-                    MirMessageBox.Show("The gender you selected does not exist.\n Contact a GM for assistance.");
+                    MirMessageBox.Show("您选择的性别不存在.");
                     break;
                 case 3:
-                    MirMessageBox.Show("The class you selected does not exist.\n Contact a GM for assistance.");
+                    MirMessageBox.Show("您选择的职业不存在.");
                     break;
                 case 4:
-                    MirMessageBox.Show("You cannot make anymore then " + Globals.MaxCharacterCount + " Characters.");
+                    MirMessageBox.Show("最多只能创建 " + Globals.MaxCharacterCount + " 个角色.");
                     _character.Dispose();
                     break;
                 case 5:
-                    MirMessageBox.Show("A Character with this name already exists.");
+                    MirMessageBox.Show("这个名称的角色已经存在.");
                     _character.NameTextBox.SetFocus();
                     break;
             }
@@ -330,7 +330,7 @@ namespace Client.MirScenes
         private void NewCharacter(S.NewCharacterSuccess p)
         {
             _character.Dispose();
-            MirMessageBox.Show("Your character was created successfully.");
+            MirMessageBox.Show("角色创建成功.");
 
             Characters.Insert(0, p.CharInfo);
             _selected = 0;
@@ -341,7 +341,7 @@ namespace Client.MirScenes
         {
             if (_selected < 0 || _selected >= Characters.Count) return;
 
-            MirMessageBox message = new MirMessageBox(string.Format("Are you sure you want to Delete the character {0}?", Characters[_selected].Name), MirMessageBoxButtons.YesNo);
+            MirMessageBox message = new MirMessageBox(string.Format("确实要删除角色吗 {0}?", Characters[_selected].Name), MirMessageBoxButtons.YesNo);
             ulong index = Characters[_selected].Index;
 
             message.YesButton.Click += (o, e) =>
@@ -359,17 +359,17 @@ namespace Client.MirScenes
             switch (p.Result)
             {
                 case 0:
-                    MirMessageBox.Show("Deleting characters is currently disabled.");
+                    MirMessageBox.Show("删除角色当前已禁用.");
                     break;
                 case 1:
-                    MirMessageBox.Show("The character you selected does not exist.\n Contact a GM for assistance.");
+                    MirMessageBox.Show("您所选择的角色不存在.");
                     break;
             }
         }
         private void DeleteCharacter(S.DeleteCharacterSuccess p)
         {
             DeleteCharacterButton.Enabled = true;
-            MirMessageBox.Show("Your character was deleted successfully.");
+            MirMessageBox.Show("你的角色被成功删除.");
 
             for (int i = 0; i < Characters.Count; i++)
                 if (Characters[i].Index == p.CharacterIndex)
@@ -387,9 +387,9 @@ namespace Client.MirScenes
 
             long time = CMain.Time + p.Milliseconds;
 
-            MirMessageBox message = new MirMessageBox(string.Format("You cannot log onto this character for another {0} seconds.", Math.Ceiling(p.Milliseconds / 1000M)));
+            MirMessageBox message = new MirMessageBox(string.Format("你不能登录当前角色在 {0} 秒内.", Math.Ceiling(p.Milliseconds / 1000M)));
 
-            message.BeforeDraw += (o, e) => message.Label.Text = string.Format("You cannot log onto this character for another {0} seconds.", Math.Ceiling((time - CMain.Time) / 1000M));
+            message.BeforeDraw += (o, e) => message.Label.Text = string.Format("你不能登录当前角色在 {0} 秒内.", Math.Ceiling((time - CMain.Time) / 1000M));
 
 
             message.AfterDraw += (o, e) =>
@@ -406,7 +406,7 @@ namespace Client.MirScenes
             StartGameButton.Enabled = true;
 
             TimeSpan d = p.ExpiryDate - CMain.Now;
-            MirMessageBox.Show(string.Format("This account is banned.\n\nReason: {0}\nExpiryDate: {1}\nDuration: {2:#,##0} Hours, {3} Minutes, {4} Seconds", p.Reason,
+            MirMessageBox.Show(string.Format("这个帐户被禁止了.\n\n原因: {0}\n期限: {1}\n持续: {2:#,##0} 时, {3} 分, {4} 秒", p.Reason,
                                              p.ExpiryDate, Math.Floor(d.TotalHours), d.Minutes, d.Seconds));
         }
         public void StartGame(S.StartGame p)
@@ -423,16 +423,16 @@ namespace Client.MirScenes
             switch (p.Result)
             {
                 case 0:
-                    MirMessageBox.Show("Starting the game is currently disabled.");
+                    MirMessageBox.Show("启动游戏目前禁用.");
                     break;
                 case 1:
-                    MirMessageBox.Show("You are not logged in.");
+                    MirMessageBox.Show("您没有登录.");
                     break;
                 case 2:
                     MirMessageBox.Show("Your character could not be found.");
                     break;
                 case 3:
-                    MirMessageBox.Show("No active map and/or start point found.");
+                    MirMessageBox.Show("未找到活动地图和/或起始点.");
                     break;
                 case 4:
                     if (Settings.Resolution == 1024)
@@ -519,7 +519,8 @@ namespace Client.MirScenes
         #endregion
         public sealed class NewCharacterDialog : MirImageControl
         {
-            private static readonly Regex Reg = new Regex(@"^[A-Za-z0-9]{" + Globals.MinCharacterNameLength + "," + Globals.MaxCharacterNameLength + "}$");
+            //正则匹配所有字符
+            //private static readonly Regex Reg = new Regex(@"^[*]{" + Globals.MinCharacterNameLength + "," + Globals.MaxCharacterNameLength + "}$");
 
             public MirImageControl TitleLabel;
             public MirAnimatedControl CharacterDisplay;
@@ -543,29 +544,21 @@ namespace Client.MirScenes
 
             #region Descriptions
             public const string WarriorDescription =
-                "Warriors are a class of great strength and vitality. They are not easily killed in battle and have the advantage of being able to use" +
-                " a variety of heavy weapons and Armour. Therefore, Warriors favor attacks that are based on melee physical damage. They are weak in ranged" +
-                " attacks, however the variety of equipment that are developed specifically for Warriors complement their weakness in ranged combat.";
+                "战士是一个伟大的力量和生命的职业。他们不容易在战斗中丧生，并且具有能够使用各种重型武器和装备的优势。因此，战士喜欢基于近战物理伤害的攻击。他们在远程攻击中很弱，然而专门为战士开发的各种装备弥补了他们在远程战斗中的弱点。";
 
             public const string WizardDescription =
-                "Wizards are a class of low strength and stamina, but have the ability to use powerful spells. Their offensive spells are very effective, but" +
-                " because it takes time to cast these spells, they're likely to leave themselves open for enemy's attacks. Therefore, the physically weak wizards" +
-                " must aim to attack their enemies from a safe distance.";
+                "法师是低力量和体力的职业，但是具有使用强力法术的能力。他们的攻击性法术非常有效，但是因为施放这些法术需要时间，所以他们可能会对敌人的攻击敞开大门。因此，身体虚弱的巫师必须保持安全的距离攻击敌人。";
 
             public const string TaoistDescription =
-                "Taoists are well disciplined in the study of Astronomy, Medicine, and others aside from Mu-Gong. Rather then directly engaging the enemies, their" +
-                " specialty lies in assisting their allies with support. Taoists can summon powerful creatures and have a high resistance to magic, and is a class" +
-                " with well balanced offensive and defensive abilities.";
+                "道士在生物学、植物学等方面的研究都很有成就。他们的专长不是直接与敌人交战，而是协助他们的盟友提供支持。道士能召唤强大的生物，对魔法有很强的抵抗力，是一个攻防能力很平衡的职业。";
 
             public const string AssassinDescription =
-                "Assassins are members of a secret organization and their history is relatively unknown. They're capable of hiding themselves and performing attacks" +
-                " while being unseen by others, which naturally makes them excellent at making fast kills. It is necessary for them to avoid being in battles with" +
-                " multiple enemies due to their weak vitality and strength.";
+                "刺客是秘密组织的成员，他们的历史是相对未知的。他们能够隐藏自己，在别人看不见的情况下进行攻击，这自然使他们擅长快速杀戮。由于生命力和力量薄弱，他们必须避免与多个敌人作战。";
+
 
             public const string ArcherDescription =
-                "Archers are a class of great accuracy and strength, using their powerful skills with bows to deal extraordinary damage from range. Much like" +
-                " wizards, they rely on their keen instincts to dodge oncoming attacks as they tend to leave themselves open to frontal attacks. However, their" +
-                " physical prowess and deadly aim allows them to instil fear into anyone they hit.";
+                "弓箭手是一类非常精准和强壮的人，他们使用弓箭的强大技能来对敌人造成非凡的伤害。就像法师一样，他们依靠敏锐的本能来躲避即将到来的攻击，避免被敌人过于靠近。然而，他们的身体力量和致命目标允许他们向任何他们攻击的人产生恐惧。";
+               
 
             #endregion
 
@@ -778,7 +771,7 @@ namespace Client.MirScenes
                     OKButton.Enabled = false;
                     NameTextBox.Border = false;
                 }
-                else if (!Reg.IsMatch(NameTextBox.Text))
+                else if (NameTextBox.Text==null|| NameTextBox.Text.Length< Globals.MinCharacterNameLength || NameTextBox.Text.Length> Globals.MaxCharacterNameLength)
                 {
                     OKButton.Enabled = false;
                     NameTextBox.Border = true;
@@ -911,15 +904,39 @@ namespace Client.MirScenes
                 }
 
                 Library = Libraries.Title;
+                //这里改下，改成6职业的
+                //Index = 660 + (byte)info.Class;
+                Index = 658 + (byte)info.Class;
+                //if (Selected) Index += 5;
+                if (Selected) Index += 6;
 
-                Index = 660 + (byte)info.Class;
+                string classname = "战士";
+                switch (info.Class)
+                {
+                    case MirClass.Warrior:
+                        classname = "战士";
+                        break;
+                    case MirClass.Wizard:
+                        classname = "法师";
+                        break;
+                    case MirClass.Taoist:
+                        classname = "道士";
+                        break;
+                    case MirClass.Assassin:
+                        classname = "刺客";
+                        break;
+                    case MirClass.Archer:
+                        classname = "弓箭手";
+                        break;
+                    case MirClass.Monk:
+                        classname = "武僧";
+                        break;
 
-                if (Selected) Index += 5;
-
+                }
 
                 NameLabel.Text = info.Name;
                 LevelLabel.Text = info.Level.ToString();
-                ClassLabel.Text = info.Class.ToString();
+                ClassLabel.Text = classname;
 
                 NameLabel.Visible = true;
                 LevelLabel.Visible = true;

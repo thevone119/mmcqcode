@@ -12,6 +12,7 @@ using System.Text;
 namespace Server.MirEnvir
 {
     //邮件信息
+    //这里只存放带接收的邮件，已经接收的，就到了用户表那边了。
     public class MailInfo
     {
         public ulong MailID;
@@ -139,7 +140,7 @@ namespace Server.MirEnvir
                 obj.RecipientIndex = (ulong)read.GetInt64(read.GetOrdinal("RecipientIndex"));
                 obj.Message = read.GetString(read.GetOrdinal("Message"));
                 obj.Gold = (uint)read.GetInt32(read.GetOrdinal("Gold"));
-                obj.DateSent = read.GetDateTime(read.GetOrdinal("Gold"));
+                obj.DateSent = read.GetDateTime(read.GetOrdinal("DateSent"));
                 obj.DateOpened = read.GetDateTime(read.GetOrdinal("DateOpened"));
                 obj.Locked = read.GetBoolean(read.GetOrdinal("Locked"));
                 obj.Collected = read.GetBoolean(read.GetOrdinal("Collected"));
@@ -195,6 +196,13 @@ namespace Server.MirEnvir
             }
             DBObjectUtils.updateObjState(this, MailID);
         }
+
+        //删除
+        public void DelDB()
+        {
+            MirRunDB.Execute("delete  from MailInfo where MailID="+ MailID);
+        }
+        
         //发送邮件
         public void Send()
         {
@@ -253,7 +261,8 @@ namespace Server.MirEnvir
             }
 
             SMain.Envir.Mail.Remove(this); //remove from postbox
-
+            //把数据库中的也删除了。
+            DelDB();
             return true;
         }
 

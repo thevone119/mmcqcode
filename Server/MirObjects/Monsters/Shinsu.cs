@@ -9,6 +9,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //召唤神兽
     class Shinsu : MonsterObject
     {
         public bool Mode = false;
@@ -33,6 +34,7 @@ namespace Server.MirObjects.Monsters
         {
             if (!Dead && Envir.Time > ActionTime)
             {
+                //30秒没有攻击目标，就变化形态
                 if (Target != null) ModeTime = Envir.Time + 30000;
 
                 if (!Mode && Envir.Time < ModeTime)

@@ -205,6 +205,7 @@
     <Compile Include="MirScenes\Dialogs\ChatNoticeDialog.cs" />
     <Compile Include="MirScenes\Dialogs\ChatOptionDialog.cs" />
     <Compile Include="MirScenes\Dialogs\FishingDialog.cs" />
+    <Compile Include="MirScenes\Dialogs\UserSetDialog.cs" />
     <Compile Include="MirScenes\Dialogs\FriendDialog.cs" />
     <Compile Include="MirScenes\Dialogs\GameshopDialog.cs" />
     <Compile Include="MirScenes\Dialogs\GroupDialog.cs" />
@@ -240,6 +241,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="ServerList.cs" />
+    <Compile Include="UserSettings.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Test.cs">
       <SubType>Form</SubType>

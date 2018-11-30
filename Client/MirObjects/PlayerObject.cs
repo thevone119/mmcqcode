@@ -127,6 +127,7 @@ namespace Client.MirObjects
             Class = info.Class;
             Gender = info.Gender;
             Level = info.Level;
+           
 
             CurrentLocation = info.Location;
             MapLocation = info.Location;
@@ -5225,7 +5226,60 @@ namespace Client.MirObjects
             NameLabel.Text = Name;
             NameLabel.Location = new Point(DisplayRectangle.X + (50 - NameLabel.Size.Width) / 2, DisplayRectangle.Y - (32 - NameLabel.Size.Height / 2) + (Dead ? 35 : 8)); //was 48 -
             NameLabel.Draw();
+            
         }
+
+        public override void DrawHealthLabel()
+        {
+            //血条上面
+            if (HealthLabel == null || HealthLabel.IsDisposed)
+            {
+                HealthLabel = new MirLabel
+                {
+                    AutoSize = true,
+                    BackColour = Color.Transparent,
+                    ForeColour = Color.White,
+                };
+            }
+            //玩家显示职业等级
+            string cls = "Z";
+            switch (this.Class)
+            {
+                case MirClass.Warrior:
+                    cls = "Z";
+                    break;
+                case MirClass.Wizard:
+                    cls = "F";
+                    break;
+                case MirClass.Taoist:
+                    cls = "D";
+                    break;
+                case MirClass.Assassin:
+                    cls = "C";
+                    break;
+                case MirClass.Archer:
+                    cls = "G";
+                    break;
+                case MirClass.Monk:
+                    cls = "W";
+                    break;
+                default:
+                    cls = "Z";
+                    break;
+            }
+            //本人或者不显示职业的，则不显示职业和等级
+            if (this == User || !GameScene.UserSet.ShowLevel)
+            {
+                HealthLabel.Text = HP + "/" + MaxHP;
+            }
+            else
+            {
+                HealthLabel.Text = HP + "/" + MaxHP + "/" + cls + this.Level;
+            }
+            HealthLabel.Location = new Point(DisplayRectangle.X + (50 - HealthLabel.Size.Width) / 2, DisplayRectangle.Y - 80); //was 48 -
+            HealthLabel.Draw();
+        }
+
 
     }
 

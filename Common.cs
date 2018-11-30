@@ -755,7 +755,8 @@ public enum MirClass : byte
     Wizard = 1,//法师
     Taoist = 2,//道士
     Assassin = 3,//刺客
-    Archer = 4//弓箭手
+    Archer = 4,//弓箭手
+    Monk = 5//武僧，
 }
 //方向
 public enum MirDirection : byte
@@ -812,39 +813,39 @@ public enum ItemType : byte
     Weapon = 1,//武器
     Armour = 2,//盔甲
     Helmet = 4, //头盔
-    Necklace = 5,
-    Bracelet = 6,
+    Necklace = 5,//项链
+    Bracelet = 6,//手链
     Ring = 7,//戒指
     Amulet = 8,//护身符
-    Belt = 9,
-    Boots = 10,
-    Stone = 11,
+    Belt = 9,//腰带
+    Boots = 10,//靴子
+    Stone = 11,//石头
     Torch = 12,//火把
-    Potion = 13,//药剂
+    Potion = 13,//药剂(药水)
     Ore = 14,//矿石
-    Meat = 15,
-    CraftingMaterial = 16,
-    Scroll = 17,//纸张
-    Gem = 18,
-    Mount = 19,
+    Meat = 15,//肉
+    CraftingMaterial = 16,//工艺材料
+    Scroll = 17,//纸张(卷轴，随机，回城等)
+    Gem = 18,//软玉，石头材料？
+    Mount = 19,//坐骑
     Book = 20,//书
     Script = 21,//脚本
-    Reins = 22,
-    Bells = 23,
-    Saddle = 24,
-    Ribbon = 25,
-    Mask = 26,
-    Food = 27,
-    Hook = 28,
-    Float = 29,
-    Bait = 30,
-    Finder = 31,
-    Reel = 32,
-    Fish = 33,
-    Quest = 34,
-	Awakening = 35,
-    Pets = 36,
-    Transform = 37,//外观
+    Reins = 22,//缰绳
+    Bells = 23,//数据库中对应4个铃铛，这个是给宠物使用的吧
+    Saddle = 24,//鞍座
+    Ribbon = 25,//蝴蝶结的饰品
+    Mask = 26,//面具（数据库中对应的面具应该是给宠物使用的面具吧）
+    Food = 27,//食物(目前数库中只有鹿肉)
+    Hook = 28,//钩子，钓鱼用的钩子
+    Float = 29,//浮标
+    Bait = 30,//诱饵
+    Finder = 31,//鱼群探测器
+    Reel = 32,//鱼竿上的转盘，收鱼线用的
+    Fish = 33,//鱼
+    Quest = 34,//任务
+	Awakening = 35,//觉醒
+    Pets = 36,//宠物
+    Transform = 37,//外观（时装吧）
 }
 //格子类型，就是各种交易框的类型咯？
 public enum MirGridType : byte
@@ -1069,12 +1070,12 @@ public enum Spell : byte
     //Warrior
     Fencing = 1,
     Slaying = 2,
-    Thrusting = 3,
-    HalfMoon = 4,
+    Thrusting = 3,//刺杀
+    HalfMoon = 4,//半月
     ShoulderDash = 5,
     TwinDrakeBlade = 6,
     Entrapment = 7,
-    FlamingSword = 8,
+    FlamingSword = 8,//烈火
     LionRoar = 9,
     CrossHalfMoon = 10,
     BladeAvalanche = 11,
@@ -1098,7 +1099,7 @@ public enum Spell : byte
     Lightning = 40,
     FrostCrunch = 41,
     ThunderStorm = 42,
-    MagicShield = 43,
+    MagicShield = 43,//魔法盾
     TurnUndead = 44,
     Vampirism = 45,
     IceStorm = 46,
@@ -1255,7 +1256,7 @@ public enum BuffType : byte
     MagicBooster,
     PetEnhancer,
     ImmortalSkin,
-    MagicShield,
+    MagicShield,//魔法盾
 
     //特殊
     //special
@@ -2143,13 +2144,14 @@ public static class Globals
         MinPasswordLength = 5,
         MaxPasswordLength = 15,
 
-        MinCharacterNameLength = 3,
-        MaxCharacterNameLength = 15,
+        //角色名称最小长度，最大长度，最多建立多少个角色
+        MinCharacterNameLength = 2,
+        MaxCharacterNameLength = 10,
         MaxCharacterCount = 4,
 
         MaxChatLength = 80,
 
-        MaxGroup = 15,
+        MaxGroup = 15,//最大组队人数
         
         MaxAttackRange = 9,
 
@@ -2227,6 +2229,19 @@ public static class Functions
     public static bool InRange(Point a, Point b, int i)
     {
         return Math.Abs(a.X - b.X) <= i && Math.Abs(a.Y - b.Y) <= i;
+    }
+
+    //是否在线性攻击范围8个方向的攻击范围
+    public static bool InAttackRange(Point a, Point b, int i)
+    {
+        if(a.X==b.X || a.Y == b.Y)
+        {
+            return Math.Abs(a.X - b.X) <= i && Math.Abs(a.Y - b.Y) <= i;
+        }
+        else
+        {
+            return Math.Abs(a.X - b.X) <= i && Math.Abs(a.Y - b.Y) <= i && Math.Abs(a.X - b.X)== Math.Abs(a.Y - b.Y);
+        }
     }
 
     public static bool FacingEachOther(MirDirection dirA, Point pointA, MirDirection dirB, Point pointB)
@@ -2600,7 +2615,7 @@ public static class Functions
         return rv;
     }
 }
-
+//选择的职业
 public class SelectInfo
 {
     public ulong Index;
@@ -3069,6 +3084,7 @@ public class ClientMagic
 {
     public string Name;//加入一个名字
     public Spell Spell;
+    //基础花费，等级花费
     public byte BaseCost, LevelCost, Icon;
     public byte Level1, Level2, Level3;
     public ushort Need1, Need2, Need3;

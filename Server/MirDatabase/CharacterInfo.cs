@@ -217,6 +217,9 @@ namespace Server.MirDatabase
                     obj.Magics[i].CastTime = 0;
                 }
 
+                
+                obj.Thrusting = read.GetBoolean(read.GetOrdinal("Thrusting"));//开启刺杀
+                //obj.Thrusting = true;//默认都是开启的,这个不行哦，别的职业不能开启
                 obj.HalfMoon = read.GetBoolean(read.GetOrdinal("HalfMoon"));
                 obj.CrossHalfMoon = read.GetBoolean(read.GetOrdinal("CrossHalfMoon"));
                 obj.DoubleSlash = read.GetBoolean(read.GetOrdinal("DoubleSlash"));
@@ -331,7 +334,7 @@ namespace Server.MirDatabase
             }
             List<SQLiteParameter> lp = new List<SQLiteParameter>();
             lp.Add(new SQLiteParameter("Name", Name));
-            lp.Add(new SQLiteParameter("accIndex", accIndex));
+            lp.Add(new SQLiteParameter("accIndex", AccountInfo.Index));
             lp.Add(new SQLiteParameter("Level", Level));
             lp.Add(new SQLiteParameter("Class", (byte)Class));
             lp.Add(new SQLiteParameter("Gender", (byte)Gender));
@@ -486,6 +489,11 @@ namespace Server.MirDatabase
         public byte Level, MaxPetLevel;
 
         public long Time;
+
+        public PetInfo()
+        {
+
+        }
 
         public PetInfo(MonsterObject ob)
         {

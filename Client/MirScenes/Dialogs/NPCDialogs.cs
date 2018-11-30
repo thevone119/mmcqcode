@@ -553,7 +553,7 @@ namespace Client.MirScenes.Dialogs
                         maxQuantity = GameScene.Gold / (SelectedItem.Price() / SelectedItem.Count);
                         if (maxQuantity == 0)
                         {
-                            GameScene.Scene.ChatDialog.ReceiveChat("You do not have enough Pearls.", ChatType.System);
+                            GameScene.Scene.ChatDialog.ReceiveChat("你没有足够的珍珠.", ChatType.System);
                             return;
                         }
                     }
@@ -564,7 +564,7 @@ namespace Client.MirScenes.Dialogs
                     maxQuantity = GameScene.Gold / (SelectedItem.Price() / SelectedItem.Count);
                     if (maxQuantity == 0)
                     {
-                        GameScene.Scene.ChatDialog.ReceiveChat("You do not have enough Gold.", ChatType.System);
+                        GameScene.Scene.ChatDialog.ReceiveChat("金币不足.", ChatType.System);
                         return;
                     }
                 }
@@ -578,7 +578,7 @@ namespace Client.MirScenes.Dialogs
 
                 if (SelectedItem.Count == 0) return;
 
-                MirAmountBox amountBox = new MirAmountBox("Purchase Amount:", SelectedItem.Image, maxQuantity, 0, SelectedItem.Count);
+                MirAmountBox amountBox = new MirAmountBox("购买数量:", SelectedItem.Image, maxQuantity, 0, SelectedItem.Count);
 
                 amountBox.OKButton.Click += (o, e) =>
                 {
@@ -594,13 +594,13 @@ namespace Client.MirScenes.Dialogs
             {
                 if (SelectedItem.Info.Price > GameScene.Gold)
                 {
-                    GameScene.Scene.ChatDialog.ReceiveChat("You do not have enough gold.", ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat("金币不足.", ChatType.System);
                     return;
                 }
 
                 if (SelectedItem.Weight > (MapObject.User.MaxBagWeight - MapObject.User.CurrentBagWeight))
                 {
-                    GameScene.Scene.ChatDialog.ReceiveChat("You do not have enough weight.", ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat("太重了.", ChatType.System);
                     return;
                 }
 
@@ -609,7 +609,7 @@ namespace Client.MirScenes.Dialogs
                     if (MapObject.User.Inventory[i] == null) break;
                     if (i == MapObject.User.Inventory.Length - 1)
                     {
-                        GameScene.Scene.ChatDialog.ReceiveChat("You cannot purchase any more items.", ChatType.System);
+                        GameScene.Scene.ChatDialog.ReceiveChat("你不能购买更多的物品.", ChatType.System);
                         return;
                     }
                 }
@@ -915,18 +915,18 @@ namespace Client.MirScenes.Dialogs
                                 TargetItem = null;
                                 return;
                             }
-                            GameScene.Scene.ChatDialog.ReceiveChat(String.Format("You don't have enough gold to refine your {0}.", TargetItem.FriendlyName), ChatType.System);
+                            GameScene.Scene.ChatDialog.ReceiveChat(String.Format("你没有足够的金币来精炼你的 {0}.", TargetItem.FriendlyName), ChatType.System);
                             return;
                         }
 
                     }
-                    GameScene.Scene.ChatDialog.ReceiveChat(String.Format("You haven't deposited any items to refine your {0} with.", TargetItem.FriendlyName), ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat(String.Format("你没有存放任何物品来改进你的 {0} .", TargetItem.FriendlyName), ChatType.System);
                     break;
                 case PanelType.CheckRefine:
 
                     if (TargetItem.RefineAdded == 0)
                     {
-                        GameScene.Scene.ChatDialog.ReceiveChat(String.Format("Your {0} hasn't been refined so it doesn't need checking.", TargetItem.FriendlyName), ChatType.System);
+                        GameScene.Scene.ChatDialog.ReceiveChat(String.Format("你的 {0} 没有被精炼 ，因此不需要检查.", TargetItem.FriendlyName), ChatType.System);
                         return;
                     }
                     Network.Enqueue(new C.CheckRefine { UniqueID = TargetItem.UniqueID });
@@ -936,7 +936,7 @@ namespace Client.MirScenes.Dialogs
 
                     if (TargetItem.Info.Type != ItemType.Ring)
                     {
-                        GameScene.Scene.ChatDialog.ReceiveChat(String.Format("{0} isn't a ring.", TargetItem.FriendlyName), ChatType.System);
+                        GameScene.Scene.ChatDialog.ReceiveChat(String.Format("{0} 不是戒指.", TargetItem.FriendlyName), ChatType.System);
                         return;
                     }
 
@@ -1694,7 +1694,7 @@ namespace Client.MirScenes.Dialogs
 
             if (RecipeItem.Weight > (MapObject.User.MaxBagWeight - MapObject.User.CurrentBagWeight))
             {
-                GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("You do not have enough weight."), ChatType.System);
+                GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("太重了."), ChatType.System);
                 return;
             }
 

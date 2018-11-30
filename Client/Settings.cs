@@ -9,7 +9,7 @@ namespace Client
     {
         public const long CleanDelay = 600000;
         public static int ScreenWidth = 800, ScreenHeight = 600;
-        private static InIReader Reader = new InIReader(@".\Mir2Config.ini");
+        private static InIReader Reader = new InIReader(@".\Config\Mir2Config.ini");
 
         private static bool _useTestConfig;
         public static bool UseTestConfig
@@ -22,7 +22,7 @@ namespace Client
             {
                 if (value == true)
                 {
-                    Reader = new InIReader(@".\Mir2Test.ini");
+                    Reader = new InIReader(@".\Config\Mir2Test.ini");
                 }
                 _useTestConfig = value;
             }
@@ -158,18 +158,20 @@ namespace Client
             FilterGroupChat = false,
             FilterGuildChat = false;
 
-
+        //自动更新配置
         //AutoPatcher
+        //是否开启更新功能
         public static bool P_Patcher = true;
+        //更新的路径
         public static string P_Host = @"http://mirfiles.co.uk/mir2/cmir/patch/"; //ftp://212.67.209.184
         public static string P_PatchFileName = @"PList.gz";
-        public static bool P_NeedLogin = false;
-        public static string P_Login = string.Empty;
-        public static string P_Password = string.Empty;
-        public static string P_ServerName = string.Empty;
+        public static bool P_NeedLogin = false;//是否需要登录
+        public static string P_Login = string.Empty;//登录账户
+        public static string P_Password = string.Empty;//登录密码
+        public static string P_ServerName = string.Empty;//服务器的名称，后面不放在这里，通过选区读取
         public static string P_BrowserAddress = "https://launcher.mironline.co.uk/web/";
         public static string P_Client = Application.StartupPath + "\\";
-        public static bool P_AutoStart = false;
+        public static bool P_AutoStart = false;//更新完成后是否自动开始
 
         public static void Load()
         {

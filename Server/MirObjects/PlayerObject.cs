@@ -6350,7 +6350,7 @@ namespace Server.MirObjects
 
             UserMagic magic = GetMagic(spell);
 
-            if (magic == null)
+            if (magic == null || magic.Info==null)
             {
                 Enqueue(new S.UserLocation { Direction = Direction, Location = CurrentLocation });
                 return;
@@ -6381,9 +6381,15 @@ namespace Server.MirObjects
             LogTime = Envir.Time + Globals.LogDelay;
 
             long delay = magic.GetDelay();
-
+            //施法时间限制
             if (magic != null && Envir.Time < (magic.CastTime + delay) && magic.CastTime > 0)
             {
+                long needtime = ((magic.CastTime + delay) - Envir.Time) / 1000;
+                if (needtime <= 0)
+                {
+                    needtime = 1;
+                }
+                ReceiveChat(string.Format("["+magic.Info.Name+"]技能释放过于频繁，请在{0}秒后再试", needtime), ChatType.System);
                 Enqueue(new S.UserLocation { Direction = Direction, Location = CurrentLocation });
                 return;
             }
@@ -7240,6 +7246,7 @@ namespace Server.MirObjects
 
             return true;
         }
+        //召唤骷髅
         private void SummonSkeleton(UserMagic magic)
         {
             MonsterObject monster;
@@ -7722,6 +7729,7 @@ namespace Server.MirObjects
             OperateTime = 0;
             LevelMagic(magic);
         }
+        //野蛮冲撞
         private void ShoulderDash(UserMagic magic)
         {
             if (InTrapRock) return;
@@ -9397,23 +9405,49 @@ namespace Server.MirObjects
             target.ApplyPoison(new Poison { PType = pt, Duration = duration, TickSpeed = tickSpeed }, this);
             target.Broadcast(new S.ObjectEffect { ObjectID = target.ObjectID, Effect = sp });
         }
-
+        //取符
         private UserItem GetAmulet(int count, int shape = 0)
         {
+            //先从装备栏取。
             for (int i = 0; i < Info.Equipment.Length; i++)
             {
                 UserItem item = Info.Equipment[i];
                 if (item != null && item.Info.Type == ItemType.Amulet && item.Info.Shape == shape && item.Count >= count)
                     return item;
             }
-
+            //取不到则从背包取
+            for(int i=0;i< Info.Inventory.Length; i++)
+            {
+                UserItem item = Info.Inventory[i];
+                if (item != null && item.Info.Type == ItemType.Amulet && item.Info.Shape == shape && item.Count >= count)
+                    return item;
+            }
             return null;
         }
+        //取毒Info.Shape,0:符，1：绿毒 2：黄毒
         private UserItem GetPoison(int count, byte shape = 0)
         {
             for (int i = 0; i < Info.Equipment.Length; i++)
             {
                 UserItem item = Info.Equipment[i];
+                if (item != null && item.Info.Type == ItemType.Amulet && item.Count >= count)
+                {
+                    if (shape == 0)
+                    {
+                        if (item.Info.Shape == 1 || item.Info.Shape == 2)
+                            return item;
+                    }
+                    else
+                    {
+                        if (item.Info.Shape == shape)
+                            return item;
+                    }
+                }
+            }
+            //取不到则从背包取
+            for (int i = 0; i < Info.Inventory.Length; i++)
+            {
+                UserItem item = Info.Inventory[i];
                 if (item != null && item.Info.Type == ItemType.Amulet && item.Count >= count)
                 {
                     if (shape == 0)
@@ -11487,6 +11521,7 @@ namespace Server.MirObjects
             p.Success = true;
             Enqueue(p);
         }
+        //拆分物品
         public void SplitItem(MirGridType grid, ulong id, uint count)
         {
             S.SplitItem1 p = new S.SplitItem1 { Grid = grid, UniqueID = id, Count = count, Success = false };
@@ -11587,7 +11622,7 @@ namespace Server.MirObjects
                 return;
             }
         }
-
+        //合并物品
         public void MergeItem(MirGridType gridFrom, MirGridType gridTo, ulong fromID, ulong toID)
         {
             S.MergeItem p = new S.MergeItem { GridFrom = gridFrom, GridTo = gridTo, IDFrom = fromID, IDTo = toID, Success = false };
@@ -13290,6 +13325,7 @@ namespace Server.MirObjects
             if (!NoDuraLoss)
                 DamageItem(Info.Equipment[(int)EquipmentSlot.Weapon], RandomUtils.Next(4) + 1);
         }
+        //损坏物品，
         private void DamageItem(UserItem item, int amount, bool isChanged = false)
         {
             if (item == null || item.CurrentDura == 0 || item.Info.Type == ItemType.Amulet) return;
@@ -14052,7 +14088,7 @@ namespace Server.MirObjects
         {
             if (!player.IsMember(this) && Envir.Time > RevTime) return;
             byte time = Math.Min(byte.MaxValue, (byte)Math.Max(5, (RevTime - Envir.Time) / 1000));
-            player.Enqueue(new S.ObjectHealth { ObjectID = ObjectID, Percent = PercentHealth, Expire = time });
+            player.Enqueue(new S.ObjectHealth { ObjectID = ObjectID, HP = this.HP,MaxHP=this.MaxHP, Expire = time });
         }
 
         public override void ReceiveChat(string text, ChatType type)
@@ -15455,14 +15491,14 @@ namespace Server.MirObjects
 
                 byte time = Math.Min(byte.MaxValue, (byte)Math.Max(5, (RevTime - Envir.Time) / 1000));
 
-                member.Enqueue(new S.ObjectHealth { ObjectID = ObjectID, Percent = PercentHealth, Expire = time });
-                Enqueue(new S.ObjectHealth { ObjectID = member.ObjectID, Percent = member.PercentHealth, Expire = time });
+                member.Enqueue(new S.ObjectHealth { ObjectID = ObjectID, HP = this.HP, MaxHP = this.MaxHP, Expire = time });
+                Enqueue(new S.ObjectHealth { ObjectID = member.ObjectID, HP = this.HP, MaxHP = this.MaxHP, Expire = time });
 
                 for (int j = 0; j < member.Pets.Count; j++)
                 {
                     MonsterObject pet = member.Pets[j];
 
-                    Enqueue(new S.ObjectHealth { ObjectID = pet.ObjectID, Percent = pet.PercentHealth, Expire = time });
+                    Enqueue(new S.ObjectHealth { ObjectID = pet.ObjectID, HP = this.HP, MaxHP = this.MaxHP, Expire = time });
                 }
             }
 

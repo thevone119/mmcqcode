@@ -35,7 +35,7 @@ namespace Client.MirGraphics
             Background = new MLibrary(Settings.DataPath + "Background");
 
 
-
+        //特殊的龙
         public static readonly MLibrary
             Dragon = new MLibrary(Settings.DataPath + "Dragon");
 
@@ -910,6 +910,7 @@ namespace Client.MirGraphics
             }
             int w = Width;// + (4 - Width % 4) % 4;
             int h = Height;// + (4 - Height % 4) % 4;
+            //这里改下，适配拉伸,不行，如果拉伸了，其他用到的都会拉伸,有缓存的
             GraphicsStream stream = null;
 
             Image = new Texture(DXManager.Device, w, h, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);

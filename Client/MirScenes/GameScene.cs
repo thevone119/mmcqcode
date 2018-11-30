@@ -51,7 +51,7 @@ namespace Client.MirScenes
             }
         }
         //记录各种跑步，行走时间，攻击时间
-        public static long MoveTime, AttackTime, NextRunTime, LogTime, LastRunTime;
+        public static long MoveTime, AttackTime, NextRunTime, LogTime, LastRunTime, LastAttackTime;
         public static bool CanMove, CanRun;
         //各种界面窗口，地图窗口
         public MapControl MapControl;
@@ -68,7 +68,11 @@ namespace Client.MirScenes
         public BeltDialog BeltDialog;
         public MiniMapDialog MiniMapDialog;
         public InspectDialog InspectDialog;
+        //这个是设置背景音乐大小之类的要和外挂合并么？
         public OptionDialog OptionDialog;
+        //加入外挂窗口,放到F12中
+        public UserSetDialog UserSetDialog;
+
         public MenuDialog MenuDialog;
         public NPCDialog NPCDialog;
         public NPCGoodsDialog NPCGoodsDialog;
@@ -82,6 +86,10 @@ namespace Client.MirScenes
 
         public GroupDialog GroupDialog;
         public GuildDialog GuildDialog;
+
+       
+
+        
 
         public BigMapDialog BigMapDialog;
         public TrustMerchantDialog TrustMerchantDialog;
@@ -215,6 +223,7 @@ namespace Client.MirScenes
             MiniMapDialog = new MiniMapDialog { Parent = this };
             InspectDialog = new InspectDialog { Parent = this, Visible = false };
             OptionDialog = new OptionDialog { Parent = this, Visible = false };
+            UserSetDialog = new UserSetDialog { Parent = this, Visible = false };
             MenuDialog = new MenuDialog { Parent = this, Visible = false };
             NPCDialog = new NPCDialog { Parent = this, Visible = false };
             NPCGoodsDialog = new NPCGoodsDialog { Parent = this, Visible = false };
@@ -232,7 +241,9 @@ namespace Client.MirScenes
 
             BigMapDialog = new BigMapDialog { Parent = this, Visible = false };
             TrustMerchantDialog = new TrustMerchantDialog { Parent = this, Visible = false };
+            //持久面板，先注释掉
             CharacterDuraPanel = new CharacterDuraPanel { Parent = this, Visible = false };
+            //持久面板，先注释掉
             DuraStatusPanel = new DuraStatusDialog { Parent = this, Visible = true };
             TradeDialog = new TradeDialog { Parent = this, Visible = false };
             GuestTradeDialog = new GuestTradeDialog { Parent = this, Visible = false };
@@ -476,6 +487,7 @@ namespace Client.MirScenes
                     InventoryDialog.Hide();
                     CharacterDialog.Hide();
                     OptionDialog.Hide();
+                    UserSetDialog.Hide();
                     MenuDialog.Hide();
                     if (NPCDialog.Visible) NPCDialog.Hide();
                     HelpDialog.Hide();
@@ -514,7 +526,10 @@ namespace Client.MirScenes
 
                     GameScene.Scene.DisposeItemLabel();
                     break;
-                case KeybindOptions.Options:
+                case KeybindOptions.Options://F12
+                    if (!UserSetDialog.Visible) UserSetDialog.Show();
+                    else UserSetDialog.Hide();
+                    break;
                 case KeybindOptions.Options2:
                     if (!OptionDialog.Visible) OptionDialog.Show();
                     else OptionDialog.Hide();
@@ -1032,7 +1047,7 @@ namespace Client.MirScenes
                 return;
             }
             //添加自动烈火处理,相当于2秒按一次
-            if (GameScene.UserSet.AutoFlaming && CMain.Time > GameScene.UserSet.LastFlamingTime)
+            if (GameScene.UserSet.AutoFlaming && CMain.Time > GameScene.UserSet.LastFlamingTime && CMain.Time<LastAttackTime+7000)
             {
                 GameScene.UserSet.LastFlamingTime = CMain.Time + 2000;
                 ClientMagic mag = User.GetMagic(Spell.FlamingSword);
@@ -1116,7 +1131,7 @@ namespace Client.MirScenes
             }
 
             //自动捡物品处理
-            if (GameScene.UserSet.AutoPickUp && GameScene.UserSet.PickUpList != null && GameScene.UserSet.PickUpList.Length > 0 && CMain.Time > GameScene.UserSet.AutoPickUpTime)
+            if (GameScene.UserSet.AutoPickUp &&CMain.Time > GameScene.UserSet.AutoPickUpTime)
             {
                 GameScene.UserSet.AutoPickUpTime = CMain.Time + 300;
                 //判断当前位置是否有需要的物品
@@ -1125,11 +1140,12 @@ namespace Client.MirScenes
                 {
                     for (int i = 0; i < listitem.Count; i++)
                     {
-                         if (listitem[i] is ItemObject && GameScene.UserSet.PickUpList.IndexOf(listitem[i].Name + "_1;") != -1)
+                         if (listitem[i] is ItemObject && GameScene.UserSet.pickItem(listitem[i].Name ))
                          {
                             //这个是自动捡取
                             if (CMain.Time > GameScene.PickUpTime)
                             {
+                                GameScene.UserSet.addItem(listitem[i].Name);
                                 GameScene.PickUpTime = CMain.Time + 200;
                                 Network.Enqueue(new C.PickUp());
                             }
@@ -1137,8 +1153,34 @@ namespace Client.MirScenes
                     }
                 }
             }
-
-
+            //3秒钟检测一次新爆的物品(人物的附近8格内),如果有新的物品，则加入外挂列表
+            if (CMain.Time > GameScene.UserSet.CheckPickTime)
+            {
+                GameScene.UserSet.CheckPickTime= CMain.Time + 3000;
+                for(int x= User.CurrentLocation.X-8;x< User.CurrentLocation.X + 8; x++)
+                {
+                    for(int y= User.CurrentLocation.Y - 5;y< User.CurrentLocation.X + 5; y++)
+                    {
+                        if(x<0||y<0||x> MapControl.M2CellInfo.GetLength(0)||y> MapControl.M2CellInfo.GetLength(1))
+                        {
+                            continue;
+                        }
+                        List<MapObject> listitem = MapControl.M2CellInfo[x, y].CellObjects;
+                        if (listitem != null && listitem.Count > 0)
+                        {
+                            for (int i = 0; i < listitem.Count; i++)
+                            {
+                                if (listitem[i] is ItemObject)
+                                {
+                                    //加入物品列表
+                                    GameScene.UserSet.addItem(listitem[i].Name);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+                
         }
 
         //先检查按钮栏BeltDialog，再检查背包InventoryDialog
@@ -5763,7 +5805,7 @@ namespace Client.MirScenes
                         text += string.Format(" 忠诚 {0} / {1}", HoverItem.CurrentDura, HoverItem.MaxDura);
                         break;
                     case ItemType.Food://食物
-                        text += string.Format(" 营养 {0}", HoverItem.CurrentDura);
+                        text += string.Format(" 品质 {0}", HoverItem.CurrentDura);
                         break;
                     case ItemType.Gem:
                         break;
@@ -8478,6 +8520,7 @@ namespace Client.MirScenes
                 MiniMapDialog = null;
                 InspectDialog = null;
                 OptionDialog = null;
+                UserSetDialog = null;
                 MenuDialog = null;
                 NPCDialog = null;
                 QuestDetailDialog = null;
@@ -9618,6 +9661,7 @@ namespace Client.MirScenes
                 if (((MapObject.TargetObject.Name.EndsWith(")") || MapObject.TargetObject is PlayerObject) && (CMain.Shift|| GameScene.UserSet.ExcuseShift)) ||
                     (!MapObject.TargetObject.Name.EndsWith(")") && MapObject.TargetObject is MonsterObject))
                 {
+                    GameScene.LastAttackTime = CMain.Time;//记录下最后的攻击时间,自动烈火判断下这个时间，比如超过5秒没攻击，则不自动烈火
                     GameScene.LogTime = CMain.Time + Globals.LogDelay;
 
                     if (User.Class == MirClass.Archer && User.HasClassWeapon && !User.RidingMount && !User.Fishing)//ArcherTest - non aggressive targets (player / pets)

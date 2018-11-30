@@ -54,8 +54,8 @@ namespace Client.MirObjects
         //金币,这个服务器端返回掉落金币大小好一点吧？其实也没什么，金币作用不的大了
         public void Load(S.ObjectGold info)
         {
-            Name = string.Format("金币 ({0:###,###,###})", info.Gold);
-
+            //Name = string.Format("金币 ({0:###,###,###})", info.Gold);
+            Name = string.Format("金币", info.Gold);
             BodyLibrary = Libraries.FloorItems;
 
             CurrentLocation = info.Location;

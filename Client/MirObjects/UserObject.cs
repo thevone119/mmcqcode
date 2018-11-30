@@ -15,7 +15,7 @@ namespace Client.MirObjects
     {
         public ulong Id;
 
-        public ushort HP, MaxHP, MP, MaxMP;
+        public ushort  MP, MaxMP;
 
         public ushort MinAC, MaxAC,
                    MinMAC, MaxMAC,
@@ -175,7 +175,7 @@ namespace Client.MirObjects
             AttackSpeed = 1400 - ((ASpeed * 60) + Math.Min(370, (Level * 14)));
             if (AttackSpeed < 550) AttackSpeed = 550;
 
-            PercentHealth = (byte)(HP / (float)MaxHP * 100);
+            //PercentHealth = (byte)(HP / (float)MaxHP * 100);
 
             GameScene.Scene.Redraw();
         }

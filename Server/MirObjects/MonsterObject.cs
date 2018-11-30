@@ -457,29 +457,52 @@ namespace Server.MirObjects
             MoveSpeed = Info.MoveSpeed;
             AttackSpeed = Info.AttackSpeed;
         }
+
+        //这里更改宠物的不同等级的血量
+        //血量计算，每级增加初始血量的20%，递增模式
+        //道士的宝宝血量成长快，法师等宝宝血量每级固定加20
         public virtual void RefreshAll()
         {
             RefreshBase();
-            
-                MaxHP = (uint)Math.Min(uint.MaxValue, MaxHP + PetLevel * 20);
                 MinAC = (ushort)Math.Min(ushort.MaxValue, MinAC + PetLevel * 2);
                 MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + PetLevel * 2);
                 MinMAC = (ushort)Math.Min(ushort.MaxValue, MinMAC + PetLevel * 2);
                 MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + PetLevel * 2);
-                MinDC = (ushort)Math.Min(ushort.MaxValue, MinDC + PetLevel);
-                MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + PetLevel);
+                MinDC = (ushort)Math.Min(ushort.MaxValue, MinDC *1.0* (10 + PetLevel/2.0) / 10.0);//攻击成长，最高成长1.35倍攻击
+                MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC *1.0* (10 + PetLevel/2.0) / 10.0);//攻击成长，最高成长1.35倍攻击
 
             if (Info.Name == Settings.SkeletonName ||Info.Name == Settings.ShinsuName ||Info.Name == Settings.AngelName) 
             {
                 MoveSpeed = (ushort)Math.Min(ushort.MaxValue, (Math.Max(ushort.MinValue, MoveSpeed - MaxPetLevel * 130)));
                 AttackSpeed = (ushort)Math.Min(ushort.MaxValue, (Math.Max(ushort.MinValue, AttackSpeed - MaxPetLevel * 70)));
+                MaxHP = getPetUp(PetLevel, MaxHP, 2);
             }
-
+            else
+            {
+                MaxHP = (uint)Math.Min(uint.MaxValue, MaxHP + PetLevel * 20);
+            }
             if (MoveSpeed < 400) MoveSpeed = 400;
             if (AttackSpeed < 400) AttackSpeed = 400;
 
             RefreshBuffs();
         }
+
+        //宝宝成长算法,主要用于血量成长
+        private uint getPetUp(int level, uint basepar, int ratio)
+        {
+            if (level <= 0)
+            {
+                return basepar;
+            }
+            uint currsta = basepar;
+            for (int i = 1; i <= level; i++)
+            {
+                uint cz = (uint)(basepar * ratio/10 * (i + 1));//这个是成长
+                currsta = currsta + cz;
+            }
+            return currsta;
+        }
+
         protected virtual void RefreshBuffs()
         {
             for (int i = 0; i < Buffs.Count; i++)
@@ -2926,21 +2949,30 @@ namespace Server.MirObjects
         {
             if (!player.IsMember(Master) && !(player.IsMember(EXPOwner) && AutoRev) && Envir.Time > RevTime) return;
             byte time = Math.Min(byte.MaxValue, (byte) Math.Max(5, (RevTime - Envir.Time)/1000));
-            player.Enqueue(new S.ObjectHealth { ObjectID = ObjectID, Percent = PercentHealth, Expire = time });
+            
+            player.Enqueue(new S.ObjectHealth { ObjectID = ObjectID, HP = this.HP,MaxHP=this.MaxHP, Expire = time });
         }
 
+        //宠物获得经验，并升级
+        //宠物升级经验要求，基数，每级要求杀10个怪
+        //逐级加5，就是7级就是35+10，就是要杀45个怪
         public void PetExp(uint amount)
         {
             if (PetLevel >= MaxPetLevel) return;
-
-            if (Info.Name == Settings.SkeletonName || Info.Name == Settings.ShinsuName || Info.Name == Settings.AngelName)
-                amount *= 3;
-
-            PetExperience += amount;
-
-            if (PetExperience < (PetLevel + 1)*20000) return;
-
-            PetExperience = (uint) (PetExperience - ((PetLevel + 1)*20000));
+            //
+            //if (Info.Name == Settings.SkeletonName || Info.Name == Settings.ShinsuName || Info.Name == Settings.AngelName)
+            //    amount *= 3;
+            //PetExperience += amount;
+            //每个怪都增加1点经验
+            PetExperience++;
+            int needExperience = PetLevel * 5 + 10;
+            if(PetExperience< needExperience)
+            {
+                return;
+            }
+            //if (PetExperience < (PetLevel + 1)*20000) return;
+            //PetExperience = (uint) (PetExperience - ((PetLevel + 1)*20000));
+            PetExperience = 0;
             PetLevel++;
             RefreshAll();
             OperateTime = 0;

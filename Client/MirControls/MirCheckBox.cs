@@ -71,6 +71,17 @@ namespace Client.MirControls
                 _label.Text = value;
                 _label.Visible = !string.IsNullOrEmpty(value);
             }
+            get
+            {
+                if (_label != null)
+                {
+                    return _label.Text;
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
         #endregion
 

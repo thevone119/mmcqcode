@@ -143,7 +143,7 @@ public class MD5Utils
         MaxDepth = 2
     };
 
-
+    //计算文件的MD5，文件较大的时候，比较慢
     public static string GetMD5HashFromFile(string fileName)
     {
         long filelong = 0;
@@ -173,6 +173,48 @@ public class MD5Utils
 
         return "ERROR:" + filelong;
     }
+    //实现快速的文件MD5,只取10段1024的加上长度做MD5
+    public static string GetFastMd5(string fileName)
+    {
+        long filelong = 0;
+        try
+        {
+            FileInfo f = new FileInfo(fileName);
+            if (!f.Exists)
+            {
+                return null;
+            }
+            filelong = f.Length;
+            long step = filelong / 10;
+            FileStream file = new FileStream(fileName, FileMode.Open);
+            byte[] temp = new byte[102400];
+            for(int i = 0; i < 10; i++)
+            {
+                file.Seek(step * i, SeekOrigin.Begin);
+                int redlen = file.Read(temp, i*1024,1024);
+            }
+            file.Close();
+            MemoryStream memory = new MemoryStream(temp);
+            BinaryWriter memory2 = new BinaryWriter(memory);
+            memory2.Write(filelong);
+            System.Security.Cryptography.MD5 md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
+            byte[] retVal = md5.ComputeHash(memory);
+            memory.Close();
+            memory2.Close();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < retVal.Length; i++)
+            {
+                sb.Append(retVal[i].ToString("x2"));
+            }
+            return sb.ToString();
+        }
+        catch (Exception)
+        {
+        }
+
+        return "ERROR:" + filelong;
+    }
+
 
     public static string MD5Encode(String origin)
     {
@@ -935,23 +977,46 @@ public class AutoRoute
     }
 
     //开启列表(这个开启列表其实还可以优化的)
-    List<RoutePoint> Open_List = new List<RoutePoint>();
-  
+    //List<RoutePoint> Open_List = new List<RoutePoint>();
+    Dictionary<string,RoutePoint> Open_dic = new Dictionary<string,RoutePoint>();
 
     //从开启列表查找F值最小的节点(就是G+H最小的点)
     private RoutePoint GetMinFFromOpenList()
     {
         RoutePoint Pmin = null;
-        foreach (RoutePoint p in Open_List) if (Pmin == null || Pmin.G + Pmin.H > p.G + p.H) Pmin = p;
+        //foreach (RoutePoint p in Open_List) if (Pmin == null || Pmin.G + Pmin.H > p.G + p.H) Pmin = p;
+        foreach (RoutePoint p in Open_dic.Values)
+        {
+            if (Pmin == null || Pmin.G + Pmin.H > p.G + p.H) Pmin = p;
+        }
         return Pmin;
     }
-
- 
+    //加入开启列表
+    private void OpenAdd(RoutePoint p)
+    {
+        //Open_List.Add(p);
+        string key = p.x + "," + p.y;
+        if (!Open_dic.ContainsKey(key))
+        {
+            Open_dic.Add(key,p);
+        }
+    }
+    //从开启列表删除
+    private void OpenRemove(RoutePoint p)
+    {
+        //Open_List.Remove(p);
+        string key = p.x + "," + p.y;
+        Open_dic.Remove(key);
+    }
 
     //从开启列表返回对应坐标的点
     private RoutePoint GetPointFromOpenList(int x, int y)
     {
-        foreach (RoutePoint p in Open_List) if (p.x == x && p.y == y) return p;
+        string key = x + "," + y;
+        if (Open_dic.ContainsKey(key))
+        {
+            return Open_dic[key];
+        }
         return null;
     }
 
@@ -1011,13 +1076,13 @@ public class AutoRoute
         RoutePoint pa = new RoutePoint(_pa);
         RoutePoint pb = new RoutePoint(_pb);
         List<Point> myp = new List<Point>();
-        Open_List.Add(pa);
+        OpenAdd(pa);
         bool isEnd = false;//是否结束
-        while (Open_List.Count> 0 && !isEnd)
+        while (Open_dic.Count> 0 && !isEnd)
         {
             RoutePoint p0 = GetMinFFromOpenList();
             if (p0 == null) return myp;
-            Open_List.Remove(p0);
+            OpenRemove(p0);
             R[p0.x, p0.y] = 3;//关闭掉
             foreach(RoutePoint childCell in FindNearCell(p0))
             {
@@ -1050,7 +1115,7 @@ public class AutoRoute
                     childCell.father = p0;
                     childCell.G = GetG(childCell);
                     childCell.H = GetH(childCell, pb);
-                    Open_List.Add(childCell);
+                    OpenAdd(childCell);
                 }
             }
         }
@@ -1079,33 +1144,33 @@ public class FileKVMap
         FileInfo fi = new FileInfo(filepath);
         if (fi.Exists)
         {
-            
-            FileStream fs = new FileStream(filepath, FileMode.Open, FileAccess.Read);
-            using (StreamReader m_streamReader = new StreamReader(fs, System.Text.Encoding.UTF8))
-            {
-                string strLine = null;
-                while ((strLine = m_streamReader.ReadLine()) != null)
+
+            using (FileStream fs = new FileStream(filepath, FileMode.Open, FileAccess.Read)){ 
+                using (StreamReader m_streamReader = new StreamReader(fs, System.Text.Encoding.UTF8))
                 {
-                    if(strLine==null|| strLine.Trim().Length < 3)
+                    string strLine = null;
+                    while ((strLine = m_streamReader.ReadLine()) != null)
                     {
-                        continue;
-                    }
-                    string[] sv= strLine.Trim().Split('=');
-                    if(sv==null || sv.Length != 2)
-                    {
-                        continue;
-                    }
-                    if(d.ContainsKey(sv[0]))
-                    {
-                        d[sv[0]] = sv[1];
-                    }
-                    else
-                    {
-                        d.Add(sv[0],sv[1]);
+                        if (strLine == null || strLine.Trim().Length < 3)
+                        {
+                            continue;
+                        }
+                        string[] sv = strLine.Trim().Split('=');
+                        if (sv == null || sv.Length != 2)
+                        {
+                            continue;
+                        }
+                        if (d.ContainsKey(sv[0]))
+                        {
+                            d[sv[0]] = sv[1];
+                        }
+                        else
+                        {
+                            d.Add(sv[0], sv[1]);
+                        }
                     }
                 }
             }
-            
         }
     }
 
@@ -1117,6 +1182,8 @@ public class FileKVMap
         }
         return null;
     }
+
+
 }
 
 /// <summary>

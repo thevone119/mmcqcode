@@ -45,9 +45,9 @@ namespace Client
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
-                //if (Settings.P_Patcher) Application.Run(PForm = new Launcher.AMain());
-                //else Application.Run(Form = new CMain());
-                Application.Run(Form = new CMain());
+                if (Settings.P_Patcher) Application.Run(PForm = new Launcher.AMain());
+                else Application.Run(Form = new CMain());
+                //Application.Run(Form = new CMain());
                 //Application.Run( new Test());
                 Settings.Save();
                 CMain.InputKeys.Save();
@@ -64,6 +64,7 @@ namespace Client
         }
 
         //自动更新方法
+        //如果存在AutoPatcher.gz，则执行AutoPatcher.gz。并退出当前应用
         private static bool UpdatePatcher()
         {
             try
@@ -95,7 +96,7 @@ namespace Client
                             }
 
                         if (stopwatch.ElapsedMilliseconds <= 3000) continue;
-                        MessageBox.Show("Failed to close AutoPatcher during update.");
+                        MessageBox.Show("在更新过程中关闭自动更新程序失败.");
                         return true;
                     }
                 }

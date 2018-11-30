@@ -43,7 +43,7 @@ namespace Server.MirEnvir
         public const string BackUpPath = @".\Back Up\";
         public bool ResetGS = false;//是否清除游戏日志
         //正则
-        private static readonly Regex AccountIDReg, PasswordReg, EMailReg, CharacterReg;
+        private static readonly Regex AccountIDReg, PasswordReg, EMailReg;
         //版本
         public static int LoadVersion;
         public static int LoadCustomVersion;
@@ -167,9 +167,7 @@ namespace Server.MirEnvir
             PasswordReg =
                 new Regex(@"^[A-Za-z0-9]{" + Globals.MinPasswordLength + "," + Globals.MaxPasswordLength + "}$");
             EMailReg = new Regex(@"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*");
-            CharacterReg =
-                new Regex(@"^[A-Za-z0-9]{" + Globals.MinCharacterNameLength + "," + Globals.MaxCharacterNameLength +
-                          "}$");
+            
             //过滤字符串？
             string path = Path.Combine(Settings.EnvirPath, "DisabledChars.txt");
             DisabledCharNames.Clear();
@@ -1893,7 +1891,7 @@ namespace Server.MirEnvir
                 return;
             }
 
-            if (!CharacterReg.IsMatch(p.Name))
+            if (p.Name == null || p.Name.Length < Globals.MinCharacterNameLength || p.Name.Length > Globals.MaxCharacterNameLength)
             {
                 c.Enqueue(new ServerPackets.NewCharacter { Result = 1 });
                 return;

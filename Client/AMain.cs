@@ -20,6 +20,7 @@ namespace Launcher
         private int _fileCount, _currentCount;
 
         private FileInformation _currentFile;
+        //是否已完成
         public bool Completed, Checked, CleanFiles, LabelSwitch, ErrorFound;
         
         public List<FileInformation> OldList;
@@ -29,15 +30,18 @@ namespace Launcher
 
         public Thread _workThread;
 
+        //这几个参数实现拖拽
         private bool dragging = false;
         private Point dragCursorPoint;
         private Point dragFormPoint;
 
-        private string oldClientName = "OldClient.exe";
-
+        private string oldClientName = "OldClient.exe";//备份一份
+        //配置窗口
         private Config ConfigForm = new Config();
-
+        //是否需要重启,如果更新了当前客户端的exe,则需要重启
         private bool Restart = false;
+
+        
 
         public AMain()
         {
@@ -78,7 +82,7 @@ namespace Launcher
                 }
                 else
                 {
-                    MessageBox.Show("Could not get Patch Information.");
+                    MessageBox.Show("找不到更新列表.");
                     Completed = true;
                     return;
                 }
@@ -97,7 +101,7 @@ namespace Launcher
             }
             catch (EndOfStreamException ex)
             {
-                MessageBox.Show("End of stream found. Host is likely using a pre version 1.1.0.0 patch system");
+                MessageBox.Show("读取更新列表错误");
                 Completed = true;
                 SaveError(ex.ToString());
             }
@@ -129,6 +133,7 @@ namespace Launcher
 
             Download(_currentFile);
         }
+        //清除没用的文件
         private void CleanUp()
         {
             if (!CleanFiles) return;
@@ -151,6 +156,7 @@ namespace Launcher
                 catch{}
             }
         }
+        //是否需要的文件
         public bool NeedFile(string fileName)
         {
             for (int i = 0; i < OldList.Count; i++)
@@ -162,7 +168,7 @@ namespace Launcher
             return false;
         }
 
-
+        //处理文件列表
         public void ParseOld(BinaryReader reader)
         {
             int count = reader.ReadInt32();
@@ -237,7 +243,7 @@ namespace Launcher
             }
             catch
             {
-                MessageBox.Show(string.Format("Failed to download file: {0}", fileName));
+                MessageBox.Show(string.Format("下载文件错误: {0}", fileName));
             }
         }
 
@@ -265,6 +271,7 @@ namespace Launcher
                 return null;
             }
         }
+        //没有使用压缩解压
         public static byte[] Decompress(byte[] raw)
         {
             using (GZipStream gStream = new GZipStream(new MemoryStream(raw), CompressionMode.Decompress))
@@ -286,6 +293,7 @@ namespace Launcher
                 }
             }
         }
+        //没有使用压缩解压
         public static byte[] Compress(byte[] raw)
         {
             using (MemoryStream mStream = new MemoryStream())
@@ -315,28 +323,28 @@ namespace Launcher
 
             if (File.Exists(Settings.P_Client + oldClientName)) File.Delete(Settings.P_Client + oldClientName);
 
-            Launch_pb.Enabled = false;
+            //Launch_pb.Enabled = false;
             ProgressCurrent_pb.Width = 5;
             TotalProg_pb.Width = 5;
-            Version_label.Text = "Version " + Application.ProductVersion;
-
-            if (Settings.P_ServerName != String.Empty)
-            {
-                Name_label.Visible = true;
-                Name_label.Text = Settings.P_ServerName;
-            }
+           
             _workThread = new Thread(Start) { IsBackground = true };
             _workThread.Start();
         }
 
         private void Launch_pb_Click(object sender, EventArgs e)
         {
+            if (!Completed)
+            {
+                MessageBox.Show("正在进行客户端更新，请等待更新完成后再进入游戏.", "等待更新.");
+                return;
+            }
             Launch();
         }
-
+        //开始游戏
         private void Launch()
         {
             if (ConfigForm.Visible) ConfigForm.Visible = false;
+            //隐藏当前窗口，开新的窗口,游戏窗口
             Program.Form = new CMain();
             Program.Form.Closed += (s, args) => this.Close();
             Program.Form.Show();
@@ -413,10 +421,12 @@ namespace Launcher
 
         private void ProgressCurrent_pb_SizeChanged(object sender, EventArgs e)
         {
-            ProgEnd_pb.Location = new Point((ProgressCurrent_pb.Location.X + ProgressCurrent_pb.Width), 490);
+            ProgEnd_pb.Location = new Point((ProgressCurrent_pb.Location.X + ProgressCurrent_pb.Width), ProgressCurrent_pb.Location.Y);
             if (ProgressCurrent_pb.Width == 0) ProgEnd_pb.Visible = false;
             else ProgEnd_pb.Visible = true;
         }
+
+
 
         private void Config_pb_MouseDown(object sender, MouseEventArgs e)
         {
@@ -447,7 +457,7 @@ namespace Launcher
 
         private void TotalProg_pb_SizeChanged(object sender, EventArgs e)
         {
-            ProgTotalEnd_pb.Location = new Point((TotalProg_pb.Location.X + TotalProg_pb.Width), 508);
+            ProgTotalEnd_pb.Location = new Point((TotalProg_pb.Location.X + TotalProg_pb.Width), TotalProg_pb.Location.Y);
             if (TotalProg_pb.Width == 0) ProgTotalEnd_pb.Visible = false;
             else ProgTotalEnd_pb.Visible = true;
         }
@@ -457,6 +467,7 @@ namespace Launcher
             if (Main_browser.Url.AbsolutePath != "blank") Main_browser.Visible = true;
         }
 
+        //定时监控
         private void InterfaceTimer_Tick(object sender, EventArgs e)
         {
             try
@@ -465,7 +476,7 @@ namespace Launcher
                 {
                     
                     ActionLabel.Text = "";
-                    CurrentFile_label.Text = "Up to date.";
+                    CurrentFile_label.Text = "已完成更新.";
                     SpeedLabel.Text = "";
                     ProgressCurrent_pb.Width = 550;
                     TotalProg_pb.Width = 550;
@@ -476,13 +487,13 @@ namespace Launcher
                     TotalPercent_label.Text = "100%";
                     InterfaceTimer.Enabled = false;
                     Launch_pb.Enabled = true;
-                    if (ErrorFound) MessageBox.Show("One or more files failed to download, check Error.txt for details.", "Failed to Download.");
+                    if (ErrorFound) MessageBox.Show("一个或多个文件更新错误，为了游戏体验，请重新更新.", "更新错误.");
                     ErrorFound = false;
 
                     if (CleanFiles)
                     {
                         CleanFiles = false;
-                        MessageBox.Show("Your files have been cleaned up.", "Clean Files");
+                        MessageBox.Show("你的客户端已清理.", "清理文件");
                     }
 
                     if (Restart)
@@ -507,8 +518,8 @@ namespace Launcher
                 CurrentPercent_label.Visible = true;
                 TotalPercent_label.Visible = true;
 
-                if (LabelSwitch) ActionLabel.Text = string.Format("{0} Files Remaining", _fileCount - _currentCount);
-                else ActionLabel.Text = string.Format("{0:#,##0}MB Remaining",  ((_totalBytes) - (_completedBytes + _currentBytes)) / 1024 / 1024);
+                if (LabelSwitch) ActionLabel.Text = string.Format("{0} 文件完成", _fileCount - _currentCount);
+                else ActionLabel.Text = string.Format("{0:#,##0}MB 完成",  ((_totalBytes) - (_completedBytes + _currentBytes)) / 1024 / 1024);
 
                 //ActionLabel.Text = string.Format("{0:#,##0}MB / {1:#,##0}MB", (_completedBytes + _currentBytes) / 1024 / 1024, _totalBytes / 1024 / 1024);
 
@@ -541,11 +552,6 @@ namespace Launcher
             LabelSwitch = !LabelSwitch;
         }
 
-        private void Credit_label_Click(object sender, EventArgs e)
-        {
-            if (Credit_label.Text == "Powered by Crystal M2") Credit_label.Text = "Designed by Breezer";
-            else Credit_label.Text = "Powered by Crystal M2";
-        }
 
         private void AMain_FormClosed(object sender, FormClosedEventArgs e)
         {
@@ -563,10 +569,14 @@ namespace Launcher
 
     }
 
+    //文件列表信息
     public class FileInformation
     {
+        //文件名称
         public string FileName; //Relative.
+        //文件长度，压缩后的文件长度
         public int Length, Compressed;
+        //创建日期
         public DateTime Creation;
 
         public FileInformation()

@@ -32,18 +32,19 @@ namespace Client.MirScenes.Dialogs
 
         //保护的设置,输入框
         public MirTextBox HPLower1Text, HPLower2Text, HPLower3Text, HPUse1Text, HPUse2Text, HPUse3Text, MPLower1Text, MPUse1Text;
-
+        //文字框
+        public MirLabel HP11,HP12,HP21,HP22,HP31,HP32,MP11,MP12;
         //物品分页
         public MirCheckBox AutoPickUpBox;
         public MirCheckBox[] ItemRows;//这个是显示所有的物品的，要做分页处理
-        public List<string> ItemAll;//所有物品
+        public List<PickItem> ItemAll;//所有物品
         public MirLabel PageNumberLabel;
-        public int SelectedIndex = 0;
+
         public int StartIndex = 0;
         public int Page = 0;
 
         //固定参数
-        private static int tabIndex= 1083,tabPressedIndex = 1082, tabHoverIndex = 1081;
+        private static int tabIndex= 385,tabPressedIndex = 384, tabHoverIndex = 383;
 
         public UserSetDialog()
         {
@@ -52,15 +53,10 @@ namespace Client.MirScenes.Dialogs
             Movable = false;
             Sort = true;
             Location = Center;
-
-            PageNumberLabel = new MirLabel
-            {
-                Text = "",
-                Parent = this,
-                Size = new Size(83, 17),
-                Location = new Point(87, 216),
-                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
-            };
+            //临时变量
+            int left = 50;
+            int top = 0;
+         
 
             #region Buttons
             //关闭按钮，上一页，下一页按钮
@@ -68,7 +64,7 @@ namespace Client.MirScenes.Dialogs
             {
                 HoverIndex = 361,
                 Index = 360,
-                Location = new Point(237, 3),
+                Location = new Point(411, 5),
                 Library = Libraries.Prguse2,
                 Parent = this,
                 PressedIndex = 362,
@@ -83,8 +79,9 @@ namespace Client.MirScenes.Dialogs
                 Library = Libraries.Prguse2,
                 Parent = this,
                 Size = new Size(16, 16),
-                Location = new Point(70, 218),
+                Location = new Point(160, 198),
                 Sound = SoundList.ButtonA,
+                Hint="上一页",
             };
             PreviousButton.Click += (o, e) =>
             {
@@ -93,7 +90,14 @@ namespace Client.MirScenes.Dialogs
                 StartIndex = ItemRows.Length * Page;
                 UpdatePage();
             };
-
+            PageNumberLabel = new MirLabel
+            {
+                Text = "",
+                Parent = this,
+                Size = new Size(60, 17),
+                Location = new Point(180, 195),
+                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+            };
             NextButton = new MirButton
             {
                 Index = 243,
@@ -102,8 +106,9 @@ namespace Client.MirScenes.Dialogs
                 Library = Libraries.Prguse2,
                 Parent = this,
                 Size = new Size(16, 16),
-                Location = new Point(171, 218),
+                Location = new Point(240, 198),
                 Sound = SoundList.ButtonA,
+                Hint = "下一页",
             };
             NextButton.Click += (o, e) =>
             {
@@ -113,121 +118,333 @@ namespace Client.MirScenes.Dialogs
                 UpdatePage();
             };
             //4个分页按钮BaseButton ClassButton, ProtectButton, ItemButton
+
             BaseButton = new MirButton
             {
-                Index = 1083,
-                HoverIndex = 1081,
-                PressedIndex = 1082,
-                Library = Libraries.Prguse,
+                Index = tabIndex,
+                HoverIndex = tabHoverIndex,
+                PressedIndex = tabPressedIndex,
+                Library = Libraries.Prguse2,
                 Parent = this,
-                Size = new Size(16, 50),
-                Location = new Point(171, 218),
+                Size = new Size(25, 84),
+                Location = new Point(left, 33),
                 Sound = SoundList.ButtonA,
+                Text = "基础",
+                CenterText = true,
             };
+
             BaseButton.Click += (o, e) =>
             {
                 currTab=1;
                 UpdateDisplay();
             };
+            left += 80;
             ClassButton = new MirButton
             {
-                Index = 1083,
-                HoverIndex = 1081,
-                PressedIndex = 1082,
-                Library = Libraries.Prguse,
+                Index = tabIndex,
+                HoverIndex = tabHoverIndex,
+                PressedIndex = tabPressedIndex,
+                Library = Libraries.Prguse2,
                 Parent = this,
-                Size = new Size(16, 50),
-                Location = new Point(171, 218),
+                Size = new Size(25, 84),
+                Location = new Point(left, 33),
                 Sound = SoundList.ButtonA,
+                Text = "职业",
+                CenterText = true,
             };
             ClassButton.Click += (o, e) =>
             {
                 currTab = 2;
                 UpdateDisplay();
             };
+            left += 80;
             ProtectButton = new MirButton
             {
-                Index = 1083,
-                HoverIndex = 1081,
-                PressedIndex = 1082,
-                Library = Libraries.Prguse,
+                Index = tabIndex,
+                HoverIndex = tabHoverIndex,
+                PressedIndex = tabPressedIndex,
+                Library = Libraries.Prguse2,
                 Parent = this,
-                Size = new Size(16, 50),
-                Location = new Point(171, 218),
+                Size = new Size(25, 84),
+                Location = new Point(left, 33),
                 Sound = SoundList.ButtonA,
+                Text = "保护",
+                CenterText = true,
             };
             ProtectButton.Click += (o, e) =>
             {
                 currTab = 3;
                 UpdateDisplay();
             };
+            left += 80;
             ItemButton = new MirButton
             {
-                Index = 1083,
-                HoverIndex = 1081,
-                PressedIndex = 1082,
-                Library = Libraries.Prguse,
+                Index = tabIndex,
+                HoverIndex = tabHoverIndex,
+                PressedIndex = tabPressedIndex,
+                Library = Libraries.Prguse2,
                 Parent = this,
-                Size = new Size(16, 50),
-                Location = new Point(171, 218),
+                Size = new Size(25, 84),
+                Location = new Point(left, 33),
                 Sound = SoundList.ButtonA,
+                Text="物品",
+                CenterText = true,
             };
             ItemButton.Click += (o, e) =>
             {
                 currTab = 4;
                 UpdateDisplay();
             };
+            left = 50;
+            top = 70;
             //各种单选框
-            ShowLevelBox = new MirCheckBox { Location = new Point(16, 50), LabelText = "显示等级", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this};
+            ShowLevelBox = new MirCheckBox { Location = new Point(left, top), LabelText = "显示等级", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this};
             ShowLevelBox.Click += (o, e) =>
             {
                 changeData();
             };
-            ExcuseShiftBox = new MirCheckBox { Location = new Point(16, 50), LabelText = "免Shift", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            top += 30;
+            ExcuseShiftBox = new MirCheckBox { Location = new Point(left, top), LabelText = "免Shift", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
             ExcuseShiftBox.Click += (o, e) =>
             {
                 changeData();
             };
-            ShowPingBox = new MirCheckBox { Location = new Point(16, 50), LabelText = "显示Ping", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            top += 30;
+            ShowPingBox = new MirCheckBox { Location = new Point(left, top), LabelText = "显示Ping", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
             ShowPingBox.Click += (o, e) =>
             {
                 changeData();
             };
-            ShowFashionBox = new MirCheckBox { Location = new Point(16, 50), LabelText = "显示时装", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            top += 30;
+            ShowFashionBox = new MirCheckBox { Location = new Point(left, top), LabelText = "显示时装", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
             ShowFashionBox.Click += (o, e) =>
             {
                 changeData();
             };
-            SeptumBox = new MirCheckBox { Location = new Point(16, 50), LabelText = "隔位刺杀", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            top = 70;
+            SeptumBox = new MirCheckBox { Location = new Point(left, top), LabelText = "隔位刺杀", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
             SeptumBox.Click += (o, e) =>
             {
                 changeData();
             };
-            AutoFlamingBox = new MirCheckBox { Location = new Point(16, 50), LabelText = "自动烈火", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            top += 30;
+            AutoFlamingBox = new MirCheckBox { Location = new Point(left, top), LabelText = "自动烈火", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
             AutoFlamingBox.Click += (o, e) =>
             {
                 changeData();
             };
-            AutoShieldBox = new MirCheckBox { Location = new Point(16, 50), LabelText = "自动开盾", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            top += 30;
+            AutoShieldBox = new MirCheckBox { Location = new Point(left, top), LabelText = "自动开盾", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
             AutoShieldBox.Click += (o, e) =>
             {
                 changeData();
             };
-            OpenProtectBox = new MirCheckBox { Location = new Point(16, 50), LabelText = "开启保护", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            top = 70;
+            OpenProtectBox = new MirCheckBox { Location = new Point(left, top), LabelText = "开启保护", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
             OpenProtectBox.Click += (o, e) =>
             {
                 changeData();
             };
-            AutoPickUpBox = new MirCheckBox { Location = new Point(16, 50), LabelText = "自动拾取", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            top = 70;
+            AutoPickUpBox = new MirCheckBox { Location = new Point(left, top), LabelText = "自动拾取", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
             AutoPickUpBox.Click += (o, e) =>
             {
                 changeData();
             };
+            //捡取的物品列表4行，3列
 
+            ItemRows = new MirCheckBox[12];
+            for(int r = 0; r < 4; r++)
+            {
+                for (int c = 0; c < 3; c++)
+                {
+                    ItemRows[r*3+c] = new MirCheckBox { Location = new Point(30+c*130, 100+r*23), LabelText = "", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this,Visible=true };
+                    ItemRows[r * 3 + c].Click += (o, e) =>
+                    {
+                        changeData();
+                    };
+                }
+            }
+
+            //保护配置
+            left = 205; top = 93;
+            HPLower1Text = new MirTextBox
+            {
+                BackColour = Color.Green,
+                ForeColour = Color.White,
+                Parent = this,
+                Size = new Size(40, 17),
+                Location = new Point(left, top),
+                Font = new Font(Settings.FontName, 9F),
+                MaxLength = 2,
+                CanLoseFocus = true,
+            };
+            top += 23;
+            HPLower2Text = new MirTextBox
+            {
+                BackColour = Color.Green,
+                ForeColour = Color.White,
+                Parent = this,
+                Size = new Size(40, 17),
+                Location = new Point(left, top),
+                Font = new Font(Settings.FontName, 9F),
+                MaxLength = 2,
+                CanLoseFocus = true,
+            };
+            top += 23;
+            HPLower3Text = new MirTextBox
+            {
+                BackColour = Color.Green,
+                ForeColour = Color.White,
+                Parent = this,
+                Size = new Size(40, 17),
+                Location = new Point(left, top),
+                Font = new Font(Settings.FontName, 9F),
+                MaxLength = 2,
+                CanLoseFocus = true,
+            };
+            top += 23;
+            MPLower1Text = new MirTextBox
+            {
+                BackColour = Color.Green,
+                ForeColour = Color.White,
+                Parent = this,
+                Size = new Size(40, 17),
+                Location = new Point(left, top),
+                Font = new Font(Settings.FontName, 9F),
+                MaxLength = 2,
+                CanLoseFocus = true,
+            };
+            left = 285; top = 93;
+            HPUse1Text = new MirTextBox
+            {
+                BackColour = Color.Green,
+                ForeColour = Color.White,
+                Parent = this,
+                Size = new Size(100, 17),
+                Location = new Point(left, top),
+                Font = new Font(Settings.FontName, 9F),
+                MaxLength = 20,
+                CanLoseFocus = true,
+            };
+            top += 23;
+            HPUse2Text = new MirTextBox
+            {
+                BackColour = Color.Green,
+                ForeColour = Color.White,
+                Parent = this,
+                Size = new Size(100, 17),
+                Location = new Point(left, top),
+                Font = new Font(Settings.FontName, 9F),
+                MaxLength = 20,
+                CanLoseFocus = true,
+            };
+            top += 23;
+            HPUse3Text = new MirTextBox
+            {
+                BackColour = Color.Green,
+                ForeColour = Color.White,
+                Parent = this,
+                Size = new Size(100, 17),
+                Location = new Point(left, top),
+                Font = new Font(Settings.FontName, 9F),
+                MaxLength = 20,
+                CanLoseFocus = true,
+            };
+            top += 23;
+            MPUse1Text = new MirTextBox
+            {
+                BackColour = Color.Green,
+                ForeColour = Color.White,
+                Parent = this,
+                Size = new Size(100, 17),
+                Location = new Point(left, top),
+                Font = new Font(Settings.FontName, 9F),
+                MaxLength = 20,
+                CanLoseFocus = true,
+            };
+
+            //各种文字说明
+            left = 50;top = 90;
+            HP11 = new MirLabel
+            {
+                Text = "普通喝药，生命百分比低于",
+                Parent = this,
+                Size = new Size(150, 17),
+                Location = new Point(left, top),
+                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+            };
+            top += 23;
+            HP21 = new MirLabel
+            {
+                Text = "快速喝药，生命百分比低于",
+                Parent = this,
+                Size = new Size(150, 17),
+                Location = new Point(left, top),
+                DrawFormat =  TextFormatFlags.VerticalCenter
+            };
+            top += 23;
+            HP31 = new MirLabel
+            {
+                Text = "使用卷轴，生命百分比低于",
+                Parent = this,
+                Size = new Size(150, 17),
+                Location = new Point(left, top),
+                DrawFormat =  TextFormatFlags.VerticalCenter
+            };
+            top += 23;
+            MP11 = new MirLabel
+            {
+                Text = "普通喝蓝，魔法百分比低于",
+                Parent = this,
+                Size = new Size(150, 17),
+                Location = new Point(left, top),
+                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+            };
+            
+
+            left = 250; top = 90;
+            HP12 = new MirLabel
+            {
+                Text = "使用",
+                Parent = this,
+                Size = new Size(30, 17),
+                Location = new Point(left, top),
+                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+            };
+            top += 23;
+            HP22 = new MirLabel
+            {
+                Text = "使用",
+                Parent = this,
+                Size = new Size(30, 17),
+                Location = new Point(left, top),
+                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+            };
+            top += 23;
+            HP32 = new MirLabel
+            {
+                Text = "使用",
+                Parent = this,
+                Size = new Size(30, 17),
+                Location = new Point(left, top),
+                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+            };
+            top += 23;
+            MP12 = new MirLabel
+            {
+                Text = "使用",
+                Parent = this,
+                Size = new Size(30, 17),
+                Location = new Point(left, top),
+                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+            };
             #endregion
+
+
         }
         //装载配置到窗口
-        private void initData()
+        public void initData()
         {
             ShowLevelBox.Checked = GameScene.UserSet.ShowLevel;
             ExcuseShiftBox.Checked = GameScene.UserSet.ExcuseShift;
@@ -249,6 +466,9 @@ namespace Client.MirScenes.Dialogs
 
             MPLower1Text.Text= GameScene.UserSet.MPLower1 + "";
             MPUse1Text.Text = GameScene.UserSet.MPUse1 + "";
+
+            //初始物品数据
+            ItemAll = GameScene.UserSet.PickUpList;
         }
         //数据发送变更
         private void changeData()
@@ -265,11 +485,16 @@ namespace Client.MirScenes.Dialogs
             byte.TryParse(HPLower1Text.Text,out GameScene.UserSet.HPLower1);
             byte.TryParse(HPLower2Text.Text, out GameScene.UserSet.HPLower2);
             byte.TryParse(HPLower3Text.Text, out GameScene.UserSet.HPLower3);
-            byte.TryParse(MPUse1Text.Text, out GameScene.UserSet.MPLower1);
+            byte.TryParse(MPLower1Text.Text, out GameScene.UserSet.MPLower1);
             GameScene.UserSet.HPUse1 = HPUse1Text.Text;
             GameScene.UserSet.HPUse2 = HPUse2Text.Text;
             GameScene.UserSet.HPUse3 = HPUse3Text.Text;
             GameScene.UserSet.MPUse1 = MPUse1Text.Text;
+            //物品选择
+            for (int i = StartIndex; i < StartIndex + 12 && i < ItemAll.Count; i++)
+            {
+                ItemAll[i].pick=ItemRows[i - StartIndex].Checked;
+            }
         }
 
         //刷新显示
@@ -303,12 +528,25 @@ namespace Client.MirScenes.Dialogs
                     TabVisible3(false);
                     TabVisible4(true);
                     break;
+                default:
+                    TabVisible1(true);
+                    break;
             }
+            UpdatePage();
         }
         //刷新分页
         private void UpdatePage()
         {
+            int maxPage = ItemAll.Count / ItemRows.Length + 1;
+            if (maxPage < 1) maxPage = 1;
 
+            PageNumberLabel.Text = (Page + 1) + " / " + maxPage;
+
+            for (int i= StartIndex;i< StartIndex+12 && i < ItemAll.Count; i++)
+            {
+                ItemRows[i - StartIndex].LabelText = ItemAll[i].itemname;
+                ItemRows[i - StartIndex].Checked = ItemAll[i].pick;
+            }
         }
 
 
@@ -356,6 +594,16 @@ namespace Client.MirScenes.Dialogs
             HPUse3Text.Visible = visible;
             MPLower1Text.Visible = visible;
             MPUse1Text.Visible = visible;
+            //HP11,HP12,HP21,HP22,HP31,HP32,MP11,MP12
+            HP11.Visible = visible;
+            HP12.Visible = visible;
+            HP21.Visible = visible;
+            HP22.Visible = visible;
+            HP31.Visible = visible;
+            HP32.Visible = visible;
+            MP11.Visible = visible;
+            MP12.Visible = visible;
+         
             if (visible)
             {
                 ProtectButton.Index = tabPressedIndex;
@@ -370,9 +618,18 @@ namespace Client.MirScenes.Dialogs
         {
             AutoPickUpBox.Visible = visible;
             PageNumberLabel.Visible = visible;
-            for(int i=0;i< ItemRows.Length; i++)
+            PreviousButton.Visible = visible;
+            NextButton.Visible = visible;
+            for (int i=0;i< ItemRows.Length; i++)
             {
-                ItemRows[i].Visible = visible;
+                if(ItemRows[i].LabelText != null && ItemRows[i].LabelText.Length > 0)
+                {
+                    ItemRows[i].Visible = visible;
+                }
+                else
+                {
+                    ItemRows[i].Visible=false;
+                }
             }
             if (visible)
             {
@@ -385,17 +642,18 @@ namespace Client.MirScenes.Dialogs
         }
 
 
-
-
         public void Hide()
         {
             if (!Visible) return;
+            //关闭保存
+            GameScene.UserSet.Save();
             Visible = false;
         }
         public void Show()
         {
             if (Visible) return;
             Visible = true;
+            initData();
             UpdateDisplay();
         }
     }

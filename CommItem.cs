@@ -61,7 +61,7 @@ public class ItemInfo
     public bool StartItem;//是否开始赠送的装备，其实开始赠送不应该放这里
     public byte Effect;//效果
 
-    public byte Strong;//强度
+    public byte Strong;//强度，降持久的时候，每次降的持久会和这个数比较，一般都是0，如果是1-3
     //MagicResist:魔法躲避？PoisonResist：中毒躲避？HealthRecovery恢复，SpellRecovery技能恢复，PoisonRecovery：中毒恢复，HPrate：HP增加百分比，MPrate：Mp增加百分百
     public byte MagicResist, PoisonResist, HealthRecovery, SpellRecovery, PoisonRecovery, HPrate, MPrate;
 
