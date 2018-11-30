@@ -163,10 +163,10 @@ namespace Client
         }
     }
 
-    //按键设置，这个后面要改下，改成保存到角色下？
+    //按键设置，这个后面要改下，这个是全局的,和具体的角色没关系
     public class KeyBindSettings
     {
-        private static InIReader Reader = new InIReader(@".\KeyBinds.ini");
+        private static InIReader Reader = new InIReader(@".\Config\KeyBinds.ini");
         public List<KeyBind> Keylist = new List<KeyBind>();
         private Dictionary<KeybindOptions, KeyBind> funcdict = new Dictionary<KeybindOptions, KeyBind>();
         private Dictionary<Keys, KeyBind> keydict = new Dictionary<Keys, KeyBind>();
@@ -174,7 +174,7 @@ namespace Client
         public KeyBindSettings()
         {
             New();
-            if (!File.Exists(@".\KeyBinds.ini"))
+            if (!File.Exists(@".\Config\KeyBinds.ini"))
             {
                 Save();
                 return;

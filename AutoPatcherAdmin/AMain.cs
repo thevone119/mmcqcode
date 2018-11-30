@@ -552,7 +552,10 @@ namespace AutoPatcherAdmin
 
             FileLabel.Text = _currFileName;
             SizeLabel.Text = string.Format("{0} KB / {1} KB", _currBytes / 1024, _currcompletedBytes / 1024);
-            SpeedLabel.Text = ((double)(_currBytes- _preBytes) / 1024 / 0.5).ToString("0.##") + " KB/s";
+            if(_currBytes> _preBytes)
+            {
+                SpeedLabel.Text = ((double)(_currBytes - _preBytes) / 1024 / 0.5).ToString("0.##") + " KB/s";
+            }
             ActionLabel.Text = string.Format("Uploading... Files: {0}, Total Size: {1:#,##0}MB (Uncompressed)", UploadList.Count, (_totalBytes - _completedBytes) / 1048576);
             _preBytes = _currBytes;
         }
@@ -621,10 +624,11 @@ namespace AutoPatcherAdmin
 
     public class FileInformation
     {
+        //文件名，相对路径，例如\Sound\wolf_ride01.wav  \Client.exe \Data\ChrSel.Lib
         public string FileName; //Relative.
         public int Length, Compressed;
         public DateTime Creation;
-        public bool update;//是否已更新，包括是否已上传，是否已下载等
+        public bool update = false;//额外字段，记录是否已更新，包括是否已上传，是否已下载等
 
         public FileInformation()
         {
@@ -633,6 +637,7 @@ namespace AutoPatcherAdmin
         public FileInformation(BinaryReader reader)
         {
             FileName = reader.ReadString();
+            System.Console.WriteLine("FileName：" + FileName);
             Length = reader.ReadInt32();
             Compressed = reader.ReadInt32();
             Creation = DateTime.FromBinary(reader.ReadInt64());

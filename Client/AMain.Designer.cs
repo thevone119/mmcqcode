@@ -64,6 +64,7 @@ namespace Launcher
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.Movement_panel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Config_pb)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Close_pb)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ProgTotalEnd_pb)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ProgEnd_pb)).BeginInit();
@@ -105,7 +106,7 @@ namespace Launcher
             // InterfaceTimer
             // 
             this.InterfaceTimer.Enabled = true;
-            this.InterfaceTimer.Interval = 300;
+            this.InterfaceTimer.Interval = 500;
             this.InterfaceTimer.Tick += new System.EventHandler(this.InterfaceTimer_Tick);
             // 
             // Movement_panel
@@ -363,6 +364,7 @@ namespace Launcher
             this.Click += new System.EventHandler(this.AMain_Click);
             this.Movement_panel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Config_pb)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Close_pb)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ProgTotalEnd_pb)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ProgEnd_pb)).EndInit();

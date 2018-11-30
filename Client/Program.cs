@@ -35,6 +35,9 @@ namespace Client
             //MirLog.debug("DEBUG:" + Settings.UseTestConfig);
             try
             {
+                //加大连接并发数
+                System.Net.ServicePointManager.DefaultConnectionLimit = 256;
+
                 if (UpdatePatcher()) return;
 
                 if (RuntimePolicyHelper.LegacyV2RuntimeEnabledSuccessfully == true) { }

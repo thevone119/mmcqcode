@@ -15,17 +15,20 @@ namespace Launcher
 {
     public partial class AMain : Form
     {
-
-        long _totalBytes, _completedBytes, _currentBytes;
+        //总文件大小，完成大小，当前完成的大小，上次完成的大小
+        long _totalBytes, _completedBytes, _currentBytes, _preBytes;
+        //文件数，当前已完成数
         private int _fileCount, _currentCount;
 
+        //当前下载的文件
         private FileInformation _currentFile;
         //是否已完成
-        public bool Completed, Checked, CleanFiles, LabelSwitch, ErrorFound;
+        public bool Completed, Checked, CleanFiles, LabelSwitch, ErrorFound,WinClose, RefreshServer;
         
         public List<FileInformation> OldList;
         public Queue<FileInformation> DownloadList;
 
+        //不用这个计算时间了，间隔统一是500毫秒，用这个计算即可
         private Stopwatch _stopwatch = Stopwatch.StartNew();
 
         public Thread _workThread;
@@ -46,6 +49,7 @@ namespace Launcher
         public AMain()
         {
             InitializeComponent();
+            treeView1.Nodes.Clear();
             BackColor = Color.FromArgb(1, 0, 0);
             TransparencyKey = Color.FromArgb(1, 0, 0);
         }
@@ -56,7 +60,7 @@ namespace Launcher
             {
                 if (Settings.RemainingErrorLogs-- > 0)
                 {
-                    File.AppendAllText(@".\Error.txt",
+                    File.AppendAllText(@".\Config\Error.txt",
                                        string.Format("[{0}] {1}{2}", DateTime.Now, ex, Environment.NewLine));
                 }
             }
@@ -64,14 +68,16 @@ namespace Launcher
             {
             }
         }
-
+        //调用线程执行更新
         public void Start()
         {
             try
             {
                 OldList = new List<FileInformation>();
                 DownloadList = new Queue<FileInformation>();
-
+                //刷新服务器列表
+                ServerList.Load();
+                RefreshServer = false;
                 byte[] data = Download(Settings.P_PatchFileName);
 
                 if (data != null)
@@ -84,6 +90,7 @@ namespace Launcher
                 {
                     MessageBox.Show("找不到更新列表.");
                     Completed = true;
+                    ErrorFound = true;
                     return;
                 }
 
@@ -97,7 +104,10 @@ namespace Launcher
 
 
                 _fileCount = DownloadList.Count;
-                BeginDownload();
+                DownloadAll();
+                //刷新服务器列表
+                ServerList.Load();
+                RefreshServer = false;
             }
             catch (EndOfStreamException ex)
             {
@@ -114,8 +124,10 @@ namespace Launcher
         }
 
         
+       
 
-        private void BeginDownload()
+        //开始下载所有的文件
+        private void DownloadAll()
         {
             if (DownloadList == null) return;
 
@@ -128,26 +140,61 @@ namespace Launcher
                 CleanUp();
                 return;
             }
-
-            _currentFile = DownloadList.Dequeue();
-
-            Download(_currentFile);
+            while (DownloadList.Count > 0)
+            {
+                if (WinClose)
+                {
+                    return;
+                }
+                _currentFile = DownloadList.Dequeue();
+                bool dret = Download(_currentFile);
+                //下载失败，重新加入下载队列，并且
+                if (!dret)
+                {
+                    //最多只允许失败2次
+                    if (_currentFile.updateState < 2)
+                    {
+                        _currentFile.updateState = _currentFile.updateState + 1;
+                        DownloadList.Enqueue(_currentFile);
+                    }
+                    else
+                    {
+                        ErrorFound = true;
+                    }
+                }
+            }
+            Completed = true;
+            //清理文件
+            CleanUp();
         }
         //清除没用的文件
         private void CleanUp()
         {
+            if (OldList.Count == 0)
+            {
+                return;
+            }
             if (!CleanFiles) return;
 
             string[] fileNames = Directory.GetFiles(@".\", "*.*", SearchOption.AllDirectories);
             string fileName;
             for (int i = 0; i < fileNames.Length; i++)
             {
-                if (fileNames[i].StartsWith(".\\Screenshots\\")) continue;
-
-                fileName = Path.GetFileName(fileNames[i]);
-
-                if (fileName == "Mir2Config.ini" || fileName == System.AppDomain.CurrentDomain.FriendlyName) continue;
-
+                //截屏程序不清理
+                if (fileNames[i].ToLower().IndexOf("screenshots") != -1)
+                {
+                    continue;
+                }
+                //配置不删
+                if (fileNames[i].ToLower().IndexOf("config") != -1)
+                {
+                    continue;
+                }
+                //客户端不删
+                if (fileNames[i].ToLower().IndexOf(System.AppDomain.CurrentDomain.FriendlyName.ToLower()) != -1)
+                {
+                    continue;
+                }
                 try
                 {
                     if (!NeedFile(fileNames[i]))
@@ -176,7 +223,7 @@ namespace Launcher
             for (int i = 0; i < count; i++)
                 OldList.Add(new FileInformation(reader));
         }
-
+        //校验文件是否需要下载，是否需要重启客户端
         public void CheckFile(FileInformation old)
         {
             FileInformation info = GetFileInformation(Settings.P_Client + old.FileName);
@@ -186,91 +233,150 @@ namespace Launcher
             {
                 if ((old.FileName.EndsWith(System.AppDomain.CurrentDomain.FriendlyName)))
                 {
-                    File.Move(Settings.P_Client + System.AppDomain.CurrentDomain.FriendlyName, Settings.P_Client + oldClientName);
+                    //针对客户端程序，多加一个时间判断，如果是新的文件则不处理
+                    if(info != null && info.Creation > old.Creation)
+                    {
+                        return;
+                    }
+                    FileMove(Settings.P_Client + System.AppDomain.CurrentDomain.FriendlyName, Settings.P_Client + oldClientName);
                     Restart = true;
                 }
-
                 DownloadList.Enqueue(old);
                 _totalBytes += old.Length;
             }
         }
 
-        public void Download(FileInformation info)
+        //新的下载文件处理
+        //直接下载覆盖本地文件
+        //如果已经下载完成，则任务是成功了，否则是失败的
+        //返回成功，失败
+        public bool Download(FileInformation info)
         {
+            bool ret = false;
             string fileName = info.FileName.Replace(@"\", "/");
-
             if (fileName != "PList.gz")
                 fileName += ".gz";
+            //不存在则创建
+            if (!Directory.Exists(Settings.P_Client + Path.GetDirectoryName(info.FileName)))
+                Directory.CreateDirectory(Settings.P_Client + Path.GetDirectoryName(info.FileName));
 
+            long t_completedBytes = _completedBytes;
+            _currentBytes = 0;
             try
             {
-                using (WebClient client = new WebClient())
+                FtpWebRequest reqFTP = (FtpWebRequest)FtpWebRequest.Create(new Uri(Settings.P_Host + fileName));
+                reqFTP.Method = WebRequestMethods.Ftp.DownloadFile;
+                reqFTP.UseBinary = true;
+                reqFTP.UsePassive = false;
+                if (Settings.P_NeedLogin)
                 {
-                    client.DownloadProgressChanged += (o, e) =>
+                    reqFTP.Credentials = new NetworkCredential(Settings.P_Login, Settings.Password);
+                }
+
+                FtpWebResponse response = (FtpWebResponse)reqFTP.GetResponse();
+
+                using (Stream ftpStream = response.GetResponseStream())
+                {
+                    using (FileStream outputStream = new FileStream(Settings.P_Client + info.FileName, FileMode.Create))
+                    {
+                        int bufferSize = 2048;
+                        int readCount;
+                        byte[] buffer = new byte[bufferSize];
+
+                        readCount = ftpStream.Read(buffer, 0, bufferSize);
+                        while (readCount > 0)
                         {
-                            _currentBytes = e.BytesReceived;
-                        };
-                    client.DownloadDataCompleted += (o, e) =>
-                        {
-                            if (e.Error != null)
+                            if (WinClose)
                             {
-                                File.AppendAllText(@".\Error.txt",
-                                       string.Format("[{0}] {1}{2}", DateTime.Now, info.FileName + " could not be downloaded. (" + e.Error.Message + ")", Environment.NewLine));
-                                ErrorFound = true;
+                                return false;
                             }
-                            else
-                            {
-                                _currentCount++;
-                                _completedBytes += _currentBytes;
-                                _currentBytes = 0;
-                                _stopwatch.Stop();
-
-                            if (!Directory.Exists(Settings.P_Client + Path.GetDirectoryName(info.FileName)))
-                                Directory.CreateDirectory(Settings.P_Client + Path.GetDirectoryName(info.FileName));
-
-                            File.WriteAllBytes(Settings.P_Client + info.FileName, e.Result);
-                            File.SetLastWriteTime(Settings.P_Client + info.FileName, info.Creation);
-                            }
-                            BeginDownload();
-                        };
-
-                    if (Settings.P_NeedLogin) client.Credentials = new NetworkCredential(Settings.AccountID, Settings.Password);
-
-
-                    _stopwatch = Stopwatch.StartNew();
-                    client.DownloadDataAsync(new Uri(Settings.P_Host + fileName));
+                            outputStream.Write(buffer, 0, readCount);
+                            _completedBytes += readCount;
+                            _currentBytes += readCount;
+                            readCount = ftpStream.Read(buffer, 0, bufferSize);
+                        }
+                        //执行到这里，其实就已经是成功了
+                        ret = true;
+                        response.Close();
+                    }
                 }
             }
-            catch
+            catch(Exception e)
             {
-                MessageBox.Show(string.Format("下载文件错误: {0}", fileName));
+                System.Console.WriteLine("下载文件失败：" + fileName);
+                File.AppendAllText(@".\Config\Error.txt",
+                                       string.Format("[{0}] {1}{2}", DateTime.Now, info.FileName + " could not be downloaded. (" + e.Message + ")", Environment.NewLine));
             }
+            //如果失败了，需要进行重置
+            if (!ret)
+            {
+                _completedBytes = t_completedBytes;
+                _currentBytes = 0;
+            }
+            return ret;
+
         }
 
+        
+        
+        //下载文件，返回的是字节数组
         public byte[] Download(string fileName)
         {
             fileName = fileName.Replace(@"\", "/");
 
             if (fileName != "PList.gz")
                 fileName += Path.GetExtension(fileName);
-
+            byte[] ret = new byte[1];
             try
             {
-                using (WebClient client = new WebClient())
+                using (MemoryStream mStream = new MemoryStream())
                 {
-                    if (Settings.P_NeedLogin)
-                        client.Credentials = new NetworkCredential(Settings.P_Login, Settings.Password);
-                    else
-                        client.Credentials = new NetworkCredential("", "");
+                    using (BinaryWriter gStream = new BinaryWriter(mStream))
+                    {
+                        FtpWebRequest reqFTP = (FtpWebRequest)FtpWebRequest.Create(new Uri(Settings.P_Host + fileName));
+                        reqFTP.Method = WebRequestMethods.Ftp.DownloadFile;
+                        reqFTP.UseBinary = true;
+                        reqFTP.UsePassive = false;
+                        if (Settings.P_NeedLogin)
+                        {
+                            reqFTP.Credentials = new NetworkCredential(Settings.P_Login, Settings.Password);
+                        }
+    
+                        FtpWebResponse response = (FtpWebResponse)reqFTP.GetResponse();
+                        Stream ftpStream = response.GetResponseStream();
+                        int bufferSize = 2048;
+                        int readCount;
+                        byte[] buffer = new byte[bufferSize];
 
-                    return client.DownloadData(Settings.P_Host + Path.ChangeExtension(fileName, ".gz"));
+                        readCount = ftpStream.Read(buffer, 0, bufferSize);
+                        while (readCount > 0)
+                        {
+                            gStream.Write(buffer, 0, readCount);
+                            readCount = ftpStream.Read(buffer, 0, bufferSize);
+                        }
+                        ret = mStream.ToArray();
+                        ftpStream.Close();
+                        response.Close();
+                    }
                 }
+                //using (WebClient client = new WebClient())
+                //{
+                //    client.Credentials = new NetworkCredential(Settings.Login, Settings.Password);
+                //   return client.DownloadData(Settings.Host  + fileName);
+                //}
             }
             catch
             {
-                return null;
+                System.Console.WriteLine("下载文件失败：" + fileName);
             }
+            if (ret.Length > 1)
+            {
+                return ret;
+            }
+            return null;
         }
+
+    
         //没有使用压缩解压
         public static byte[] Decompress(byte[] raw)
         {
@@ -336,6 +442,18 @@ namespace Launcher
             if (!Completed)
             {
                 MessageBox.Show("正在进行客户端更新，请等待更新完成后再进入游戏.", "等待更新.");
+                return;
+            }
+            //判断是否有选择分区
+            if (treeView1.SelectedNode == null)
+            {
+                MessageBox.Show("请选择游戏分区.", "操作提醒.");
+                return;
+            }
+            ServerInfo si = (ServerInfo)treeView1.SelectedNode.Tag;
+            if (!si.isGameServer())
+            {
+                MessageBox.Show("请选择具体的游戏分区.", "操作提醒.");
                 return;
             }
             Launch();
@@ -472,24 +590,62 @@ namespace Launcher
         {
             try
             {
+                //刷新服务器列表
+                if (!RefreshServer&& ServerList.getServerList().Count>0)
+                {
+                    RefreshServer = true;
+                    treeView1.Nodes.Clear();
+                    //1级节点，父节点是0
+                    List<ServerInfo> list1 = ServerList.getServerList(0);
+                    foreach (ServerInfo si1 in list1)
+                    {
+                        TreeNode node1 = new TreeNode(si1.sname);
+                        node1.Tag = si1;
+                        treeView1.Nodes.Add(node1);
+                        //2级节点
+                        List<ServerInfo> list2 = ServerList.getServerList(si1.sid);
+                        foreach(ServerInfo si2 in list2){
+                            TreeNode node2 = new TreeNode(si2.sname);
+                            node2.Tag = si2;
+                            node1.Nodes.Add(node2);
+                            treeView1.SelectedNode = node2;
+                            //3级节点
+                            List<ServerInfo> list3 = ServerList.getServerList(si2.sid);
+                            foreach (ServerInfo si3 in list3)
+                            {
+                                TreeNode node3 = new TreeNode(si3.sname);
+                                node3.Tag = si3;
+                                node2.Nodes.Add(node3);
+                                treeView1.SelectedNode = node3;
+                            }
+                        }
+                    }
+                    treeView1.ExpandAll();
+                    treeView1.Refresh();
+                }
                 if (Completed)
                 {
-                    
-                    ActionLabel.Text = "";
-                    CurrentFile_label.Text = "已完成更新.";
-                    SpeedLabel.Text = "";
-                    ProgressCurrent_pb.Width = 550;
-                    TotalProg_pb.Width = 550;
-                    CurrentFile_label.Visible = true;
-                    CurrentPercent_label.Visible = true;
-                    TotalPercent_label.Visible = true;
-                    CurrentPercent_label.Text = "100%";
-                    TotalPercent_label.Text = "100%";
-                    InterfaceTimer.Enabled = false;
                     Launch_pb.Enabled = true;
-                    if (ErrorFound) MessageBox.Show("一个或多个文件更新错误，为了游戏体验，请重新更新.", "更新错误.");
-                    ErrorFound = false;
-
+                    InterfaceTimer.Enabled = false;
+                    //出现过错误
+                    if (ErrorFound)
+                    {
+                        CurrentFile_label.Text = "客户端更新发生错误，为了游戏体验，请重新更新.";
+                    }
+                    else
+                    {
+                        ActionLabel.Text = "";
+                        CurrentFile_label.Text = "已完成更新.";
+                        SpeedLabel.Text = "";
+                        ProgressCurrent_pb.Width = 550;
+                        TotalProg_pb.Width = 550;
+                        CurrentFile_label.Visible = true;
+                        CurrentPercent_label.Visible = false;
+                        TotalPercent_label.Visible = false;
+                        CurrentPercent_label.Text = "100%";
+                        TotalPercent_label.Text = "100%";
+                    }
+                    
                     if (CleanFiles)
                     {
                         CleanFiles = false;
@@ -531,15 +687,16 @@ namespace Launcher
                     CurrentPercent_label.Text = ((int)(100 * _currentBytes / _currentFile.Compressed)).ToString() + "%";
                     ProgressCurrent_pb.Width = (int)( 5.5 * (100 * _currentBytes / _currentFile.Compressed));
                 }
-                TotalPercent_label.Text = ((int)(100 * (_completedBytes + _currentBytes) / _totalBytes)).ToString() + "%";
-                TotalProg_pb.Width = (int)(5.5 * (100 * (_completedBytes + _currentBytes) / _totalBytes));
+                if (_totalBytes > 0)
+                {
+                    TotalPercent_label.Text = ((int)(100 * (_completedBytes + _currentBytes) / _totalBytes)).ToString() + "%";
+                    TotalProg_pb.Width = (int)(5.5 * (100 * (_completedBytes + _currentBytes) / _totalBytes));
+                }
             }
             catch
-
             {
                 
             }
-
         }
 
         private void AMain_Click(object sender, EventArgs e)
@@ -552,9 +709,11 @@ namespace Launcher
             LabelSwitch = !LabelSwitch;
         }
 
-
+        //窗口关闭的时候执行的方法
         private void AMain_FormClosed(object sender, FormClosedEventArgs e)
         {
+            WinClose = true;
+            //需要把旧的客户端移动为新的客户端
             MoveOldClientToCurrent();
         }
 
@@ -564,7 +723,34 @@ namespace Launcher
             string currentClient = Settings.P_Client + System.AppDomain.CurrentDomain.FriendlyName;
 
             if (!File.Exists(currentClient) && File.Exists(oldClient))
-                File.Move(oldClient, currentClient);
+                FileMove(oldClient, currentClient);
+        }
+        //实现文件的重命名
+        private void FileMove(string srcfile,string targetfile)
+        {
+            try
+            {
+                if (File.Exists(targetfile))
+                {
+                    File.Delete(targetfile);
+                }
+            }
+            catch { }
+            try
+            {
+                File.Move(srcfile, targetfile);
+            }
+            catch { }
+
+            try
+            {
+                if (!File.Exists(targetfile)&& File.Exists(srcfile))
+                {
+                    FileInfo info = new FileInfo(srcfile);
+                    info.MoveTo(targetfile);
+                }
+            }
+            catch { }
         }
 
     }
@@ -572,12 +758,14 @@ namespace Launcher
     //文件列表信息
     public class FileInformation
     {
-        //文件名称
-        public string FileName; //Relative.
+        //文件名称 相对路径，如：\Sound\wolf_ride01.wav  \Client.exe \Data\ChrSel.Lib
+        public string FileName; //Relative.相对路径的文件名
         //文件长度，压缩后的文件长度
         public int Length, Compressed;
         //创建日期
         public DateTime Creation;
+        //更新状态0：未更新 1-9是已更新的次数，一般尝试2次即可，10是更新完成，11是更新错误
+        public int updateState=0;
 
         public FileInformation()
         {
