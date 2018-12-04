@@ -30,6 +30,7 @@ namespace Client.MirScenes
         private InputKeyDialog _ViewKey;
 
         public MirImageControl TestLabel, ViolenceLabel, MinorLabel, YouthLabel;
+        
 
         public LoginScene()
         {
@@ -122,14 +123,18 @@ namespace Client.MirScenes
             Shown += (sender, args) =>
             {
                 Network.Connect();
-                _connectBox.Show();
+                //_connectBox.Show();
             };
         }
 
         public override void Process()
         {
-            if (!Network.Connected && _connectBox.Label != null)
+            if (!Network.Connected && _connectBox.Label != null && useTime>1500)
+            {
                 _connectBox.Label.Text = string.Format("尝试连接到服务器.\n尝试:{0}", Network.ConnectAttempt);
+                _connectBox.Show();
+                //MirLog.info("Process:"+ Network.ConnectAttempt);
+            }
         }
         public override void ProcessPacket(Packet p)
         {

@@ -259,6 +259,7 @@ namespace Server.MirNetwork
                 case (short)ClientPacketIds.NewCharacter:
                     NewCharacter((C.NewCharacter) p);
                     break;
+  
                 case (short)ClientPacketIds.DeleteCharacter:
                     DeleteCharacter((C.DeleteCharacter) p);
                     break;
@@ -640,6 +641,15 @@ namespace Server.MirNetwork
                 case (short)ClientPacketIds.ConfirmItemRental:
                     ConfirmItemRental();
                     break;
+                case (short)ClientPacketIds.RefreshUserGold:
+                    RefreshUserGold();
+                    break;
+                case (short)ClientPacketIds.RechargeCredit:
+                    RechargeCredit((C.RechargeCredit)p);
+                    break;
+                case (short)ClientPacketIds.RechargeEnd:
+                    RechargeEnd((C.RechargeEnd)p);
+                    break;
                 default:
                     SMain.Enqueue(string.Format("Invalid packet received. Index : {0}", p.Index));
                     break;
@@ -805,6 +815,33 @@ namespace Server.MirNetwork
             //SMain.Envir.RemoveRank(temp);
             Enqueue(new S.DeleteCharacterSuccess { CharacterIndex = temp.Index });
         }
+
+        //刷新用户的账户信息
+        public void RefreshUserGold()
+        {
+            if (Account != null)
+            {
+                Enqueue(new S.UserGold { Gold = Account.Gold, Credit=Account.Credit });
+            }
+        }
+        //充值元宝
+        private void RechargeCredit(C.RechargeCredit p)
+        {
+            if (Account == null)
+            {
+                return;
+            }
+            //创建支付订单
+            PayOrder.CreateOrder(Account.Index,p.price,p.pay_type);
+        }
+
+        //客户端发送充值完成，服务器查询结果
+        private void RechargeEnd(C.RechargeEnd p)
+        {
+            PayOrder.PayEnd(p.oid);
+
+        }
+
         private void StartGame(C.StartGame p)
         {
             if (Stage != GameStage.Select) return;
@@ -878,7 +915,7 @@ namespace Server.MirNetwork
             Stage = GameStage.Select;
             Player = null;
 
-            Enqueue(new S.LogOutSuccess { Characters = Account.GetSelectInfo() });
+            Enqueue(new S.LogOutSuccess { Characters = Account.GetSelectInfo()});
         }
 
         private void Turn(C.Turn p)

@@ -469,9 +469,11 @@ namespace Client.MirGraphics
 
             Loaded = true;
         }
-
     }
 
+    //图像加载器（这个不改增加另外的类实现这个类的功能）
+    //修改下这个，让它支持网络图像？
+    //目前的参数是2个，一个是filename，表示图像文件路径，一个是index,表示图像在文件中的位置
     public sealed class MLibrary
     {
         private const string Extention = ".Lib";

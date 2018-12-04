@@ -137,6 +137,20 @@ namespace Client.MirControls
         #region Control Texture
         //清除时间,清除是针对纹理的？也对，主要针对图像等大数据进行清除
         public long CleanTime;
+
+        private long _useTime;
+        //已经过去了多少时间,控件生成后过去了多少时间
+        public long useTime
+        {
+            get {
+                if (_useTime == 0)
+                {
+                    _useTime = CMain.Time;
+                }
+                
+                return CMain.Time- _useTime;
+            }
+        }
         //纹理
         protected Texture ControlTexture;
         //是否显示？

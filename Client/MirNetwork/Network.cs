@@ -40,7 +40,7 @@ namespace Client.MirNetwork
             ConnectAttempt++;
 
             _client = new TcpClient {NoDelay = true};
-            _client.BeginConnect(Settings.IPAddress, Settings.Port, Connection, null);
+            _client.BeginConnect(Settings.serverIp, Settings.serverPort, Connection, null);
         }
         //连接的异步回调
         private static void Connection(IAsyncResult result)

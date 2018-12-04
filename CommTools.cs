@@ -13,6 +13,8 @@ using System.IO;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
 using System.Drawing;
+using System.Collections.Specialized;
+
 
 /// <summary>
 /// 唯一值工具类
@@ -37,7 +39,7 @@ public static class UniqueKeyHelper
 
     //获取毫秒时间
     //从2018年开始，到现在的毫秒时间，一般都是11位，最多12位
-    private static long TotalMilliseconds()
+    public static long TotalMilliseconds()
     {
         return (long)(DateTime.Now - minTime).TotalMilliseconds;
     }
@@ -1217,3 +1219,4 @@ public class LanguageUtils
         return string.Format(v, args);
     }
 }
+

@@ -88,7 +88,9 @@ namespace Launcher
                 }
                 else
                 {
-                    MessageBox.Show("找不到更新列表.");
+                    ShowMessage("找不到更新列表");
+
+                    //MessageBox.Show("找不到更新列表.");
                     Completed = true;
                     ErrorFound = true;
                     return;
@@ -111,7 +113,8 @@ namespace Launcher
             }
             catch (EndOfStreamException ex)
             {
-                MessageBox.Show("读取更新列表错误");
+
+                ShowMessage("读取更新列表错误");
                 Completed = true;
                 SaveError(ex.ToString());
             }
@@ -122,9 +125,12 @@ namespace Launcher
                 SaveError(ex.ToString());
             }
         }
+        //显示操作提醒
+        private void ShowMessage(string msg)
+        {
+            MessageBox.Show(msg, "提示", MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+        }
 
-        
-       
 
         //开始下载所有的文件
         private void DownloadAll()
@@ -441,21 +447,25 @@ namespace Launcher
         {
             if (!Completed)
             {
-                MessageBox.Show("正在进行客户端更新，请等待更新完成后再进入游戏.", "等待更新.");
+                ShowMessage("正在进行客户端更新，请等待更新完成后再进入游戏.");
                 return;
             }
             //判断是否有选择分区
             if (treeView1.SelectedNode == null)
             {
-                MessageBox.Show("请选择游戏分区.", "操作提醒.");
+                ShowMessage("请选择游戏分区.");
                 return;
             }
             ServerInfo si = (ServerInfo)treeView1.SelectedNode.Tag;
             if (!si.isGameServer())
             {
-                MessageBox.Show("请选择具体的游戏分区.", "操作提醒.");
+                ShowMessage("请选择具体的游戏分区.");
                 return;
             }
+            //设置服务器信息
+            Settings.serverIp = si.sip;
+            Settings.serverName = si.sname;
+            Settings.serverPort = si.Port;
             Launch();
         }
         //开始游戏
@@ -649,7 +659,7 @@ namespace Launcher
                     if (CleanFiles)
                     {
                         CleanFiles = false;
-                        MessageBox.Show("你的客户端已清理.", "清理文件");
+                        ShowMessage("你的客户端已清理.");
                     }
 
                     if (Restart)

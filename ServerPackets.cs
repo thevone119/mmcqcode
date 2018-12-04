@@ -124,6 +124,7 @@ namespace ServerPackets
             writer.Write(Result);
         }
     }
+
     //修改密码
     public sealed class ChangePassword : Packet
     {
@@ -234,12 +235,12 @@ namespace ServerPackets
             get { return (short)ServerPacketIds.LoginSuccess; }
         }
 
+
         public List<SelectInfo> Characters = new List<SelectInfo>();
 
         protected override void ReadPacket(BinaryReader reader)
         {
             int count = reader.ReadInt32();
-
             for (int i = 0; i < count; i++)
                 Characters.Add(new SelectInfo(reader));
         }
@@ -247,7 +248,6 @@ namespace ServerPackets
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(Characters.Count);
-
             for (int i = 0; i < Characters.Count; i++)
                 Characters[i].Save(writer);
         }
@@ -278,6 +278,56 @@ namespace ServerPackets
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(Result);
+        }
+    }
+    //返回充值链接
+    public sealed class RechargeLink : Packet
+    {
+        public override short Index { get { return (short)ServerPacketIds.RechargeLink; } }
+        public long orderid;
+        public uint money = 10;//当前选择的金额
+        public byte payType = 1;//支付方式1：支付宝；2：微信支付 
+        public string ret_Link;//信息支付2维码的信息
+        public string query_Link;//查询结果的url，客户端自行循环查询结果，查询到结果，通知服务器，服务器再次发起查询确认支付结果
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            orderid = reader.ReadInt64();
+            payType = reader.ReadByte();
+            money = reader.ReadUInt32();
+            ret_Link = reader.ReadString();
+            query_Link = reader.ReadString();
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(orderid);
+            writer.Write(payType);
+            writer.Write(money);
+            writer.Write(ret_Link);
+            writer.Write(query_Link);
+        }
+    }
+    //返回充值结果
+    public sealed class RechargeResult : Packet
+    {
+        public override short Index { get { return (short)ServerPacketIds.RechargeResult; } }
+
+        public byte pay_state;//1：支付成功，2：支付失败
+        public uint money = 0;//当前选择的金额
+        public uint addCredit = 0;//当前选择的金额
+        
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            pay_state = reader.ReadByte();
+            money = reader.ReadUInt32();
+            addCredit = reader.ReadUInt32();
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(pay_state);
+            writer.Write(money);
+            writer.Write(addCredit);
         }
     }
     //创建新角色成功
@@ -655,6 +705,33 @@ namespace ServerPackets
             writer.Write(CreatureSummoned);
         }
     }
+
+    //返回用户的金币，金币和元宝
+    //当前的金币，元宝
+    public sealed class UserGold : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.UserGold; }
+        }
+
+        public uint Gold;//金币,金币是账号上的金币，多角色共享
+        public uint Credit;//积分，信用,也可称作元宝
+
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            Gold = reader.ReadUInt32();
+            Credit = reader.ReadUInt32();
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(Gold);
+            writer.Write(Credit);
+        }
+    }
+
     //返回用户位置？
     public sealed class UserLocation : Packet
     {
@@ -826,7 +903,6 @@ namespace ServerPackets
         {
             writer.Write(ObjectID);
         }
-
     }
     //物品旋转？
     public sealed class ObjectTurn : Packet
@@ -1684,6 +1760,7 @@ namespace ServerPackets
 
         protected override void ReadPacket(BinaryReader reader)
         {
+
             int count = reader.ReadInt32();
 
             for (int i = 0; i < count; i++)
@@ -1692,6 +1769,7 @@ namespace ServerPackets
 
         protected override void WritePacket(BinaryWriter writer)
         {
+
             writer.Write(Characters.Count);
 
             for (int i = 0; i < Characters.Count; i++)

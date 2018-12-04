@@ -158,6 +158,7 @@ namespace Client.MirScenes
         public static bool PickedUpGold;
         public MirControl ItemLabel, MailLabel, MemoLabel, GuildBuffLabel;
         public static long UseItemTime, PickUpTime, DropViewTime, TargetDeadTime;
+        //金币数，元宝数
         public static uint Gold, Credit;
         public static long InspectTime;
         public bool ShowReviveMessage;

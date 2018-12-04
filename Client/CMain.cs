@@ -83,7 +83,7 @@ namespace Client
 
             //这句话会卡屏？神经咯。
             //this.ControlBox = true;
-            this.Text = "夜火传奇";
+            this.Text = Settings.serverName!=null? Settings.serverName:"夜火传奇";
             
         }
 
@@ -573,7 +573,7 @@ namespace Client
             location = new Point(-location.X, -location.Y);
 
             string text = string.Format("[{0}  {1}] {2} {3:hh\\:mm\\:ss}", 
-                Settings.P_ServerName.Length > 0 ? Settings.P_ServerName : "热血传奇", 
+                Settings.serverName.Length > 0 ? Settings.serverName : "热血传奇", 
                 MapControl.User != null ? MapControl.User.Name : "", 
                 Now.ToShortDateString(), 
                 Now.TimeOfDay);

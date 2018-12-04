@@ -35,7 +35,7 @@ namespace Client.MirScenes.Dialogs
         public MirImageControl ExperienceBar, WeightBar, LeftCap, RightCap;
         public MirButton GameShopButton, MenuButton, InventoryButton, CharacterButton, SkillButton, QuestButton, OptionButton;
         public MirControl HealthOrb;
-        public MirLabel HealthLabel, ManaLabel, TopLabel, BottomLabel, LevelLabel, CharacterName, ExperienceLabel, GoldLabel, WeightLabel, SpaceLabel, AModeLabel, PModeLabel, SModeLabel, PingLabel;
+        public MirLabel HealthLabel, ManaLabel, TopLabel, BottomLabel, LevelLabel, CharacterName, ExperienceLabel, GoldLabel, WeightLabel, SpaceLabel, AModeLabel, PModeLabel, SModeLabel, PingLabel, CreditLabel;
 
         public bool HPOnly
         {
@@ -306,7 +306,7 @@ namespace Client.MirScenes.Dialogs
             };
 
 
-
+            //隐藏这2个，加入元宝显示
             WeightBar = new MirImageControl
             {
                 Index = 76,
@@ -324,6 +324,18 @@ namespace Client.MirScenes.Dialogs
                 Location = new Point(this.Size.Width - 105, 101),
                 Size = new Size(40, 14),
             };
+            WeightBar.Visible = false;
+            WeightLabel.Visible = false;
+            //新加入元宝显示
+            CreditLabel = new MirLabel
+            {
+                Parent = this,
+                Location = new Point(this.Size.Width - 105, 101),
+                Size = new Size(100, 14),
+            };
+
+
+            
 
             SpaceLabel = new MirLabel
             {
@@ -462,6 +474,7 @@ namespace Client.MirScenes.Dialogs
             ExperienceLabel.Text = string.Format("{0:#0.##%}", User.Experience / (double)User.MaxExperience);
             ExperienceLabel.Location = new Point((ExperienceBar.Size.Width / 2) - 20, -10);
             GoldLabel.Text = GameScene.Gold.ToString("###,###,##0");
+            CreditLabel.Text= GameScene.Credit.ToString("###,###,##0");
             CharacterName.Text = User.Name;
             SpaceLabel.Text = User.Inventory.Count(t => t == null).ToString();
             WeightLabel.Text = (MapObject.User.MaxBagWeight - MapObject.User.CurrentBagWeight).ToString();
@@ -1407,7 +1420,7 @@ namespace Client.MirScenes.Dialogs
         public MirItemCell[] QuestGrid;
 
         public MirButton CloseButton, ItemButton, ItemButton2, QuestButton, AddButton;
-        public MirLabel GoldLabel, WeightLabel;
+        public MirLabel GoldLabel, WeightLabel, CreditLabel;
 
         public InventoryDialog()
         {
@@ -1505,6 +1518,8 @@ namespace Client.MirScenes.Dialogs
                 Size = new Size(111, 14),
                 Sound = SoundList.Gold,
             };
+            
+            
             GoldLabel.Click += (o, e) =>
             {
                 if (GameScene.SelectedCell == null)
@@ -1550,14 +1565,23 @@ namespace Client.MirScenes.Dialogs
                     };
                 }
             }
-
+            //把这2个隐藏掉，加入元宝显示
             WeightLabel = new MirLabel
             {
                 Parent = this,
                 Location = new Point(268, 212),
                 Size = new Size(26, 14)
             };
+            WeightLabel.Visible = false;
             WeightBar.BeforeDraw += WeightBar_BeforeDraw;
+            WeightBar.Visible = false;
+
+            CreditLabel = new MirLabel
+            {
+                Parent = this,
+                Location = new Point(182, 212),
+                Size = new Size(100, 14)
+            };
 
             for (int i = 0; i < LockBar.Length; i++)
             {
@@ -1693,6 +1717,7 @@ namespace Client.MirScenes.Dialogs
             WeightLabel.Text = GameScene.User.Inventory.Count(t => t == null).ToString();
             //WeightLabel.Text = (MapObject.User.MaxBagWeight - MapObject.User.CurrentBagWeight).ToString();
             GoldLabel.Text = GameScene.Gold.ToString("###,###,##0");
+            CreditLabel.Text = GameScene.Credit.ToString("###,###,##0");
         }
 
         public void Hide()

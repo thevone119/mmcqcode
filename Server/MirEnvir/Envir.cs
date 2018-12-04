@@ -347,6 +347,9 @@ namespace Server.MirEnvir
                             processTime = Time + 1000;
                         }
 
+                        //支付处理
+                        PayOrder.Process();
+
                         //网络处理，应该放到单独的网络处理线程里比较好？
                         if (conTime != Time)
                         {
@@ -512,7 +515,7 @@ namespace Server.MirEnvir
                     File.AppendAllText(@".\Error.txt",
                                            string.Format("[{0}] {1} at line {2}{3}", Now, ex, line, Environment.NewLine));
                 }
-
+                //结束前要保存数据
                 StopNetwork();
                 StopEnvir();
                 SaveAccounts();
@@ -801,6 +804,7 @@ namespace Server.MirEnvir
                 {
                     mail.SaveDB();
                 }
+                PayOrder.SaveAll();
             }
             catch (Exception ex)
             {
@@ -968,6 +972,8 @@ namespace Server.MirEnvir
                 //领地数据
                 ConquestInfos = ConquestInfo.loadAll();
 
+            
+
                 Settings.LinkGuildCreationItems(ItemInfoList);
             }
 
@@ -1013,6 +1019,10 @@ namespace Server.MirEnvir
                     }
                 }
                 if (ResetGS) ClearGameshopLog();
+
+                //加载支付数据
+                //支付数据
+                PayOrder.loadAll();
             }
         }
 
@@ -1397,9 +1407,12 @@ namespace Server.MirEnvir
             _thread.Start();
         }
 
+
         public void Stop()
         {
             Running = false;
+
+            //这里保存下数据才可以吧
 
             lock (_locker)
             {
@@ -1850,7 +1863,7 @@ namespace Server.MirEnvir
                 if (account.WrongPasswordCount++ >= 5)
                 {
                     account.Banned = true;
-                    account.BanReason = "Too many Wrong Login Attempts.";
+                    account.BanReason = "错误登录次数太多.";
                     account.ExpiryDate = DateTime.Now.AddMinutes(2);
 
                     c.Enqueue(new ServerPackets.LoginBanned
@@ -1881,7 +1894,8 @@ namespace Server.MirEnvir
             account.LastIP = c.IPAddress;
 
             SMain.Enqueue(account.Connection.SessionID + ", " + account.Connection.IPAddress + ", User logged in.");
-            c.Enqueue(new ServerPackets.LoginSuccess { Characters = account.GetSelectInfo() });
+            c.Enqueue(new ServerPackets.LoginSuccess { Characters = account.GetSelectInfo()});
+            
         }
         public void NewCharacter(ClientPackets.NewCharacter p, MirConnection c, bool IsGm)
         {

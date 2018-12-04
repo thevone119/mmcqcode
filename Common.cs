@@ -1541,7 +1541,13 @@ public enum ServerPacketIds : short
     ItemRentalPartnerLock,
     CanConfirmItemRental,
     ConfirmItemRental,
-    NewRecipeInfo
+    NewRecipeInfo,
+
+
+    RechargeLink,
+    RechargeResult,
+    UserGold
+
 }
 
 public enum ClientPacketIds : short
@@ -1685,7 +1691,10 @@ public enum ClientPacketIds : short
     CancelItemRental,
     ItemRentalLockFee,
     ItemRentalLockItem,
-    ConfirmItemRental
+    ConfirmItemRental,
+    RechargeCredit,
+    RefreshUserGold,
+    RechargeEnd
 }
 
 public enum ConquestType : byte
@@ -4066,6 +4075,13 @@ public abstract class Packet
                 return new C.ItemRentalLockItem();
             case (short)ClientPacketIds.ConfirmItemRental:
                 return new C.ConfirmItemRental();
+            case (short)ClientPacketIds.RefreshUserGold:
+                return new C.RefreshUserGold();
+            case (short)ClientPacketIds.RechargeCredit:
+                return new C.RechargeCredit();
+            case (short)ClientPacketIds.RechargeEnd:
+                return new C.RechargeEnd();
+
             default:
                 return null;
         }
@@ -4547,6 +4563,12 @@ public abstract class Packet
                 return new S.ConfirmItemRental();
             case (short)ServerPacketIds.NewRecipeInfo:
                 return new S.NewRecipeInfo();
+            case (short)ServerPacketIds.RechargeLink:
+                return new S.RechargeLink();
+            case (short)ServerPacketIds.RechargeResult:
+                return new S.RechargeResult();
+            case (short)ServerPacketIds.UserGold:
+                return new S.UserGold();
             default:
                 return null;
         }

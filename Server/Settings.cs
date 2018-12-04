@@ -54,6 +54,8 @@ namespace Server
 
         //Network
         public static string IPAddress = "127.0.0.1";
+        public static string PayUrl = "http://47.106.70.111:8090";
+        
 
         public static ushort Port = 7000,
                              TimeOut = 10000,//10秒超时？
@@ -290,6 +292,7 @@ namespace Server
             EnforceDBChecks = Reader.ReadBoolean("General", "EnforceDBChecks", EnforceDBChecks);
 
             //Paths
+            PayUrl = Reader.ReadString("Network", "PayUrl", PayUrl);
             IPAddress = Reader.ReadString("Network", "IPAddress", IPAddress);
             Port = Reader.ReadUInt16("Network", "Port", Port);
             TimeOut = Reader.ReadUInt16("Network", "TimeOut", TimeOut);
@@ -494,8 +497,9 @@ namespace Server
             Reader.Write("General", "RefreshDelay", RefreshDelay);
             Reader.Write("General", "TestServer", TestServer);
             Reader.Write("General", "EnforceDBChecks", EnforceDBChecks);
-            
+
             //Paths
+            Reader.Write("Network", "PayUrl", PayUrl);
             Reader.Write("Network", "IPAddress", IPAddress);
             Reader.Write("Network", "Port", Port);
             Reader.Write("Network", "TimeOut", TimeOut);

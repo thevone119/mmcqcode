@@ -171,6 +171,20 @@ namespace ClientPackets
             writer.Write(CharacterIndex);
         }
     }
+    //刷新用户的金币
+    public sealed class RefreshUserGold : Packet
+    {
+        public override short Index { get { return (short)ClientPacketIds.RefreshUserGold; } }
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+        }
+    }
+    
+
     public sealed class StartGame : Packet
     {
         public override short Index { get { return (short)ClientPacketIds.StartGame; } }
@@ -197,6 +211,44 @@ namespace ClientPackets
         {
         }
     }
+
+    //新加充值接口,充值元宝
+    public sealed class RechargeCredit : Packet
+    {
+        public override short Index { get { return (short)ClientPacketIds.RechargeCredit; } }
+
+        public byte pay_type;//1：支付宝；2：微信支付
+        public uint price;//充值金额(多少元)
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            pay_type = reader.ReadByte();
+            price = reader.ReadUInt32();
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(pay_type);
+            writer.Write(price);
+        }
+    }
+
+    //新加充值完成接口,告诉服务器已经完成充值
+    public sealed class RechargeEnd : Packet
+    {
+        public override short Index { get { return (short)ClientPacketIds.RechargeEnd; } }
+        public long oid;//订单ID
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            oid = reader.ReadInt64();
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(oid);
+        }
+    }
+
+
     public sealed class Turn : Packet
     {
         public override short Index { get { return (short)ClientPacketIds.Turn; } }

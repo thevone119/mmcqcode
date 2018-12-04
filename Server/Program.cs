@@ -16,6 +16,8 @@ namespace Server
 
             try
             {
+                //加大连接并发数
+                System.Net.ServicePointManager.DefaultConnectionLimit = 256;
                 Settings.Load();
                 //Resource.Load();
 

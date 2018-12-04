@@ -10,6 +10,8 @@ using Client.MirSounds;
 using C = ClientPackets;
 using S = ServerPackets;
 using System.Threading;
+using Client.MirScenes.Dialogs;
+
 namespace Client.MirScenes
 {
     public class SelectScene : MirScene
@@ -17,13 +19,21 @@ namespace Client.MirScenes
         public MirImageControl Background, Title;
         private NewCharacterDialog _character;
 
-        public MirLabel ServerLabel;
+        public MirLabel ServerLabel, GoldLabel, CreditLabel;
         public MirAnimatedControl CharacterDisplay;
-        public MirButton StartGameButton, NewCharacterButton, DeleteCharacterButton, CreditsButton, ExitGame;
+        public MirButton StartGameButton, NewCharacterButton, DeleteCharacterButton, CreditsButton, ExitGame,RechargeButton;
         public CharacterButton[] CharacterButtons;
         public MirLabel LastAccessLabel, LastAccessLabelLabel;
         public List<SelectInfo> Characters = new List<SelectInfo>();
+        public uint Gold;//金币,金币是账号上的金币，多角色共享
+        public uint Credit;//积分，信用,也可称作元宝
         private int _selected;
+        //充值
+        public MirMessageBox RechargeBox;
+        public RechargeDialog RechargeDialog;
+        public PayForm payForm;
+        //最后支付时间，没有成功前，不允许重复触发支付，间隔30秒
+        private long lastPayTime = 0;
 
         public SelectScene(List<SelectInfo> characters)
         {
@@ -56,9 +66,73 @@ namespace Client.MirScenes
                 Location = new Point(322, 44),
                 Parent = Background,
                 Size = new Size(155, 17),
-                Text = "Legend of Mir 2",
+                Text = Settings.serverName==null?"Legend of Mir 2": Settings.serverName,
                 DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
             };
+            //金币
+            GoldLabel = new MirLabel
+            {
+                Location = new Point(8, 48),
+                Parent = Background,
+                Size = new Size(175, 17),
+                Text = Gold.ToString("账号共享金币:###,###,##0"),
+                DrawFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter
+            };
+            //元宝
+            CreditLabel = new MirLabel
+            {
+                Location = new Point(8, 68),
+                Parent = Background,
+                Size = new Size(175, 17),
+                Text = Credit.ToString("账号共享元宝:###,###,##0"),
+                DrawFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter
+            };
+            //充值按钮
+            RechargeButton = new MirButton
+            {
+                Enabled = true,
+                HoverIndex = 383,
+                Index = 385,
+                PressedIndex = 384,
+                Size = new Size(25, 84),
+                Library = Libraries.Prguse2,
+                Location = new Point(8, 92),
+                Sound = SoundList.ButtonA,
+                Parent = Background,
+                Text = "账号充值",
+                CenterText = true,
+                GrayScale = true
+            };
+            RechargeButton.Click += (o, e) => {
+                
+                if (payForm != null)
+                {
+                    payForm.Close();
+                }
+                if (RechargeBox != null)
+                {
+                    RechargeBox.Dispose();
+                }
+                if (CMain.Time < lastPayTime)
+                {
+                    //创建支付
+                    if (RechargeBox == null || RechargeBox.IsDisposed)
+                    {
+                        RechargeBox = new MirMessageBox(string.Format("为避免重复充值，请在{0}秒后再进行充值操作.", ( lastPayTime- CMain.Time) /1000), MirMessageBoxButtons.OK);
+                    }
+                    RechargeBox.Visible = true;
+                    RechargeBox.Show();
+                    return;
+                }
+                
+                if (RechargeDialog == null|| RechargeDialog.IsDisposed)
+                {
+                    RechargeDialog = new RechargeDialog() { Parent = this };
+                }
+                RechargeDialog.Visible = true;
+                
+            };
+
 
             StartGameButton = new MirButton
             {
@@ -177,7 +251,6 @@ namespace Client.MirScenes
             CharacterButtons[2].Click += (o, e) =>
             {
                 if (characters.Count <= 2) return;
-
                 _selected = 2;
                 UpdateInterface();
             };
@@ -213,7 +286,10 @@ namespace Client.MirScenes
                 DrawFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter,
                 Border = true,
             };
+            RechargeBox = new MirMessageBox("正在创建支付订单二维码，请稍后.", MirMessageBoxButtons.OK);
             UpdateInterface();
+
+            Network.Enqueue(new C.RefreshUserGold());
         }
 
         private void SelectScene_KeyPress(object sender, KeyPressEventArgs e)
@@ -261,8 +337,22 @@ namespace Client.MirScenes
 
         public override void Process()
         {
-
-
+            GoldLabel.Text = Gold.ToString("账号共享金币:###,###,##0");
+            CreditLabel.Text = Credit.ToString("账号共享元宝:###,###,##0");
+            if (RechargeDialog.RechargeState == 1)//正在创建
+            {
+                RechargeDialog.RechargeState = 0;
+                //创建支付
+                if (RechargeBox==null || RechargeBox.IsDisposed)
+                {
+                    RechargeBox = new MirMessageBox("正在创建支付订单二维码，请稍后.", MirMessageBoxButtons.OK);
+                }
+                RechargeBox.Label.Text = "正在创建支付订单二维码，请稍后.";
+                RechargeBox.Visible = true;
+                RechargeBox.Show();
+                
+            }
+           
         }
         public override void ProcessPacket(Packet p)
         {
@@ -288,6 +378,52 @@ namespace Client.MirScenes
                     break;
                 case (short)ServerPacketIds.StartGameDelay:
                     StartGame((S.StartGameDelay)p);
+                    break;
+                case (short)ServerPacketIds.UserGold://刷新金币
+                    Gold = ((S.UserGold)p).Gold;
+                    Credit = ((S.UserGold)p).Credit;
+                    break;
+                case (short)ServerPacketIds.RechargeLink://返回支付链接
+                    lastPayTime = CMain.Time + 30 * 1000;
+                    if (RechargeBox != null)
+                    {
+                        RechargeBox.Visible = false;
+                        RechargeBox.Dispose();
+                    }
+                    if (RechargeDialog != null)
+                    {
+                        RechargeDialog.Dispose();
+                    }
+                    if (payForm != null)
+                    {
+                        payForm.Close();
+                        payForm = null;
+                    }
+                    S.RechargeLink rl = (S.RechargeLink)p;
+                    if (payForm == null|| payForm.IsDisposed)
+                    {
+                        payForm = new PayForm() {oid=rl.orderid,payType=rl.payType,money=rl.money, payurl=rl.ret_Link, query_Link=rl.query_Link };
+                        payForm.Show();
+                    }
+                    break;
+                case (short)ServerPacketIds.RechargeResult://返回支付成功
+                    lastPayTime = 0;
+                    if (payForm != null)
+                    {
+                        payForm.Close();
+                    }
+                    if (RechargeDialog != null)
+                    {
+                        RechargeDialog.Dispose();
+                    }
+
+                    if (RechargeBox == null || RechargeBox.IsDisposed)
+                    {
+                        RechargeBox = new MirMessageBox("充值完成，你的元宝已到账.", MirMessageBoxButtons.OK);
+                    }
+                    RechargeBox.Visible = true;
+                    RechargeBox.Label.Text = "充值成功，已到账元宝数："+ ((S.RechargeResult)p).addCredit;
+                    RechargeBox.Show();
                     break;
                 default:
                     base.ProcessPacket(p);
@@ -324,8 +460,6 @@ namespace Client.MirScenes
                     _character.NameTextBox.SetFocus();
                     break;
             }
-
-
         }
         private void NewCharacter(S.NewCharacterSuccess p)
         {

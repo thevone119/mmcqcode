@@ -73,8 +73,11 @@ namespace Client
 
         //Network
         public static bool UseConfig = false;
-        public static string IPAddress = "127.0.0.1";//61.177.74.230
-        public static int Port = 7000;
+        public static string serverIp;//服务器IP
+        public static int serverPort;//服务器端口
+        public static string serverName;//服务器名称
+        //public static string IPAddress = "127.0.0.1";//61.177.74.230
+        //public static int Port = 7000;
         public const int TimeOut = 5000;
 
         //Sound
@@ -168,7 +171,7 @@ namespace Client
         public static bool P_NeedLogin = false;//是否需要登录
         public static string P_Login = string.Empty;//登录账户
         public static string P_Password = string.Empty;//登录密码
-        public static string P_ServerName = string.Empty;//服务器的名称，后面不放在这里，通过选区读取
+        //public static string P_ServerName = string.Empty;//服务器的名称，后面不放在这里，通过选区读取
         public static string P_BrowserAddress = "https://launcher.mironline.co.uk/web/";
         public static string P_Client = Application.StartupPath + "\\";
         public static bool P_AutoStart = false;//更新完成后是否自动开始
@@ -190,8 +193,9 @@ namespace Client
             UseConfig = Reader.ReadBoolean("Network", "UseConfig", UseConfig);
             if (UseConfig)
             {
-                IPAddress = Reader.ReadString("Network", "IPAddress", IPAddress);
-                Port = Reader.ReadInt32("Network", "Port", Port);
+                serverIp = Reader.ReadString("Network", "serverIp", serverIp);
+                serverName = Reader.ReadString("Network", "serverName", serverName);
+                serverPort = Reader.ReadInt32("Network", "serverPort", serverPort);
             }
 
             //Logs
@@ -255,7 +259,7 @@ namespace Client
             P_Login = Reader.ReadString("Launcher", "Login", P_Login);
             P_Password = Reader.ReadString("Launcher", "Password", P_Password);
             P_AutoStart = Reader.ReadBoolean("Launcher", "AutoStart", P_AutoStart);
-            P_ServerName = Reader.ReadString("Launcher", "ServerName", P_ServerName);
+ 
             P_BrowserAddress = Reader.ReadString("Launcher", "Browser", P_BrowserAddress);
 
             if (!P_Host.EndsWith("/")) P_Host += "/";
@@ -327,7 +331,7 @@ namespace Client
             Reader.Write("Launcher", "NeedLogin", P_NeedLogin);
             Reader.Write("Launcher", "Login", P_Login);
             Reader.Write("Launcher", "Password", P_Password);
-            Reader.Write("Launcher", "ServerName", P_ServerName);
+
             Reader.Write("Launcher", "Browser", P_BrowserAddress);
             Reader.Write("Launcher", "AutoStart", P_AutoStart);
         }
