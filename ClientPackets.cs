@@ -2139,21 +2139,25 @@ namespace ClientPackets
         }
     }
     //商店买东西
+    //这里要扩展下，支持使用元宝购买还是使用金币购买
     public sealed class GameshopBuy : Packet
     {
         public override short Index { get { return (short)ClientPacketIds.GameshopBuy; } }
 
-        public int GIndex;
-        public byte Quantity;
+        public int GIndex;//商城物品ID
+        public byte payType;//支付类型 0：金币 1：元宝
+        public byte Quantity;//购买的数量
 
         protected override void ReadPacket(BinaryReader reader)
         {
             GIndex = reader.ReadInt32();
+            payType = reader.ReadByte();
             Quantity = reader.ReadByte();
         }
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(GIndex);
+            writer.Write(payType);
             writer.Write(Quantity);
         }
     }

@@ -13,18 +13,24 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    //游戏商城，这个要改。改元宝买东西，直接到背包
     public sealed class GameShopDialog : MirImageControl
     {
         public GameShopViewer Viewer;
         public MirLabel PageNumberLabel, totalGold, totalCredits;
+        //职业筛选
         public MirButton ALL, War, Sin, Tao, Wiz, Arch;
+        //热门，新品等
         public MirButton allItems, topItems, Deals, New;
+        //关闭，下一页，上一页
         public MirButton CloseButton, PreviousButton, NextButton;
+        //分类下拉滚动条
         public MirButton UpButton, DownButton, PositionBar;
 
 
         public GameShopCell[] Grid;
         public MirLabel[] Filters = new MirLabel[22];
+        //这个是分类
         List<String> CategoryList = new List<String>();
         List<GameShopItem> filteredShop = new List<GameShopItem>();
         List<GameShopItem> SearchResult = new List<GameShopItem>();
@@ -643,6 +649,10 @@ namespace Client.MirScenes.Dialogs
                 if (i < CategoryList.Count)
                 {
                     Filters[i].Text = CategoryList[i + CStartIndex];
+                    if(Filters[i].Text== "Show All")
+                    {
+                        Filters[i].Text = "所有";
+                    }
                     Filters[i].ForeColour = Filters[i].Text == TypeFilter ? Color.FromArgb(230, 200, 160) : Color.Gray;
                     Filters[i].NotControl = false;
                 }

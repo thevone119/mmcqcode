@@ -451,7 +451,7 @@ namespace Client.MirScenes.Dialogs
 
             if (sender == CreatureRenameButton)
             {
-                MirInputBox inputBox = new MirInputBox("Please enter a new name for the creature.");
+                MirInputBox inputBox = new MirInputBox("请输入该伙伴的新名称.");
                 inputBox.InputTextBox.Text = GameScene.User.IntelligentCreatures[selectedCreature].CustomName;
                 inputBox.OKButton.Click += (o1, e1) =>
                 {
@@ -489,12 +489,12 @@ namespace Client.MirScenes.Dialogs
             }
             if (sender == ReleaseButton)
             {
-                MirInputBox verificationBox = new MirInputBox("Please enter the creature's name for verification.");
+                MirInputBox verificationBox = new MirInputBox("请输入伙伴名称以进行验证.");
                 verificationBox.OKButton.Click += (o1, e1) =>
                 {
                     if (String.Compare(verificationBox.InputTextBox.Text, GameScene.User.IntelligentCreatures[selectedCreature].CustomName, StringComparison.OrdinalIgnoreCase) != 0)
                     {
-                        GameScene.Scene.ChatDialog.ReceiveChat("Verification Failed!!", ChatType.System);
+                        GameScene.Scene.ChatDialog.ReceiveChat("验证失败!!", ChatType.System);
                     }
                     else
                     {
@@ -817,7 +817,7 @@ namespace Client.MirScenes.Dialogs
 
             if (!GameScene.User.IntelligentCreatures.Any())
             {
-                MirMessageBox messageBox = new MirMessageBox("You do not own any creatures.", MirMessageBoxButtons.OK);
+                MirMessageBox messageBox = new MirMessageBox("您还没有伙伴.", MirMessageBoxButtons.OK);
                 messageBox.Show();
                 return;
             }

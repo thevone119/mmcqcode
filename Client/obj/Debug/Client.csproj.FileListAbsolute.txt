@@ -9,5 +9,4 @@ D:\c_work\mir2-master\Client\obj\Debug\Client.csproj.GenerateResource.Cache
 D:\c_work\mir2-master\Client\obj\Debug\Client.exe
 D:\c_work\mir2-master\Client\obj\Debug\Client.pdb
 D:\c_work\mir2-master\Client\obj\Debug\Client.Test.resources
-D:\c_work\mir2-master\Client\obj\Debug\Client.csprojResolveAssemblyReference.cache
 D:\c_work\mir2-master\Client\obj\Debug\Client.PayForm.resources

@@ -74,7 +74,9 @@ namespace Server
                            AllowCreateAssassin = true,
                            AllowCreateArcher = true;
 
-        public static int AllowedResolution = 1024;
+        //这个是客户端允许的最大分辨率
+        //1024,1280,1366
+        public static int AllowedResolution = 1366;
 
         //Optional
         public static bool SafeZoneBorder = false,

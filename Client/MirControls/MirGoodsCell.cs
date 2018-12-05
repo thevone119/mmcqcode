@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace Client.MirControls
 {
+    //食谱
     public sealed class MirGoodsCell : MirControl
     {
         //public ItemInfo Item;
@@ -59,19 +60,19 @@ namespace Client.MirControls
             if (usePearls)//pearl currency
             {
                 if (Item.Price() > 1)
-                    PriceLabel.Text = string.Format("Price: {0} pearls", (uint)(Item.Price() * GameScene.NPCRate));
+                    PriceLabel.Text = LanguageUtils.Format("Price: {0} pearls", (uint)(Item.Price() * GameScene.NPCRate));
                 else
-                    PriceLabel.Text = string.Format("Price: {0} pearl", (uint)(Item.Price() * GameScene.NPCRate));
+                    PriceLabel.Text = LanguageUtils.Format("Price: {0} pearl", (uint)(Item.Price() * GameScene.NPCRate));
             }
             else
             {
                 if (Recipe)
                 {
-                    PriceLabel.Text = string.Format("Craftable Item");
+                    PriceLabel.Text = LanguageUtils.Format("Craftable Item");
                 }
                 else
                 {
-                    PriceLabel.Text = string.Format("Price: {0} gold", (uint)(Item.Price() * GameScene.NPCRate));
+                    PriceLabel.Text = string.Format("价格: {0} 金币", (uint)(Item.Price() * GameScene.NPCRate));
                 }
             }
         }

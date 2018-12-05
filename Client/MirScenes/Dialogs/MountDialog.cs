@@ -256,7 +256,7 @@ namespace Client.MirScenes.Dialogs
             if (Visible) return;
             if (GameScene.User.MountType < 0)
             {
-                MirMessageBox messageBox = new MirMessageBox("You do not own a mount.", MirMessageBoxButtons.OK);
+                MirMessageBox messageBox = new MirMessageBox("你没有装备坐骑.", MirMessageBoxButtons.OK);
                 messageBox.Show();
                 return;
             }

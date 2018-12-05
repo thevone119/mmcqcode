@@ -2689,21 +2689,24 @@ public class RentalInformation
 /// </summary>
 public class GameShopItem
 {
-    public int ItemIndex;
-    public int GIndex;
+    public int ItemIndex;//物品ID
+    public int GIndex;//商品ID
     [JsonIgnore]
-    public ItemInfo Info;
-    public uint GoldPrice = 0;
-    public uint CreditPrice = 0;
-    public uint Count = 1;
-    public string Class = "";
-    public string Category = "";
-    public int Stock = 0;
-    public bool iStock = false;
-    public bool Deal = false;
-    public bool TopItem = false;
-    public DateTime Date;
-    
+    public ItemInfo Info;//物品实体
+    public uint GoldPrice = 0;//金币价格
+    public uint CreditPrice = 0;//元宝价格
+    public uint Count = 1;//这个是商品保护物品的数量，不是购买数量哦,本身包含的物品数量
+    public string Class = "";//职业
+    public string Category = "";//分类，药水，毒符，坐骑，时装等
+    public int Stock = 0;//库存，0代表无限库存
+    public bool iStock = false;//是否内部库存，如果是内部库存的意思是限制每个角色只能买多少个，否则是所有人的库存
+    public bool Deal = false;//推荐
+    public bool TopItem = false;//热销
+    public DateTime Date;//判断新品
+
+    public byte acceptType = 0;//接收类型0：默认（背包接收） 1：邮件接收
+
+
     public GameShopItem()
     {
 
@@ -2807,6 +2810,8 @@ public class GameShopItem
             obj.Deal = read.GetBoolean(read.GetOrdinal("Deal"));
             obj.TopItem = read.GetBoolean(read.GetOrdinal("TopItem"));
             obj.Date = read.GetDateTime(read.GetOrdinal("endDate"));
+            obj.acceptType= read.GetByte(read.GetOrdinal("acceptType"));
+            
             DBObjectUtils.updateObjState(obj, obj.GIndex);
             list.Add(obj);
         }
@@ -2836,7 +2841,7 @@ public class GameShopItem
         lp.Add(new SQLiteParameter("Deal", Deal));
         lp.Add(new SQLiteParameter("TopItem", TopItem));
         lp.Add(new SQLiteParameter("endDate", Date));
-
+        lp.Add(new SQLiteParameter("acceptType", acceptType));
         //新增
         if (state == 1)
         {
@@ -5720,11 +5725,7 @@ public class ClientRecipeInfo
     }
 }
 
-//玩家职业，比如对职业名称进行转换
-public class PlayerClass
-{
-    
-}
+
 
 //针对各种定义的名字进行转换处理
 public class NameChange
@@ -5770,7 +5771,28 @@ public class NameChange
         return "无";
     }
 
-   
+    public static string getMirClass(MirClass clas)
+    {
+        //List<object> clist = new List<object>();
+        switch (clas)
+        {
+            case MirClass.Warrior:
+                return "战士";
+            case MirClass.Wizard:
+                return "法师";
+            case MirClass.Taoist:
+                return "道士";
+            case MirClass.Assassin:
+                return "刺客";
+            case MirClass.Archer:
+                return "弓箭手";
+            case MirClass.Monk:
+                return "武僧";
+        }
+        return "无";
+    }
+
+
 }
 
 

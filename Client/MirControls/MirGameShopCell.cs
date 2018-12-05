@@ -11,12 +11,14 @@ using C = ClientPackets;
 
 namespace Client.MirControls
 {
+    //这个是商城中的某个物品格子的显示
     public sealed class GameShopCell : MirImageControl
     {
         public MirLabel nameLabel, typeLabel, goldLabel, gpLabel, stockLabel, StockLabel, countLabel;
         public GameShopItem Item;
         public UserItem ShowItem;
         Rectangle ItemDisplayArea;
+        //购买，查看
         public MirButton BuyItem, PreviewItem;
         public MirImageControl ViewerBackground;
         public byte Quantity = 1;
@@ -74,14 +76,14 @@ namespace Client.MirControls
                 NotControl = true,
                 ForeColour = Color.Gray,
                 Font = new Font(Settings.FontName, 7F),
-                Text = "STOCK:"
+                Text = "库存:"
             };
 
             stockLabel = new MirLabel
             {
                 Size = new Size(20, 20),
                 DrawFormat = TextFormatFlags.HorizontalCenter,
-                Location = new Point(93, 37),
+                Location = new Point(83, 37),
                 Parent = this,
                 NotControl = true,
                 Font = new Font(Settings.FontName, 7F),
@@ -191,42 +193,17 @@ namespace Client.MirControls
 
         }
 
+        //商城购买物品
         public void BuyProduct()
         {
             uint CreditCost;
             uint GoldCost;
-            MirMessageBox messageBox;
+            //byte payType;//支付类型 0：金币 1：元宝
+            MirMessageBox2 messageBox = new MirMessageBox2(LanguageUtils.Format("请选择购买{1} x {0} 使用的购买货币", Item.Info.FriendlyName, Quantity), MirMessageBoxButtons.YesNoCancel) { YesText="金币购买",NoText="元宝购买"}; 
 
-            if (Item.CreditPrice * Quantity <= GameScene.Credit)
-            {
-                CreditCost = Item.CreditPrice * Quantity;
-                messageBox = new MirMessageBox(LanguageUtils.Format("Are you sure would you like to buy {1} x {0}({3}) for {2} Credits?", Item.Info.FriendlyName, Quantity, CreditCost, Item.Count), MirMessageBoxButtons.YesNo);
-            }
-            else
-            { //Needs to attempt to pay with gold and credits
-                if (GameScene.Gold >= (((Item.GoldPrice * Quantity) / (Item.CreditPrice * Quantity)) * ((Item.CreditPrice * Quantity) - GameScene.Credit)))
-                {
-                    GoldCost = ((Item.GoldPrice * Quantity) / (Item.CreditPrice * Quantity)) * ((Item.CreditPrice * Quantity) - GameScene.Credit);
-                    CreditCost = GameScene.Credit;
-                    if (CreditCost == 0)
-                    {
-                        messageBox = new MirMessageBox(LanguageUtils.Format("Are you sure would you like to buy {1} x {0}({3}) for {2} Gold?", Item.Info.FriendlyName, Quantity, GoldCost, Item.Count), MirMessageBoxButtons.YesNo);
-                    }
-                    else
-                    {
-                        messageBox = new MirMessageBox(LanguageUtils.Format("Are you sure would you like to buy {1} x {0}({4}) for {2} Credit and {3} Gold?", Item.Info.FriendlyName, Quantity, CreditCost, GoldCost, Item.Count), MirMessageBoxButtons.YesNo);
-                    }
-                }
-                else
-                {
-                    GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("You can't afford the selected item."), ChatType.System);
-                    return;
-                }
-
-            }
-
-            messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.GameshopBuy { GIndex = Item.GIndex, Quantity = Quantity });
-            messageBox.NoButton.Click += (o, e) => { };
+            messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.GameshopBuy { GIndex = Item.GIndex, payType = 0, Quantity = Quantity });
+            messageBox.NoButton.Click += (o, e) => Network.Enqueue(new C.GameshopBuy { GIndex = Item.GIndex, payType = 1, Quantity = Quantity });
+            messageBox.CancelButton.Click += (o, e) => { };
             messageBox.Show();
         }
 

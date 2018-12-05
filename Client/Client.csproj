@@ -182,6 +182,7 @@
     <Compile Include="MirControls\MirInputBox.cs" />
     <Compile Include="MirControls\MirItemCell.cs" />
     <Compile Include="MirControls\MirLabel.cs" />
+    <Compile Include="MirControls\MirMessageBox2.cs" />
     <Compile Include="MirControls\MirMessageBox.cs" />
     <Compile Include="MirControls\MirScene.cs" />
     <Compile Include="MirControls\MirScrollingLabel.cs" />

@@ -1096,13 +1096,13 @@ namespace Client.MirScenes.Dialogs
                     {
                         if (BuffInfo.LevelRequirement > GameScene.Scene.GuildDialog.Level)
                         {
-                            Buffs[i].Info.Text = "Insufficient Level";
+                            Buffs[i].Info.Text = LanguageUtils.Format("Insufficient Level");
                             Buffs[i].Info.ForeColour = Color.Red;
                             Buffs[i].Icon.Index += 2;
                         }
                         else
                         {
-                            Buffs[i].Info.Text = "Available";
+                            Buffs[i].Info.Text = LanguageUtils.Format("Available");
                             Buffs[i].Info.ForeColour = Buffs[i].Name.ForeColour;
                             Buffs[i].Icon.Index += 2;
                         }
@@ -1113,20 +1113,20 @@ namespace Client.MirScenes.Dialogs
                         if (BuffInfo.TimeLimit > 0)
                         {
                             if (Buff.Active)
-                                Buffs[i].Info.Text = "Counting down.";
+                                Buffs[i].Info.Text = LanguageUtils.Format("Counting down.");
                             else
-                                Buffs[i].Info.Text = "Expired.";
+                                Buffs[i].Info.Text = LanguageUtils.Format("Expired.");
                         }
                         else
-                            Buffs[i].Info.Text = "Obtained.";
+                            Buffs[i].Info.Text = LanguageUtils.Format("Obtained.");
                         Buffs[i].Info.ForeColour = Buffs[i].Name.ForeColour;
                         if (Buff.Active)
                         {
-                            Buffs[i].Obtained.Text = "Active";
+                            Buffs[i].Obtained.Text = LanguageUtils.Format("Active");
                             Buffs[i].Icon.Index += 1;
                         }
                         else
-                            Buffs[i].Obtained.Text = "Inactive";
+                            Buffs[i].Obtained.Text = LanguageUtils.Format("Inactive");
                     }
                 }
             }
@@ -1315,17 +1315,17 @@ namespace Client.MirScenes.Dialogs
             string ReqText = "";
             if (Buff.LevelRequirement > 0)
             {
-                ReqText += "Minimum Guild Level: " + Buff.LevelRequirement.ToString();
+                ReqText += LanguageUtils.Format("Minimum Guild Level: ") + Buff.LevelRequirement.ToString();
             }
             if (Buff.PointsRequirement > 0)
             {
                 if (ReqText != "") ReqText += "\n";
-                ReqText += "Points Required: " + Buff.PointsRequirement.ToString();
+                ReqText += LanguageUtils.Format("Points Required: ") + Buff.PointsRequirement.ToString();
             }
             if (Buff.ActivationCost > 0)
             {
                 if (ReqText != "") ReqText += "\n";
-                ReqText += "Activation Cost: " + Buff.ActivationCost.ToString() + " gold.";
+                ReqText += LanguageUtils.Format("Activation Cost: ") + Buff.ActivationCost.ToString() + " 金币.";
                 //if (ReqText != "") ReqText += "\n";
             }
 
@@ -1730,19 +1730,19 @@ namespace Client.MirScenes.Dialogs
                         TimeSpan Diff = now - Ranks[i].Members[j].LastLogin.ToLocalTime();
                         string text;
                         if (Ranks[i].Members[j].Online)
-                            text = "Online";
+                            text = "在线";
                         else
                         {
                             switch (Diff.Days)
                             {
                                 case 0:
-                                    text = "Today";
+                                    text = "今天";
                                     break;
                                 case 1:
-                                    text = "Yesterday";
+                                    text = "昨天";
                                     break;
                                 default:
-                                    text = Diff.Days + "Days ago";
+                                    text = Diff.Days + "天前";
                                     break;
                             }
                         }
@@ -2268,7 +2268,7 @@ namespace Client.MirScenes.Dialogs
 
             if (MapControl.User.GuildName == "")
             {
-                MirMessageBox messageBox = new MirMessageBox("You are not in a guild.", MirMessageBoxButtons.OK);
+                MirMessageBox messageBox = new MirMessageBox("你还没有行会.", MirMessageBoxButtons.OK);
                 messageBox.Show();
                 return;
             }

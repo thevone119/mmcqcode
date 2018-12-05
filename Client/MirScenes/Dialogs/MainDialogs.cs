@@ -471,7 +471,7 @@ namespace Client.MirScenes.Dialogs
             }
 
             LevelLabel.Text = User.Level.ToString();
-            ExperienceLabel.Text = string.Format("{0:#0.##%}", User.Experience / (double)User.MaxExperience);
+            ExperienceLabel.Text = string.Format("{0}/{1}({2:#0.##%})", User.Experience, User.MaxExperience,User.Experience / (double)User.MaxExperience);
             ExperienceLabel.Location = new Point((ExperienceBar.Size.Width / 2) - 20, -10);
             GoldLabel.Text = GameScene.Gold.ToString("###,###,##0");
             CreditLabel.Text= GameScene.Credit.ToString("###,###,##0");
@@ -2323,7 +2323,18 @@ namespace Client.MirScenes.Dialogs
             };
             StatePage.BeforeDraw += (o, e) =>
             {
-                ExpPLabel.Text = string.Format("{0:0.##%}", MapObject.User.Experience / (double)MapObject.User.MaxExperience);
+                //经验显示更改
+                string Expstr = "";
+                if (MapObject.User.MaxExperience > 10000)
+                {
+                    Expstr += MapObject.User.Experience / 10000 + "万/" + MapObject.User.MaxExperience / 1000 + "万";
+                }
+                else
+                {
+                    Expstr += MapObject.User.Experience+ "/" + MapObject.User.MaxExperience  + "";
+                }
+                Expstr += string.Format("({0:0.##%})", MapObject.User.Experience / (double)MapObject.User.MaxExperience);
+                ExpPLabel.Text = Expstr;
                 BagWLabel.Text = string.Format("{0}/{1}", MapObject.User.CurrentBagWeight, MapObject.User.MaxBagWeight);
                 WearWLabel.Text = string.Format("{0}/{1}", MapObject.User.CurrentWearWeight, MapObject.User.MaxWearWeight);
                 HandWLabel.Text = string.Format("{0}/{1}", MapObject.User.CurrentHandWeight, MapObject.User.MaxHandWeight);

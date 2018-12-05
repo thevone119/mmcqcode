@@ -14091,6 +14091,7 @@ namespace Server.MirObjects
             player.Enqueue(new S.ObjectHealth { ObjectID = ObjectID, HP = this.HP,MaxHP=this.MaxHP, Expire = time });
         }
 
+        //这里是发送给客户端的文字消息，这个可以做拦截转意处理
         public override void ReceiveChat(string text, ChatType type)
         {
             Enqueue(new S.Chat { Message = text, Type = type });
@@ -14328,6 +14329,7 @@ namespace Server.MirObjects
             CallDefaultNPC(DefaultNPCType.TalkMonster, talkMonster.Info.Name);
         }
 
+        //购买物品
         public void BuyItem(ulong index, uint count, PanelType type)
         {
             if (Dead) return;
@@ -19327,14 +19329,14 @@ namespace Server.MirObjects
 
             if (!accept)
             {
-                MentorRequest.ReceiveChat(string.Format("{0} has refused to Mentor you.", Info.Name), ChatType.System);
+                MentorRequest.ReceiveChat(string.Format("{0} 拒绝做你师傅.", Info.Name), ChatType.System);
                 MentorRequest = null;
                 return;
             }
 
             if (Info.Mentor != 0)
             {
-                ReceiveChat("You already have a Student.", ChatType.System);
+                ReceiveChat("你已经有了一个徒弟.", ChatType.System);
                 return;
             }
 
@@ -19343,24 +19345,24 @@ namespace Server.MirObjects
 
             if (Student == null)
             {
-                ReceiveChat(String.Format("{0} is no longer online.", Student.Name), ChatType.System);
+                ReceiveChat(String.Format("{0} 不在线.", Student.Name), ChatType.System);
                 return;
             }
             else
             {
                 if (Student.Info.Mentor != 0)
                 {
-                    ReceiveChat(String.Format("{0} already has a Mentor.", Student.Info.Name), ChatType.System);
+                    ReceiveChat(String.Format("{0} 已经有师傅了.", Student.Info.Name), ChatType.System);
                     return;
                 }
                 if (Info.Class != Student.Info.Class)
                 {
-                    ReceiveChat("You can only mentor someone of the same Class.", ChatType.System);
+                    ReceiveChat("你只能指导同一个职业的人.", ChatType.System);
                     return;
                 }
                 if ((Info.Level - Settings.MentorLevelGap) < Student.Level)
                 {
-                    ReceiveChat(String.Format("You can only mentor someone who at least {0} level(s) below you.", Settings.MentorLevelGap), ChatType.System);
+                    ReceiveChat(String.Format("你只能指导比你低 {0} 级的人.", Settings.MentorLevelGap), ChatType.System);
                     return;
                 }
 
@@ -19371,8 +19373,8 @@ namespace Server.MirObjects
                 Student.Info.MentorDate = DateTime.Now;
                 Info.MentorDate = DateTime.Now;
 
-                ReceiveChat(String.Format("You're now the Mentor of {0}.", Student.Info.Name), ChatType.System);
-                Student.ReceiveChat(String.Format("You're now being Mentored by {0}.", Info.Name), ChatType.System);
+                ReceiveChat(String.Format("你现在是{0}师傅 .", Student.Info.Name), ChatType.System);
+                Student.ReceiveChat(String.Format("你现在正在被{0}指导 .", Info.Name), ChatType.System);
                 GetMentor(false);
                 Student.GetMentor(false);
             }
@@ -19398,7 +19400,7 @@ namespace Server.MirObjects
                     if (CheckOnline)
                     {
                         player.GetMentor(false);
-                        player.ReceiveChat(String.Format("{0} has come online.", Info.Name), ChatType.System);
+                        player.ReceiveChat(String.Format("{0} 已经在线.", Info.Name), ChatType.System);
                     }
                 }
             }
@@ -19426,24 +19428,26 @@ namespace Server.MirObjects
             if (player != null)
             {
                 player.Enqueue(new S.MentorUpdate { Name = Info.Name, Level = Info.Level, Online = false, MenteeEXP = Mentor.MentorExp });
-                player.ReceiveChat(String.Format("{0} has gone offline.", Info.Name), ChatType.System);
+                player.ReceiveChat(String.Format("{0} 已经下线.", Info.Name), ChatType.System);
             }
         }
 
         #endregion
 
         #region Gameshop
-
+        //刷新库存
         public void GameShopStock(GameShopItem item)
         {
+            //购买数
             int purchased;
+            //剩余
             int StockLevel;
 
-            if (item.iStock) //Invididual Stock
+            if (item.iStock) //Invididual Stock,角色的库存
             {
                 Info.GSpurchases.TryGetValue(item.Info.Index, out purchased);
             }
-            else //Server Stock
+            else //Server Stock，服务器的库存
             {
                 Envir.GameshopLog.TryGetValue(item.Info.Index, out purchased);
             }
@@ -19453,21 +19457,21 @@ namespace Server.MirObjects
                 StockLevel = item.Stock - purchased;
                 Enqueue(new S.GameShopStock { GIndex = item.Info.Index, StockLevel = StockLevel });
             }
-              
         }
-
-        public void GameshopBuy(int GIndex, byte Quantity)
+        //商城购买东西
+        public void GameshopBuy(int GIndex,byte payType, byte Quantity)
         {
             if (Quantity < 1 || Quantity > 99) return;
 
             List<GameShopItem> shopList = Envir.GameShopList;
             GameShopItem Product = null;
-            
             int purchased;
+            //库存是否足够
             bool stockAvailable = false;
+
             bool canAfford = false;
-            uint CreditCost =0;
-            uint GoldCost = 0;
+            uint CreditCost =0;//花费的元宝
+            uint GoldCost = 0;//花费的金币
 
             List<UserItem> mailItems = new List<UserItem>();
 
@@ -19486,7 +19490,7 @@ namespace Server.MirObjects
                 SMain.EnqueueDebugging(Info.Name + " 试图购买不存在的东西.");
                 return;
             }
-
+            //一次最多只能买5个
             if (((decimal)(Quantity * Product.Count) / Product.Info.StackSize) > 5) return;
 
             if (Product.Stock != 0)
@@ -19517,85 +19521,38 @@ namespace Server.MirObjects
             {
                 stockAvailable = true;
             }
-            
-            if (stockAvailable)
+            if (!stockAvailable)
             {
-                SMain.EnqueueDebugging(Info.Name + " is trying to buy " + Product.Info.FriendlyName + " x " + Quantity + " - Stock is available");
-                if (Product.CreditPrice * Quantity < Account.Credit)
+                return;
+            }
+
+
+            SMain.EnqueueDebugging(Info.Name + " is trying to buy " + Product.Info.FriendlyName + " x " + Quantity + " - Stock is available");
+            //金币购买
+            if (payType == 0)
+            {
+                GoldCost = Product.GoldPrice * Quantity;
+                if (Account.Gold >= GoldCost)
                 {
                     canAfford = true;
-                    CreditCost = (Product.CreditPrice * Quantity);
-                }
-                else
-                { //Needs to attempt to pay with gold and credits
-                    if (Account.Gold >= (((Product.GoldPrice * Quantity) / (Product.CreditPrice * Quantity)) * ((Product.CreditPrice * Quantity) - Account.Credit)))
-                    {
-                        GoldCost = ((Product.GoldPrice * Quantity) / (Product.CreditPrice * Quantity)) * ((Product.CreditPrice * Quantity) - Account.Credit);
-                        CreditCost = Account.Credit;
-                        canAfford = true;
-                    }
-                    else
-                    {
-
-                        ReceiveChat("你没有足够的货币购买.", ChatType.System);
-                        SMain.EnqueueDebugging(Info.Name + " is trying to buy " + Product.Info.FriendlyName + " x " + Quantity + " - not enough currency.");
-                        return;
-                    }
                 }
             }
-            else
+            if (payType == 1)
             {
+                CreditCost = Product.CreditPrice * Quantity;
+                if (Account.Credit >= CreditCost)
+                {
+                    canAfford = true;
+                }
+            }
+            if (!canAfford)
+            {
+                ReceiveChat("你没有足够的货币购买此商品.", ChatType.System);
+                SMain.EnqueueDebugging(Info.Name + " is trying to buy " + Product.Info.FriendlyName + " x " + Quantity + " - not enough currency.");
                 return;
             }
-
-            if (canAfford)
-            {
-                SMain.EnqueueDebugging(Info.Name + " is trying to buy " + Product.Info.FriendlyName + " x " + Quantity + " - Has enough currency.");
-                Account.Gold -= GoldCost;
-                Account.Credit -= CreditCost;
-
-                Report.GoldChanged("GameShop", GoldCost, true, Product.Info.FriendlyName);
-                Report.CreditChanged("GameShop", CreditCost, true, Product.Info.FriendlyName);
-
-                if (GoldCost != 0) Enqueue(new S.LoseGold { Gold = GoldCost });
-                if (CreditCost != 0) Enqueue(new S.LoseCredit { Credit = CreditCost });
-
-                int Purchased;
-
-                if (Product.iStock && Product.Stock != 0)
-                {
-                    Info.GSpurchases.TryGetValue(Product.Info.Index, out Purchased);
-                    if (Purchased == 0)
-                    {
-                        Info.GSpurchases[Product.GIndex] = Quantity;
-                    }
-                    else
-                    {
-                        Info.GSpurchases[Product.GIndex] += Quantity;
-                    }
-                }
-
-                Purchased = 0;
-
-                Envir.GameshopLog.TryGetValue(Product.Info.Index, out Purchased);
-                if (Purchased == 0)
-                {
-                    Envir.GameshopLog[Product.GIndex] = Quantity;
-                }
-                else
-                {
-                    Envir.GameshopLog[Product.GIndex] += Quantity;
-                }
-
-                if (Product.Stock != 0) GameShopStock(Product);
-            }
-            else
-            {
-                return;
-            }
-
-            Report.ItemGSBought("GameShop", Product, Quantity, CreditCost, GoldCost);
-
+            //创建物品，并判断背包空间是否充足
+            //物品合并，拆包等处理
             uint quantity = (Quantity * Product.Count);
 
             if (Product.Info.StackSize <= 1 || quantity == 1)
@@ -19609,6 +19566,7 @@ namespace Server.MirObjects
             }
             else
             {
+                //可能创建多个物品
                 while (quantity > 0)
                 {
                     UserItem mailItem = Product.Info.CreateFreshItem();
@@ -19620,23 +19578,81 @@ namespace Server.MirObjects
                         if (quantity == 0) break;
                     }
                     if (mailItem.Count == 0) break;
-
                     mailItems.Add(mailItem);
-
                 }
             }
-
-            MailInfo mail = new MailInfo(Info.Index)
+            //发到背包
+            if (Product.acceptType == 0)
+            {
+                if (!CanGainItems(mailItems.ToArray()))
+                {
+                    ReceiveChat("您的背包空间或负重不足，购买失败，请清空背包后再购买", ChatType.Hint);
+                    return;
+                }
+                foreach(UserItem item in mailItems)
+                {
+                    GainItem(item);
+                }
+            }
+            //发送邮件
+            if (Product.acceptType == 1)
+            {
+                MailInfo mail = new MailInfo(Info.Index)
                 {
                     MailID = (ulong)UniqueKeyHelper.UniqueNext(),
-                    Sender = "Gameshop",
-                    Message = "Thank you for your purchase from the Gameshop. Your item(s) are enclosed.",
+                    Sender = "商店",
+                    Message = "谢谢你从游戏商店购买商品，您的商品在附件上（邮件可去邮局收取）.",
                     Items = mailItems,
                 };
                 mail.Send();
 
-            SMain.EnqueueDebugging(Info.Name + " is trying to buy " + Product.Info.FriendlyName + " x " + Quantity + " - Purchases Sent!");
-            ReceiveChat("您的购买物品已发送到您的邮箱.", ChatType.Hint);
+                SMain.EnqueueDebugging(Info.Name + " is trying to buy " + Product.Info.FriendlyName + " x " + Quantity + " - Purchases Sent!");
+                ReceiveChat("您的购买物品已发送到您的邮箱.请注意查收", ChatType.Hint);
+            }
+
+
+            //足够支付
+            SMain.EnqueueDebugging(Info.Name + " is trying to buy " + Product.Info.FriendlyName + " x " + Quantity + " - Has enough currency.");
+            //从账户中扣取金额
+            Account.Gold -= GoldCost;
+            Account.Credit -= CreditCost;
+
+            Report.GoldChanged("GameShop", GoldCost, true, Product.Info.FriendlyName);
+            Report.CreditChanged("GameShop", CreditCost, true, Product.Info.FriendlyName);
+            //发送扣除金额
+            if (GoldCost != 0) Enqueue(new S.LoseGold { Gold = GoldCost });
+            if (CreditCost != 0) Enqueue(new S.LoseCredit { Credit = CreditCost });
+            //库存处理
+            int Purchased;
+            if (Product.iStock && Product.Stock != 0)
+            {
+                Info.GSpurchases.TryGetValue(Product.Info.Index, out Purchased);
+                if (Purchased == 0)
+                {
+                    Info.GSpurchases[Product.GIndex] = Quantity;
+                }
+                else
+                {
+                    Info.GSpurchases[Product.GIndex] += Quantity;
+                }
+            }
+
+            Purchased = 0;
+
+            Envir.GameshopLog.TryGetValue(Product.Info.Index, out Purchased);
+            if (Purchased == 0)
+            {
+                Envir.GameshopLog[Product.GIndex] = Quantity;
+            }
+            else
+            {
+                Envir.GameshopLog[Product.GIndex] += Quantity;
+            }
+
+            if (Product.Stock != 0) GameShopStock(Product);
+
+            Report.ItemGSBought("GameShop", Product, Quantity, CreditCost, GoldCost);
+
         }
             
         public void GetGameShop()
@@ -19717,11 +19733,11 @@ namespace Server.MirObjects
             LastRankRequest[RankType] = Envir.Time;
             if (RankType == 0)
             {
-                Enqueue(new S.Rankings { Listings = Envir.RankTop, RankType = RankType, MyRank = Info.Rank[0]});
+                Enqueue(new S.Rankings { Listings = Envir.RankTop, RankType = RankType });
             }
             else
             {
-                Enqueue(new S.Rankings { Listings = Envir.RankClass[RankType - 1], RankType = RankType, MyRank = (byte)Class == (RankType -1)?Info.Rank[1]: 0});
+                Enqueue(new S.Rankings { Listings = Envir.RankClass[RankType - 1], RankType = RankType });
             }
         }
 

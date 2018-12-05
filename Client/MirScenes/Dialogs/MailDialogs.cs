@@ -127,11 +127,11 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Location = new Point(75, 414),
                 Sound = SoundList.ButtonA,
-                Hint = "Send"
+                Hint = "发送"
             };
             SendButton.Click += (o, e) =>
                 {
-                    MirInputBox inputBox = new MirInputBox("Please enter the name of the person you would like to mail.");
+                    MirInputBox inputBox = new MirInputBox("请输入您要发送邮件的人的姓名.");
 
                     inputBox.OKButton.Click += (o1, e1) =>
                     {
@@ -153,7 +153,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Location = new Point(102, 414),
                 Sound = SoundList.ButtonA,
-                Hint = "Reply"
+                Hint = "回复"
             };
             ReplyButton.Click += (o, e) =>
             {
@@ -171,7 +171,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Location = new Point(129, 414),
                 Sound = SoundList.ButtonA,
-                Hint = "Read"
+                Hint = "读"
             };
             ReadButton.Click += (o, e) =>
             {
@@ -196,7 +196,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Location = new Point(156, 414),
                 Sound = SoundList.ButtonA,
-                Hint = "Delete"
+                Hint = "删除"
             };
             DeleteButton.Click += (o, e) =>
             {
@@ -204,7 +204,7 @@ namespace Client.MirScenes.Dialogs
 
                 if (SelectedMail.Items.Count > 0 || SelectedMail.Gold > 0)
                 {
-                    MirMessageBox messageBox = new MirMessageBox("This parcel contains items or gold. Are you sure you want to delete it?", MirMessageBoxButtons.YesNo);
+                    MirMessageBox messageBox = new MirMessageBox("这个邮件里有物品或金币。确实要删除它吗？", MirMessageBoxButtons.YesNo);
 
                     messageBox.YesButton.Click += (o1, e1) =>
                     {
@@ -242,7 +242,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Location = new Point(210, 414),
                 Sound = SoundList.ButtonA,
-                Hint = "Report Bug"
+                Hint = "报告错误"
             };
             #endregion
 

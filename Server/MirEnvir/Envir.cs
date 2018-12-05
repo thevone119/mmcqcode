@@ -96,6 +96,7 @@ namespace Server.MirEnvir
         public List<QuestInfo> QuestInfoList = new List<QuestInfo>();
         public List<GameShopItem> GameShopList = new List<GameShopItem>();
         public List<RecipeInfo> RecipeInfoList = new List<RecipeInfo>();//食物，目前没用吧
+        //这个是服务器的物品的库存
         public Dictionary<int, int> GameshopLog = new Dictionary<int, int>();
 
         //用户数据,这里的数据ID，全部都使用随机的整数ID，避免后续的合区等数据重复
@@ -702,6 +703,8 @@ namespace Server.MirEnvir
             {
                 rentalItemsTime = Time + Settings.Minute * 5;
                 ProcessRentedItems();
+                //这里放下刷新排行榜
+                LoadRank();
             }
 
         }

@@ -228,7 +228,7 @@ namespace Server.MirNetwork
                 if (!_sendList.TryDequeue(out p) || p == null) continue;
                 data.AddRange(p.GetPacketBytes());
             }
-
+            
             BeginSend(data);
         }
         //对数据包进行处理
@@ -1389,17 +1389,17 @@ namespace Server.MirNetwork
             {
                 Player.AllowMarriage = !Player.AllowMarriage;
                 if (Player.AllowMarriage)
-                    Player.ReceiveChat("You're now allowing marriage requests.", ChatType.Hint);
+                    Player.ReceiveChat("你现在允许结婚请求了.", ChatType.Hint);
                 else
-                    Player.ReceiveChat("You're now blocking marriage requests.", ChatType.Hint);
+                    Player.ReceiveChat("你现在拒绝结婚请求了.", ChatType.Hint);
             }
             else
             {
                 Player.AllowLoverRecall = !Player.AllowLoverRecall;
                 if (Player.AllowLoverRecall)
-                    Player.ReceiveChat("You're now allowing recall from lover.", ChatType.Hint);
+                    Player.ReceiveChat("你现在允许爱人离婚.", ChatType.Hint);
                 else
-                    Player.ReceiveChat("You're now blocking recall from lover.", ChatType.Hint);
+                    Player.ReceiveChat("你现在拒绝爱人离婚.", ChatType.Hint);
             }
         }
 
@@ -1437,9 +1437,9 @@ namespace Server.MirNetwork
 
                 Player.AllowMentor = !Player.AllowMentor;
                 if (Player.AllowMentor)
-                    Player.ReceiveChat("You're now allowing mentor requests.", ChatType.Hint);
+                    Player.ReceiveChat("你现在允许拜师.", ChatType.Hint);
                 else
-                    Player.ReceiveChat("You're now blocking mentor requests.", ChatType.Hint);
+                    Player.ReceiveChat("你现在拒绝拜师.", ChatType.Hint);
         }
 
         private void CancelMentor(C.CancelMentor p)
@@ -1539,7 +1539,7 @@ namespace Server.MirNetwork
                 return;
             }
 
-            Player.ReceiveChat("Reincarnation failed", ChatType.System);
+            Player.ReceiveChat("转世失败", ChatType.System);
         }
 
         private void CancelReincarnation()
@@ -1730,7 +1730,7 @@ namespace Server.MirNetwork
         private void GameshopBuy(C.GameshopBuy p)
         {
             if (Stage != GameStage.Game) return;
-            Player.GameshopBuy(p.GIndex, p.Quantity);
+            Player.GameshopBuy(p.GIndex,p.payType, p.Quantity);
         }
 
         private void NPCConfirmInput(C.NPCConfirmInput p)

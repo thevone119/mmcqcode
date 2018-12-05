@@ -8357,7 +8357,7 @@ namespace Client.MirScenes
 
         public void Rankings(S.Rankings p)
         {
-            RankingDialog.RecieveRanks(p.Listings, p.RankType, p.MyRank);
+            RankingDialog.RecieveRanks(p.Listings, p.RankType);
         }
 
         public void Opendoor(S.Opendoor p)

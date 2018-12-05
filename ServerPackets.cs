@@ -4506,7 +4506,7 @@ namespace ServerPackets
             writer.Write(StockLevel);
         }
     }
-
+    //刷新商品的库存
     public sealed class GameShopStock : Packet
     {
         public override short Index
@@ -5471,19 +5471,19 @@ namespace ServerPackets
             writer.Write(PageName);
         }
     }
-
+    //服务器返回的排行信息
     public sealed class Rankings : Packet
     {
         public override short Index { get { return (short)ServerPacketIds.Rankings; } }
 
         public byte RankType = 0;
-        public int MyRank = 0;
+        //public int MyRank = 0;//当前角色的排行，这个在客户端自己计算（服务器端不管这个了）
         public List<Rank_Character_Info> Listings = new List<Rank_Character_Info>();
 
         protected override void ReadPacket(BinaryReader reader)
         {
             RankType = reader.ReadByte();
-            MyRank = reader.ReadInt32();
+            //MyRank = reader.ReadInt32();
             int count = reader.ReadInt32();
             for (int i = 0; i < count; i++)
             {
@@ -5493,7 +5493,7 @@ namespace ServerPackets
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(RankType);
-            writer.Write(MyRank);
+            //writer.Write(MyRank);
             writer.Write(Listings.Count);
             for (int i = 0; i < Listings.Count; i++)
                 Listings[i].Save(writer);

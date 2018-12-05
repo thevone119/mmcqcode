@@ -107,8 +107,9 @@ namespace Server.MirDatabase
         [JsonIgnore]
         public MountInfo Mount;
 
-
+        //这个记录的是当前角色拥有某件物品的数量(主要是商城的中的物品)
         public Dictionary<int, int> GSpurchases = new Dictionary<int, int>();
+        //这个作废掉
         public int[] Rank = new int[2];//dont save this in db!(and dont send it to clients :p)
 
         public CharacterInfo()
@@ -282,17 +283,18 @@ namespace Server.MirDatabase
         
         /// <summary>
         /// 全职业的排行榜
-        /// 前10
+        /// 前20
         /// </summary>
         /// <returns></returns>
         public static List<Rank_Character_Info> getRankTop()
         {
             List<Rank_Character_Info> list = new List<Rank_Character_Info>();
-            DbDataReader read = MirRunDB.ExecuteReader("select * from CharacterInfo order by Level desc limit 10 ");
+            DbDataReader read = MirRunDB.ExecuteReader("select * from CharacterInfo order by Level desc limit 20 ");
             while (read.Read())
             {
                 Rank_Character_Info obj = new Rank_Character_Info();
                 obj.Class = (MirClass)read.GetInt16(read.GetOrdinal("Class"));
+                obj.level = read.GetInt32(read.GetOrdinal("level"));
                 obj.Name = read.GetString(read.GetOrdinal("Name"));
                 obj.PlayerId = (ulong)read.GetInt64(read.GetOrdinal("Idx"));
                 obj.Experience = (long)read.GetInt64(read.GetOrdinal("Experience"));
@@ -303,6 +305,7 @@ namespace Server.MirDatabase
 
         /// <summary>
         /// 5职业的排行榜
+        /// 前20
         /// </summary>
         /// <returns></returns>
         public static List<Rank_Character_Info>[] getRankClass()
@@ -310,11 +313,13 @@ namespace Server.MirDatabase
             List<Rank_Character_Info>[] list = new List<Rank_Character_Info>[5];
             for(int i = 0; i < 5; i++)
             {
-                DbDataReader read = MirRunDB.ExecuteReader("select * from CharacterInfo where class=@class order by Level desc  limit 10 ",new SQLiteParameter("class", i));
+                list[i] = new List<Rank_Character_Info>();
+                DbDataReader read = MirRunDB.ExecuteReader("select * from CharacterInfo where class=@class order by Level desc  limit 20 ",new SQLiteParameter("class", i));
                 while (read.Read())
                 {
                     Rank_Character_Info obj = new Rank_Character_Info();
                     obj.Class = (MirClass)read.GetInt16(read.GetOrdinal("Class"));
+                    obj.level= read.GetInt32(read.GetOrdinal("level"));
                     obj.Name = read.GetString(read.GetOrdinal("Name"));
                     obj.PlayerId = (ulong)read.GetInt64(read.GetOrdinal("Idx"));
                     obj.Experience = (long)read.GetInt64(read.GetOrdinal("Experience"));

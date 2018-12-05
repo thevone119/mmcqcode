@@ -54,7 +54,7 @@ namespace Client.MirScenes.Dialogs
                 PressedIndex = 752,
                 HoverIndex = 753,
                 Library = Libraries.Title,
-                Hint = LanguageUtils.Format("Overall TOP 20"),
+                Hint = LanguageUtils.Format("所有职业"),
                 Location = new Point(10, 38),
                 Parent = this,
                 Sound = SoundList.ButtonA,
@@ -226,11 +226,18 @@ namespace Client.MirScenes.Dialogs
             MirNetwork.Network.Enqueue(new ClientPackets.GetRanking { RankIndex = RankType});
         }
 
-        public void RecieveRanks(List<Rank_Character_Info> Ranking, byte rankType, int MyRank)
+        public void RecieveRanks(List<Rank_Character_Info> Ranking, byte rankType)
         {
             RankList[rankType].Clear();
             RankList[rankType] = Ranking;
-            Rank[rankType] = MyRank;
+            //循环计算我的榜单
+            for(int i=0;i< Ranking.Count; i++)
+            {
+                if(Ranking[i].PlayerId== GameScene.User.Id)
+                {
+                    Rank[rankType] = i+1;
+                }
+            }
             SelectRank(rankType);            
         }
 
@@ -330,7 +337,7 @@ namespace Client.MirScenes.Dialogs
                 Listing = listing;
                 RankLabel.Text = RankIndex.ToString();
                 LevelLabel.Text = Listing.level.ToString();
-                ClassLabel.Text = Listing.Class.ToString();
+                ClassLabel.Text = NameChange.getMirClass(Listing.Class);
                 NameLabel.Text = listing.Name;
                 Index = (long)listing.PlayerId;
                 if (RankLabel.Text == "1")

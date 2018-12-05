@@ -1193,7 +1193,7 @@ public class FileKVMap
 /// </summary>
 public class LanguageUtils
 {
-    private static FileKVMap fmap = new FileKVMap(@".\language.txt");
+    private static FileKVMap fmap = new FileKVMap(@".\config\language.txt");
 
     /// <summary>
     /// 替换string.Format的方法

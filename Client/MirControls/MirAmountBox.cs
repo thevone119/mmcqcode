@@ -6,6 +6,7 @@ using Client.MirSounds;
 
 namespace Client.MirControls
 {
+    //显示数量的格子
     public sealed class MirAmountBox : MirImageControl
     {
         public MirLabel TitleLabel, TextLabel;

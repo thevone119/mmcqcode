@@ -26,6 +26,7 @@ namespace Client.MirScenes.Dialogs
         public MirCheckBox ShowLevelBox, ExcuseShiftBox, ShowPingBox, ShowFashionBox;
         //职业
         public MirCheckBox SeptumBox, AutoFlamingBox, AutoShieldBox;
+        public MirLabel tx_df;//提醒自动毒符
         //保护
         public MirCheckBox OpenProtectBox;
       
@@ -239,6 +240,15 @@ namespace Client.MirScenes.Dialogs
             {
                 changeData();
             };
+            top += 30;
+            tx_df = new MirLabel
+            {
+                Text = "道士的符，毒可以放在包袱中，自动使用",
+                Parent = this,
+                Size = new Size(250, 17),
+                Location = new Point(left, top),
+                DrawFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter
+            };
             top = 70;
             OpenProtectBox = new MirCheckBox { Location = new Point(left, top), LabelText = "开启保护", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
             OpenProtectBox.Click += (o, e) =>
@@ -372,7 +382,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Size = new Size(150, 17),
                 Location = new Point(left, top),
-                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+                DrawFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter
             };
             top += 23;
             HP21 = new MirLabel
@@ -399,7 +409,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Size = new Size(150, 17),
                 Location = new Point(left, top),
-                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+                DrawFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter
             };
             
 
@@ -410,7 +420,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Size = new Size(30, 17),
                 Location = new Point(left, top),
-                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+                DrawFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter
             };
             top += 23;
             HP22 = new MirLabel
@@ -419,7 +429,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Size = new Size(30, 17),
                 Location = new Point(left, top),
-                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+                DrawFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter
             };
             top += 23;
             HP32 = new MirLabel
@@ -428,7 +438,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Size = new Size(30, 17),
                 Location = new Point(left, top),
-                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+                DrawFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter
             };
             top += 23;
             MP12 = new MirLabel
@@ -437,7 +447,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Size = new Size(30, 17),
                 Location = new Point(left, top),
-                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+                DrawFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter
             };
             #endregion
 
@@ -567,12 +577,13 @@ namespace Client.MirScenes.Dialogs
             }
         }
 
-        //是否显示基础按钮
+        //是否职业按钮
         private void TabVisible2(bool visible)
         {
             SeptumBox.Visible = visible;
             AutoFlamingBox.Visible = visible;
             AutoShieldBox.Visible = visible;
+            tx_df.Visible = visible;
             if (visible)
             {
                 ClassButton.Index = tabPressedIndex;

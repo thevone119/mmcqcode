@@ -149,7 +149,7 @@ namespace Client.MirScenes.Dialogs
             AddButton.Click += (o, e) =>
             {
                 ;
-                string message = LanguageUtils.Format("Please enter the name of the person you would like to {0}.", _blockedTab ? "block" : "add");
+                string message = LanguageUtils.Format("请输入好友名字");
 
                 MirInputBox inputBox = new MirInputBox(message);
 

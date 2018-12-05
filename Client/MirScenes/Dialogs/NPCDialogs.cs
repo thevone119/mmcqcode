@@ -1149,7 +1149,7 @@ namespace Client.MirScenes.Dialogs
                     default: return;
                 }
 
-                text += " Gold";
+                text += " 金币";
             }
 
             InfoLabel.Text = text;
