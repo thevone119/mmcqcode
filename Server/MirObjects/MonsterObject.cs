@@ -327,7 +327,7 @@ namespace Server.MirObjects
 
         public int RoutePoint;
         public bool Waiting;
-
+        //这个是怪物的奴隶
         public List<MonsterObject> SlaveList = new List<MonsterObject>();
         public List<RouteInfo> Route = new List<RouteInfo>();
 
@@ -783,57 +783,66 @@ namespace Server.MirObjects
             for (int i = 0; i < Info.Drops.Count; i++)
             {
                 DropInfo drop = Info.Drops[i];
+                float DropRate = 1;
+                float addGold = 0;
 
-                int rate = (int)(drop.Chance / (Settings.DropRate));
-
-                if (EXPOwner != null && EXPOwner.ItemDropRateOffset > 0)
-                    rate -= (int)(rate * (EXPOwner.ItemDropRateOffset / 100));
+                if (EXPOwner != null)
+                {
+                    if(EXPOwner.ItemDropRateOffset > 0)
+                    {
+                        DropRate = DropRate * (1 + EXPOwner.ItemDropRateOffset / 100);
+                    }
+                    if (EXPOwner.GoldDropRateOffset > 0)
+                    {
+                        addGold = drop.Gold * (EXPOwner.GoldDropRateOffset / 100);
+                    }
+                }
+              
                 
-                if (rate < 1) rate = 1;
-
-                if (RandomUtils.Next(rate) != 0) continue;
-
+                if (CurrentMap != null && CurrentMap.Info != null)
+                {
+                    DropRate = DropRate * CurrentMap.Info.DropRate;
+                }
+                if (!drop.isDrop(DropRate))
+                {
+                    continue;
+                }
+                //掉落金币
                 if (drop.Gold > 0)
                 {
-                    int lowerGoldRange = (int)(drop.Gold / 2);
-                    int upperGoldRange = (int)(drop.Gold + drop.Gold / 2);
-
-                    if (EXPOwner != null && EXPOwner.GoldDropRateOffset > 0)
-                        lowerGoldRange += (int)(lowerGoldRange * (EXPOwner.GoldDropRateOffset / 100));
-
-                    if (lowerGoldRange > upperGoldRange) lowerGoldRange = upperGoldRange;
-
-                    int gold = RandomUtils.Next(lowerGoldRange, upperGoldRange);
-
+                    uint gold = drop.DropGold(addGold);
                     if (gold <= 0) continue;
-
                     if (!DropGold((uint)gold)) return;
                 }
                 else
                 {
-                    if (drop.Item == null)
+                    //掉落物品
+                    List<ItemInfo> dropItems = drop.DropItems();
+                    if (dropItems == null || dropItems.Count==0)
                     {
                         continue;
                     }
-                    UserItem item = drop.Item.CreateDropItem();
-                    if (item == null) continue;
-
-                    if (EXPOwner != null && EXPOwner.Race == ObjectType.Player)
+                    foreach(ItemInfo ditem in dropItems)
                     {
-                        PlayerObject ob = (PlayerObject) EXPOwner;
-
-                        if (ob.CheckGroupQuestItem(item))
+                        UserItem item = ditem.CreateDropItem();
+                        if (item == null) continue;
+                        if (EXPOwner != null && EXPOwner.Race == ObjectType.Player)
                         {
-                            continue;
-                        }
-                    }
+                            PlayerObject ob = (PlayerObject)EXPOwner;
 
-                    if (drop.QuestRequired) continue;
-                    if (!DropItem(item)) return;
+                            if (ob.CheckGroupQuestItem(item))
+                            {
+                                continue;
+                            }
+                        }
+
+                        if (drop.QuestRequired) continue;
+                        if (!DropItem(item)) return;
+                    }
                 }
             }
         }
-
+        //掉落物品处理
         protected virtual bool DropItem(UserItem item)
         {
             if (CurrentMap.Info.NoDropMonster)
@@ -844,15 +853,14 @@ namespace Server.MirObjects
                 Owner = EXPOwner,
                 OwnerTime = Envir.Time + Settings.Minute,
             };
-
-            if (!item.Info.GlobalDropNotify)
-                return ob.Drop(Settings.DropRange);
-
-            foreach (var player in Envir.Players)
+            //如果物品需要通知，则发送通知
+            if (item.Info.GlobalDropNotify)
             {
-                player.ReceiveChat($"{Name} has dropped {item.FriendlyName}.", ChatType.System2);
+                foreach (var player in Envir.Players)
+                {
+                    player.ReceiveChat($"{Name} 掉落 {item.FriendlyName}，在{CurrentMap.Info.Title}", ChatType.System2);
+                }
             }
-
             return ob.Drop(Settings.DropRange);
         }
 

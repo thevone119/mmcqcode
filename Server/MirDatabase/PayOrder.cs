@@ -145,19 +145,19 @@ namespace Server.MirEnvir
                         {
                             if (p.price == 10)
                             {
-                                addCredit = 1100;
+                                addCredit = Globals.Recharge10;
                             }
                             if (p.price == 20)
                             {
-                                addCredit = 2300;
+                                addCredit = Globals.Recharge20;
                             }
                             if (p.price == 50)
                             {
-                                addCredit = 6000;
+                                addCredit = Globals.Recharge50;
                             }
                             if (p.price == 100)
                             {
-                                addCredit = 13000;
+                                addCredit = Globals.Recharge100;
                             }
                             if (addCredit > 0)
                             {

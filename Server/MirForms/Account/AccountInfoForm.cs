@@ -424,7 +424,7 @@ namespace Server
                     account.Characters.Clear();
                 }
 
-                SMain.Envir.Auctions.Clear();
+
                 SMain.Envir.GuildList.Clear();
 
                 MessageBox.Show("All characters and associated data has been cleared", "Notice",

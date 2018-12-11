@@ -6,10 +6,13 @@ using System.Text.RegularExpressions;
 
 namespace Server.MirObjects
 {
+    //每个[]都是一个Page
     public class NPCPage
     {
+        //这个是[@MAIN]之类的[@MAIN]
         public string Key;
         public List<NPCSegment> SegmentList = new List<NPCSegment>();
+        //这个是参数
         public List<string> Args = new List<string>();
         public List<string> Buttons = new List<string>();
 
@@ -22,6 +25,7 @@ namespace Server.MirObjects
 
         public string ArgumentParse(string key)
         {
+            //默认的NPC页面不这样使用参数
             if (key.StartsWith("[@_")) return key; //Default NPC page so doesn't use arguments in this way
 
             Regex r = new Regex(@"\((.*)\)");

@@ -902,9 +902,16 @@ namespace Server.MirEnvir
                 if ((respawn.Info.RespawnTicks != 0) && (Envir.RespawnTick.CurrentTickcounter < respawn.NextSpawnTick)) continue;
                 if ((respawn.Info.RespawnTicks == 0) && (Envir.Time < respawn.RespawnTime)) continue;
 
-                if (respawn.Count < (respawn.Info.Count * Settings.MonsterRate))
+                int markCount = respawn.Info.Count;
+                if (Info != null)
                 {
-                    int count = (int)(respawn.Info.Count * Settings.MonsterRate) - respawn.Count;
+                    markCount = (int)(markCount * Info.MonsterRate);
+                }
+                markCount = (int)(markCount * Settings.MonsterRate);
+
+                if (respawn.Count < (markCount))
+                {
+                    int count = (int)(markCount) - respawn.Count;
 
                     for (int c = 0; c < count; c++)
                         Success = respawn.Spawn();

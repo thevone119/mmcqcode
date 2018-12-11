@@ -57,8 +57,7 @@ namespace Server.MirDatabase
         [JsonIgnore]
         public MirConnection Connection;
 
-        [JsonIgnore]
-        public LinkedList<AuctionInfo> Auctions = new LinkedList<AuctionInfo>();
+
         public bool AdminAccount;
 
         public AccountInfo()
@@ -91,7 +90,7 @@ namespace Server.MirDatabase
         {
             List<AccountInfo> list = new List<AccountInfo>();
             DbDataReader read = MirRunDB.ExecuteReader("select * from AccountInfo ");
-            if (read.Read())
+            while (read.Read())
             {
                 AccountInfo obj = new AccountInfo();
                 obj.Index = (ulong)read.GetInt64(read.GetOrdinal("Idx"));

@@ -247,17 +247,18 @@ namespace Server.MirObjects
                 return SMain.Envir.DefaultNPC;
             }
         }
-
+        //NPC控制
         public uint NPCID;
         public NPCPage NPCPage;
         public Dictionary<NPCSegment, bool> NPCSuccess = new Dictionary<NPCSegment, bool>();
+        //这个是推迟处理，就是每次循环只处理一个NPC命令，只处理一行，处理完设置这个标志位，让其退出
         public bool NPCDelayed;
         public List<string> NPCSpeech = new List<string>();
         public Map NPCMoveMap;
         public Point NPCMoveCoord;
         public string NPCInputStr;
 
-
+        //UserMatch：卖：true, 买：false
         public bool UserMatch;
         public string MatchName;
         public ItemType MatchType;
@@ -1640,7 +1641,11 @@ namespace Server.MirObjects
             }
 
             if (expPoint <= 0) expPoint = 1;
-
+            //增加地图的经验倍率
+            if (CurrentMap != null && CurrentMap.Info != null)
+            {
+                expPoint = (int)(expPoint * CurrentMap.Info.ExpRate); 
+            }
             expPoint = (int)(expPoint * Settings.ExpRate);
 
             //party
@@ -3667,7 +3672,7 @@ namespace Server.MirObjects
             }
             else if (message.StartsWith("@"))
             {
-                
+                //这里是特殊的客户端命令处理，这里做个转义处理
                 //Command
                 message = message.Remove(0, 1);
                 parts = message.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -3679,7 +3684,8 @@ namespace Server.MirObjects
                 String hintstring;
                 UserItem item;
 
-                switch (parts[0].ToUpper())
+                string comand = CMDTransform.Transform(parts[0]);
+                switch (comand)
                 {
                     case "LOGIN":
                         GMLogin = true;
@@ -3909,7 +3915,12 @@ namespace Server.MirObjects
                         break;
                     case "ALLOWGUILD":
                         EnableGuildInvite = !EnableGuildInvite;
-                        hintstring = EnableGuildInvite ? "Guild invites enabled." : "Guild invites disabled.";
+                        hintstring = EnableGuildInvite ? "允许加入公会." : "拒绝加入公会.";
+                        ReceiveChat(hintstring, ChatType.Hint);
+                        break;
+                    case "ALLOWGROUP":
+                        SwitchGroup(!AllowGroup);
+                        hintstring = AllowGroup ? "允许组队." : "拒绝组队.";
                         ReceiveChat(hintstring, ChatType.Hint);
                         break;
                     case "RECALL":
@@ -3924,7 +3935,7 @@ namespace Server.MirObjects
                         break;
                     case "ENABLEGROUPRECALL":
                         EnableGroupRecall = !EnableGroupRecall;
-                        hintstring = EnableGroupRecall ? "Group Recall Enabled." : "Group Recall Disabled.";
+                        hintstring = EnableGroupRecall ? "开启组队召唤." : "关闭组队召唤.";
                         ReceiveChat(hintstring, ChatType.Hint);
                         break;
 
@@ -4513,9 +4524,9 @@ namespace Server.MirObjects
                         AllowTrade = !AllowTrade;
 
                         if (AllowTrade)
-                            ReceiveChat("You are now allowing trade", ChatType.System);
+                            ReceiveChat("允许交易", ChatType.System);
                         else
-                            ReceiveChat("You are no longer allowing trade", ChatType.System);
+                            ReceiveChat("拒绝交易", ChatType.System);
                         break;
 
                     case "TRIGGER":
@@ -9359,7 +9370,7 @@ namespace Server.MirObjects
 
             target.BroadcastDamageIndicator(type);
         }
-
+        //完成NPC的事件
         private void CompleteNPC(IList<object> data)
         {
             uint npcid = (uint)data[0];
@@ -9603,11 +9614,12 @@ namespace Server.MirObjects
             Enqueue(new S.MagicLeveled { Spell = magic.Spell, Level = magic.Level, Experience = magic.Experience });
 
         }
-
+        //玩家移动到某个点，进行检查
         public bool CheckMovement(Point location)
         {
             if (Envir.Time < MovementTime) return false;
 
+            //脚本触发，触发默认NPC
             //Script triggered coords
             for (int s = 0; s < CurrentMap.Info.ActiveCoords.Count; s++)
             {
@@ -9618,13 +9630,14 @@ namespace Server.MirObjects
                 CallDefaultNPC(DefaultNPCType.MapCoord, CurrentMap.Info.FileName, activeCoord.X, activeCoord.Y);
             }
 
+            //地图移动
             //Map movements
             for (int i = 0; i < CurrentMap.Info.Movements.Count; i++)
             {
                 MovementInfo info = CurrentMap.Info.Movements[i];
 
                 if (info.Source != location) continue;
-
+                //必须有僵尸洞
                 if (info.NeedHole)
                 {
                     //Cell cell = CurrentMap.GetCell(location);
@@ -9633,7 +9646,7 @@ namespace Server.MirObjects
                         CurrentMap.Objects[location.X, location.Y].Where(ob => ob.Race == ObjectType.Spell).All(ob => ((SpellObject)ob).Spell != Spell.DigOutZombie))
                         continue;
                 }
-
+                //被行会占领的，必须归属行会才可以
                 if (info.ConquestIndex > 0)
                 {
                     if (MyGuild == null || MyGuild.Conquest == null) continue;
@@ -9660,6 +9673,7 @@ namespace Server.MirObjects
 
             return false;
         }
+        //完成地图的转移
         private void CompleteMapMovement(params object[] data)
         {
             if (this == null) return;
@@ -10984,7 +10998,7 @@ namespace Server.MirObjects
 
             if (temp.Weight + CurrentBagWeight > MaxBagWeight)
             {
-                ReceiveChat("太重不能回来.", ChatType.System);
+                ReceiveChat("太重了.", ChatType.System);
                 Enqueue(p);
                 return;
             }
@@ -11122,6 +11136,8 @@ namespace Server.MirObjects
             }
             Enqueue(p);
         }
+
+        //使用某个物品
         public void UseItem(ulong id)
         {
             S.UseItem p = new S.UseItem { UniqueID = id, Success = false };
@@ -11151,14 +11167,14 @@ namespace Server.MirObjects
 
             switch (item.Info.Type)
             {
-                case ItemType.Potion:
+                case ItemType.Potion://药水
                     switch (item.Info.Shape)
                     {
-                        case 0: //NormalPotion
+                        case 0: //NormalPotion(普通药水)
                             PotHealthAmount = (ushort)Math.Min(ushort.MaxValue, PotHealthAmount + item.Info.HP);
                             PotManaAmount = (ushort)Math.Min(ushort.MaxValue, PotManaAmount + item.Info.MP);
                             break;
-                        case 1: //SunPotion
+                        case 1: //SunPotion（快速恢复药）
                             ChangeHP(item.Info.HP);
                             ChangeMP(item.Info.MP);
                             break;
@@ -11206,7 +11222,7 @@ namespace Server.MirObjects
                             break;
                     }
                     break;
-                case ItemType.Scroll:
+                case ItemType.Scroll://（卷轴）
                     UserItem temp;
                     switch (item.Info.Shape)
                     {
@@ -11276,72 +11292,72 @@ namespace Server.MirObjects
                             ReceiveChat("你的武器已经完全修好了", ChatType.Hint);
                             Enqueue(new S.ItemRepaired { UniqueID = temp.UniqueID, MaxDura = temp.MaxDura, CurrentDura = temp.CurrentDura });
                             break;
-                        case 6: //ResurrectionScroll
+                        case 6: //ResurrectionScroll(复活卷轴)
                             if (Dead)
                             {
                                 MP = MaxMP;
                                 Revive(MaxHealth, true);
                             }
                             break;
-                        case 7: //CreditScroll
+                        case 7: //CreditScroll(增加元宝的卷轴)
                             if (item.Info.Price > 0)
                             {
                                 GainCredit(item.Info.Price);
-                                ReceiveChat(String.Format("{0} 信用已添加到您的帐户", item.Info.Price), ChatType.Hint);
+                                ReceiveChat(String.Format("{0} 元宝已添加到您的帐户", item.Info.Price), ChatType.Hint);
                             }
                             break;
-                        case 8: //MapShoutScroll
+                        case 8: //MapShoutScroll(地图喊话卷轴)
                             HasMapShout = true;
                             ReceiveChat("你已经在你的当前地图上得到一个免费的喊话", ChatType.Hint);
                             break;
-                        case 9://ServerShoutScroll
+                        case 9://ServerShoutScroll(全服喊话卷轴)
                             HasServerShout = true;
                             ReceiveChat("你在服务器上得到一个免费的喊话", ChatType.Hint);
                             break;
-                        case 10://GuildSkillScroll
+                        case 10://GuildSkillScroll(行会技能卷轴)
                             MyGuild.NewBuff(item.Info.Effect, false);
                             break;
-                        case 11://HomeTeleport
+                        case 11://HomeTeleport(行会回城卷轴)
                             if (MyGuild != null && MyGuild.Conquest != null && !MyGuild.Conquest.WarIsOn && MyGuild.Conquest.PalaceMap != null && !TeleportRandom(200, 0, MyGuild.Conquest.PalaceMap))
                             {
                                 Enqueue(p);
                                 return;
                             }
                             break;
-                        case 12://LotteryTicket                                                                                    
+                        case 12://LotteryTicket(彩票)                                                                                    
                             if (RandomUtils.Next(item.Info.Effect * 32) == 1) // 1st prize : 1,000,000
                             {
-                                ReceiveChat("You won 1st Prize! Received 1,000,000 gold", ChatType.Hint);
+                                ReceiveChat("你得了一等奖！获得1,000,000金币", ChatType.Hint);
                                 GainGold(1000000);
                             }
                             else if (RandomUtils.Next(item.Info.Effect * 16) == 1)  // 2nd prize : 200,000
                             {
-                                ReceiveChat("You won 2nd Prize! Received 200,000 gold", ChatType.Hint);
+                                ReceiveChat("你得了二等奖! 获得 200,000 金币", ChatType.Hint);
                                 GainGold(200000);
                             }
                             else if (RandomUtils.Next(item.Info.Effect * 8) == 1)  // 3rd prize : 100,000
                             {
-                                ReceiveChat("You won 3rd Prize! Received 100,000 gold", ChatType.Hint);
+                                ReceiveChat("你得了三等奖! 获得 100,000 金币", ChatType.Hint);
                                 GainGold(100000);
                             }
                             else if (RandomUtils.Next(item.Info.Effect * 4) == 1) // 4th prize : 10,000
                             {
-                                ReceiveChat("You won 4th Prize! Received 10,000 gold", ChatType.Hint);
+                                ReceiveChat("你得了四等奖! 获得 10,000 金币", ChatType.Hint);
                                 GainGold(10000);
                             }
                             else if (RandomUtils.Next(item.Info.Effect * 2) == 1)  // 5th prize : 1,000
                             {
-                                ReceiveChat("You won 5th Prize! Received 1,000 gold", ChatType.Hint);
+                                ReceiveChat("你得了五等奖! 获得 1,000 金币", ChatType.Hint);
                                 GainGold(1000);
                             }
                             else if (RandomUtils.Next(item.Info.Effect) == 1)  // 6th prize 500
                             {
-                                ReceiveChat("You won 6th Prize! Received 500 gold", ChatType.Hint);
+                                ReceiveChat("你得了六等奖! 获得 500 金币", ChatType.Hint);
                                 GainGold(500);
                             }
                             else
                             {
-                                ReceiveChat("You haven't won anything.", ChatType.Hint);
+                                ReceiveChat("你没有中奖.", ChatType.Hint);
                             }
                             break;
                     }
@@ -11362,7 +11378,7 @@ namespace Server.MirObjects
                 case ItemType.Script:
                     CallDefaultNPC(DefaultNPCType.UseItem, item.Info.Shape);
                     break;
-                case ItemType.Food:
+                case ItemType.Food://食物，给坐骑吃
                     temp = Info.Equipment[(int)EquipmentSlot.Mount];
                     if (temp == null || temp.MaxDura == temp.CurrentDura)
                     {
@@ -11502,7 +11518,7 @@ namespace Server.MirObjects
                         Enqueue(petInfo.GetInfo());
                     }
                     break;
-                case ItemType.Transform: //Transforms
+                case ItemType.Transform: //Transforms,时装
                     int tTime = item.Info.Durability;
                     int tType = item.Info.Shape;
 
@@ -12726,6 +12742,7 @@ namespace Server.MirObjects
 
             return true;
         }
+
         private bool CanUseItem(UserItem item)
         {
             if (item == null) return false;
@@ -14215,7 +14232,6 @@ namespace Server.MirObjects
         }
 
         #region NPC
-
         public void CallDefaultNPC(DefaultNPCType type, params object[] value)
         {
             string key = string.Empty;
@@ -14284,7 +14300,7 @@ namespace Server.MirObjects
             CallNPCNextPage();
             return;
         }
-
+        //玩家触发NPC
         public void CallNPC(uint objectID, string key)
         {
             if (Dead) return;
@@ -14304,6 +14320,7 @@ namespace Server.MirObjects
 
             CallNPCNextPage();
         }
+        //直接触发下一页？
         private void CallNPCNextPage()
         {
             //process any new npc calls immediately
@@ -14528,25 +14545,35 @@ namespace Server.MirObjects
 
         #endregion
 
-        #region Consignment
+        #region Consignment 集市，寄卖系统
 
+        //寄卖物品
         public void ConsignItem(ulong uniqueID, uint price)
         {
             S.ConsignItem p = new S.ConsignItem { UniqueID = uniqueID };
-            if (price < Globals.MinConsignment || price > Globals.MaxConsignment || Dead)
+            if (price < Globals.MinConsignment || price > Globals.MaxConsignment)
             {
+                p.msg = "寄卖物品价格区间要在"+ Globals.MinConsignment+"-"+ Globals.MaxConsignment;
+                Enqueue(p);
+                return;
+            }
+            if (Dead)
+            {
+                p.msg = "死亡不能寄卖物品";
                 Enqueue(p);
                 return;
             }
 
             if (NPCPage == null || !String.Equals(NPCPage.Key, NPCObject.ConsignKey, StringComparison.CurrentCultureIgnoreCase))
             {
+                p.msg = "寄卖出错";
                 Enqueue(p);
                 return;
             }
 
             if (Account.Gold < Globals.ConsignmentCost)
             {
+                p.msg = "金币不足，不能寄卖物品";
                 Enqueue(p);
                 return;
             }
@@ -14569,18 +14596,21 @@ namespace Server.MirObjects
 
                 if (temp == null || index == -1)
                 {
+                    p.msg = "你的背包中没有找到需要寄卖的物品";
                     Enqueue(p);
                     return;
                 }
 
                 if (temp.Info.Bind.HasFlag(BindMode.DontSell))
                 {
+                    p.msg = "此物品为非卖品";
                     Enqueue(p);
                     return;
                 }
 
                 if (temp.RentalInformation != null && temp.RentalInformation.BindingFlags.HasFlag(BindMode.DontSell))
                 {
+                    p.msg = "此物品为非卖品";
                     Enqueue(p);
                     return;
                 }
@@ -14591,14 +14621,13 @@ namespace Server.MirObjects
                 {
                     AuctionID = (ulong)UniqueKeyHelper.UniqueNext(),
                     CharacterIndex = Info.Index,
-                    CharacterInfo = Info,
+                    AccountIndex = Account.Index,
                     ConsignmentDate = Envir.Now,
+                    Seller = Info.Name,
                     Item = temp,
-                    Price = price
+                    GoldPrice = price
                 };
-
-                Account.Auctions.AddLast(auction);
-                Envir.Auctions.AddFirst(auction);
+                AuctionInfo.add(auction);
 
                 p.Success = true;
                 Enqueue(p);
@@ -14609,113 +14638,28 @@ namespace Server.MirObjects
                 Account.Gold -= Globals.ConsignmentCost;
                 Enqueue(new S.LoseGold { Gold = Globals.ConsignmentCost });
                 RefreshBagWeight();
-
             }
-
+            p.msg = "你离NPC太远";
             Enqueue(p);
         }
-        public bool Match(AuctionInfo info)
-        {
-            if (Envir.Now >= info.ConsignmentDate.AddDays(Globals.ConsignmentLength) && !info.Sold)
-                info.Expired = true;
 
-            return (UserMatch || !info.Expired && !info.Sold) && ((MatchType == ItemType.Nothing || info.Item.Info.Type == MatchType) &&
-                (string.IsNullOrWhiteSpace(MatchName) || info.Item.Info.Name.Replace(" ", "").IndexOf(MatchName, StringComparison.OrdinalIgnoreCase) >= 0));
-        }
-        public void MarketPage(int page)
+        //集市查询
+        public void MarketSearch(string match, int page=0)
         {
             if (Dead || Envir.Time < SearchTime) return;
-
-            if (NPCPage == null || (!String.Equals(NPCPage.Key, NPCObject.MarketKey, StringComparison.CurrentCultureIgnoreCase) && !String.Equals(NPCPage.Key, NPCObject.ConsignmentsKey, StringComparison.CurrentCultureIgnoreCase)) || page <= PageSent) return;
-
+            //定制市场，去掉这个
+            //if (NPCPage == null || (!String.Equals(NPCPage.Key, NPCObject.MarketKey, StringComparison.CurrentCultureIgnoreCase) && !String.Equals(NPCPage.Key, NPCObject.ConsignmentsKey, StringComparison.CurrentCultureIgnoreCase))) return;
             SearchTime = Envir.Time + Globals.SearchDelay;
-
-            for (int n = 0; n < CurrentMap.NPCs.Count; n++)
-            {
-                NPCObject ob = CurrentMap.NPCs[n];
-                if (ob.ObjectID != NPCID) continue;
-
-                List<ClientAuction> listings = new List<ClientAuction>();
-
-                for (int i = 0; i < 10; i++)
-                {
-                    if (i + page * 10 >= Search.Count) break;
-                    listings.Add(Search[i + page * 10].CreateClientAuction(UserMatch));
-                }
-
-                for (int i = 0; i < listings.Count; i++)
-                {
-                    //CheckItemInfo(listings[i].Item.Info);
-                    CheckItem(listings[i].Item);
-                }
-
-                PageSent = page;
-                Enqueue(new S.NPCMarketPage { Listings = listings });
-            }
-        }
-        public void GetMarket(string name, ItemType type)
-        {
-            Search.Clear();
-            MatchName = name.Replace(" ", "");
-            MatchType = type;
-            PageSent = 0;
-            LinkedListNode<AuctionInfo> current = UserMatch ? Account.Auctions.First : Envir.Auctions.First;
-
-            while (current != null)
-            {
-                if (Match(current.Value)) Search.Add(current.Value);
-                current = current.Next;
-            }
-
-            List<ClientAuction> listings = new List<ClientAuction>();
-
-            for (int i = 0; i < 10; i++)
-            {
-                if (i >= Search.Count) break;
-                listings.Add(Search[i].CreateClientAuction(UserMatch));
-            }
-
-            for (int i = 0; i < listings.Count; i++)
+            MatchName = match;
+            S.NPCMarket NPCMarket = AuctionInfo.SearchPage(Info.Index, match, UserMatch, page);
+            for (int i = 0; i < NPCMarket.Listings.Count; i++)
             {
                 //CheckItemInfo(listings[i].Item.Info);
-                CheckItem(listings[i].Item);
+                CheckItem(NPCMarket.Listings[i].Item);
             }
-
-            Enqueue(new S.NPCMarket { Listings = listings, Pages = (Search.Count - 1) / 10 + 1, UserMode = UserMatch });      
+            Enqueue(NPCMarket);
         }
-
-        public void MarketSearch(string match)
-        {
-            if (Dead || Envir.Time < SearchTime) return;
-
-            if (NPCPage == null || (!String.Equals(NPCPage.Key, NPCObject.MarketKey, StringComparison.CurrentCultureIgnoreCase) && !String.Equals(NPCPage.Key, NPCObject.ConsignmentsKey, StringComparison.CurrentCultureIgnoreCase))) return;
-
-            SearchTime = Envir.Time + Globals.SearchDelay;
-
-            for (int n = 0; n < CurrentMap.NPCs.Count; n++)
-            {
-                NPCObject ob = CurrentMap.NPCs[n];
-                if (ob.ObjectID != NPCID) continue;
-
-                GetMarket(match, ItemType.Nothing);
-            }
-        }
-        public void MarketRefresh()
-        {
-            if (Dead || Envir.Time < SearchTime) return;
-
-            if (NPCPage == null || (!String.Equals(NPCPage.Key, NPCObject.MarketKey, StringComparison.CurrentCultureIgnoreCase) && !String.Equals(NPCPage.Key, NPCObject.ConsignmentsKey, StringComparison.CurrentCultureIgnoreCase))) return;
-
-            SearchTime = Envir.Time + Globals.SearchDelay;
-
-            for (int n = 0; n < CurrentMap.NPCs.Count; n++)
-            {
-                NPCObject ob = CurrentMap.NPCs[n];
-                if (ob.ObjectID != NPCID) continue;
-
-                GetMarket(string.Empty, MatchType);
-            }
-        }
+        
         //市场买东西
         //这个是玩家市场
         public void MarketBuy(ulong auctionID)
@@ -14725,132 +14669,109 @@ namespace Server.MirObjects
                 Enqueue(new S.MarketFail { Reason = 0 });
                 return;
             }
-
+            //这个是干嘛哦，总是有问题哦,这个是市场定制的，不用判断脚本了,注释掉
             if (NPCPage == null || !String.Equals(NPCPage.Key, NPCObject.MarketKey, StringComparison.CurrentCultureIgnoreCase))
             {
-                Enqueue(new S.MarketFail { Reason = 1 });
-                return;
+                //Enqueue(new S.MarketFail { Reason = 1 });
+                //return;
             }
 
             for (int n = 0; n < CurrentMap.NPCs.Count; n++)
             {
                 NPCObject ob = CurrentMap.NPCs[n];
                 if (ob.ObjectID != NPCID) continue;
-
-                foreach (AuctionInfo auction in Envir.Auctions)
+                AuctionInfo auction = AuctionInfo.get(auctionID);
+                if (auction == null|| auction.del)
                 {
-                    if (auction.AuctionID != auctionID) continue;
+                    Enqueue(new S.MarketFail { Reason = 9 });
+                }
 
-                    if (auction.Sold)
-                    {
-                        Enqueue(new S.MarketFail { Reason = 2 });
-                        return;
-                    }
-
-                    if (auction.Expired)
-                    {
-                        Enqueue(new S.MarketFail { Reason = 3 });
-                        return;
-                    }
-
-                    if (auction.Price > Account.Gold)
-                    {
-                        Enqueue(new S.MarketFail { Reason = 4 });
-                        return;
-                    }
-
-                    if (!CanGainItem(auction.Item))
-                    {
-                        Enqueue(new S.MarketFail { Reason = 5 });
-                        return;
-                    }
-
-                    if (Account.Auctions.Contains(auction))
-                    {
-                        Enqueue(new S.MarketFail { Reason = 6 });
-                        return;
-                    }
-
-                    auction.Sold = true;
-                    Account.Gold -= auction.Price;
-                    Enqueue(new S.LoseGold { Gold = auction.Price });
-                    GainItem(auction.Item);
-
-                    Report.ItemChanged("BuyMarketItem", auction.Item, auction.Item.Count, 2);
-
-                    Envir.MessageAccount(auction.CharacterInfo.AccountInfo, string.Format("You Sold {0} for {1:#,##0} Gold", auction.Item.FriendlyName, auction.Price), ChatType.Hint);
-                    Enqueue(new S.MarketSuccess { Message = string.Format("You brought {0} for {1:#,##0} Gold", auction.Item.FriendlyName, auction.Price) });
-                    MarketSearch(MatchName);
+                if (auction.Sold)
+                {
+                    Enqueue(new S.MarketFail { Reason = 2 });
                     return;
                 }
-            }
 
+                if (auction.Expired)
+                {
+                    Enqueue(new S.MarketFail { Reason = 3 });
+                    return;
+                }
+
+                if (auction.GoldPrice > Account.Gold)
+                {
+                    Enqueue(new S.MarketFail { Reason = 4 });
+                    return;
+                }
+
+                if (!CanGainItem(auction.Item))
+                {
+                    Enqueue(new S.MarketFail { Reason = 5 });
+                    return;
+                }
+                if (auction.AccountIndex==Account.Index)
+                {
+                    Enqueue(new S.MarketFail { Reason = 6 });
+                    return;
+                }
+
+
+
+                //买家减钱
+                auction.Sold = true;
+                auction.del = true;//删除掉
+                Account.Gold -= auction.GoldPrice;
+                Enqueue(new S.LoseGold { Gold = auction.GoldPrice });
+                GainItem(auction.Item);
+                //卖家加钱
+                Report.ItemChanged("BuyMarketItem", auction.Item, auction.Item.Count, 2);
+                uint gold = (uint)Math.Max(0, auction.GoldPrice - auction.GoldPrice * Globals.Commission);
+                AccountInfo Seller = Envir.GetAccount(auction.AccountIndex);
+                Seller.Gold += gold;
+                if (Seller!=null)
+                {
+                    Envir.MessageAccount(Seller, string.Format("你寄售的物品 {0} 已卖出，获得{1:#,##0} 金币(手续费：{2:#,##0})", auction.Item.FriendlyName, auction.GoldPrice,(uint)(auction.GoldPrice * Globals.Commission)), ChatType.Hint);
+                }
+                //刷新卖家的账户信息
+                if (Seller.Connection != null)
+                {
+                    Seller.Connection.RefreshUserGold();
+                }
+                Enqueue(new S.MarketSuccess { Message = string.Format("你购买 {0} 花费 {1:#,##0} 金币", auction.Item.FriendlyName, auction.GoldPrice) });
+                MarketSearch(MatchName);
+                return;
+            }
             Enqueue(new S.MarketFail { Reason = 7 });
         }
+        //集市下架物品
         public void MarketGetBack(ulong auctionID)
         {
             if (Dead)
             {
                 Enqueue(new S.MarketFail { Reason = 0 });
                 return;
-
             }
-
+            //这个没用，注释掉
             if (NPCPage == null || !String.Equals(NPCPage.Key, NPCObject.ConsignmentsKey, StringComparison.CurrentCultureIgnoreCase))
             {
-                Enqueue(new S.MarketFail { Reason = 1 });
-                return;
+                //Enqueue(new S.MarketFail { Reason = 1 });
+                //return;
             }
 
             for (int n = 0; n < CurrentMap.NPCs.Count; n++)
             {
                 NPCObject ob = CurrentMap.NPCs[n];
                 if (ob.ObjectID != NPCID) continue;
-
-                foreach (AuctionInfo auction in Account.Auctions)
+                AuctionInfo auction = AuctionInfo.get(auctionID);
+                if (auction == null)
                 {
-                    if (auction.AuctionID != auctionID) continue;
-
-                    if (auction.Sold && auction.Expired)
-                    {
-                        SMain.Enqueue(string.Format("Auction both sold and Expired {0}", Account.AccountID));
-                        return;
-                    }
-
-
-                    if (!auction.Sold || auction.Expired)
-                    {
-                        if (!CanGainItem(auction.Item))
-                        {
-                            Enqueue(new S.MarketFail { Reason = 5 });
-                            return;
-                        }
-
-                        Account.Auctions.Remove(auction);
-                        Envir.Auctions.Remove(auction);
-                        GainItem(auction.Item);
-                        MarketSearch(MatchName);
-
-                        Report.ItemChanged("GetBackMarketItem", auction.Item, auction.Item.Count, 2);
-
-                        return;
-                    }
-
-                    uint gold = (uint)Math.Max(0, auction.Price - auction.Price * Globals.Commission);
-                    if (!CanGainGold(gold))
-                    {
-                        Enqueue(new S.MarketFail { Reason = 8 });
-                        return;
-                    }
-
-                    Account.Auctions.Remove(auction);
-                    Envir.Auctions.Remove(auction);
-                    GainGold(gold);
-                    Enqueue(new S.MarketSuccess { Message = string.Format("You Sold {0} for {1:#,##0} Gold. \nEarnings: {2:#,##0} Gold.\nCommision: {3:#,##0} Gold.‎", auction.Item.FriendlyName, auction.Price, gold, auction.Price - gold) });
-                    MarketSearch(MatchName);
+                    Enqueue(new S.MarketFail { Reason = 2 });
                     return;
                 }
-
+                GainItem(auction.Item);
+                auction.del = true;
+                MarketSearch(MatchName);
+                return;
             }
 
             Enqueue(new S.MarketFail { Reason = 7 });
@@ -15011,18 +14932,21 @@ namespace Server.MirObjects
                     List<ItemInfo> dropList = new List<ItemInfo>();
                     foreach (DropInfo drop in Envir.AwakeningDrops)
                     {
-                        if (drop.Item.Grade == item.Info.Grade - 1 ||
-                            drop.Item.Grade == item.Info.Grade + 1)
+                        foreach(ItemInfo dinfo in drop.ItemList)
                         {
-                            if (RandomUtils.Next((drop.Chance <= 0) ? 1 : drop.Chance) == 0)
+                            if (dinfo.Grade == item.Info.Grade - 1 ||
+                            dinfo.Grade == item.Info.Grade + 1)
                             {
-                                dropList.Add(drop.Item);
+                                if (drop.isDrop())
+                                {
+                                    dropList.Add(dinfo);
+                                }
                             }
-                        }
 
-                        if (drop.Item.Grade == item.Info.Grade)
-                        {
-                            dropList.Add(drop.Item);
+                            if (dinfo.Grade == item.Info.Grade)
+                            {
+                                dropList.Add(dinfo);
+                            }
                         }
                     }
 
@@ -15258,7 +15182,7 @@ namespace Server.MirObjects
         #endregion
 
         #region Groups
-
+        //允许组队开关
         public void SwitchGroup(bool allow)
         {
             Enqueue(new S.SwitchGroup { AllowGroup = allow });
@@ -15355,7 +15279,7 @@ namespace Server.MirObjects
 
             if (!player.AllowGroup)
             {
-                ReceiveChat(name + " 不允许组队.", ChatType.System);
+                ReceiveChat(name + " 不允许组队.可输入@允许组队 命令开启", ChatType.System);
                 return;
             }
 
@@ -15692,7 +15616,7 @@ namespace Server.MirObjects
                     }
                     if (!player.EnableGuildInvite)
                     {
-                        ReceiveChat(String.Format("{0} 禁用公会邀请!", Name), ChatType.System);
+                        ReceiveChat(String.Format("{0} 禁用公会邀请!对方可输入@允许加入公会 命令开启", Name), ChatType.System);
                         return;
                     }
                     if (player.PendingGuildInvite != null)
@@ -16356,13 +16280,13 @@ namespace Server.MirObjects
 
                 if (player.TradeInvitation != null)
                 {
-                    ReceiveChat(string.Format("玩家 {0} 已经有贸易邀请了.", player.Info.Name), ChatType.System);
+                    ReceiveChat(string.Format("玩家 {0} 已经有交易邀请了.", player.Info.Name), ChatType.System);
                     return;
                 }
 
                 if (!player.AllowTrade)
                 {
-                    ReceiveChat(string.Format("玩家 {0} 目前不允许贸易.", player.Info.Name), ChatType.System);
+                    ReceiveChat(string.Format("玩家 {0} 目前不允许交易.对方输入@允许交易，即可开启", player.Info.Name), ChatType.System);
                     return;
                 }
 
@@ -16853,21 +16777,30 @@ namespace Server.MirObjects
                     if (RandomUtils.Next(0, 100) <= getChance)
                     {
                         FishingChanceCounter = 0;
-
+                       
                         UserItem dropItem = null;
                         //foreach (DropInfo drop in Envir.FishingDrops.Where(x => x.Type == fishingCell.FishingAttribute))
                         foreach (DropInfo drop in Envir.FishingDrops.Where(x => x.Type == 1))
                         {
-                            int rate = (int)(drop.Chance / (Settings.DropRate));
-
+                            float DropRate = 1;
                             if (EXPOwner != null && EXPOwner.ItemDropRateOffset > 0)
-                                rate -= (int)(rate * (EXPOwner.ItemDropRateOffset / 100));
-
-                            if (rate < 1) rate = 1;
-
-                            if (RandomUtils.Next(rate) != 0) continue;
-
-                            dropItem = drop.Item.CreateDropItem();
+                            {
+                                DropRate = DropRate * (1 + EXPOwner.ItemDropRateOffset / 100);
+                            }
+                            if(CurrentMap!=null && CurrentMap.Info != null)
+                            {
+                                DropRate = DropRate * CurrentMap.Info.DropRate;
+                            }
+              
+                            if (!drop.isDrop(DropRate))
+                            {
+                                continue;
+                            }
+                            ItemInfo dropitem = drop.DropItem();
+                            if (dropitem != null)
+                            {
+                                dropItem = dropitem.CreateDropItem();
+                            }
                             break;
                         }
 
@@ -17965,23 +17898,20 @@ namespace Server.MirObjects
 
         public void StrongboxRewardItem(int boxtype)
         {
-            int highRate = int.MaxValue;
             UserItem dropItem = null;
-
             foreach (DropInfo drop in Envir.StrongboxDrops)
             {
-                int rate = (int)(RandomUtils.Next(0, drop.Chance) / Settings.DropRate);
-                if (rate < 1) rate = 1;
-
-                if (highRate > rate)
+                if (drop.Gold>0||!drop.isDrop())
                 {
-                    highRate = rate;
-                    if (drop.Item == null)
-                    {
-                        continue;
-                    }
-                    dropItem = drop.Item.CreateFreshItem();
+                    continue;
                 }
+                //只开一个出来
+                ItemInfo di = drop.DropItem();
+                if(di == null )
+                {
+                    return;
+                }
+                dropItem = di.CreateFreshItem();
             }
 
             if (dropItem == null)
@@ -18011,20 +17941,20 @@ namespace Server.MirObjects
 
         public void BlackstoneRewardItem()
         {
-            int highRate = int.MaxValue;
             UserItem dropItem = null;
             foreach (DropInfo drop in Envir.BlackstoneDrops)
             {
-                int rate = (int)(RandomUtils.Next(0, drop.Chance) / Settings.DropRate); if (rate < 1) rate = 1;
-
-                if (highRate > rate)
+                if (drop.Gold > 0 || !drop.isDrop())
                 {
-                    highRate = rate;
-                    if (drop.Item != null)
-                    {
-                        dropItem = drop.Item.CreateDropItem();
-                    }
+                    continue;
                 }
+                //只开一个出来
+                ItemInfo di = drop.DropItem();
+                if (di == null)
+                {
+                    return;
+                }
+                dropItem = di.CreateFreshItem();
             }
             if (FreeSpace(Info.Inventory) < 1)
             {
@@ -19532,7 +19462,7 @@ namespace Server.MirObjects
             if (payType == 0)
             {
                 GoldCost = Product.GoldPrice * Quantity;
-                if (Account.Gold >= GoldCost)
+                if (Account.Gold >= GoldCost && GoldCost>0)
                 {
                     canAfford = true;
                 }
@@ -19540,7 +19470,7 @@ namespace Server.MirObjects
             if (payType == 1)
             {
                 CreditCost = Product.CreditPrice * Quantity;
-                if (Account.Credit >= CreditCost)
+                if (Account.Credit >= CreditCost && CreditCost>0)
                 {
                     canAfford = true;
                 }

@@ -89,7 +89,7 @@ namespace Server.MirObjects
 
         public ushort PotHealthAmount, PotManaAmount, HealAmount, VampAmount;
         //public bool HealthChanged;
-
+        //这2个是增加爆率，数值为百分比，比如30，就是增加百分之30的的爆率
         public float ItemDropRateOffset = 0, GoldDropRateOffset = 0;
 
         public bool CoolEye;

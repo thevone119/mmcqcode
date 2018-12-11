@@ -107,8 +107,7 @@ namespace Server.MirEnvir
         public List<AccountInfo> AccountList = new List<AccountInfo>();
         //角色信息
         public List<CharacterInfo> CharacterList = new List<CharacterInfo>();
-        //拍卖物品
-        public LinkedList<AuctionInfo> Auctions = new LinkedList<AuctionInfo>();
+
         //public int GuildCount, NextGuildID;
         //行会
         public List<GuildObject> GuildList = new List<GuildObject>();
@@ -135,7 +134,7 @@ namespace Server.MirEnvir
         readonly object _locker = new object();
         public MobThread[] MobThreads = new MobThread[Settings.ThreadLimit];
         private Thread[] MobThreading = new Thread[Settings.ThreadLimit];
-
+        //自定义命令，通过默认NPC添加
         public List<string> CustomCommands = new List<string>();
         public Dragon DragonSystem;
         //这3个是什么啊？默认NPC,怪物NPC，机器人NPC?
@@ -698,13 +697,14 @@ namespace Server.MirEnvir
                 for (int i = 0; i < Conquests.Count; i++)
                     Conquests[i].Process();
             }
-            //物品的租金？
+            //每5分钟执行的都放这里吧
             if (Time >= rentalItemsTime)
             {
                 rentalItemsTime = Time + Settings.Minute * 5;
                 ProcessRentedItems();
                 //这里放下刷新排行榜
                 LoadRank();
+                CMDTransform.reLoad();
             }
 
         }
@@ -799,10 +799,7 @@ namespace Server.MirEnvir
                 {
                     CharacterList[i].SaveDB();
                 }
-                foreach (AuctionInfo auction in Auctions)
-                {
-                    auction.SaveDB();
-                }
+                AuctionInfo.SaveAll();
                 foreach (MailInfo mail in Mail)
                 {
                     mail.SaveDB();
@@ -991,11 +988,10 @@ namespace Server.MirEnvir
                 //加载账号，角色
                 AccountList.Clear();
                 CharacterList.Clear();
-                Auctions.Clear();
                 Mail.Clear();
                 AccountList = AccountInfo.loadAll();
                 CharacterList = CharacterInfo.loadAll();
-                Auctions = AuctionInfo.loadAll();
+                AuctionInfo.loadAll();
                 Mail = MailInfo.loadAll();
 
 
@@ -1010,17 +1006,7 @@ namespace Server.MirEnvir
                         }
                     }
                 }
-                foreach (AuctionInfo auction in Auctions)
-                {
-                    for (int ac = 0; ac < CharacterList.Count; ac++)
-                    {
-                        if (CharacterList[ac].Index == auction.CharacterIndex)
-                        {
-                            auction.CharacterInfo = CharacterList[ac];
-                            auction.CharacterInfo.AccountInfo.Auctions.AddLast(auction);
-                        }
-                    }
-                }
+         
                 if (ResetGS) ClearGameshopLog();
 
                 //加载支付数据
@@ -1093,7 +1079,7 @@ namespace Server.MirEnvir
                     if (drop1.Chance == 0 && drop2.Chance > 0)
                         return -1;
 
-                    return drop1.Item.Type.CompareTo(drop2.Item.Type);
+                    return 0;
                 });
             }
         }
@@ -1134,7 +1120,7 @@ namespace Server.MirEnvir
                 if (drop1.Chance == 0 && drop2.Chance > 0)
                     return -1;
 
-                return drop1.Item.Type.CompareTo(drop2.Item.Type);
+                return 0;
             });
         }
         //宝盒爆率?
@@ -1173,7 +1159,7 @@ namespace Server.MirEnvir
                 if (drop1.Chance == 0 && drop2.Chance > 0)
                     return -1;
 
-                return drop1.Item.Type.CompareTo(drop2.Item.Type);
+                return 0;
             });
         }
         //黑石？
@@ -1213,7 +1199,7 @@ namespace Server.MirEnvir
                 if (drop1.Chance == 0 && drop2.Chance > 0)
                     return -1;
 
-                return drop1.Item.Type.CompareTo(drop2.Item.Type);
+                return 0;
             });
         }
         //占领，城池？
@@ -1386,18 +1372,7 @@ namespace Server.MirEnvir
             }
         }
 
-        private bool BindCharacter(AuctionInfo auction)
-        {
-            for (int i = 0; i < CharacterList.Count; i++)
-            {
-                if (CharacterList[i].Index != auction.CharacterIndex) continue;
-
-                auction.CharacterInfo = CharacterList[i];
-                return true;
-            }
-            return false;
-
-        }
+ 
 
         //线程启动
         public void Start()
@@ -1995,6 +1970,16 @@ namespace Server.MirEnvir
 
             return null;
         }
+
+        public AccountInfo GetAccount(ulong AccountId)
+        {
+            for (int i = 0; i < AccountList.Count; i++)
+                if (AccountList[i].Index == AccountId)
+                    return AccountList[i];
+
+            return null;
+        }
+
         public List<AccountInfo> MatchAccounts(string accountID, bool match = false)
         {
             if (string.IsNullOrEmpty(accountID)) return new List<AccountInfo>(AccountList);
@@ -2128,7 +2113,7 @@ namespace Server.MirEnvir
         {
             return MapList.FirstOrDefault(t => t.Info.Index == index);
         }
-
+        //根据
         public Map GetMapByNameAndInstance(string name, int instanceValue = 0)
         {
             if (instanceValue < 0) instanceValue = 0;
@@ -2138,11 +2123,12 @@ namespace Server.MirEnvir
             return instanceValue < instanceMapList.Count() ? instanceMapList[instanceValue] : null;
         }
 
+        //这个没用到，还好
         public MapObject GetObject(uint objectID)
         {
             return Objects.FirstOrDefault(e => e.ObjectID == objectID);
         }
-
+        //这个只有游戏开始的时候调用一下，还好
         public MonsterInfo GetMonsterInfo(int index)
         {
             for (int i = 0; i < MonsterInfoList.Count; i++)
@@ -2151,6 +2137,7 @@ namespace Server.MirEnvir
             return null;
         }
 
+        //没用到
         public NPCObject GetNPC(string name)
         {
             return MapList.SelectMany(t1 => t1.NPCs.Where(t => t.Info.Name == name)).FirstOrDefault();
@@ -2168,6 +2155,7 @@ namespace Server.MirEnvir
             return null;
         }
         */
+
         public MonsterInfo GetMonsterInfo(string name, bool Strict = false)
         {
             for (int i = 0; i < MonsterInfoList.Count; i++)
@@ -2238,6 +2226,7 @@ namespace Server.MirEnvir
             return null;
         }
 
+        //这里循环所有账号不好吧。循环所有连接好一点？
         public void MessageAccount(AccountInfo account, string message, ChatType type)
         {
             if (account == null) return;
@@ -2250,6 +2239,7 @@ namespace Server.MirEnvir
                 return;
             }
         }
+
         public GuildObject GetGuild(string name)
         {
             for (int i = 0; i < GuildList.Count; i++)

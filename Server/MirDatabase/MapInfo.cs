@@ -33,6 +33,8 @@ namespace Server.MirDatabase
 
         public string NoReconnectMap = string.Empty;
         public int FireDamage, LightningDamage;
+        //地图的爆率，经验倍率，刷怪倍数
+        public float DropRate = 1F, ExpRate = 1F, MonsterRate = 1.0F;
         //安全区域
         public List<SafeZoneInfo> SafeZones = new List<SafeZoneInfo>();
         //这个是传送门么？
@@ -43,7 +45,7 @@ namespace Server.MirDatabase
         public List<NPCInfo> NPCs = new List<NPCInfo>();
         //挖矿区域
         public List<MineZone> MineZones = new List<MineZone>();
-        //活动的坐标？非数据库字段
+        //活动的坐标？非数据库字段（这里的点，是通过默认NPC，添加进来的，玩家去到这些点，则触发默认NPC事件哦）
         public List<Point> ActiveCoords = new List<Point>();
 
         //实例包裹
@@ -83,7 +85,11 @@ namespace Server.MirDatabase
                 obj.Light = (LightSetting)read.GetByte(read.GetOrdinal("Light"));
                 obj.BigMap = (ushort)read.GetInt16(read.GetOrdinal("BigMap"));
 
-                
+                obj.DropRate = read.GetFloat(read.GetOrdinal("DropRate"));
+                obj.ExpRate = read.GetFloat(read.GetOrdinal("ExpRate"));
+                obj.MonsterRate = read.GetFloat(read.GetOrdinal("MonsterRate"));
+
+
                 obj.NoTeleport = read.GetBoolean(read.GetOrdinal("NoTeleport"));
                 obj.NoReconnect = read.GetBoolean(read.GetOrdinal("NoReconnect"));
                 obj.NoReconnectMap = read.GetString(read.GetOrdinal("NoReconnectMap"));
@@ -167,6 +173,10 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("NeedBridle", NeedBridle));
             lp.Add(new SQLiteParameter("NoFight", NoFight));
             lp.Add(new SQLiteParameter("Music", Music));
+
+            lp.Add(new SQLiteParameter("DropRate", DropRate));
+            lp.Add(new SQLiteParameter("ExpRate", ExpRate));
+            lp.Add(new SQLiteParameter("MonsterRate", MonsterRate));
 
             lp.Add(new SQLiteParameter("SafeZones", JsonConvert.SerializeObject(SafeZones)));
             lp.Add(new SQLiteParameter("Movements", JsonConvert.SerializeObject(Movements)));

@@ -416,12 +416,7 @@ namespace Server.MirNetwork
                 case (short)ClientPacketIds.MarketSearch:
                     MarketSearch((C.MarketSearch)p);
                     return;
-                case (short)ClientPacketIds.MarketRefresh:
-                    MarketRefresh();
-                    return;
-                case (short)ClientPacketIds.MarketPage:
-                    MarketPage((C.MarketPage) p);
-                    return;
+    
                 case (short)ClientPacketIds.MarketBuy:
                     MarketBuy((C.MarketBuy)p);
                     return;
@@ -1285,21 +1280,9 @@ namespace Server.MirNetwork
         {
             if (Stage != GameStage.Game) return;
 
-            Player.MarketSearch(p.Match);
+            Player.MarketSearch(p.Match,p.Page);
         }
-        private void MarketRefresh()
-        {
-            if (Stage != GameStage.Game) return;
-
-            Player.MarketRefresh();
-        }
-
-        private void MarketPage(C.MarketPage p)
-        {
-            if (Stage != GameStage.Game) return;
-
-            Player.MarketPage(p.Page);
-        }
+     
         private void MarketBuy(C.MarketBuy p)
         {
             if (Stage != GameStage.Game) return;

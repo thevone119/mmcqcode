@@ -36,21 +36,22 @@ namespace Server
         public static string VersionPath = @".\Mir2.Exe";
         public static bool CheckVersion = false;//是否检测客户端版本
         public static byte[] VersionHash;//这个应该是客户端exe的文件md5
-        public static string GMPassword = "C#Mir 4.0";
+        public static string GMPassword = "Gmcc12#$";
         public static bool Multithreaded = false;//是否开启多线程进行处理
         public static int ThreadLimit = 2;//开启的线程数
         public static int RefreshDelay = 50;//刷新延时
         
         public static bool TestServer = false;
-        public static bool EnforceDBChecks = true;
 
-        public static string DefaultNPCFilename = "00Default";
+        public static bool EnforceDBChecks = false;//是否检测数据库的数据，就是是否校验怪物是否存在
+
+        public static string DefaultNPCFilename = "00Default";//默认NPC，系统固定创建，不需要存放在数据库中，不显示在地图中
         public static string FishingDropFilename = "00Fishing";
 	    public static string AwakeningDropFilename = "00Awakening";
         public static string StrongboxDropFilename = "00Strongbox";//宝盒
         public static string BlackstoneDropFilename = "00Blackstone";
-        public static string MonsterNPCFilename = "00Monster";
-        public static string RobotNPCFilename = "00Robot";
+        public static string MonsterNPCFilename = "00Monster";//默认的怪物NPC
+        public static string RobotNPCFilename = "00Robot";//默认的机器NPC
 
         //Network
         public static string IPAddress = "127.0.0.1";
@@ -70,7 +71,7 @@ namespace Server
                            AllowLogin = true,
                            AllowNewCharacter = true,
                            AllowDeleteCharacter = true,
-                           AllowStartGame = false,
+                           AllowStartGame = true,
                            AllowCreateAssassin = true,
                            AllowCreateArcher = true;
 
@@ -79,7 +80,7 @@ namespace Server
         public static int AllowedResolution = 1366;
 
         //Optional
-        public static bool SafeZoneBorder = false,
+        public static bool SafeZoneBorder = true,//安全区是否带边框
                            SafeZoneHealing = false,
                            GameMasterEffect = false,
                            GatherOrbsPerLevel = true,
@@ -96,6 +97,7 @@ namespace Server
         public static List<long> OrbsDmgList = new List<long>();
 
         //全局的爆率，经验倍率，刷怪倍数
+        //地图上也增加相应的配置
         public static float DropRate = 1F, ExpRate = 1F, MonsterRate=1.0F;
 
         public static int ItemTimeOut = 5,
@@ -112,69 +114,71 @@ namespace Server
                           RestedExpBonus = 5,
                           RestedMaxBonus = 24;
 
-        public static string SkeletonName = "BoneFamiliar",//召唤骷髅
-                             ShinsuName = "Shinsu",//召唤神兽
-                             BugBatName = "BugBat",
-                             Zuma1 = "ZumaStatue",
-                             Zuma2 = "ZumaGuardian",
-                             Zuma3 = "ZumaArcher",
-                             Zuma4 = "WedgeMoth",
-                             Zuma5 = "ZumaArcher3",
-                             Zuma6 = "ZumaStatue3",
-                             Zuma7 = "ZumaGuardian3",
-                             Turtle1 = "RedTurtle",
+        //这里好多怪物的名称，这些怪物的名称是要做逻辑的，比如召唤神兽，比如祖玛教主召唤帮手等，都要通过名称生成怪物
+        public static string SkeletonName = "变异骷髅",//召唤骷髅
+                             ShinsuName = "神兽",//召唤神兽
+                             BugBatName = "蝙蝠",//角蝇召唤出来的
+                             Zuma1 = "祖玛雕像",
+                             Zuma2 = "祖玛卫士",
+                             Zuma3 = "祖玛弓箭手",
+                             Zuma4 = "楔蛾",
+                             Zuma5 = "祖玛弓箭手3",
+                             Zuma6 = "祖玛雕像3",
+                             Zuma7 = "祖玛卫士3",
+                             Turtle1 = "RedTurtle",//目前没有这个怪物哦
                              Turtle2 = "GreenTurtle",
                              Turtle3 = "BlueTurtle",
                              Turtle4 = "TowerTurtle",
                              Turtle5 = "FinialTurtle",
-                             BoneMonster1 = "BoneSpearman",
-                             BoneMonster2 = "BoneBlademan",
-                             BoneMonster3 = "BoneArcher",
-                             BoneMonster4 = "BoneCaptain",
-                             BehemothMonster1 = "Hugger",
+                             BoneMonster1 = "骷髅长枪兵",
+                             BoneMonster2 = "骷髅刀斧手",
+                             BoneMonster3 = "骷髅弓箭手",
+                             BoneMonster4 = "骷髅锤兵",
+                             BehemothMonster1 = "Hugger",//这几个怪物也没有
                              BehemothMonster2 = "PoisonHugger",
                              BehemothMonster3 = "MutatedHugger",
-                             HellKnight1 = "HellKnight1",
+                             HellKnight1 = "HellKnight1",//这几个也没有
                              HellKnight2 = "HellKnight2",
                              HellKnight3 = "HellKnight3",
                              HellKnight4 = "HellKnight4",
                              HellBomb1 = "HellBomb1",
                              HellBomb2 = "HellBomb2",
                              HellBomb3 = "HellBomb3",
-                             WhiteSnake = "WhiteSerpent",
-                             AngelName = "HolyDeva",//召唤月灵
-                             BombSpiderName = "BombSpider",
-                             CloneName = "Clone",
-                             AssassinCloneName = "AssassinClone",
-                             VampireName = "VampireSpider",
-                             ToadName = "SpittingToad",
-                             SnakeTotemName = "SnakeTotem",
-                             SnakesName = "CharmedSnake";
-
+                             WhiteSnake = "白灵蛇",
+                             AngelName = "精灵",//召唤月灵
+                             BombSpiderName = "爆裂蜘蛛",
+                             CloneName = "分身",
+                             AssassinCloneName = "刺客分身",
+                             VampireName = "召唤蜘蛛",
+                             ToadName = "召唤蛤蟆",
+                             SnakeTotemName = "召唤图腾",
+                             SnakesName = "鬼魅蛇";
+        //这几个是技能的Sell,对应技能的的Spell（byte）
         public static string HealRing = "Healing",
                              FireRing = "FireBall",
                              ParalysisRing = "Paralysis",
                              BlinkSkill = "Blink";
-
+        //PK回到那个地图，红名回到哪里
         public static string PKTownMapName = "3";
         public static int PKTownPositionX = 848,
                           PKTownPositionY = 677;
 
-        public static uint MaxDropGold = 2000;
-        public static bool DropGold = true;
+        public static uint MaxDropGold = 20000;
+        public static bool DropGold = true;//金币是否掉落，如果金币不掉落，则直接给到用户的账号哦
 
 
-        //IntelligentCreature
-        public static string[] IntelligentCreatureNameList = { "BabyPig", "Chick", "Kitten", "BabySkeleton", "Baekdon", "Wimaen", "BlackKitten", "BabyDragon", "OlympicFlame", "BabySnowMan", "Frog", "BabyMonkey", "AngryBird", "Foxey" };
-        public static string CreatureBlackStoneName = "BlackCreatureStone";
+        //IntelligentCreature(非战斗宠物名称)
+        public static string[] IntelligentCreatureNameList = { "宝贝猪", "小鸡", "小花猫", "外星人", "猪战士", "纸片人", "小黑猫", "龙宝宝", "奥运宝宝", "雪人宝宝", "青蛙", "BabyMonkey", "AngryBird", "Foxey" };
+        //这个是召唤宠物需要的物品
+        public static string CreatureBlackStoneName = "黑色灵物石";
 
-        //Fishing Settings
+        //Fishing Settings,钓鱼要巨型多角虫干嘛哦
         public static int FishingAttempts = 30;
         public static int FishingSuccessStart = 10;
         public static int FishingSuccessMultiplier = 10;
         public static long FishingDelay = 0;
         public static int FishingMobSpawnChance = 5;
-        public static string FishingMonster = "GiantKeratoid";
+        public static string FishingMonster = "巨型多角虫";
 
         //Mail Settings
         public static bool MailAutoSendGold = false;
@@ -194,8 +198,8 @@ namespace Server
         public static byte RefineWepStatReduce = 6;
         public static byte RefineItemStatReduce = 15;
         public static int RefineCost = 125;
-
-        public static string RefineOreName = "BlackIronOre";
+        //这个是练武器要用到的物品名称
+        public static string RefineOreName = "黑铁矿石";
 
         //Marriage Settings
         public static int LoverEXPBonus = 5;

@@ -20,7 +20,7 @@ namespace Server.MirDatabase
     public class MonsterInfo
     {   
         public int Index;
-        public string Name = string.Empty;
+        public string Name = string.Empty, Name_en= string.Empty;
         public Monster Image;
         //
         public byte AI, Effect, ViewRange = 7, CoolEye;
@@ -68,6 +68,8 @@ namespace Server.MirDatabase
                     continue;
                 }
                 obj.Name = read.GetString(read.GetOrdinal("Name"));
+                obj.Name_en = read.GetString(read.GetOrdinal("Name_en"));
+                
                 if (obj.Name == null)
                 {
                     continue;
@@ -114,7 +116,7 @@ namespace Server.MirDatabase
             return list;
         }
 
-       
+        //游戏中显示的名字,把数字全部去掉
         public string GameName
         {
             get { return Regex.Replace(Name, @"[\d-]", string.Empty); }
@@ -199,21 +201,14 @@ namespace Server.MirDatabase
             {
                 string[] contents = new[]
                     {
-                        ";Pots + Other", string.Empty, string.Empty,
-                        ";Weapons", string.Empty, string.Empty,
-                        ";Armour", string.Empty, string.Empty,
-                        ";Helmets", string.Empty, string.Empty,
-                        ";Necklace", string.Empty, string.Empty,
-                        ";Bracelets", string.Empty, string.Empty,
-                        ";Rings", string.Empty, string.Empty,
-                        ";Shoes", string.Empty, string.Empty,
-                        ";Belts", string.Empty, string.Empty,
-                        ";Stone",
+                        ";怪物物品爆率配置，规则如下：几率 物品（支持多个） 一次最多爆多少个 是否任务物品（Q）",
+                        ";普通物品:",
+                        ";1/10 物品1|物品2|物品3|(HP)DrugMedium 3",
+                        ";任务物品:1/10 物品1|物品2|物品3|(HP)DrugMedium 3 Q",
+                        ";1/1 物品名称 1 Q",
                     };
                 
                 File.WriteAllLines(path, contents);
-
-
                 return;
             }
 
@@ -233,6 +228,7 @@ namespace Server.MirDatabase
                 Drops.Add(drop);
             }
 
+            //排序其实没用？
             Drops.Sort((drop1, drop2) =>
                 {
                     if (drop1.Gold > 0 && drop2.Gold == 0)
@@ -240,7 +236,7 @@ namespace Server.MirDatabase
                     if (drop1.Gold == 0 && drop2.Gold > 0)
                         return -1;
 
-                    return drop1.Item.Type.CompareTo(drop2.Item.Type);
+                    return 0;
                 });
         }
 
@@ -313,40 +309,165 @@ namespace Server.MirDatabase
 
     //掉落物品几率配置
     //删掉，重新做爆率
+    //爆率要改动，制定规则如下
+    //目前的规则 ;Potion
+    //1/1 (HP)DrugMedium Q
+    //优化规则 1/1 (HP)DrugMedium|(HP)DrugMedium|(HP)DrugMedium|(HP)DrugMedium 3 Q
     public class DropInfo
     {
-        public int Chance;//机会
-        public ItemInfo Item;//物品
+        public double Chance;//几率，改成double,好计算一点哦。
         public uint Gold;//黄金
 
         public byte Type;//类型
-        public bool QuestRequired;//需要的？掉落要求么?
+        public bool QuestRequired;//是否任务掉落
+
+        //物品列表
+        public List<ItemInfo> ItemList = new List<ItemInfo>();
+        //最多爆多少个
+        public int MaxCount=1;
 
         public static DropInfo FromLine(string s)
         {
             string[] parts = s.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 
-            DropInfo info = new DropInfo();
 
-            if (!int.TryParse(parts[0].Substring(2), out info.Chance)) return null;
-            if (string.Compare(parts[1], "Gold", StringComparison.OrdinalIgnoreCase) == 0)
+            DropInfo info = new DropInfo();
+            //几率解析
+            if (parts[0] == null)
+            {
+                return null;
+            }
+            string[] Chances = parts[0].Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            if(Chances==null || Chances.Length != 2)
+            {
+                return null;
+            }
+            int c1 = 1;
+            int c2 = 1;
+            if (!int.TryParse(Chances[0], out c1)) return null;
+            if (!int.TryParse(Chances[1], out c2)) return null;
+            if (c1 == 0 || c2 == 0)
+            {
+                return null;
+            }
+            info.Chance = (c1 * 1.0) / (c2 * 1.0);
+
+            if (string.Compare(parts[1], "金币", StringComparison.OrdinalIgnoreCase) == 0)
             {
                 if (parts.Length < 3) return null;
                 if (!uint.TryParse(parts[2], out info.Gold) || info.Gold == 0) return null;
             }
             else
             {
-                info.Item = ItemInfo.getItem(parts[1]);
-                if (info.Item == null) return null;
-
+                //物品列表解析
+                string its = parts[1];
+                if (its == null || its.Length < 2)
+                {
+                    return null;
+                }
+                string[] its2 = its.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string itname in its2)
+                {
+                    if(string.IsNullOrWhiteSpace(itname))
+                    {
+                        continue;
+                    }
+                    ItemInfo _info  = ItemInfo.getItem(itname);
+                    if (_info == null)
+                    {
+                        continue;
+                    }
+                    info.ItemList.Add(_info);
+                }
+                if (info.ItemList.Count == 0)
+                {
+                    return null;
+                }
+                //总数解析
                 if (parts.Length > 2)
                 {
-                    string dropRequirement = parts[2];
+                    if (!int.TryParse(parts[2], out info.MaxCount) || info.MaxCount <= 0) return null;
+                }
+                //任务解析
+                if (parts.Length > 3)
+                {
+                    string dropRequirement = parts[3];
                     if (dropRequirement.ToUpper() == "Q") info.QuestRequired = true;
                 }
             }
 
             return info;
         }
+
+        public string toLine()
+        {
+            string line = "1/" + Chance + " ";
+            if (Gold > 0)
+            {
+                line += "金币 " + Gold;
+                return line;
+            }
+
+            foreach (ItemInfo it in ItemList)
+            {
+                line += it.Name + "|";
+            }
+            line += " ";
+            line += MaxCount;
+            if (QuestRequired)
+            {
+                line += " Q";
+            }
+            return line;
+        }
+
+        //是否掉落
+        //DropRate：这个是外部的爆率，目前有地图爆率和玩家爆率的组合
+        public bool isDrop(float DropRate = 1.0f)
+        {
+            double rate = Chance * DropRate * Settings.DropRate;
+            if (RandomUtils.NextDouble() <= rate)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        //一次爆多个出来，可能一个，也可能是多个
+        public List<ItemInfo> DropItems()
+        {
+            List<ItemInfo> DropItems = new List<ItemInfo>();
+            int DropCount = 1;
+            //先计算掉落多少个
+            if (MaxCount > 1)
+            {
+                DropCount = RandomUtils.Next(MaxCount) + 1;
+            }
+            for(int i=0;i< DropCount; i++)
+            {
+                DropItems.Add(ItemList[RandomUtils.Next(ItemList.Count)]);
+            }
+            return DropItems;
+        }
+
+        //随机爆一个出来
+        public ItemInfo DropItem()
+        {
+            if (ItemList.Count == 0)
+            {
+                return null;
+            }
+            return ItemList[RandomUtils.Next(ItemList.Count)];
+        }
+
+        //掉落的金币
+        //实际掉落的金币上下浮动50%
+        public uint DropGold(float addGold = 0)
+        {
+            uint minGold = Gold - Gold / 2;
+            uint maxGold = Gold + Gold / 2;
+            return (uint)(RandomUtils.Next((int)minGold, (int)maxGold)+ addGold);
+        }
+
     }
 }

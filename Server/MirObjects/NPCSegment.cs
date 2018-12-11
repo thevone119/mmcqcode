@@ -13,14 +13,16 @@ using S = ServerPackets;
 namespace Server.MirObjects
 {
     /// <summary>
-    /// NPC脚本
+    /// NPC脚本片段，每个IF是一个片段
     /// </summary>
     public class NPCSegment
     {
         public NPCPage Page;
 
         public readonly string Key;
+        //检查，各种检查，比如等级，物品，状态等检查
         public List<NPCChecks> CheckList = new List<NPCChecks>();
+        //动作出来，比如move ,比如
         public List<NPCActions> ActList = new List<NPCActions>(), ElseActList = new List<NPCActions>();
         public List<string> Say, ElseSay, Buttons, ElseButtons, GotoButtons;
 
@@ -108,7 +110,7 @@ namespace Server.MirObjects
             return key;
         }
 
-
+        //各种检查参数
         public void ParseCheck(string line)
         {
             var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);

@@ -21,6 +21,7 @@ namespace Server.MirObjects.Monsters
         }
 
         protected override void Drop() { }
+        //这个是针对月魔等怪物进行收获的
         public override bool Harvest(PlayerObject player)
         {
             if (RemainingSkinCount == 0)
@@ -47,7 +48,7 @@ namespace Server.MirObjects.Monsters
                     _drops = null;
                     Broadcast(new S.ObjectHarvested { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
                 }
-                else player.ReceiveChat("You cannot carry anymore.", ChatType.System);
+                else player.ReceiveChat("你无法获取更多.", ChatType.System);
 
                 return true;
             }
@@ -60,37 +61,42 @@ namespace Server.MirObjects.Monsters
             for (int i = 0; i < Info.Drops.Count; i++)
             {
                 DropInfo drop = Info.Drops[i];
-
-                int rate = (int)(drop.Chance / Settings.DropRate); if (rate < 1) rate = 1;
-                if (drop.Gold > 0 || RandomUtils.Next(rate) != 0) continue;
-                if (drop.Item == null)
+                if(drop.Gold > 0)
                 {
                     continue;
                 }
-                UserItem item = drop.Item.CreateDropItem();
-                if (item == null) continue;
-
-                if (drop.QuestRequired)
+                if (!drop.isDrop())
                 {
-                    if (!player.CheckGroupQuestItem(item, false)) continue;
+                    continue;
                 }
+                List<ItemInfo> dropItems = drop.DropItems();
+                foreach(ItemInfo ditem in dropItems)
+                {
+                    if (ditem == null)
+                    {
+                        continue;
+                    }
+                    UserItem item = ditem.CreateDropItem();
+                    if (item == null) continue;
 
-                if (item.Info.Type == ItemType.Meat)
-                    item.CurrentDura = (ushort)Math.Max(0, item.CurrentDura + Quality);
+                    if (drop.QuestRequired)
+                    {
+                        if (!player.CheckGroupQuestItem(item, false)) continue;
+                    }
 
-                _drops.Add(item);
+                    if (item.Info.Type == ItemType.Meat)
+                        item.CurrentDura = (ushort)Math.Max(0, item.CurrentDura + Quality);
+
+                    _drops.Add(item);
+                }
             }
-
-
             if (_drops.Count == 0)
             {
-                player.ReceiveChat("Nothing was found.", ChatType.System);
+                player.ReceiveChat("什么也没找到.", ChatType.System);
                 Harvested = true;
                 _drops = null;
                 Broadcast(new S.ObjectHarvested { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
             }
-
-
             return true;
         }
 

@@ -26,6 +26,7 @@ namespace Server.MirDatabase
         public string CreationIP;
         public DateTime CreationDate;
 
+        //这里判断游戏是否禁止开始
         public bool Banned;
         public string BanReason = string.Empty;
         public DateTime ExpiryDate;
@@ -64,7 +65,7 @@ namespace Server.MirDatabase
         public AttackMode AMode;
         public PetMode PMode;
         public bool AllowGroup;
-        public bool AllowTrade;
+        public bool AllowTrade=true;//是否允许交易，默认是允许的
 
         public int PKPoints;
 

@@ -25,38 +25,38 @@ namespace Server.MirObjects
         }
 
         public const string
-            MainKey = "[@MAIN]",
-            BuyKey = "[@BUY]",
-            SellKey = "[@SELL]",
+            MainKey = "[@MAIN]",//主函数
+            BuyKey = "[@BUY]",//买
+            SellKey = "[@SELL]",//卖
             BuySellKey = "[@BUYSELL]",
-            RepairKey = "[@REPAIR]",
-            SRepairKey = "[@SREPAIR]",
-            RefineKey = "[@REFINE]",
-            RefineCheckKey = "[@REFINECHECK]",
-            RefineCollectKey = "[@REFINECOLLECT]",
+            RepairKey = "[@REPAIR]",//修理
+            SRepairKey = "[@SREPAIR]",//特殊修理
+            RefineKey = "[@REFINE]",//精炼，升级吧
+            RefineCheckKey = "[@REFINECHECK]",//精炼,检测
+            RefineCollectKey = "[@REFINECOLLECT]",//精炼，收集
             ReplaceWedRingKey = "[@REPLACEWEDDINGRING]",
-            BuyBackKey = "[@BUYBACK]",
-            StorageKey = "[@STORAGE]",
-            ConsignKey = "[@CONSIGN]",
-            MarketKey = "[@MARKET]",
-            ConsignmentsKey = "[@CONSIGNMENT]",
-            CraftKey = "[@CRAFT]",
+            BuyBackKey = "[@BUYBACK]",//回购
+            StorageKey = "[@STORAGE]",//存储物品
+            ConsignKey = "[@CONSIGN]",//寄售
+            MarketKey = "[@MARKET]",//市场
+            ConsignmentsKey = "[@CONSIGNMENT]",//寄售
+            CraftKey = "[@CRAFT]",//工艺
 
-            TradeKey = "[TRADE]",
-            RecipeKey = "[RECIPE]",
-            TypeKey = "[TYPES]",
-            QuestKey = "[QUESTS]",
+            TradeKey = "[TRADE]",//交易
+            RecipeKey = "[RECIPE]",//食谱
+            TypeKey = "[TYPES]",//
+            QuestKey = "[QUESTS]",//任务
 
-            GuildCreateKey = "[@CREATEGUILD]",
-            RequestWarKey = "[@REQUESTWAR]",
-            SendParcelKey = "[@SENDPARCEL]",
-            CollectParcelKey = "[@COLLECTPARCEL]",
-            AwakeningKey = "[@AWAKENING]",
-            DisassembleKey = "[@DISASSEMBLE]",
-            DowngradeKey = "[@DOWNGRADE]",
-            ResetKey = "[@RESET]",
-            PearlBuyKey = "[@PEARLBUY]",
-            BuyUsedKey = "[@BUYUSED]";
+            GuildCreateKey = "[@CREATEGUILD]",//创建行会
+            RequestWarKey = "[@REQUESTWAR]",//请求战争，发起行会战
+            SendParcelKey = "[@SENDPARCEL]",//发送包裹？
+            CollectParcelKey = "[@COLLECTPARCEL]",//接受包裹
+            AwakeningKey = "[@AWAKENING]",//觉醒
+            DisassembleKey = "[@DISASSEMBLE]",//拆解
+            DowngradeKey = "[@DOWNGRADE]",//降级
+            ResetKey = "[@RESET]",//重置
+            PearlBuyKey = "[@PEARLBUY]",//珍珠购买
+            BuyUsedKey = "[@BUYUSED]";//买
 
 
         //public static Regex Regex = new Regex(@"[^\{\}]<.*?/(.*?)>");
@@ -67,20 +67,21 @@ namespace Server.MirObjects
         public bool NeedSave;
         public bool Visible = true;
         public string NPCName;
-
+        //NPC包含的物品分为3类，1是食材，2是用户物品，3是回购物品（回购即别人卖出去的，或者叫二手的）
         public List<UserItem> Goods = new List<UserItem>();
         public List<UserItem> UsedGoods = new List<UserItem>();
         public Dictionary<string, List<UserItem>> BuyBack = new Dictionary<string, List<UserItem>>();
-
+        //物品分类
         public List<ItemType> Types = new List<ItemType>();
+        //物品的
         public List<NPCPage> NPCSections = new List<NPCPage>();
         public List<QuestInfo> Quests = new List<QuestInfo>();
         public List<RecipeInfo> CraftGoods = new List<RecipeInfo>();
 
         public Dictionary<ulong, bool> VisibleLog = new Dictionary<ulong, bool>();
-
+        //NPC分页，一般都是一页
         public List<NPCPage> NPCPages = new List<NPCPage>();
-
+        //攻城战争
         public ConquestObject Conq;
 
         public float PriceRate(PlayerObject player, bool baseRate = false)
@@ -109,7 +110,7 @@ namespace Server.MirObjects
             LoadInfo();
             LoadGoods();
         }
-
+        //加载配置
         public void LoadInfo(bool clear = false)
         {
             if (clear) ClearInfo();
@@ -120,11 +121,12 @@ namespace Server.MirObjects
 
             if (File.Exists(fileName))
             {
-                List<string> lines = File.ReadAllLines(fileName).ToList();
+                List<string> lines = File.ReadAllLines(fileName, EncodingType.GetType(fileName)).ToList();
 
                 lines = ParseInsert(lines);
                 lines = ParseInclude(lines);
-
+                //加入双井号代表注解
+                lines.RemoveAll(str => str.ToUpper().StartsWith("##"));
                 if (Info.IsDefault)
                     ParseDefault(lines);
                 else
@@ -178,6 +180,7 @@ namespace Server.MirObjects
             }
         }
 
+        //默认的NPC处理
         private void ParseDefault(List<string> lines)
         {
             for (int i = 0; i < lines.Count; i++)
@@ -185,6 +188,8 @@ namespace Server.MirObjects
                 if (!lines[i].ToUpper().StartsWith("[@_")) continue;
                 if (Name == "DefaultNPC")
                 {
+                    //加入活动的点，去到某个点则触发事件
+                    //[@_MAPCOORD(3,861,686)]
                     if (lines[i].ToUpper().Contains("MAPCOORD"))
                     {
                         Regex regex = new Regex(@"\((.*?),([0-9]{1,3}),([0-9]{1,3})\)");
@@ -203,7 +208,7 @@ namespace Server.MirObjects
                             map.Info.ActiveCoords.Add(point);
                         }
                     }
-
+                    //自定义命令
                     if (lines[i].ToUpper().Contains("CUSTOMCOMMAND"))
                     {
                         Regex regex = new Regex(@"\((.*?)\)");
@@ -214,9 +219,9 @@ namespace Server.MirObjects
                         SMain.Envir.CustomCommands.Add(match.Groups[1].Value);
                     }
                 }
-
                 else if (Name == "MonsterNPC")
                 {
+                    //配置怪物死亡，重生对应的脚本
                     MonsterInfo MobInfo;
                     if (lines[i].ToUpper().Contains("SPAWN"))
                     {
@@ -242,8 +247,8 @@ namespace Server.MirObjects
 
                 else if (Name == "RobotNPC")
                 {
+                    //这个还没用啊
                     //min,hour,day,month
-
                     if (lines[i].ToUpper().Contains("TIME"))
                     {
                         Regex regex = new Regex(@"\(([0-9]{1,2}),([0-9]{1,2}),([0-9]{1,1}),([0-9]{1,2})\)");
@@ -257,7 +262,7 @@ namespace Server.MirObjects
 
             }
         }
-
+        //普通脚本处理
         private void ParseScript(IList<string> lines)
         {
             NPCPages.AddRange(ParsePages(lines));
@@ -267,7 +272,10 @@ namespace Server.MirObjects
             ParseQuests(lines);
             ParseCrafting(lines);
         }
-
+        //处理插入
+        //#INSERT [SystemScripts\00Default\OnFinishQuests.txt] @Main
+        //#这个命令是加到末尾哦
+        //如果用这个，则整个文件都是插入
         private List<string> ParseInsert(List<string> lines)
         {
             List<string> newLines = new List<string>();
@@ -283,9 +291,9 @@ namespace Server.MirObjects
                 string path = Path.Combine(Settings.EnvirPath, split[1].Substring(1, split[1].Length - 2));
 
                 if (!File.Exists(path))
-                    SMain.Enqueue(string.Format("File Not Found: {0}, NPC: {1}", path, Info.Name));
+                    SMain.Enqueue(string.Format("INSERT File Not Found: {0}, NPC: {1}", path, Info.Name));
                 else
-                    newLines = File.ReadAllLines(path).ToList();
+                    newLines = File.ReadAllLines(path, EncodingType.GetType(path)).ToList();
 
                 lines.AddRange(newLines);
             }
@@ -295,6 +303,10 @@ namespace Server.MirObjects
             return lines;
         }
 
+        //替换INCLUDE命令
+        //#INCLUDE [SystemScripts/SharedNPCS/Tavern.txt] @Main
+        //如果包含的文件不存在，则整个脚本都无效了
+        //@Main 的意思是只包含 @Main的块，并且是{}这样包裹的块
         private List<string> ParseInclude(List<string> lines)
         {
             for (int i = 0; i < lines.Count; i++)
@@ -309,9 +321,13 @@ namespace Server.MirObjects
                 bool start = false, finish = false;
 
                 var parsedLines = new List<string>();
-
-                if (!File.Exists(path)) return parsedLines;
-                IList<string> extLines = File.ReadAllLines(path);
+                //如果包含的文件不存在，则整个脚本都无效了
+                if (!File.Exists(path))
+                {
+                    SMain.Enqueue(string.Format("INCLUDE File Not Found: {0}, NPC: {1}", path, Info.Name));
+                    return parsedLines;
+                }
+                IList<string> extLines = File.ReadAllLines(path, EncodingType.GetType(path));
 
                 for (int j = 0; j < extLines.Count; j++)
                 {
@@ -347,11 +363,12 @@ namespace Server.MirObjects
             return lines;
         }
 
+        //脚本分页处理
         private List<NPCPage> ParsePages(IList<string> lines, string key = MainKey)
         {
             List<NPCPage> pages = new List<NPCPage>();
             List<string> buttons = new List<string>();
-
+            //处理主页
             NPCPage page = ParsePage(lines, key);
             pages.Add(page);
 
@@ -373,7 +390,7 @@ namespace Server.MirObjects
 
             return pages;
         }
-
+        //处理某一页
         private NPCPage ParsePage(IList<string> scriptLines, string sectionName)
         {
             bool nextPage = false, nextSection = false;
@@ -389,11 +406,11 @@ namespace Server.MirObjects
             for (int i = 0; i < lines.Count; i++)
             {
                 string line = lines[i];
-
+                //过滤掉;开始的
                 if (line.StartsWith(";")) continue;
 
                 if (!lines[i].ToUpper().StartsWith(tempSectionName.ToUpper())) continue;
-
+                //这里不处理么？
                 if(lines[i] == "[@Market]")
                 {
 
@@ -402,7 +419,7 @@ namespace Server.MirObjects
                 List<string> segmentLines = new List<string>();
 
                 nextPage = false;
-
+                //找到一个页面，现在处理该页面并将其分割成片段
                 //Found a page, now process that page and split it into segments
                 for (int j = i + 1; j < lines.Count; j++)
                 {
@@ -417,7 +434,6 @@ namespace Server.MirObjects
                     {
                         nextPage = true;
                     }
-
                     else if (nextLine.StartsWith("#IF"))
                     {
                         nextSection = true;
@@ -466,13 +482,14 @@ namespace Server.MirObjects
                     Page.SegmentList.Add(segment);
                     segmentLines.Clear();
                 }
-
+                //这里直接返回了。就是只要够一页，直接就返回了
                 return Page;
             }
 
             return Page;
         }
 
+        //处理片段
         private NPCSegment ParseSegment(NPCPage page, IEnumerable<string> scriptLines)
         {
             List<string>
@@ -743,7 +760,7 @@ namespace Server.MirObjects
             }
         }
 
-
+        //玩家触发NPC命令
         public void Call(PlayerObject player, string key)
         {
             key = key.ToUpper();
@@ -834,7 +851,7 @@ namespace Server.MirObjects
             segment.Check();
         }
 
-
+        //特殊处理
         private void ProcessSpecial(PlayerObject player, NPCPage page)
         {
             List<UserItem> allGoods = new List<UserItem>();
@@ -913,11 +930,11 @@ namespace Server.MirObjects
                     break;
                 case MarketKey:
                     player.UserMatch = false;
-                    player.GetMarket(string.Empty, ItemType.Nothing);
+                    player.MarketSearch(string.Empty);
                     break;
                 case ConsignmentsKey:
                     player.UserMatch = true;
-                    player.GetMarket(string.Empty, ItemType.Nothing);
+                    player.MarketSearch(string.Empty);
                     break;
                 case GuildCreateKey:
                     if (player.Info.Level < Settings.Guild_RequiredLevel)
@@ -1065,19 +1082,20 @@ namespace Server.MirObjects
         public override void Process()
         {
             base.Process();
-
+            //NPC每10秒转一次方向
             if (Envir.Time > TurnTime)
             {
                 TurnTime = Envir.Time + TurnDelay;
                 Turn((MirDirection)RandomUtils.Next(3));
             }
-
+            //一个小时一次，这个是食材？食材处理？
             if (Envir.Time > UsedGoodsTime)
             {
                 UsedGoodsTime = SMain.Envir.Time + (Settings.Minute * Settings.GoodsBuyBackTime);
                 ProcessGoods();
             }
 
+            //判断NPC是否可看见
             if (Envir.Time > VisTime)
             {
                 VisTime = Envir.Time + (Settings.Minute);
@@ -1088,12 +1106,12 @@ namespace Server.MirObjects
                 }
                 else
                 {
-
                     int StartTime = ((Info.HourStart * 60) + Info.MinuteStart);
                     int FinishTime = ((Info.HourEnd * 60) + Info.MinuteEnd);
                     int CurrentTime = ((DateTime.Now.Hour * 60) + DateTime.Now.Minute);
 
                     if (Info.TimeVisible)
+                    {
                         if (StartTime > CurrentTime || FinishTime <= CurrentTime)
                         {
                             if (Visible) Hide();
@@ -1102,10 +1120,11 @@ namespace Server.MirObjects
                         {
                             if (!Visible) Show();
                         }
-
+                    }
                 }
             }
         }
+
         public void ProcessGoods(bool clear = false)
         {
             if (!Settings.GoodsOn) return;
