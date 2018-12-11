@@ -190,7 +190,6 @@
     <Compile Include="MirGraphics\DXManager.cs" />
     <Compile Include="MirGraphics\MLibraryV2.cs" />
     <Compile Include="MirGraphics\MLibrary.cs" />
-    <Compile Include="MirLog.cs" />
     <Compile Include="MirObjects\Damage.cs" />
     <Compile Include="MirObjects\DecoObject.cs" />
     <Compile Include="MirObjects\Effect.cs" />

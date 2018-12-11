@@ -196,14 +196,22 @@ namespace Client.MirControls
         //商城购买物品
         public void BuyProduct()
         {
-            uint CreditCost;
-            uint GoldCost;
             //byte payType;//支付类型 0：金币 1：元宝
-            MirMessageBox2 messageBox = new MirMessageBox2(LanguageUtils.Format("请选择购买{1} x {0} 使用的购买货币", Item.Info.FriendlyName, Quantity), MirMessageBoxButtons.YesNoCancel) { YesText="金币购买",NoText="元宝购买"}; 
-
-            messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.GameshopBuy { GIndex = Item.GIndex, payType = 0, Quantity = Quantity });
-            messageBox.NoButton.Click += (o, e) => Network.Enqueue(new C.GameshopBuy { GIndex = Item.GIndex, payType = 1, Quantity = Quantity });
-            messageBox.CancelButton.Click += (o, e) => { };
+            MirMessageBox2 messageBox;
+            //如果物品的金币价格是0，则只能是元宝购买
+            if (Item.GoldPrice <= 0)
+            {
+                messageBox = new MirMessageBox2(LanguageUtils.Format("请选择购买{1} x {0} 使用的购买货币", Item.Info.FriendlyName, Quantity), MirMessageBoxButtons.YesNo) { YesText = "元宝购买", NoText = "取消" };
+                messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.GameshopBuy { GIndex = Item.GIndex, payType = 1, Quantity = Quantity });
+                messageBox.NoButton.Click += (o, e) => { };
+            }
+            else
+            {
+                messageBox = new MirMessageBox2(LanguageUtils.Format("请选择购买{1} x {0} 使用的购买货币", Item.Info.FriendlyName, Quantity), MirMessageBoxButtons.YesNoCancel) { YesText = "元宝购买", NoText = "金币购买" };
+                messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.GameshopBuy { GIndex = Item.GIndex, payType = 1, Quantity = Quantity });
+                messageBox.NoButton.Click += (o, e) => Network.Enqueue(new C.GameshopBuy { GIndex = Item.GIndex, payType = 0, Quantity = Quantity });
+                messageBox.CancelButton.Click += (o, e) => { };
+            }
             messageBox.Show();
         }
 
@@ -237,7 +245,15 @@ namespace Client.MirControls
             nameLabel.Text = nameLabel.Text.Length > 17 ? nameLabel.Text.Substring(0, 17) : nameLabel.Text;
             nameLabel.ForeColour = Item.Info.getNameColor();
             quantity.Text = Quantity.ToString();
-            goldLabel.Text = (Item.GoldPrice * Quantity).ToString("###,###,##0");
+            if (Item.GoldPrice <= 0)
+            {
+                goldLabel.Text = "-";
+            }
+            else
+            {
+                goldLabel.Text = (Item.GoldPrice * Quantity).ToString("###,###,##0");
+            }
+               
             gpLabel.Text = (Item.CreditPrice * Quantity).ToString("###,###,##0");
             if (Item.Stock >= 99) stockLabel.Text = "99+";
             if (Item.Stock == 0) stockLabel.Text = "∞";

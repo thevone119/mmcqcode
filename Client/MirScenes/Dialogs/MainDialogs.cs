@@ -1165,7 +1165,7 @@ namespace Client.MirScenes.Dialogs
                 Location = new Point(Settings.Resolution != 800 ? 574 : 350, 1),
                 Visible = true,
                 Sound = SoundList.ButtonA,
-                Hint = "Size"
+                Hint = "尺寸"
             };
             SizeButton.Click += (o, e) =>
             {
@@ -1184,7 +1184,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Location = new Point(Settings.Resolution != 800 ? 596 : 372, 1),
                 Sound = SoundList.ButtonA,
-                Hint = "Chat Settings"
+                Hint = "聊天设置"
             };
             SettingsButton.Click += (o, e) =>
             {

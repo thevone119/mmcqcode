@@ -307,7 +307,7 @@ namespace Client.MirScenes
                 Characters.Sort((c1, c2) => c2.LastAccess.CompareTo(c1.LastAccess));
         }
 
-
+        //开始游戏
         public void StartGame()
         {
             if (!Libraries.Loaded)

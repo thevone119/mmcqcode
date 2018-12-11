@@ -558,7 +558,6 @@ namespace Client.MirScenes.Dialogs
                         }
                     }
                 }
-
                 else if (SelectedItem.Price() > GameScene.Gold)
                 {
                     maxQuantity = GameScene.Gold / (SelectedItem.Price() / SelectedItem.Count);

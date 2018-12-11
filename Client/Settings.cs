@@ -2,6 +2,7 @@
 using System;
 using Client.MirSounds;
 using System.Windows.Forms;
+using System.Drawing;
 
 namespace Client
 {
@@ -71,6 +72,8 @@ namespace Client
         public static int Resolution = 1024;
         public static bool DebugMode = false;
 
+        public static Font myFont1 = new Font(Settings.FontName, 12F);
+
         //Network
         public static bool UseConfig = false;
         public static string serverIp;//服务器IP
@@ -130,7 +133,7 @@ namespace Client
             NameView = true,
             HPView = true,
             TransparentChat = false,
-            DuraView = false,
+            DuraView = false,//是否显示持久面板
             DisplayDamage = true,
             TargetDead = false,
             ExpandedBuffWindow = true;

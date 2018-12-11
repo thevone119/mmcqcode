@@ -229,6 +229,7 @@ namespace Client.MirNetwork
             {
                 Packet p;
                 if (!_receiveList.TryDequeue(out p) || p == null) continue;
+                //MirLog.info("ProcessPacket:" + p.Index);
                 MirScene.ActiveScene.ProcessPacket(p);
             }
 

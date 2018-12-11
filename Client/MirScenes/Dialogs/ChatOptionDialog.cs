@@ -9,6 +9,7 @@ using Client.MirSounds;
 
 namespace Client.MirScenes.Dialogs
 {
+    //聊天设置窗口
     public class ChatOptionDialog : MirImageControl
     {
         public MirButton FilterTabButton, ChatTabButton;

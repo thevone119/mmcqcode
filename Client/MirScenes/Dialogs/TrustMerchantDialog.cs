@@ -1,6 +1,7 @@
 ﻿using Client.MirControls;
 using Client.MirGraphics;
 using Client.MirNetwork;
+using Client.MirObjects;
 using Client.MirSounds;
 using System;
 using System.Collections.Generic;
@@ -13,16 +14,19 @@ using C = ClientPackets;
 
 namespace Client.MirScenes.Dialogs
 {
-    //委托
+    //寄卖物品
+    //这个是取代普通的摆摊的，要做好这个市场，方便玩家进行交易的
     public sealed class TrustMerchantDialog : MirImageControl
     {
+        //UserMode：卖：true, 买：false
         public static bool UserMode = false;
 
         public static long SearchTime, MarketTime;
 
         public MirTextBox SearchTextBox;
         public MirButton FindButton, RefreshButton, MailButton, BuyButton, CloseButton, NextButton, BackButton;
-        public MirImageControl TitleLabel;
+        public MirLabel TitleLabel;
+        //物品名称，价格，卖家
         public MirLabel ItemLabel, PriceLabel, SellerLabel, PageLabel;
         public MirLabel DateLabel, ExpireLabel;
         public MirLabel NameLabel, TotalPriceLabel, SplitPriceLabel;
@@ -43,14 +47,16 @@ namespace Client.MirScenes.Dialogs
             Sort = true;
 
 
-            TitleLabel = new MirImageControl
+            TitleLabel = new MirLabel
             {
-                Index = 24,
-                Library = Libraries.Title,
-                Location = new Point(18, 9),
-                Parent = this
+                Text = "",
+                Parent = this,
+                Font = new Font(Settings.FontName, 10F, FontStyle.Bold),
+                ForeColour = Color.BurlyWood,
+                Location = new Point(30, 6),
+                AutoSize = true
             };
-
+           
             SearchTextBox = new MirTextBox
             {
                 Location = new Point(19, 329),
@@ -108,7 +114,10 @@ namespace Client.MirScenes.Dialogs
                 }
                 SearchTime = CMain.Time + Globals.SearchDelay;
                 SearchTextBox.Text = string.Empty;
-                Network.Enqueue(new C.MarketRefresh());
+                Network.Enqueue(new C.MarketSearch
+                {
+                    Match = SearchTextBox.Text,
+                });
             };
 
 
@@ -140,9 +149,9 @@ namespace Client.MirScenes.Dialogs
 
                 if (UserMode)
                 {
-                    if (Selected.Listing.Seller == "For Sale")
+                    if (!Selected.Listing.Sold)
                     {
-                        MirMessageBox box = new MirMessageBox(LanguageUtils.Format("{0} has not sold, Are you sure you want to get it back?", Selected.Listing.Item.FriendlyName), MirMessageBoxButtons.YesNo);
+                        MirMessageBox box = new MirMessageBox(LanguageUtils.Format("{0} 还在售，你确定需要取回么?", Selected.Listing.Item.FriendlyName), MirMessageBoxButtons.YesNo);
                         box.YesButton.Click += (o1, e2) =>
                         {
                             MarketTime = CMain.Time + 3000;
@@ -155,11 +164,10 @@ namespace Client.MirScenes.Dialogs
                         MarketTime = CMain.Time + 3000;
                         Network.Enqueue(new C.MarketGetBack { AuctionID = Selected.Listing.AuctionID });
                     }
-
                 }
                 else
                 {
-                    MirMessageBox box = new MirMessageBox(LanguageUtils.Format("Are you sure you want to buy {0} for {1}?", Selected.Listing.Item.FriendlyName, Selected.Listing.Price), MirMessageBoxButtons.YesNo);
+                    MirMessageBox box = new MirMessageBox(LanguageUtils.Format("Are you sure you want to buy {0} for {1}?", Selected.Listing.Item.FriendlyName, Selected.Listing.GoldPrice), MirMessageBoxButtons.YesNo);
                     box.YesButton.Click += (o1, e2) =>
                     {
                         MarketTime = CMain.Time + 3000;
@@ -205,9 +213,11 @@ namespace Client.MirScenes.Dialogs
                     UpdateInterface();
                     return;
                 }
-
-                Network.Enqueue(new C.MarketPage { Page = Page + 1 });
-
+                Network.Enqueue(new C.MarketSearch
+                {
+                    Match = SearchTextBox.Text,
+                    Page = Page + 1
+                });
             };
 
             CloseButton = new MirButton
@@ -262,7 +272,7 @@ namespace Client.MirScenes.Dialogs
                 Location = new Point(250, 245),
                 Parent = this,
                 NotControl = true,
-                Text = "Start Date:"
+                Text = "开始时间:"
             };
 
             ExpireLabel = new MirLabel
@@ -271,7 +281,7 @@ namespace Client.MirScenes.Dialogs
                 Location = new Point(250, 265),
                 Parent = this,
                 NotControl = true,
-                Text = "Expire Date:"
+                Text = "结束时间:"
             };
 
             ItemLabel = new MirLabel
@@ -281,7 +291,7 @@ namespace Client.MirScenes.Dialogs
                 DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter,
                 Parent = this,
                 NotControl = true,
-                Text = "Item",
+                Text = "物品",
             };
 
             PriceLabel = new MirLabel
@@ -291,7 +301,7 @@ namespace Client.MirScenes.Dialogs
                 DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter,
                 Parent = this,
                 NotControl = true,
-                Text = "Price",
+                Text = "价格",
             };
 
             SellerLabel = new MirLabel
@@ -301,7 +311,7 @@ namespace Client.MirScenes.Dialogs
                 DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter,
                 Parent = this,
                 NotControl = true,
-                Text = "Seller",
+                Text = "卖家",
             };
 
             for (int i = 0; i < Rows.Length; i++)
@@ -331,7 +341,7 @@ namespace Client.MirScenes.Dialogs
 
         public void UpdateInterface()
         {
-            SellerLabel.Text = UserMode ? "Status" : "Seller";
+            SellerLabel.Text = UserMode ? "状态" : "卖家";
             BuyButton.Index = UserMode ? 400 : 483;
             BuyButton.HoverIndex = UserMode ? 401 : 484;
             BuyButton.PressedIndex = UserMode ? 402 : 485;
@@ -371,8 +381,8 @@ namespace Client.MirScenes.Dialogs
 
             NameLabel.Text = Selected.Listing.Item.FriendlyName;
 
-            TotalPriceLabel.Text = LanguageUtils.Format("Price: {0:#,##0}", Selected.Listing.Price);
-            SplitPriceLabel.Text = LanguageUtils.Format("Each: {0:#,##0.#}", Selected.Listing.Price / (float)Selected.Listing.Item.Count);
+            TotalPriceLabel.Text = LanguageUtils.Format("Price: {0:#,##0}", Selected.Listing.GoldPrice);
+            SplitPriceLabel.Text = LanguageUtils.Format("Each: {0:#,##0.#}", Selected.Listing.GoldPrice / (float)Selected.Listing.Item.Count);
 
             DateLabel.Text = LanguageUtils.Format("Start Date: {0}", Selected.Listing.ConsignmentDate);
             ExpireLabel.Text = LanguageUtils.Format("Finish Date: {0}", Selected.Listing.ConsignmentDate.AddDays(Globals.ConsignmentLength));
@@ -471,8 +481,19 @@ namespace Client.MirScenes.Dialogs
         {
             if (Visible) return;
             Visible = true;
+            NPCObject npc = (NPCObject)MapControl.GetObject(GameScene.NPCID);
+            if (npc != null)
+            {
+                string[] nameSplit = npc.Name.Split('_');
+                TitleLabel.Text = nameSplit[0];
+            }
+            else if(TitleLabel.Text=="")
+            {
+                TitleLabel.Text = "玩家集市";
+            }
         }
 
+        //这是每一行
         public sealed class AuctionRow : MirControl
         {
             public ClientAuction Listing;
@@ -523,37 +544,41 @@ namespace Client.MirScenes.Dialogs
             {
                 Listing = listing;
                 NameLabel.Text = Listing.Item.FriendlyName;
-                PriceLabel.Text = Listing.Price.ToString("###,###,##0");
+                PriceLabel.Text = Listing.GoldPrice.ToString("###,###,##0");
 
                 NameLabel.ForeColour = Listing.Item.IsAdded ? Color.Cyan : Color.White;
 
-                if (Listing.Price > 10000000) //10Mil
+                if (Listing.GoldPrice > 10000000) //10Mil
                     PriceLabel.ForeColour = Color.Red;
-                else if (listing.Price > 1000000) //1Million
+                else if (listing.GoldPrice > 1000000) //1Million
                     PriceLabel.ForeColour = Color.Orange;
-                else if (listing.Price > 100000) //1Million
+                else if (listing.GoldPrice > 100000) //1Million
                     PriceLabel.ForeColour = Color.Green;
-                else if (listing.Price > 10000) //1Million
+                else if (listing.GoldPrice > 10000) //1Million
                     PriceLabel.ForeColour = Color.DeepSkyBlue;
                 else
                     PriceLabel.ForeColour = Color.White;
 
 
                 SellerLabel.Text = Listing.Seller;
-
+                //如果是卖家查看，则状态栏显示有区别
                 if (UserMode)
                 {
-                    switch (Listing.Seller)
+                    //已卖
+                    if (Listing.Sold)
                     {
-                        case "Sold":
-                            SellerLabel.ForeColour = Color.Gold;
-                            break;
-                        case "Expired":
-                            SellerLabel.ForeColour = Color.Red;
-                            break;
-                        default:
-                            SellerLabel.ForeColour = Color.White;
-                            break;
+                        SellerLabel.ForeColour = Color.Gold;
+                        SellerLabel.Text = "已售";
+                    }
+                    else if (Listing.Expired)
+                    {
+                        SellerLabel.ForeColour = Color.Red;
+                        SellerLabel.Text = "过期";
+                    }
+                    else
+                    {
+                        SellerLabel.ForeColour = Color.White;
+                        SellerLabel.Text = "在售";
                     }
                 }
                 Visible = true;

@@ -11,6 +11,7 @@ using System.Windows.Forms;
 
 namespace Client.MirScenes.Dialogs
 {
+    //这个是通知窗口，好像没用？
     public class ChatNoticeDialog : MirImageControl
     {
         public MirImageControl Layout;

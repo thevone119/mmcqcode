@@ -173,6 +173,7 @@ namespace Client.MirScenes
         public LightSetting Lights;
 
         public static long NPCTime;
+        //当前NPC的ID，最后触发的NPCID
         public static uint NPCID;
         public static float NPCRate;
         public static uint DefaultNPCID;
@@ -1602,9 +1603,7 @@ namespace Client.MirScenes
                 case (short)ServerPacketIds.NPCMarket:
                     NPCMarket((S.NPCMarket)p);
                     break;
-                case (short)ServerPacketIds.NPCMarketPage:
-                    NPCMarketPage((S.NPCMarketPage)p);
-                    break;
+  
                 case (short)ServerPacketIds.ConsignItem:
                     ConsignItem((S.ConsignItem)p);
                     break;
@@ -1904,6 +1903,11 @@ namespace Client.MirScenes
                 case (short)ServerPacketIds.ConfirmItemRental:
                     ConfirmItemRental((S.ConfirmItemRental)p);
                     break;
+                case (short)ServerPacketIds.UserGold://刷新金币
+                    Gold = ((S.UserGold)p).Gold;
+                    Credit = ((S.UserGold)p).Credit;
+
+                    break;
                 default:
                     base.ProcessPacket(p);
                     break;
@@ -1930,6 +1934,8 @@ namespace Client.MirScenes
         {
             User = new UserObject(p.ObjectID);
             User.Load(p);
+            
+            //为什么只有战士和道士才有技能栏？
             MainDialog.PModeLabel.Visible = User.Class == MirClass.Wizard || User.Class == MirClass.Taoist;
             Gold = p.Gold;
             Credit = p.Credit;
@@ -4727,25 +4733,24 @@ namespace Client.MirScenes
         {
             for (int i = 0; i < p.Listings.Count; i++)
                 Bind(p.Listings[i].Item);
-
-            TrustMerchantDialog.Show();
+            if (!TrustMerchantDialog.Visible)
+            {
+                TrustMerchantDialog.Show();
+            }
             TrustMerchantDialog.UserMode = p.UserMode;
-            TrustMerchantDialog.Listings = p.Listings;
-            TrustMerchantDialog.Page = 0;
-            TrustMerchantDialog.PageCount = p.Pages;
+            TrustMerchantDialog.Page = p.cpage;
+            TrustMerchantDialog.PageCount = p.pageCount;
+            if (p.cpage == 0)
+            {
+                TrustMerchantDialog.Listings = p.Listings;
+            }
+            else
+            {
+                TrustMerchantDialog.Listings.AddRange(p.Listings);
+            }
             TrustMerchantDialog.UpdateInterface();
         }
-        private void NPCMarketPage(S.NPCMarketPage p)
-        {
-            if (!TrustMerchantDialog.Visible) return;
-
-            for (int i = 0; i < p.Listings.Count; i++)
-                Bind(p.Listings[i].Item);
-
-            TrustMerchantDialog.Listings.AddRange(p.Listings);
-            TrustMerchantDialog.Page = (TrustMerchantDialog.Listings.Count - 1) / 10;
-            TrustMerchantDialog.UpdateInterface();
-        }
+        
         private void ConsignItem(S.ConsignItem p)
         {
             MirItemCell cell = InventoryDialog.GetCell(p.UniqueID) ?? BeltDialog.GetCell(p.UniqueID);
@@ -4794,6 +4799,10 @@ namespace Client.MirScenes
                 case 8:
                     //MirMessageBox.Show("You cannot hold enough gold to get your sale");
                     MirMessageBox.Show("您的金币不足");
+                    break;
+                case 9:
+                    //MirMessageBox.Show("You cannot hold enough gold to get your sale");
+                    MirMessageBox.Show("此物品已下架，请刷新列表");
                     break;
             }
 
@@ -8106,18 +8115,22 @@ namespace Client.MirScenes
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, IDLabel.DisplayRectangle.Right + 4),
                     Math.Max(ItemLabel.Size.Height, IDLabel.DisplayRectangle.Bottom));
 
-                MirLabel TOOLTIPLabel = new MirLabel
+                //这个物品描述考虑怎么换行
+                string[] tooltips = HoverItem.Info.ToolTip.Split(new char[] { '&','^','&' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach(string tips in tooltips)
                 {
-                    AutoSize = true,
-                    ForeColour = Color.Khaki,
-                    Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
-                    OutLine = true,
-                    Parent = ItemLabel,
-                    Text = HoverItem.Info.ToolTip
-                };
-
-                ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, TOOLTIPLabel.DisplayRectangle.Right + 4),
+                    MirLabel TOOLTIPLabel = new MirLabel
+                    {
+                        AutoSize = true,
+                        ForeColour = Color.Khaki,
+                        Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                        OutLine = true,
+                        Parent = ItemLabel,
+                        Text = tips
+                    };
+                    ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, TOOLTIPLabel.DisplayRectangle.Right + 4),
                     Math.Max(ItemLabel.Size.Height, TOOLTIPLabel.DisplayRectangle.Bottom));
+                }
             }
 
             #endregion
@@ -9491,6 +9504,7 @@ namespace Client.MirScenes
                         AutoRun = false;
                         if (MapObject.MouseObject == null) return;
                         NPCObject npc = MapObject.MouseObject as NPCObject;
+                        //这里触发NPC事件，发送给服务器
                         if (npc != null)
                         {
                             GameScene.Scene.NPCDialog.Hide();
@@ -9999,7 +10013,7 @@ namespace Client.MirScenes
             //没有目标
             if (MapObject.TargetObject == null || MapObject.TargetObject.Dead) return;
             //这个逻辑几把复杂
-            if (((!MapObject.TargetObject.Name.EndsWith(")") && !(MapObject.TargetObject is PlayerObject)) || !CMain.Shift) &&
+            if (((!MapObject.TargetObject.Name.EndsWith(")") && !(MapObject.TargetObject is PlayerObject)) || (!CMain.Shift&&!GameScene.UserSet.ExcuseShift)) &&
                 (MapObject.TargetObject.Name.EndsWith(")") || !(MapObject.TargetObject is MonsterObject))) return;
             //目标就在身边，对格位刺杀做处理
             if (Functions.InAttackRange(MapObject.TargetObject.CurrentLocation, User.CurrentLocation, AttackRange)) return;

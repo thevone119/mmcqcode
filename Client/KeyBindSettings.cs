@@ -60,9 +60,10 @@ KeyUp：在控件有焦点的情况下释放键时发生。
 /// 
 /// 
 /// </summary>
+/// 
 namespace Client
 {
-
+    //没有快速组队的快捷键啊
     public enum KeybindOptions : int
     {
         Bar1Skill1 = 0,

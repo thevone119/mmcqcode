@@ -265,7 +265,7 @@ namespace Client.MirScenes.Dialogs
         {
             if (visible)
             {
-                RechargeRemind.Text = "充值10元，可获得10%的赠送，最终可获得1100点元宝";
+                RechargeRemind.Text = "充值10元，可获得10%的赠送，最终可获得"+ Globals.Recharge10 + "点元宝";
                 Recharge10Button.Index = tabPressedIndex;
             }
             else
@@ -280,7 +280,7 @@ namespace Client.MirScenes.Dialogs
 
             if (visible)
             {
-                RechargeRemind.Text = "充值20元，可获得15%的赠送，最终可获得2300点元宝";
+                RechargeRemind.Text = "充值20元，可获得15%的赠送，最终可获得" + Globals.Recharge20 + "点元宝";
                 Recharge20Button.Index = tabPressedIndex;
             }
             else
@@ -293,7 +293,7 @@ namespace Client.MirScenes.Dialogs
         {
             if (visible)
             {
-                RechargeRemind.Text = "充值50元，可获得20%的赠送，最终可获得6000点元宝";
+                RechargeRemind.Text = "充值50元，可获得20%的赠送，最终可获得" + Globals.Recharge50 + "点元宝";
                 Recharge50Button.Index = tabPressedIndex;
             }
             else
@@ -306,7 +306,7 @@ namespace Client.MirScenes.Dialogs
         {
             if (visible)
             {
-                RechargeRemind.Text = "充值100元，可获得30%的赠送，最终可获得13000点元宝";
+                RechargeRemind.Text = "充值100元，可获得30%的赠送，最终可获得" + Globals.Recharge100 + "点元宝";
                 Recharge100Button.Index = tabPressedIndex;
             }
             else

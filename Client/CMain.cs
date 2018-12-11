@@ -345,6 +345,11 @@ namespace Client
                 FPS = _fps;
                 _fps = 0;
                 DXManager.Clean(); // Clean once a second.
+                //这里加入游戏名称的更新
+                if (GameScene.User != null && GameScene.User.Name!=null && Program.Form.Text!=null && !Program.Form.Text.Contains(GameScene.User.Name))
+                {
+                    Program.Form.Text = Settings.serverName != null ? Settings.serverName+" -- "+GameScene.User.Name : "夜火传奇";
+                }
             }
             else
                 _fps++;
