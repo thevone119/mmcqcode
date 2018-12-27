@@ -3,6 +3,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //角蝇
     class BugBagMaggot : MonsterObject
     {
         protected override bool CanMove { get { return false; } }

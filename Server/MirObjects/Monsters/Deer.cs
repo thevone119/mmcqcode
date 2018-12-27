@@ -2,6 +2,7 @@
 
 namespace Server.MirObjects.Monsters
 {
+    //鹿，包括羊等非攻击型的怪物
     public class Deer : HarvestMonster
     {
         private bool _runAway;

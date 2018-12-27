@@ -112,8 +112,7 @@ namespace Server.MirNetwork
             }
             catch (Exception ex)
             {
-                File.AppendAllText(Settings.LogPath + "Error Log (" + DateTime.Now.Date.ToString("dd-MM-yyyy") + ").txt",
-                                           String.Format("[{0}]: {1}" + Environment.NewLine, DateTime.Now, ex.ToString()));
+                SMain.Enqueue(ex);
             }
         }
         //断开连接

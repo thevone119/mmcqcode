@@ -3,6 +3,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //树
     public class Tree : MonsterObject
     {
         protected override bool CanMove { get { return false; } }

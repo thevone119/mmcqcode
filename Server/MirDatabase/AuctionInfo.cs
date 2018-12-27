@@ -33,7 +33,7 @@ namespace Server.MirDatabase
         public string Seller;
 
         //过期？已卖？删除，如果是删除状态的，保存的时候，要删除数据库中的数据
-        public bool Expired, Sold,del;
+        public bool Expired, Sold,isdel;
 
         public AuctionInfo()
         {
@@ -47,9 +47,9 @@ namespace Server.MirDatabase
         /// <returns></returns>
         public static void loadAll()
         {
-            MirRunDB.Execute("delete from AuctionInfo where del=1");
+            MirRunDB.Execute("delete from AuctionInfo where isdel=1");
 
-            DbDataReader read = MirRunDB.ExecuteReader("select * from AuctionInfo where del=0");
+            DbDataReader read = MirRunDB.ExecuteReader("select * from AuctionInfo where isdel=0");
             while (read.Read())
             {
                 AuctionInfo obj = new AuctionInfo();
@@ -71,7 +71,7 @@ namespace Server.MirDatabase
                 obj.ConsignmentDate = read.GetDateTime(read.GetOrdinal("ConsignmentDate"));
                 obj.Expired = read.GetBoolean(read.GetOrdinal("Expired"));
                 obj.Sold = read.GetBoolean(read.GetOrdinal("Sold"));
-                obj.del = read.GetBoolean(read.GetOrdinal("del"));
+                obj.isdel = read.GetBoolean(read.GetOrdinal("isdel"));
 
                 DBObjectUtils.updateObjState(obj, obj.AuctionID);
                 listAll.AddLast(obj);
@@ -96,7 +96,7 @@ namespace Server.MirDatabase
 
         //查询分页,page从0开始
         //UserMatch：卖：true, 买：false
-        public static S.NPCMarket SearchPage(ulong CharacterIndex,string MatchName, bool UserMatch,int page)
+        public static S.NPCMarket SearchPage(ulong CharacterIndex,string MatchName, bool UserMatch,int page=0)
         {
             if (MatchName != null)
             {
@@ -109,7 +109,7 @@ namespace Server.MirDatabase
                 DateTime Now = SMain.Envir.Now;
                 foreach (AuctionInfo info in listAll)
                 {
-                    if (info.del)
+                    if (info.isdel)
                     {
                         continue;
                     }
@@ -127,7 +127,7 @@ namespace Server.MirDatabase
             DateTime now = DateTime.Now;
             foreach (AuctionInfo info in listAll)
             {
-                if (info.del)
+                if (info.isdel)
                 {
                     continue;
                 }
@@ -174,7 +174,7 @@ namespace Server.MirDatabase
         {
             foreach (AuctionInfo info in listAll)
             {
-                if(info.AuctionID== AuctionID && !info.del)
+                if(info.AuctionID== AuctionID && !info.isdel)
                 {
                     return info;
                 }
@@ -196,7 +196,7 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("CharacterIndex", CharacterIndex));
             lp.Add(new SQLiteParameter("Expired", Expired));
             lp.Add(new SQLiteParameter("Sold", Sold));
-            lp.Add(new SQLiteParameter("del", del));
+            lp.Add(new SQLiteParameter("isdel", isdel));
             lp.Add(new SQLiteParameter("Seller", Seller));
 
             lp.Add(new SQLiteParameter("AccountIndex", AccountIndex));

@@ -5,6 +5,8 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //护卫，带刀护卫，皇家护卫等，会自动移动的
+    //AI是6，58
     public class Guard : MonsterObject
     {
         public override bool Blocking

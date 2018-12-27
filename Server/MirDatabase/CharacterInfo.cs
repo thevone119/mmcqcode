@@ -238,7 +238,10 @@ namespace Server.MirDatabase
                 {
                     for (int i = 0; i < obj.CurrentQuests.Count; i++)
                     {
-                        SMain.Envir.BindQuest(obj.CurrentQuests[i]);
+                        if (!SMain.Envir.BindQuest(obj.CurrentQuests[i]))
+                        {
+                            obj.CurrentQuests.Remove(obj.CurrentQuests[i]);
+                        }
                     }
                 }
                 

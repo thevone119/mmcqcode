@@ -8,6 +8,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //这个是触龙神
     class EvilCentipede : MonsterObject
     {
         public bool Visible;

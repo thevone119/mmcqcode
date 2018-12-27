@@ -4,6 +4,7 @@ using Server.MirEnvir;
 
 namespace Server.MirObjects.Monsters
 {
+    //沃玛教主
     public class WoomaTaurus : FlamingWooma
     {
         private long _teleTime, _madTime;

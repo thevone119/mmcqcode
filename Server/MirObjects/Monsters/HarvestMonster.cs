@@ -6,6 +6,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //挖取的怪物
     public class HarvestMonster : MonsterObject
     {
         protected short Quality;

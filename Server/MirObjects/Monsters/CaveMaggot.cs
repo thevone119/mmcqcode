@@ -3,6 +3,8 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //会麻痹的怪
+    //洞蛆/楔蛾/粪虫/粪虫0/月魔蜘蛛
     public class CaveMaggot : HarvestMonster
     {
         protected internal CaveMaggot(MonsterInfo info)

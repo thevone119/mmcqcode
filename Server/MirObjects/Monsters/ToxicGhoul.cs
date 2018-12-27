@@ -7,6 +7,7 @@ using System.Collections.Generic;
 
 namespace Server.MirObjects.Monsters
 {
+    //恶灵尸王
     public class ToxicGhoul : HarvestMonster
     {
         protected internal ToxicGhoul(MonsterInfo info)

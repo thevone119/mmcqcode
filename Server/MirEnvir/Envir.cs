@@ -2039,6 +2039,7 @@ namespace Server.MirEnvir
         }
         public void CreateItemInfo(ItemType type = ItemType.Nothing)
         {
+            //SMain.Enqueue("getObjNextId:"+ DBObjectUtils.getObjNextId(new ItemInfo()));
             ItemInfoList.Add(new ItemInfo { Index = (int)DBObjectUtils.getObjNextId(new ItemInfo()), Type = type, RandomStatsId = 255 });
         }
         public void CreateMonsterInfo()
@@ -2118,9 +2119,31 @@ namespace Server.MirEnvir
         {
             if (instanceValue < 0) instanceValue = 0;
             if (instanceValue > 0) instanceValue--;
-
-            var instanceMapList = MapList.Where(t => String.Equals(t.Info.FileName, name, StringComparison.CurrentCultureIgnoreCase)).ToList();
-            return instanceValue < instanceMapList.Count() ? instanceMapList[instanceValue] : null;
+            List<Map> list = new List<Map>();
+            foreach(Map m in MapList)
+            {
+                if(String.Equals(m.Info.FileName, name, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    list.Add(m);
+                }
+            }
+            if (list.Count == 0)
+            {
+                foreach (Map m in MapList)
+                {
+                    //增加根据ID查找，方便测试，后续注释掉
+                    if (String.Equals(m.Info.Index + "", name, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        list.Add(m);
+                    }
+                }
+            }
+            if (instanceValue < list.Count)
+            {
+                return list[instanceValue];
+            }
+  
+            return null;
         }
 
         //这个没用到，还好

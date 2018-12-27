@@ -1587,8 +1587,7 @@ namespace Server
                         Count = (ushort)MirForms.ConvertMonGenInfo.monGenList[i].Count,
                         Spread = (ushort)MirForms.ConvertMonGenInfo.monGenList[i].Range,
                         Delay = (ushort)MirForms.ConvertMonGenInfo.monGenList[i].Delay,
-                        Direction = (byte)MirForms.ConvertMonGenInfo.monGenList[i].Direction,
-                        RespawnIndex = 0
+                        Direction = (byte)MirForms.ConvertMonGenInfo.monGenList[i].Direction
                     };
 
                     int index = Envir.MapInfoList.FindIndex(a => a.FileName == MirForms.ConvertMonGenInfo.monGenList[i].Map);
@@ -1797,6 +1796,28 @@ namespace Server
                 _selectedMovementInfos[i].ConquestIndex = info.Index;
 
             RefreshMovementList();
+        }
+
+        private void Copyids_Click(object sender, EventArgs e)
+        {
+            string ids = "";
+            for (int i = 0; i < _info.Respawns.Count; i++)
+            {
+                if(i< _info.Respawns.Count - 1)
+                {
+                    ids += _info.Respawns[i].MonsterIndex + ",";
+                }
+                else
+                {
+                    ids += _info.Respawns[i].MonsterIndex ;
+                }
+            }
+            Clipboard.SetDataObject(ids);
+        }
+
+        private void RCopyButton_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

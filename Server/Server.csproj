@@ -277,6 +277,7 @@
     <Compile Include="MirObjects\ItemObject.cs" />
     <Compile Include="MirObjects\MapObject.cs" />
     <Compile Include="MirObjects\MonsterObject.cs" />
+    <Compile Include="MirObjects\Monsters\Jar2.cs" />
     <Compile Include="MirObjects\Monsters\HellBomb.cs" />
     <Compile Include="MirObjects\Monsters\FlameAssassin.cs" />
     <Compile Include="MirObjects\Monsters\FlameMage.cs" />
@@ -286,6 +287,7 @@
     <Compile Include="MirObjects\Monsters\IcePillar.cs" />
     <Compile Include="MirObjects\Monsters\FlameSpear.cs" />
     <Compile Include="MirObjects\Monsters\FlameQueen.cs" />
+    <Compile Include="MirObjects\Monsters\RestlessJar.cs" />
     <Compile Include="MirObjects\Monsters\TrollKing.cs" />
     <Compile Include="MirObjects\Monsters\ManectricKing.cs" />
     <Compile Include="MirObjects\Monsters\TrollBomber.cs" />

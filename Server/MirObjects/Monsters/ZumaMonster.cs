@@ -10,6 +10,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //祖玛雕像/祖玛卫士
     class ZumaMonster : MonsterObject
     {
         public bool Stoned = true;

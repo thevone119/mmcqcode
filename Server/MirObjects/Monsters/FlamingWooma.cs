@@ -3,6 +3,8 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //火焰沃玛
+    //火焰沃玛/火焰沃玛0/火焰沃玛2/火焰沃玛3
     public class FlamingWooma : MonsterObject
     {
         protected internal FlamingWooma(MonsterInfo info) : base(info)

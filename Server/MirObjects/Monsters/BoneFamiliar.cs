@@ -7,9 +7,10 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //变异骷髅
     class BoneFamiliar : MonsterObject
     {
-        public bool Summoned;
+        public bool Summoned;//召唤
 
         protected internal BoneFamiliar(MonsterInfo info) : base(info)
         {

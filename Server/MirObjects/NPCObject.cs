@@ -36,6 +36,7 @@ namespace Server.MirObjects
             RefineCollectKey = "[@REFINECOLLECT]",//精炼，收集
             ReplaceWedRingKey = "[@REPLACEWEDDINGRING]",
             BuyBackKey = "[@BUYBACK]",//回购
+            SecondBuyKey = "[@SECONDBUY]",//二手
             StorageKey = "[@STORAGE]",//存储物品
             ConsignKey = "[@CONSIGN]",//寄售
             MarketKey = "[@MARKET]",//市场
@@ -68,6 +69,8 @@ namespace Server.MirObjects
         public bool Visible = true;
         public string NPCName;
         //NPC包含的物品分为3类，1是食材，2是用户物品，3是回购物品（回购即别人卖出去的，或者叫二手的）
+        public long lastFileTime = 0;//最后加载文件修改时间
+        public long lastLoadTime = 0;//最后加载时间
         public List<UserItem> Goods = new List<UserItem>();
         public List<UserItem> UsedGoods = new List<UserItem>();
         public Dictionary<string, List<UserItem>> BuyBack = new Dictionary<string, List<UserItem>>();
@@ -83,6 +86,8 @@ namespace Server.MirObjects
         public List<NPCPage> NPCPages = new List<NPCPage>();
         //攻城战争
         public ConquestObject Conq;
+
+
 
         public float PriceRate(PlayerObject player, bool baseRate = false)
         {
@@ -113,27 +118,46 @@ namespace Server.MirObjects
         //加载配置
         public void LoadInfo(bool clear = false)
         {
-            if (clear) ClearInfo();
-
-            if (!Directory.Exists(Settings.NPCPath)) return;
+            if (Envir.Time < lastLoadTime)
+            {
+                return;
+            }
+            //10秒到20秒，随机时间
+            lastLoadTime = Envir.Time + RandomUtils.Next(10000, 20000);
 
             string fileName = Path.Combine(Settings.NPCPath, Info.FileName + ".txt");
-
-            if (File.Exists(fileName))
+            if (!File.Exists(fileName))
             {
-                List<string> lines = File.ReadAllLines(fileName, EncodingType.GetType(fileName)).ToList();
-
-                lines = ParseInsert(lines);
-                lines = ParseInclude(lines);
-                //加入双井号代表注解
-                lines.RemoveAll(str => str.ToUpper().StartsWith("##"));
-                if (Info.IsDefault)
-                    ParseDefault(lines);
-                else
-                    ParseScript(lines);
+                if (lastFileTime == 0)
+                {
+                    SMain.Enqueue(string.Format("File Not Found: {0}, NPC: {1}", Info.FileName, Info.Name));
+                }
+                return;
             }
+            long LastWriteTime = File.GetLastWriteTime(fileName).ToBinary();
+            if (LastWriteTime == lastFileTime)
+            {
+                return;
+            }
+            if (lastFileTime != 0)
+            {
+                SMain.Enqueue(string.Format("重载NPC脚本: {0}", Name));
+            }
+            lastFileTime = LastWriteTime;
+
+            if (clear) ClearInfo();
+
+            lastFileTime = File.GetLastWriteTime(fileName).ToBinary();
+            List<string> lines = File.ReadAllLines(fileName, EncodingType.GetType(fileName)).ToList();
+
+            lines = ParseInsert(lines);
+            lines = ParseInclude(lines);
+            //加入双井号代表注解
+            lines.RemoveAll(str => str.ToUpper().StartsWith("##"));
+            if (Info.IsDefault)
+                ParseDefault(lines);
             else
-                SMain.Enqueue(string.Format("File Not Found: {0}, NPC: {1}", Info.FileName, Info.Name));
+                ParseScript(lines);
         }
         public void ClearInfo()
         {
@@ -889,7 +913,7 @@ namespace Server.MirObjects
                 case RefineKey:
                     if (player.Info.CurrentRefine != null)
                     {
-                        player.ReceiveChat("You're already refining an item.", ChatType.System);
+                        player.ReceiveChat("您已经在升级一个物品了.", ChatType.System);
                         player.Enqueue(new S.NPCRefine { Rate = (Settings.RefineCost), Refining = true });
                         break;
                     }
@@ -919,6 +943,17 @@ namespace Server.MirObjects
 
                     player.Enqueue(new S.NPCGoods { List = BuyBack[player.Name], Rate = PriceRate(player), Type = PanelType.Buy });
                     break;
+                case SecondBuyKey:
+                    List<UserItem>  secondList = SecondUserItem.listAll();
+                    if (secondList.Count > 0)
+                    {
+                        for (int i = 0; i < secondList.Count; i++)
+                        {
+                            player.CheckItem(secondList[i]);
+                        }
+                    }
+                    player.Enqueue(new S.NPCGoods { List = secondList, Rate = PriceRate(player), Type = PanelType.Buy });
+                    break;
                 case BuyUsedKey:
                     for (int i = 0; i < UsedGoods.Count; i++)
                         player.CheckItem(UsedGoods[i]);
@@ -939,7 +974,7 @@ namespace Server.MirObjects
                 case GuildCreateKey:
                     if (player.Info.Level < Settings.Guild_RequiredLevel)
                     {
-                        player.ReceiveChat(String.Format("You have to be at least level {0} to create a guild.", Settings.Guild_RequiredLevel), ChatType.System);
+                        player.ReceiveChat(String.Format("要创建公会，至少需要{0}级.", Settings.Guild_RequiredLevel), ChatType.System);
                     }
                     if (player.MyGuild == null)
                     {
@@ -947,21 +982,21 @@ namespace Server.MirObjects
                         player.Enqueue(new S.GuildNameRequest());
                     }
                     else
-                        player.ReceiveChat("You are already part of a guild.", ChatType.System);
+                        player.ReceiveChat("你已经是公会的一员了.", ChatType.System);
                     break;
                 case RequestWarKey:
                     if (player.MyGuild != null)
                     {
                         if (player.MyGuildRank != player.MyGuild.Ranks[0])
                         {
-                            player.ReceiveChat("You must be the leader to request a war.", ChatType.System);
+                            player.ReceiveChat("你必须是请求战争的公会领导人.", ChatType.System);
                             return;
                         }
                         player.Enqueue(new S.GuildRequestWar());
                     }
                     else
                     {
-                        player.ReceiveChat("You are not in a guild.", ChatType.System);
+                        player.ReceiveChat("你不在公会.", ChatType.System);
                     }
                     break;
                 case SendParcelKey:
@@ -1087,6 +1122,8 @@ namespace Server.MirObjects
             {
                 TurnTime = Envir.Time + TurnDelay;
                 Turn((MirDirection)RandomUtils.Next(3));
+                //重载下NPC脚本
+                //LoadInfo(true);
             }
             //一个小时一次，这个是食材？食材处理？
             if (Envir.Time > UsedGoodsTime)
@@ -1382,6 +1419,16 @@ namespace Server.MirObjects
                     break;
                 }
             }
+            //是否二手
+            bool isSecondBuy = false;
+            if (goods == null)
+            {
+                goods = SecondUserItem.getItem(index);
+                if (goods != null)
+                {
+                    isSecondBuy = true;
+                }
+            }
 
             if (goods == null || count == 0 || count > goods.Info.StackSize) return;
 
@@ -1397,7 +1444,7 @@ namespace Server.MirObjects
             }
             else if (cost > player.Account.Gold) return;
 
-            UserItem item = (isBuyBack || isUsed) ? goods : goods.Info.CreateFreshItem();
+            UserItem item = (isBuyBack || isUsed || isSecondBuy) ? goods : goods.Info.CreateFreshItem();
             item.Count = goods.Count;
 
             if (!player.CanGainItem(item)) return;
@@ -1433,6 +1480,7 @@ namespace Server.MirObjects
                 player.Enqueue(new S.NPCGoods { List = BuyBack[player.Name], Rate = PriceRate(player) });
             }
         }
+        //NPC处卖物品
         public void Sell(PlayerObject player, UserItem item)
         {
             /* Handle Item Sale */
@@ -1443,6 +1491,8 @@ namespace Server.MirObjects
 
             item.BuybackExpiryDate = Envir.Now;
             BuyBack[player.Name].Add(item);
+            //这里加入二手
+            SecondUserItem.add(item);
         }
 
 

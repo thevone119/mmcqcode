@@ -3,6 +3,8 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //射手类的怪 
+    //掷斧骷髅/掷斧骷髅0/掷斧骷髅_无效/祖玛弓箭手精英/黑暗战士/黑暗战士0/祖玛弓箭手6/祖玛弓箭手7/骷髅弓箭手/骷髅弓箭手0/魔龙射手1/魔龙射手2
     public class AxeSkeleton : MonsterObject
     {
         public long FearTime;

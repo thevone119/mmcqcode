@@ -70,7 +70,7 @@ namespace Server.MirDatabase
         public static List<QuestInfo> loadAll()
         {
             List<QuestInfo> list = new List<QuestInfo>();
-            DbDataReader read = MirConfigDB.ExecuteReader("select * from QuestInfo");
+            DbDataReader read = MirConfigDB.ExecuteReader("select * from QuestInfo where isdel=0");
 
             while (read.Read())
             {

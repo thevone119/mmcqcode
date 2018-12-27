@@ -7,6 +7,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //肉食性食尸鬼
     class IncarnatedGhoul : MonsterObject
     {
         protected internal IncarnatedGhoul(MonsterInfo info) : base(info)

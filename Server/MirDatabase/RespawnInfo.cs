@@ -20,8 +20,7 @@ namespace Server.MirDatabase
         public byte Direction;
         //这个是怪物的巡逻路线
         public string RoutePath = string.Empty;
-        //这个是ID
-        public int RespawnIndex;
+
         //是否保存重生的时间
         public bool SaveRespawnTime = false;
         //不知道干嘛用的哦，重生的间隔计数？
@@ -76,14 +75,14 @@ namespace Server.MirDatabase
             writer.Write(RoutePath);
 
             writer.Write(RandomDelay);
-            writer.Write(RespawnIndex);
+            //writer.Write(RespawnIndex);
             writer.Write(SaveRespawnTime);
             writer.Write(RespawnTicks);
         }
 
         public override string ToString()
         {
-            return string.Format("Monster: {0} - {1} - {2} - {3} - {4} - {5} - {6} - {7} - {8} - {9}", MonsterIndex, Functions.PointToString(Location), Count, Spread, Delay, Direction, RandomDelay, RespawnIndex, SaveRespawnTime, RespawnTicks);
+            return string.Format("Monster: {0} - {1} - {2} - {3} - {4} - {5} - {6} - {7} - {8} - {9}", 0, Functions.PointToString(Location), Count, Spread, Delay, Direction, RandomDelay, 0, SaveRespawnTime, RespawnTicks);
         }
     }
     //线路？怎么有个延时

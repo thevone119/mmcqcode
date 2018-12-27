@@ -3,6 +3,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //这个是精灵，月灵
     public class HolyDeva : MonsterObject
     {
         public long FearTime;

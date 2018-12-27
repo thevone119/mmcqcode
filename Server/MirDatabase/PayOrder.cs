@@ -104,88 +104,95 @@ namespace Server.MirEnvir
         //每500毫秒处理一次
         public static void Process()
         {
-            if (SMain.Envir.Time < processQueueTime)
+            try
             {
-                return;
-            }
-            ProcessAll();
-            processQueueTime = SMain.Envir.Time + 500;
-            while (!payWait.IsEmpty)
-            {
-                PayOrder p;
-                if (!payWait.TryDequeue(out p)) continue;
-                if (p != null)
+                if (SMain.Envir.Time < processQueueTime)
                 {
-                    //这里是对所有连接进行处理
-                    lock (SMain.Envir.Connections)
+                    return;
+                }
+                ProcessAll();
+                processQueueTime = SMain.Envir.Time + 500;
+                while (!payWait.IsEmpty)
+                {
+                    PayOrder p;
+                    if (!payWait.TryDequeue(out p)) continue;
+                    if (p != null)
                     {
-                        for (int i = SMain.Envir.Connections.Count - 1; i >= 0; i--)
+                        //这里是对所有连接进行处理
+                        lock (SMain.Envir.Connections)
                         {
-                            if(SMain.Envir.Connections[i].Account!=null && SMain.Envir.Connections[i].Account.Index == p.AccountId)
+                            for (int i = SMain.Envir.Connections.Count - 1; i >= 0; i--)
                             {
-                                SMain.Envir.Connections[i].Enqueue(new RechargeLink() { orderid=p.orderid,ret_Link = p.payImgContent,payType=p.pay_type, money=p.price, query_Link=p.getQueryUrl() });
+                                if (SMain.Envir.Connections[i].Account != null && SMain.Envir.Connections[i].Account.Index == p.AccountId)
+                                {
+                                    SMain.Envir.Connections[i].Enqueue(new RechargeLink() { orderid = p.orderid, ret_Link = p.payImgContent, payType = p.pay_type, money = p.price, query_Link = p.getQueryUrl() });
+                                }
+                            }
+                        }
+                    }
+                }
+
+                while (!paySuccess.IsEmpty)
+                {
+                    PayOrder p;
+                    if (!paySuccess.TryDequeue(out p)) continue;
+                    if (p != null && p.rec_state == 0 && p.pay_state == 1)
+                    {
+                        //先对所有账号进行处理,进行加积分处理
+                        //
+                        uint addCredit = 0;
+                        for (int i = SMain.Envir.AccountList.Count - 1; i >= 0; i--)
+                        {
+                            if (SMain.Envir.AccountList[i].Index == p.AccountId)
+                            {
+                                if (p.price == 10)
+                                {
+                                    addCredit = Globals.Recharge10;
+                                }
+                                if (p.price == 20)
+                                {
+                                    addCredit = Globals.Recharge20;
+                                }
+                                if (p.price == 50)
+                                {
+                                    addCredit = Globals.Recharge50;
+                                }
+                                if (p.price == 100)
+                                {
+                                    addCredit = Globals.Recharge100;
+                                }
+                                if (addCredit > 0)
+                                {
+                                    SMain.Envir.AccountList[i].Credit += addCredit;
+                                    p.rec_state = 1;
+                                }
+                                else
+                                {
+                                    SMain.Enqueue("充值发生错误，未知元宝，金额对应关系");
+                                    continue;
+                                }
+
+                            }
+                        }
+
+                        //这里是对所有连接进行处理
+                        lock (SMain.Envir.Connections)
+                        {
+                            for (int i = SMain.Envir.Connections.Count - 1; i >= 0; i--)
+                            {
+                                if (SMain.Envir.Connections[i].Account != null && SMain.Envir.Connections[i].Account.Index == p.AccountId)
+                                {
+                                    SMain.Envir.Connections[i].Enqueue(new RechargeResult() { pay_state = p.pay_state, money = p.price, addCredit = addCredit });
+                                    SMain.Envir.Connections[i].RefreshUserGold();
+                                }
                             }
                         }
                     }
                 }
             }
-
-            while (!paySuccess.IsEmpty)
+            catch(Exception e)
             {
-                PayOrder p;
-                if (!paySuccess.TryDequeue(out p)) continue;
-                if (p != null && p.rec_state==0&& p.pay_state == 1)
-                {
-                    //先对所有账号进行处理,进行加积分处理
-                    //
-                    uint addCredit = 0;
-                    for (int i = SMain.Envir.AccountList.Count - 1; i >= 0; i--)
-                    {
-                        if(SMain.Envir.AccountList[i].Index == p.AccountId)
-                        {
-                            if (p.price == 10)
-                            {
-                                addCredit = Globals.Recharge10;
-                            }
-                            if (p.price == 20)
-                            {
-                                addCredit = Globals.Recharge20;
-                            }
-                            if (p.price == 50)
-                            {
-                                addCredit = Globals.Recharge50;
-                            }
-                            if (p.price == 100)
-                            {
-                                addCredit = Globals.Recharge100;
-                            }
-                            if (addCredit > 0)
-                            {
-                                SMain.Envir.AccountList[i].Credit += addCredit;
-                                p.rec_state = 1;
-                            }
-                            else
-                            {
-                                SMain.Enqueue("充值发生错误，未知元宝，金额对应关系");
-                                continue;
-                            }
-                            
-                        }
-                    }
-
-                    //这里是对所有连接进行处理
-                    lock (SMain.Envir.Connections)
-                    {
-                        for (int i = SMain.Envir.Connections.Count - 1; i >= 0; i--)
-                        {
-                            if (SMain.Envir.Connections[i].Account != null && SMain.Envir.Connections[i].Account.Index == p.AccountId)
-                            {
-                                SMain.Envir.Connections[i].Enqueue(new RechargeResult() { pay_state = p.pay_state, money =p.price, addCredit = addCredit });
-                                SMain.Envir.Connections[i].RefreshUserGold();
-                            }
-                        }
-                    }
-                }
+                SMain.Enqueue(e);
             }
         }
 

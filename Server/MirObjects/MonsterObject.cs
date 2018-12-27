@@ -217,6 +217,11 @@ namespace Server.MirObjects
                     return new HellBomb(info);
                 case 100:
                     return new VenomSpider(info);
+                case 101:
+                    return new Jar2(info);
+                case 102:
+                    return new RestlessJar(info);
+                    
 
                 //unfinished
                 case 253:
@@ -307,14 +312,15 @@ namespace Server.MirObjects
                 {
                     case 81:
                     case 82:
-                        return int.MaxValue;
+                        return int.MaxValue;//这个是城墙，默认不清除,这个有问题啊.城墙需要等玩家自行修复
                     case 252:
                         return 5000;
                     default:
-                        return 180000;
+                        return 180000;//默认3分钟清除尸体
                 }
             }
         }
+        //RegenDelay生命恢复时间10秒恢复一次
         public const int RegenDelay = 10000, EXPOwnerDelay = 5000, SearchDelay = 3000, RoamDelay = 1000, HealDelay = 600, RevivalDelay = 2000;
         public long ActionTime, MoveTime, AttackTime, RegenTime, DeadTime, SearchTime, RoamTime, HealTime;
         public long ShockTime, RageTime, HallucinationTime;
@@ -335,20 +341,30 @@ namespace Server.MirObjects
         {
             get
             {
-                return !Dead;
+                return !Dead && !InSafeZone;
+                //return false;
             }
         }
         protected virtual bool CanRegen
         {
             get { return Envir.Time >= RegenTime; }
         }
+        //是否能移动
+        //这里加入数据库的配置
         protected virtual bool CanMove
         {
             get
             {
-                return !Dead && Envir.Time > MoveTime && Envir.Time > ActionTime && Envir.Time > ShockTime &&
+                if(!Dead && Envir.Time > MoveTime && Envir.Time > ActionTime && Envir.Time > ShockTime &&
                        (Master == null || Master.PMode == PetMode.MoveOnly || Master.PMode == PetMode.Both) && !CurrentPoison.HasFlag(PoisonType.Paralysis)
-                       && !CurrentPoison.HasFlag(PoisonType.LRParalysis) && !CurrentPoison.HasFlag(PoisonType.Stun) && !CurrentPoison.HasFlag(PoisonType.Frozen);
+                       && !CurrentPoison.HasFlag(PoisonType.LRParalysis) && !CurrentPoison.HasFlag(PoisonType.Stun) && !CurrentPoison.HasFlag(PoisonType.Frozen))
+                {
+                    return Info.CanMove;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
         protected virtual bool CanAttack
@@ -378,6 +394,7 @@ namespace Server.MirObjects
             RoamTime = RandomUtils.Next(RoamDelay) + Envir.Time;
         }
         //这个重生是在当前位置重生，如僵尸的复活
+        //如怪物召唤小怪，也是通过这个方法进行召唤的
         public bool Spawn(Map temp, Point location)
         {
             if (!temp.ValidPoint(location)) return false;
@@ -396,12 +413,13 @@ namespace Server.MirObjects
             return true;
         }
         //怪物重生(这个是根据配置进行刷怪)
-        public bool Spawn(MapRespawn respawn)
+        //这个迁移到MapRespawn类中
+        public bool Spawn_back(MapRespawn respawn)
         {
             Respawn = respawn;
 
             if (Respawn.Map == null) return false;
-
+    
             for (int i = 0; i < 10; i++)
             {
                 CurrentLocation = new Point(Respawn.Info.Location.X + RandomUtils.Next(-Respawn.Info.Spread, Respawn.Info.Spread + 1),
@@ -886,7 +904,7 @@ namespace Server.MirObjects
 
             return true;
         }
-
+        //死循环处理
         public override void Process()
         {
             base.Process();
@@ -1109,7 +1127,7 @@ namespace Server.MirObjects
 
             for (int i = PoisonList.Count - 1; i >= 0; i--)
             {
-                if (Dead) return;
+                if (Dead || PoisonList.Count==0) return;
 
                 Poison poison = PoisonList[i];
                 if (poison.Owner != null && poison.Owner.Node == null)
@@ -1124,7 +1142,12 @@ namespace Server.MirObjects
                     poison.TickTime = Envir.Time + poison.TickSpeed;
 
                     if (poison.Time >= poison.Duration)
+                    {
                         PoisonList.RemoveAt(i);
+                        //这里直接返回
+                        //continue;
+                    }
+                        
 
                     if (poison.PType == PoisonType.Green || poison.PType == PoisonType.Bleeding)
                     {
@@ -1163,7 +1186,7 @@ namespace Server.MirObjects
                         }
                     }
                 }
-
+                //中毒护甲减半？
                 switch (poison.PType)
                 {
                     case PoisonType.Red:
@@ -1839,7 +1862,7 @@ namespace Server.MirObjects
             }
             return targets;
         }
-
+        //附近的玩家是否当前怪物的攻击目标
         public override bool IsAttackTarget(PlayerObject attacker)
         {
             if (attacker == null || attacker.Node == null) return false;
@@ -1871,12 +1894,13 @@ namespace Server.MirObjects
                     return true;
             }
         }
+        //附近的怪物是否当前怪物的攻击目标
         public override bool IsAttackTarget(MonsterObject attacker)
         {
             if (attacker == null || attacker.Node == null) return false;
             if (Dead || attacker == this) return false;
             if (attacker.Race == ObjectType.Creature) return false;
-
+            //护卫
             if (attacker.Info.AI == 6) // Guard
             {
                 if (Info.AI != 1 && Info.AI != 2 && Info.AI != 3 && (Master == null || Master.PKPoints >= 200)) //Not Dear/Hen/Tree/Pets or Red Master 
@@ -1974,7 +1998,8 @@ namespace Server.MirObjects
 
             return true;
         }
-
+        //被玩家攻击
+        //damageWeapon：是否损坏持久
         public override int Attacked(PlayerObject attacker, int damage, DefenceType type = DefenceType.ACAgility, bool damageWeapon = true)
         {
             if (Target == null && attacker.IsAttackTarget(this))
@@ -2021,22 +2046,24 @@ namespace Server.MirObjects
             damage = (int)Math.Max(int.MinValue, (Math.Min(int.MaxValue, (decimal)(damage * DamageRate))));
 
             if (damageWeapon)
+            {
                 attacker.DamageWeapon();
+            }
             damage += attacker.AttackBonus;
-
+            //护甲高于伤害，则miss
             if (armour >= damage)
             {
                 BroadcastDamageIndicator(DamageType.Miss);
                 return 0;
             }
-
+            //暴击
             if ((attacker.CriticalRate * Settings.CriticalRateWeight) > RandomUtils.Next(100))
             {
                 Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.Critical });
                 damage = Math.Min(int.MaxValue, damage + (int)Math.Floor(damage * (((double)attacker.CriticalDamage / (double)Settings.CriticalDamageWeight) * 10)));
                 BroadcastDamageIndicator(DamageType.Critical);
             }
-
+            //吸收伤害么？
             if (attacker.LifeOnHit > 0)
                 attacker.ChangeHP(attacker.LifeOnHit);
 
@@ -2138,6 +2165,7 @@ namespace Server.MirObjects
             ChangeHP(armour - damage);
             return damage - armour;
         }
+        //攻击怪物
         public override int Attacked(MonsterObject attacker, int damage, DefenceType type = DefenceType.ACAgility)
         {
             if (Target == null && attacker.IsAttackTarget(this))
@@ -2227,7 +2255,7 @@ namespace Server.MirObjects
             ChangeHP(armour - damage);
             return damage - armour;
         }
-
+        //被击中
         public override int Struck(int damage, DefenceType type = DefenceType.ACAgility)
         {
             int armour = 0;

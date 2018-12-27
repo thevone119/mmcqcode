@@ -4,6 +4,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //镇魂石,为友军增加buff
     class YinDevilNode : MonsterObject
     {
         protected override bool CanMove { get { return false; } }
@@ -35,7 +36,6 @@ namespace Server.MirObjects.Monsters
                 Target.AddBuff(new Buff { Type = bufftype, Caster = this, ExpireTime = Envir.Time + 5 * 1000, Values = new int[] { Target.Level / 7 + 4 } });
                 Target.OperateTime = 0;
             }
-
         }
         protected override void ProcessTarget()
         {

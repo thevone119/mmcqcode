@@ -63,7 +63,7 @@ namespace Server.MirObjects
 
         public ushort MinAC, MaxAC, MinMAC, MaxMAC;
         public ushort MinDC, MaxDC, MinMC, MaxMC, MinSC, MaxSC;
-
+        //精确，敏捷，灯光
         public byte Accuracy, Agility, Light;
         public sbyte ASpeed, Luck;
         public int AttackSpeed;
@@ -75,7 +75,8 @@ namespace Server.MirObjects
 
         public ushort CurrentBagWeight,
                       MaxBagWeight;
-
+        //CriticalRate:暴击率
+        //CriticalDamage:暴击伤害
         public byte MagicResist, PoisonResist, HealthRecovery, SpellRecovery, PoisonRecovery, CriticalRate, CriticalDamage, Holy, Freezing, PoisonAttack;
 
         public long CellTime, BrownTime, PKPointTime, LastHitTime, EXPOwnerTime;
@@ -176,8 +177,8 @@ namespace Server.MirObjects
 
         public virtual PetMode PMode { get; set; }
         public bool InSafeZone;
-
-        public float ArmourRate, DamageRate; //recieved not given
+        //防御率，伤害率
+        public float ArmourRate, DamageRate; //recieved not given 未赋值
 
         public List<Poison> PoisonList = new List<Poison>();
         public PoisonType CurrentPoison = PoisonType.None;
@@ -190,7 +191,13 @@ namespace Server.MirObjects
 
         public virtual bool Blocking
         {
-            get { return true; }
+            get {
+                if (InSafeZone)
+                {
+                    return false;
+                }
+                return true;
+            }
         }
 
         public Point Front
@@ -207,32 +214,41 @@ namespace Server.MirObjects
         //死循环调用入口
         public virtual void Process()
         {
-            if (Master != null && Master.Node == null) Master = null;
-            if (LastHitter != null && LastHitter.Node == null) LastHitter = null;
-            if (EXPOwner != null && EXPOwner.Node == null) EXPOwner = null;
-            if (Target != null && (Target.Node == null || Target.Dead)) Target = null;
-            if (Owner != null && Owner.Node == null) Owner = null;
-
-            if (Envir.Time > PKPointTime && PKPoints > 0)
+            //这里是入口调用，里面的逻辑太多，经常会出现空指针异常。
+            //这里用异常捕获处理下，避免出现异常的时候，服务器奔溃
+            try
             {
-                PKPointTime = Envir.Time + Settings.PKDelay * Settings.Second;
-                PKPoints--;
+                if (Master != null && Master.Node == null) Master = null;
+                if (LastHitter != null && LastHitter.Node == null) LastHitter = null;
+                if (EXPOwner != null && EXPOwner.Node == null) EXPOwner = null;
+                if (Target != null && (Target.Node == null || Target.Dead)) Target = null;
+                if (Owner != null && Owner.Node == null) Owner = null;
+
+                if (Envir.Time > PKPointTime && PKPoints > 0)
+                {
+                    PKPointTime = Envir.Time + Settings.PKDelay * Settings.Second;
+                    PKPoints--;
+                }
+
+                if (LastHitter != null && Envir.Time > LastHitTime)
+                    LastHitter = null;
+
+
+                if (EXPOwner != null && Envir.Time > EXPOwnerTime)
+                {
+                    EXPOwner = null;
+                }
+
+                for (int i = 0; i < ActionList.Count; i++)
+                {
+                    if (Envir.Time < ActionList[i].Time) continue;
+                    Process(ActionList[i]);
+                    ActionList.RemoveAt(i);
+                }
             }
-            
-            if (LastHitter != null && Envir.Time > LastHitTime)
-                LastHitter = null;
-
-
-            if (EXPOwner != null && Envir.Time > EXPOwnerTime)
+            catch(Exception e)
             {
-                EXPOwner = null;
-            }
-
-            for (int i = 0; i < ActionList.Count; i++)
-            {
-                if (Envir.Time < ActionList[i].Time) continue;
-                Process(ActionList[i]);
-                ActionList.RemoveAt(i);
+                SMain.Enqueue(e);
             }
         }
 
@@ -242,7 +258,7 @@ namespace Server.MirObjects
         {
             if (min < 0) min = 0;
             if (min > max) max = min;
-
+            //幸运与诅咒计算,多少几率打出最大，最小伤害
             if (Luck > 0)
             {
                 if (Luck > RandomUtils.Next(Settings.MaxLuck))
@@ -334,6 +350,7 @@ namespace Server.MirObjects
             BroadcastInfo();
             BroadcastHealthChange();
         }
+        //清除对象，清除尸体
         public virtual void Despawn()
         {
             Broadcast(new S.ObjectRemove {ObjectID = ObjectID});

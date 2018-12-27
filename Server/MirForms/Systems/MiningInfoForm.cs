@@ -66,11 +66,9 @@ namespace Server
                     return;
                 }
                 MineNametextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Name.ToString();
-                MineRegenDelaytextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].SpotRegenRate.ToString();
-                MineAttemptstextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].MaxStones.ToString();
-                MineHitRatetextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].HitRate.ToString();
+   
                 MineDropRatetextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].DropRate.ToString();
-                MineSlotstextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].TotalSlots.ToString();
+      
                 if (MineDropsIndexcomboBox.SelectedIndex >= Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops.Count) MineDropsIndexcomboBox.SelectedItem = null;
                 if (MineDropsIndexcomboBox.SelectedItem == null)
                 {
@@ -85,12 +83,10 @@ namespace Server
                 else
                 {
                     MineItemNametextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].ItemName;
-                    MineMinSlottextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].MinSlot.ToString();
-                    MineMaxSlottextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].MaxSlot.ToString();
+
                     MineMinQualitytextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].MinDura.ToString();
                     MineMaxQualitytextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].MaxDura.ToString();
-                    MineBonusChancetextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].BonusChance.ToString();
-                    MineMaxBonustextBox.Text = Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].MaxBonusDura.ToString();
+
                 }
 
             }
@@ -146,7 +142,7 @@ namespace Server
             }
             ActiveControl.BackColor = SystemColors.Window;
             MinesChanged = true;
-            Settings.MineSetList[MineIndexcomboBox.SelectedIndex].SpotRegenRate = temp;
+   
         }
 
         private void MineAttemptstextBox_TextChanged(object sender, EventArgs e)
@@ -162,7 +158,7 @@ namespace Server
             }
             ActiveControl.BackColor = SystemColors.Window;
             MinesChanged = true;
-            Settings.MineSetList[MineIndexcomboBox.SelectedIndex].MaxStones = temp;
+         
         }
 
         private void MineSlotstextBox_TextChanged(object sender, EventArgs e)
@@ -178,7 +174,7 @@ namespace Server
             }
             ActiveControl.BackColor = SystemColors.Window;
             MinesChanged = true;
-            Settings.MineSetList[MineIndexcomboBox.SelectedIndex].TotalSlots = temp;
+            
         }
 
         private void MineHitRatetextBox_TextChanged(object sender, EventArgs e)
@@ -194,7 +190,7 @@ namespace Server
             }
             ActiveControl.BackColor = SystemColors.Window;
             MinesChanged = true;
-            Settings.MineSetList[MineIndexcomboBox.SelectedIndex].HitRate = temp;
+  
         }
 
         private void MineDropRatetextBox_TextChanged(object sender, EventArgs e)
@@ -275,7 +271,6 @@ namespace Server
             }
             ActiveControl.BackColor = SystemColors.Window;
             MinesChanged = true;
-            Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].MinSlot = temp;
         }
 
         private void MineMaxSlottextBox_TextChanged(object sender, EventArgs e)
@@ -292,7 +287,7 @@ namespace Server
             }
             ActiveControl.BackColor = SystemColors.Window;
             MinesChanged = true;
-            Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].MaxSlot = temp;
+            //Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].MaxSlot = temp;
         }
 
         private void MineMinQualitytextBox_TextChanged(object sender, EventArgs e)
@@ -343,7 +338,7 @@ namespace Server
             }
             ActiveControl.BackColor = SystemColors.Window;
             MinesChanged = true;
-            Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].BonusChance = temp;
+            //Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].BonusChance = temp;
         }
 
         private void MineMaxBonustextBox_TextChanged(object sender, EventArgs e)
@@ -360,7 +355,7 @@ namespace Server
             }
             ActiveControl.BackColor = SystemColors.Window;
             MinesChanged = true;
-            Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].MaxBonusDura = temp;
+            //Settings.MineSetList[MineIndexcomboBox.SelectedIndex].Drops[MineDropsIndexcomboBox.SelectedIndex].MaxBonusDura = temp;
         }
 
         private void MineNametextBox_TextChanged(object sender, EventArgs e)

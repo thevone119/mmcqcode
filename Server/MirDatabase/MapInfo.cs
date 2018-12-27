@@ -64,7 +64,7 @@ namespace Server.MirDatabase
         public static List<MapInfo> loadAll()
         {
             List<MapInfo> list = new List<MapInfo>();
-            DbDataReader read = MirConfigDB.ExecuteReader("select * from MapInfo");
+            DbDataReader read = MirConfigDB.ExecuteReader("select * from MapInfo where isdel=0");
 
             while (read.Read())
             {
@@ -120,8 +120,12 @@ namespace Server.MirDatabase
                 {
                     for(int i=0;i< obj.SafeZones.Count; i++)
                     {
-                        obj.SafeZones[i].Info = obj;
+                        obj.SafeZones[i].MapIndex = obj.Index;
                     }
+                }
+                else
+                {
+                    obj.SafeZones = new List<SafeZoneInfo>();
                 }
 
                 obj.Movements = JsonConvert.DeserializeObject<List<MovementInfo>>(read.GetString(read.GetOrdinal("Movements")));
@@ -243,7 +247,7 @@ namespace Server.MirDatabase
 
         public void CreateSafeZone()
         {
-            SafeZones.Add(new SafeZoneInfo { Info = this });
+            SafeZones.Add(new SafeZoneInfo { MapIndex = this.Index });
         }
 
         public void CreateRespawnInfo()
@@ -290,7 +294,7 @@ namespace Server.MirDatabase
 
             for (int i = 0; i < sziCount; i++)
             {
-                SafeZoneInfo temp = new SafeZoneInfo { Info = info };
+                SafeZoneInfo temp = new SafeZoneInfo { MapIndex = info.Index };
                 int x, y;
 
                 if (!int.TryParse(data[start + (i * 4)], out x)) return;

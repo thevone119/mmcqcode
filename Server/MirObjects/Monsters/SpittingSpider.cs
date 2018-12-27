@@ -6,6 +6,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //蜘蛛 毒蜘蛛/天狼蜘蛛/天狼蜘蛛0/天狼蜘蛛3/花吻蜘蛛/花吻蜘蛛0/花吻蜘蛛3/花吻蜘蛛4
     public class SpittingSpider : HarvestMonster
     {
         protected internal SpittingSpider(MonsterInfo info)

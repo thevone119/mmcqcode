@@ -6,6 +6,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //萨满僵尸，雷电僵尸
     class ShamanZombie : MonsterObject
     {
         protected internal ShamanZombie(MonsterInfo info)

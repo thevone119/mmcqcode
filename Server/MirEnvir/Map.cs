@@ -48,12 +48,14 @@ namespace Server.MirEnvir
 
         //public Door[,] DoorIndex;//门索引
         public List<Door> Doors = new List<Door>();
-        //矿区
-        public MineSpot[,] Mine;
+        //矿区（为了节省资源，一开始不创建所有的矿区，挖的时候才创建某个矿区）
+        private Dictionary<string, MineSpot> MineDic = new Dictionary<string, MineSpot>();
         //雷电时间，地火时间，空闲时间
         public long LightningTime, FireTime, InactiveTime;
-        //怪物总数，空闲总次数
-        public int MonsterCount, InactiveCount;
+        //怪物总数
+        public int MonsterCount;
+        //空闲总次数，一开始默认空闲100
+        public uint InactiveCount=100;
         //NPC
         public List<NPCObject> NPCs = new List<NPCObject>();
         //玩家
@@ -182,7 +184,7 @@ namespace Server.MirEnvir
                         Cells[x, y]= (byte)(Cells[x, y] | Fishing);
                 }
         }
-        
+        //目前使用的是在这个地图
         private void LoadMapCellsv1(byte[] fileBytes)
         {
             int offSet = 21;
@@ -555,9 +557,8 @@ namespace Server.MirEnvir
 
                     for (int i = 0; i < Info.Respawns.Count; i++)
                     {
-                        MapRespawn info = new MapRespawn(Info.Respawns[i]);
+                        MapRespawn info = new MapRespawn(Info.Respawns[i],this);
                         if (info.Monster == null) continue;
-                        info.Map = this;
                         Respawns.Add(info);
 
                         if ((info.Info.SaveRespawnTime) && (info.Info.RespawnTicks != 0))
@@ -577,7 +578,6 @@ namespace Server.MirEnvir
 
                     for (int i = 0; i < Info.SafeZones.Count; i++)
                         CreateSafeZone(Info.SafeZones[i]);
-                    CreateMine();
                     return true;
                 }
             }
@@ -609,7 +609,7 @@ namespace Server.MirEnvir
             {
                 return false;
             }
-            return (Cells[x, y] & 4) == 1;
+            return (Cells[x, y] & 4) == 4;
         }
 
         public bool ValidPoint(Point location)
@@ -655,13 +655,63 @@ namespace Server.MirEnvir
                 Objects[x, y] = null;
             }
         }
-
+        //获取地图某个格子的对象列表
         public List<MapObject> getMapObjects(int x,int y)
         {
             return Objects[x, y];
         }
+        //获取地图某个区域的对象列表
+        public List<MapObject> getMapObjects(int x, int y,int Range)
+        {
+            List<MapObject> list = new List<MapObject>();
+            for(int x1=x- Range; x1 <= x + Range; x1++)
+            {
+                if (x1 < 0 || x1 >= Width)
+                {
+                    continue;
+                }
+                for (int y1 = y - Range; y1 <= y + Range; y1++)
+                {
+                    if (y1 < 0 || y1 >= Height || Objects[x1, y1]==null)
+                    {
+                        continue;
+                    }
+                    list.AddRange(Objects[x1, y1]);
+                }
+            }
+            return list;
+        }
 
+        //获取某个点的矿区
+        public MineSpot getMine(int x,int y)
+        {
+            MineSpot mspot = null;
+            if (Info.MineIndex==0 && Info.MineZones.Count == 0)
+            {
+                return null;
+            }
+            string key = x + "_" + y;
+            if (MineDic.ContainsKey(key))
+            {
+                return MineDic[key];
+            }
+            //这里创建某个矿区点
+            int MineIndex = Info.MineIndex;
 
+            foreach(MineZone mz in Info.MineZones)
+            {
+                if (mz.inMineZone(x, y))
+                {
+                    MineIndex = mz.Mine;
+                }
+            }
+            if (MineIndex > 0)
+            {
+                mspot = new MineSpot() { Mine = Settings.MineSetList[MineIndex - 1] };
+                MineDic.Add(key, mspot);
+            }
+            return mspot;
+        }
         //安全区
         private void CreateSafeZone(SafeZoneInfo info)
         {
@@ -725,45 +775,6 @@ namespace Server.MirEnvir
 
 
         }
-        //矿区
-        private void CreateMine()
-        {
-            if ((Info.MineIndex == 0) && (Info.MineZones.Count == 0)) return;
-            Mine = new MineSpot[Width, Height];
-            for (int i = 0; i < Width; i++)
-                for (int j = 0; j < Height; j++)
-                    Mine[i, j] = new MineSpot();
-            if ((Info.MineIndex != 0) && (Settings.MineSetList.Count > Info.MineIndex - 1))
-            {
-                Settings.MineSetList[Info.MineIndex - 1].SetDrops(Envir.ItemInfoList);
-                for (int i = 0; i < Width; i++)
-                    for (int j = 0; j < Height; j++)
-                        Mine[i,j].Mine = Settings.MineSetList[Info.MineIndex - 1];
-            }
-            if (Info.MineZones.Count > 0)
-            {
-                for (int i = 0; i < Info.MineZones.Count; i++)
-                {
-                    MineZone Zone = Info.MineZones[i];
-                    if (Zone.Mine != 0)
-                        Settings.MineSetList[Zone.Mine - 1].SetDrops(Envir.ItemInfoList);
-                    if (Settings.MineSetList.Count < Zone.Mine) continue;
-                    for (int x =  Zone.Location.X - Zone.Size; x < Zone.Location.X + Zone.Size; x++)
-                        for (int y = Zone.Location.Y - Zone.Size; y < Zone.Location.Y + Zone.Size; y++)
-                        {
-                            if ((x < 0) || (x >= Width) || (y < 0) || (y >= Height)) continue;
-                            if (Zone.Mine == 0)
-                                Mine[x, y].Mine = null;
-                            else
-                                Mine[x, y].Mine = Settings.MineSetList[Zone.Mine - 1];
-                        }
-                }
-            }
-        }
-
-
-
-        
 
         //不知道这是干嘛
         public bool CheckDoorOpen(Point location)
@@ -784,115 +795,123 @@ namespace Server.MirEnvir
         //死循环调用入口
         public void Process()
         {
-            ProcessRespawns();
-
-            //处理门的开关？，这里好像只处理关门，不处理开门
-            //process doors
-            for (int i = 0; i < Doors.Count; i++)
+            try
             {
-                if ((Doors[i].DoorState == 2) && (Doors[i].LastTick + 5000 < Envir.Time))
+                ProcessRespawns();
+                //处理门的开关？，这里好像只处理关门，不处理开门
+                //process doors
+                for (int i = 0; i < Doors.Count; i++)
                 {
-                    Doors[i].DoorState = 0;
-                    //broadcast that door is closed
-                    Broadcast(new S.Opendoor() { DoorIndex = Doors[i].index, Close = true }, Doors[i].Location);
-
-                }
-            }
-
-            //闪电？部分地图有闪电？
-            //如果有闪电，3-15秒随机产生一个闪电
-            //整个地图的几乎所有玩家都会看到？那如果很多玩家，就会产生非常多的闪电哦。
-            if ((Info.Lightning) && Envir.Time > LightningTime)
-            {
-                LightningTime = Envir.Time + RandomUtils.Next(3000, 15000);
-                for (int i = Players.Count - 1; i >= 0; i--)
-                {
-                    PlayerObject player = Players[i];
-                    Point Location;
-                    if (RandomUtils.Next(4) == 0)
+                    if ((Doors[i].DoorState == 2) && (Doors[i].LastTick + 5000 < Envir.Time))
                     {
-                        Location = player.CurrentLocation;          
+                        Doors[i].DoorState = 0;
+                        //broadcast that door is closed
+                        Broadcast(new S.Opendoor() { DoorIndex = Doors[i].index, Close = true }, Doors[i].Location);
+
+                    }
+                }
+
+                //闪电？部分地图有闪电？
+                //如果有闪电，3-15秒随机产生一个闪电
+                //整个地图的几乎所有玩家都会看到？那如果很多玩家，就会产生非常多的闪电哦。
+                if ((Info.Lightning) && Envir.Time > LightningTime)
+                {
+                    LightningTime = Envir.Time + RandomUtils.Next(3000, 15000);
+                    for (int i = Players.Count - 1; i >= 0; i--)
+                    {
+                        PlayerObject player = Players[i];
+                        Point Location;
+                        if (RandomUtils.Next(4) == 0)
+                        {
+                            Location = player.CurrentLocation;
+                        }
+                        else
+                            Location = new Point(player.CurrentLocation.X - 10 + RandomUtils.Next(20), player.CurrentLocation.Y - 10 + RandomUtils.Next(20));
+
+                        if (!ValidPoint(Location)) continue;
+
+                        SpellObject Lightning = null;
+                        Lightning = new SpellObject
+                        {
+                            Spell = Spell.MapLightning,
+                            Value = RandomUtils.Next(Info.LightningDamage),
+                            ExpireTime = Envir.Time + (1000),
+                            TickSpeed = 500,
+                            Caster = null,
+                            CurrentLocation = Location,
+                            CurrentMap = this,
+                            Direction = MirDirection.Up
+                        };
+                        AddObject(Lightning);
+                        Lightning.Spawned();
+                    }
+                }
+
+                //地图火灾，熔岩伤害
+                if ((Info.Fire) && Envir.Time > FireTime)
+                {
+                    FireTime = Envir.Time + RandomUtils.Next(3000, 15000);
+                    for (int i = Players.Count - 1; i >= 0; i--)
+                    {
+                        PlayerObject player = Players[i];
+                        Point Location;
+                        if (RandomUtils.Next(4) == 0)
+                        {
+                            Location = player.CurrentLocation;
+                        }
+                        else
+                            Location = new Point(player.CurrentLocation.X - 10 + RandomUtils.Next(20), player.CurrentLocation.Y - 10 + RandomUtils.Next(20));
+
+                        if (!ValidPoint(Location)) continue;
+
+                        SpellObject Lightning = null;
+                        Lightning = new SpellObject
+                        {
+                            Spell = Spell.MapLava,
+                            Value = RandomUtils.Next(Info.FireDamage),
+                            ExpireTime = Envir.Time + (1000),
+                            TickSpeed = 500,
+                            Caster = null,
+                            CurrentLocation = Location,
+                            CurrentMap = this,
+                            Direction = MirDirection.Up
+                        };
+                        AddObject(Lightning);
+                        Lightning.Spawned();
+                    }
+                }
+                //处理各种动作，处理完一个删除一个
+                for (int i = 0; i < ActionList.Count; i++)
+                {
+                    if (Envir.Time < ActionList[i].Time) continue;
+                    Process(ActionList[i]);
+                    ActionList.RemoveAt(i);
+                }
+                //计算空闲数,某个地图，如果X分钟都没有玩家，则停止这个地图的一些功能
+                if (InactiveTime < Envir.Time)
+                {
+                    if (!Players.Any())
+                    {
+                        //
+                        InactiveTime = Envir.Time + Settings.Minute;
+                        //InactiveTime = Envir.Time + Settings.Second;
+                        InactiveCount++;
                     }
                     else
-                        Location = new Point(player.CurrentLocation.X - 10 + RandomUtils.Next(20), player.CurrentLocation.Y - 10 + RandomUtils.Next(20));
-
-                    if (!ValidPoint(Location)) continue;
-
-                    SpellObject Lightning = null;
-                    Lightning = new SpellObject
                     {
-                        Spell = Spell.MapLightning,
-                        Value = RandomUtils.Next(Info.LightningDamage),
-                        ExpireTime = Envir.Time + (1000),
-                        TickSpeed = 500,
-                        Caster = null,
-                        CurrentLocation = Location,
-                        CurrentMap = this,
-                        Direction = MirDirection.Up
-                    };
-                    AddObject(Lightning);
-                    Lightning.Spawned();
-                }
-            }
-
-            //地图火灾，熔岩伤害
-            if ((Info.Fire) && Envir.Time > FireTime)
-            {
-                FireTime = Envir.Time + RandomUtils.Next(3000, 15000);
-                for (int i = Players.Count - 1; i >= 0; i--)
-                {
-                    PlayerObject player = Players[i];
-                    Point Location;
-                    if (RandomUtils.Next(4) == 0)
-                    {
-                        Location = player.CurrentLocation;
+                        InactiveCount = 0;
                     }
-                    else
-                        Location = new Point(player.CurrentLocation.X - 10 + RandomUtils.Next(20), player.CurrentLocation.Y - 10 + RandomUtils.Next(20));
-
-                    if (!ValidPoint(Location)) continue;
-
-                    SpellObject Lightning = null;
-                    Lightning = new SpellObject
-                    {
-                        Spell = Spell.MapLava,
-                        Value = RandomUtils.Next(Info.FireDamage),
-                        ExpireTime = Envir.Time + (1000),
-                        TickSpeed = 500,
-                        Caster = null,
-                        CurrentLocation = Location,
-                        CurrentMap = this,
-                        Direction = MirDirection.Up
-                    };
-                    AddObject(Lightning);
-                    Lightning.Spawned();
                 }
             }
-            //处理各种动作，处理完一个删除一个
-            for (int i = 0; i < ActionList.Count; i++)
+            catch(Exception ex)
             {
-                if (Envir.Time < ActionList[i].Time) continue;
-                Process(ActionList[i]);
-                ActionList.RemoveAt(i);
+                SMain.Enqueue(ex);
             }
-            //计算空闲数
-            if (InactiveTime < Envir.Time)
-            {
-                if (!Players.Any())
-                {
-                    InactiveTime = Envir.Time + Settings.Minute;
-                    InactiveCount++;
-                }
-                else
-                {
-                    InactiveCount = 0;
-                }
-            }
-
         }
 
         //处理重生
         //地图的重生？
+        //算法要进行优化，否则比较消耗资源
         private void ProcessRespawns()
         {
             bool Success = true;
@@ -901,20 +920,24 @@ namespace Server.MirEnvir
                 MapRespawn respawn = Respawns[i];
                 if ((respawn.Info.RespawnTicks != 0) && (Envir.RespawnTick.CurrentTickcounter < respawn.NextSpawnTick)) continue;
                 if ((respawn.Info.RespawnTicks == 0) && (Envir.Time < respawn.RespawnTime)) continue;
-
+                //小于等于2个的，一般都是大BOSS，不做倍率调整哦.
                 int markCount = respawn.Info.Count;
-                if (Info != null)
+                if (markCount > 2)
                 {
-                    markCount = (int)(markCount * Info.MonsterRate);
+                    if (Info != null)
+                    {
+                        markCount = (int)(markCount * Info.MonsterRate);
+                    }
+                    markCount = (int)(markCount * Settings.MonsterRate);
                 }
-                markCount = (int)(markCount * Settings.MonsterRate);
 
                 if (respawn.Count < (markCount))
                 {
                     int count = (int)(markCount) - respawn.Count;
-
                     for (int c = 0; c < count; c++)
+                    {
                         Success = respawn.Spawn();
+                    }
                 }
                 if (Success)
                 {
@@ -2457,7 +2480,7 @@ namespace Server.MirEnvir
     }
 
 
-    
+    //怪物重生的实现
     public class MapRespawn
     {
         public RespawnInfo Info;//刷怪信息
@@ -2470,21 +2493,83 @@ namespace Server.MirEnvir
         public byte ErrorCount = 0;//错误数,刷怪刷不到具体的位置，则错误
 
         public List<RouteInfo> Route;
+        //刷怪的区域点，一开始的时候就固化了。默认初始双倍的点
+        private List<Point> Locs = new List<Point>();//
 
-        public MapRespawn(RespawnInfo info)
+        public MapRespawn(RespawnInfo info, Map map)
         {
             Info = info;
+            Map = map;
             Monster = SMain.Envir.GetMonsterInfo(info.MonsterIndex);
-
             LoadRoutes();
+            initRespawnRegion();
         }
+
+        //初始化刷怪区域
+        private void initRespawnRegion()
+        {
+            if(Map==null)
+            {
+                return;
+            }
+            //刷怪区域
+            int _minx = Info.Location.X - Info.Spread;
+            int _maxx = Info.Location.X + Info.Spread;
+            int _miny = Info.Location.Y - Info.Spread;
+            int _maxy = Info.Location.Y + Info.Spread;
+            if (_minx < 0) _minx = 0;
+            if (_maxx < 0) _maxx = 0;
+            if (_miny < 0) _miny = 0;
+            if (_maxy < 0) _maxy = 0;
+            if (_minx >= Map.Width) _minx = Map.Width-1;
+            if (_maxx >= Map.Width) _maxx = Map.Width-1;
+            if (_miny >= Map.Height) _miny = Map.Height-1;
+            if (_maxy >= Map.Height) _maxy = Map.Height-1;
+            List<Point> listp = new List<Point>();
+            for(int x= _minx;x<= _maxx; x++)
+            {
+                for(int y= _miny;y<= _maxy; y++)
+                {
+                    if (Map.Valid(x, y))
+                    {
+                        listp.Add(new Point(x, y));
+                    }
+                }
+            }
+            //默认记录2倍的刷新点
+            for(int i=0;i< listp.Count&&i< Info.Count * 2; i++)
+            {
+                Point p = listp[RandomUtils.Next(listp.Count)];
+                listp.Remove(p);
+                Locs.Add(p);
+            }
+        }
+
+        //怪物的产生
         public bool Spawn()
         {
             MonsterObject ob = MonsterObject.GetMonster(Monster);
-            if (ob == null) return true;
-            return ob.Spawn(this);
+            if (ob == null || Locs.Count==0) return true;
+
+            ob.CurrentLocation = Locs[RandomUtils.Next(Locs.Count)];
+            Map.AddObject(ob);
+            ob.CurrentMap = Map;
+            ob.Respawn = this;
+            if (Route.Count > 0)
+                ob.Route.AddRange(Route);
+
+            ob.RefreshAll();
+            ob.SetHP(ob.MaxHP);
+
+            ob.Spawned();
+            Count++;
+            Map.MonsterCount++;
+            SMain.Envir.MonsterCount++;
+            return true;
         }
 
+        //加载怪物自动行走路径，针对大刀守卫
+        //后续可以扩展到其他智能的怪物哦
         public void LoadRoutes()
         {
             Route = new List<RouteInfo>();

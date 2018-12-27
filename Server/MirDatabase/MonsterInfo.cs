@@ -39,13 +39,17 @@ namespace Server.MirDatabase
         public uint Experience;
         //怪物的掉落物品
         public List<DropInfo> Drops = new List<DropInfo>();
-        //驯服，推动，自动走动？不死系？
-        public bool CanTame = true, CanPush = true, AutoRev = true, Undead = false;
+        //驯服，推动，AutoRev:自动发送血量变化 ,Undead不死系,CanMove是否可以移动
+        public bool CanTame = true, CanPush = true, AutoRev = true, Undead = false, CanMove=true;
 
         //非数据库字段，是否有重生脚本(比如重生提醒？)
         public bool HasSpawnScript;
         //非数据库字段，是否有死亡脚本(比如死亡出发任务？)
         public bool HasDieScript;
+
+        private long lastFileTime = 0;//爆率文件最后的更事件，如果发生变更，自动重新加载
+
+
 
         public MonsterInfo()
         {
@@ -58,8 +62,7 @@ namespace Server.MirDatabase
         public static List<MonsterInfo> loadAll()
         {
             List<MonsterInfo> list = new List<MonsterInfo>();
-            DbDataReader read = MirConfigDB.ExecuteReader("select * from MonsterInfo");
-
+            DbDataReader read = MirConfigDB.ExecuteReader("select * from MonsterInfo where isdel=0");
             while (read.Read())
             {
                 MonsterInfo obj = new MonsterInfo();
@@ -76,7 +79,7 @@ namespace Server.MirDatabase
                 }
                 obj.Index = read.GetInt32(read.GetOrdinal("Idx"));
 
-                obj.Image = (Monster)read.GetByte(read.GetOrdinal("Image"));
+                obj.Image = (Monster)read.GetInt16(read.GetOrdinal("Image"));
                 obj.AI = read.GetByte(read.GetOrdinal("AI"));
                 obj.Effect = read.GetByte(read.GetOrdinal("Effect"));
                 obj.ViewRange = read.GetByte(read.GetOrdinal("ViewRange"));
@@ -109,23 +112,57 @@ namespace Server.MirDatabase
                 obj.CanTame = read.GetBoolean(read.GetOrdinal("CanTame"));
                 obj.AutoRev = read.GetBoolean(read.GetOrdinal("AutoRev"));
                 obj.Undead = read.GetBoolean(read.GetOrdinal("Undead"));
+                obj.CanMove = read.GetBoolean(read.GetOrdinal("CanMove"));
+
 
                 DBObjectUtils.updateObjState(obj, obj.Index);
                 list.Add(obj);
+                //是否格式化爆率文件,这个是把所有文件进行重写了
+                bool Format = false;
+                if (Format)
+                {
+                    obj.LoadDrops();
+                    string path = Path.Combine(Settings.DropPath, obj.Name + ".txt");
+                    if (File.Exists(path))
+                    {
+                        List<string> lines = new List<string>();
+                        foreach (DropInfo di in obj.Drops)
+                        {
+                            lines.Add(di.toLine());
+                        }
+                        File.WriteAllLines(path, lines);
+                    }
+                }
+
             }
             return list;
         }
 
         //游戏中显示的名字,把数字全部去掉
+        //如果有下划线的，也把下划线后面的去掉
+        private string _gameName;
         public string GameName
         {
-            get { return Regex.Replace(Name, @"[\d-]", string.Empty); }
+            get {
+                if (_gameName != null)
+                {
+                    return _gameName;
+                }
+                _gameName = Regex.Replace(Name, @"[\d-]", string.Empty);
+                if (_gameName.IndexOf("_") != -1)
+                {
+                    _gameName = _gameName.Substring(0, _gameName.IndexOf("_"));
+                }
+                return _gameName;
+            }
         }
 
        
         //保存到数据库
         public void SaveDB()
         {
+            //每次保存，调用一次重新加载爆率
+            LoadDrops();
             byte state = DBObjectUtils.ObjState(this, Index);
             if (state == 0)//没有改变
             {
@@ -170,8 +207,8 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("CanTame", CanTame));
             lp.Add(new SQLiteParameter("AutoRev", AutoRev));
             lp.Add(new SQLiteParameter("Undead", Undead));
+            lp.Add(new SQLiteParameter("CanMove", CanMove));
 
-      
             //新增
             if (state == 1)
             {
@@ -195,7 +232,6 @@ namespace Server.MirDatabase
         //加载怪物的掉落物品数据
         public void LoadDrops()
         {
-            Drops.Clear();
             string path = Path.Combine(Settings.DropPath, Name + ".txt");
             if (!File.Exists(path))
             {
@@ -211,7 +247,19 @@ namespace Server.MirDatabase
                 File.WriteAllLines(path, contents);
                 return;
             }
+            long LastWriteTime = File.GetLastWriteTime(path).ToBinary();
 
+            if (LastWriteTime== lastFileTime)
+            {
+                return;
+            }
+            if (lastFileTime != 0)
+            {
+                SMain.Enqueue(string.Format("怪物爆率重载: {0}", Name));
+            }
+            lastFileTime = LastWriteTime;
+
+            Drops.Clear();
             string[] lines = File.ReadAllLines(path);
 
             for (int i = 0; i < lines.Length; i++)
@@ -228,15 +276,21 @@ namespace Server.MirDatabase
                 Drops.Add(drop);
             }
 
-            //排序其实没用？
+            //对爆率进行排序，金币放前面，然后是爆率高的放前面
             Drops.Sort((drop1, drop2) =>
                 {
                     if (drop1.Gold > 0 && drop2.Gold == 0)
-                        return 1;
-                    if (drop1.Gold == 0 && drop2.Gold > 0)
                         return -1;
-
-                    return 0;
+                    if (drop1.Gold == 0 && drop2.Gold > 0)
+                        return 1;
+                    if (drop1.Chance > drop2.Chance)
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 1;
+                    }
                 });
         }
 
@@ -313,8 +367,10 @@ namespace Server.MirDatabase
     //目前的规则 ;Potion
     //1/1 (HP)DrugMedium Q
     //优化规则 1/1 (HP)DrugMedium|(HP)DrugMedium|(HP)DrugMedium|(HP)DrugMedium 3 Q
+    //支持物品分组，规则：1/1 g_物品组1|g_物品组2|(g_物品组3|g_物品组4 3 Q
     public class DropInfo
     {
+        public string Percentage;//这个是配置中的百分比
         public double Chance;//几率，改成double,好计算一点哦。
         public uint Gold;//黄金
 
@@ -337,6 +393,7 @@ namespace Server.MirDatabase
             {
                 return null;
             }
+            info.Percentage = parts[0];
             string[] Chances = parts[0].Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
             if(Chances==null || Chances.Length != 2)
             {
@@ -372,12 +429,21 @@ namespace Server.MirDatabase
                     {
                         continue;
                     }
-                    ItemInfo _info  = ItemInfo.getItem(itname);
-                    if (_info == null)
+                    //分组物品
+                    if (itname.ToUpper().StartsWith("G_"))
                     {
-                        continue;
+                        string groupName = itname.Substring(2);
+                        info.ItemList.AddRange(ItemInfo.queryByGroupName(groupName));
                     }
-                    info.ItemList.Add(_info);
+                    else
+                    {
+                        ItemInfo _info = ItemInfo.getItem(itname);
+                        if (_info == null)
+                        {
+                            continue;
+                        }
+                        info.ItemList.Add(_info);
+                    }
                 }
                 if (info.ItemList.Count == 0)
                 {
@@ -401,7 +467,7 @@ namespace Server.MirDatabase
 
         public string toLine()
         {
-            string line = "1/" + Chance + " ";
+            string line = Percentage + " ";
             if (Gold > 0)
             {
                 line += "金币 " + Gold;

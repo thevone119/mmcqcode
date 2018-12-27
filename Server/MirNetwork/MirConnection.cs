@@ -193,43 +193,50 @@ namespace Server.MirNetwork
         //这个适合线程死循环
         public void Process()
         {
-            if (_client == null || !_client.Connected)
+            try
             {
-                Disconnect(20);
-                return;
-            }
-
-            while (!_receiveList.IsEmpty && !Disconnecting)
-            {
-                Packet p;
-                if (!_receiveList.TryDequeue(out p)) continue;
-                TimeOutTime = SMain.Envir.Time + Settings.TimeOut;
-                ProcessPacket(p);
-
-                if (_receiveList == null)
+                if (_client == null || !_client.Connected)
+                {
+                    Disconnect(20);
                     return;
+                }
+
+                while (!_receiveList.IsEmpty && !Disconnecting)
+                {
+                    Packet p;
+                    if (!_receiveList.TryDequeue(out p)) continue;
+                    TimeOutTime = SMain.Envir.Time + Settings.TimeOut;
+                    ProcessPacket(p);
+
+                    if (_receiveList == null)
+                        return;
+                }
+
+                while (_retryList.Count > 0)
+                    _receiveList.Enqueue(_retryList.Dequeue());
+
+                if (SMain.Envir.Time > TimeOutTime)
+                {
+                    Disconnect(21);
+                    return;
+                }
+
+                if (_sendList == null || _sendList.Count <= 0) return;
+
+                List<byte> data = new List<byte>();
+                while (!_sendList.IsEmpty)
+                {
+                    Packet p;
+                    if (!_sendList.TryDequeue(out p) || p == null) continue;
+                    data.AddRange(p.GetPacketBytes());
+                }
+
+                BeginSend(data);
             }
-
-            while (_retryList.Count > 0)
-                _receiveList.Enqueue(_retryList.Dequeue());
-
-            if (SMain.Envir.Time > TimeOutTime)
+            catch(Exception e)
             {
-                Disconnect(21);
-                return;
+                SMain.Enqueue(e);
             }
-
-            if (_sendList == null || _sendList.Count <= 0) return;
-
-            List<byte> data = new List<byte>();
-            while (!_sendList.IsEmpty)
-            {
-                Packet p;
-                if (!_sendList.TryDequeue(out p) || p == null) continue;
-                data.AddRange(p.GetPacketBytes());
-            }
-            
-            BeginSend(data);
         }
         //对数据包进行处理
         private void ProcessPacket(Packet p)
@@ -1225,7 +1232,7 @@ namespace Server.MirNetwork
         private void Magic(C.Magic p)
         {
             if (Stage != GameStage.Game) return;
-
+            //这个逻辑是否有问题？死了还可以放技能么？
             if (!Player.Dead && (Player.ActionTime > SMain.Envir.Time || Player.SpellTime > SMain.Envir.Time))
                 _retryList.Enqueue(p);
             else

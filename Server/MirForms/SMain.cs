@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using Server.MirDatabase;
 using Server.MirForms.Systems;
+using System.Text;
 
 namespace Server
 {
@@ -41,33 +42,21 @@ namespace Server
 
         public static void Enqueue(Exception ex)
         {
-            if (MessageLog.Count < 100)
             MessageLog.Enqueue(String.Format("[{0}]: {1} - {2}" + Environment.NewLine, DateTime.Now, ex.TargetSite, ex));
-            File.AppendAllText(Settings.LogPath + "Log (" + DateTime.Now.Date.ToString("dd-MM-yyyy") + ").txt",
-                                               String.Format("[{0}]: {1} - {2}" + Environment.NewLine, DateTime.Now, ex.TargetSite, ex));
         }
 
         public static void EnqueueDebugging(string msg)
         {
-            if (DebugLog.Count < 100)
             DebugLog.Enqueue(String.Format("[{0}]: {1}" + Environment.NewLine, DateTime.Now, msg));
-            File.AppendAllText(Settings.LogPath + "DebugLog (" + DateTime.Now.Date.ToString("dd-MM-yyyy") + ").txt",
-                                           String.Format("[{0}]: {1}" + Environment.NewLine, DateTime.Now, msg));
         }
         public static void EnqueueChat(string msg)
         {
-            if (ChatLog.Count < 100)
             ChatLog.Enqueue(String.Format("[{0}]: {1}" + Environment.NewLine, DateTime.Now, msg));
-            File.AppendAllText(Settings.LogPath + "ChatLog (" + DateTime.Now.Date.ToString("dd-MM-yyyy") + ").txt",
-                                           String.Format("[{0}]: {1}" + Environment.NewLine, DateTime.Now, msg));
         }
 
         public static void Enqueue(string msg)
         {
-            if (MessageLog.Count < 100)
             MessageLog.Enqueue(String.Format("[{0}]: {1}" + Environment.NewLine, DateTime.Now, msg));
-            File.AppendAllText(Settings.LogPath + "Log (" + DateTime.Now.Date.ToString("dd-MM-yyyy") + ").txt",
-                                           String.Format("[{0}]: {1}" + Environment.NewLine, DateTime.Now, msg));
         }
 
         private void configToolStripMenuItem_Click(object sender, EventArgs e)
@@ -98,33 +87,46 @@ namespace Server
                 else
                     CycleDelayLabel.Text = string.Format("CycleDelay: {0}", Envir.LastRunTime);
 
+
+                StringBuilder sb = new StringBuilder();
                 while (!MessageLog.IsEmpty)
                 {
                     string message;
 
                     if (!MessageLog.TryDequeue(out message)) continue;
-
-                    LogTextBox.AppendText(message);
+                    sb.Append(message);
                 }
-
+                if (sb.Length > 0)
+                {
+                    LogTextBox.AppendText(sb.ToString());
+                    File.AppendAllText(Settings.LogPath + "Log (" + DateTime.Now.Date.ToString("dd-MM-yyyy") + ").txt", sb.ToString());
+                    sb.Clear();
+                }
                 while (!DebugLog.IsEmpty)
                 {
                     string message;
 
                     if (!DebugLog.TryDequeue(out message)) continue;
-
-                    DebugLogTextBox.AppendText(message);
+                    sb.Append(message);
+                }
+                if (sb.Length > 0)
+                {
+                    DebugLogTextBox.AppendText(sb.ToString());
+                    File.AppendAllText(Settings.LogPath + "DebugLog (" + DateTime.Now.Date.ToString("dd-MM-yyyy") + ").txt", sb.ToString());
+                    sb.Clear();
                 }
 
                 while (!ChatLog.IsEmpty)
                 {
                     string message;
-
                     if (!ChatLog.TryDequeue(out message)) continue;
-
-                    ChatLogTextBox.AppendText(message);
                 }
-
+                if (sb.Length > 0)
+                {
+                    ChatLogTextBox.AppendText(sb.ToString());
+                    File.AppendAllText(Settings.LogPath + "ChatLog (" + DateTime.Now.Date.ToString("dd-MM-yyyy") + ").txt", sb.ToString());
+                    sb.Clear();
+                }
                 ProcessPlayersOnlineTab();
             }
             catch (Exception ex)

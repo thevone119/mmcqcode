@@ -6,6 +6,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //骷髅长枪兵
     public class BoneSpearman : MonsterObject
     {
         protected internal BoneSpearman(MonsterInfo info)

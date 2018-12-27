@@ -5,6 +5,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //僧侣僵尸、诅咒牧师
     class DigOutZombie : MonsterObject
     {
         public bool Visible, DoneDigOut;

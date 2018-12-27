@@ -9,6 +9,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //虹魔教主
     class DarkDevil : MonsterObject
     {
         private long _areaTime;

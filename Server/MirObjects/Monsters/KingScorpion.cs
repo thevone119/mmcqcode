@@ -9,6 +9,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //虹魔蝎卫
     class KingScorpion : MonsterObject
     {
         protected internal KingScorpion(MonsterInfo info) : base(info)

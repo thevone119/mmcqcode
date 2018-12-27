@@ -5,6 +5,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //狂热血蜥蜴
     class Khazard : MonsterObject
     {
         public long PullTime;

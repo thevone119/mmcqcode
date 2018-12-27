@@ -47,7 +47,9 @@ namespace Server.MirDatabase
         public List<int> FinishQuestIndexes = new List<int>();
         
         public NPCInfo()
-        { }
+        {
+
+        }
 
         /// <summary>
         /// 加载所有数据
@@ -56,7 +58,7 @@ namespace Server.MirDatabase
         public static List<NPCInfo> loadAll()
         {
             List<NPCInfo> list = new List<NPCInfo>();
-            DbDataReader read = MirConfigDB.ExecuteReader("select * from NPCInfo");
+            DbDataReader read = MirConfigDB.ExecuteReader("select * from NPCInfo where isdel=0");
 
             while (read.Read())
             {
@@ -65,38 +67,7 @@ namespace Server.MirDatabase
                 {
                     continue;
                 }
-                obj.Name = read.GetString(read.GetOrdinal("Name"));
-                if (obj.Name == null)
-                {
-                    continue;
-                }
-                obj.Index = read.GetInt32(read.GetOrdinal("Idx"));
-                obj.FileName = read.GetString(read.GetOrdinal("FileName"));
-
-                obj.MapIndex = read.GetInt16(read.GetOrdinal("MapIndex"));
-                obj.Location = new Point(read.GetInt16(read.GetOrdinal("Location_X")), read.GetInt16(read.GetOrdinal("Location_Y")));
-
-                obj.Rate = (ushort)read.GetInt16(read.GetOrdinal("Rate"));
-                obj.Image = (ushort)read.GetInt16(read.GetOrdinal("Image"));
-
-                obj.TimeVisible = read.GetBoolean(read.GetOrdinal("TimeVisible"));
-                obj.HourStart = read.GetByte(read.GetOrdinal("HourStart"));
-                obj.MinuteStart = read.GetByte(read.GetOrdinal("MinuteStart"));
-                obj.HourEnd = read.GetByte(read.GetOrdinal("HourEnd"));
-                obj.MinuteEnd = read.GetByte(read.GetOrdinal("MinuteEnd"));
-                obj.MinLev = (short)read.GetInt16(read.GetOrdinal("MinLev"));
-                obj.MaxLev = (short)read.GetInt16(read.GetOrdinal("MaxLev"));
-                obj.DayofWeek = read.GetString(read.GetOrdinal("DayofWeek"));
-                obj.ClassRequired = read.GetString(read.GetOrdinal("ClassRequired"));
-                obj.Conquest = read.GetInt32(read.GetOrdinal("Conquest"));
-                obj.FlagNeeded = read.GetInt32(read.GetOrdinal("FlagNeeded"));
-
-                obj.CollectQuestIndexes= JsonConvert.DeserializeObject< List< int >>(read.GetString(read.GetOrdinal("CollectQuestIndexes")));
-                obj.FinishQuestIndexes = JsonConvert.DeserializeObject<List<int>>(read.GetString(read.GetOrdinal("FinishQuestIndexes")));
-
-
-
-                DBObjectUtils.updateObjState(obj, obj.Index);
+                load(read, obj);
                 list.Add(obj);
             }
             return list;
@@ -242,6 +213,44 @@ namespace Server.MirDatabase
             
             DBObjectUtils.updateObjState(this, Index);
 
+        }
+
+        private static void load(DbDataReader read,NPCInfo obj)
+        {
+            obj.Name = read.GetString(read.GetOrdinal("Name"));
+            obj.Index = read.GetInt32(read.GetOrdinal("Idx"));
+            obj.FileName = read.GetString(read.GetOrdinal("FileName"));
+
+            obj.MapIndex = read.GetInt16(read.GetOrdinal("MapIndex"));
+            obj.Location = new Point(read.GetInt16(read.GetOrdinal("Location_X")), read.GetInt16(read.GetOrdinal("Location_Y")));
+
+            obj.Rate = (ushort)read.GetInt16(read.GetOrdinal("Rate"));
+            obj.Image = (ushort)read.GetInt16(read.GetOrdinal("Image"));
+
+            obj.TimeVisible = read.GetBoolean(read.GetOrdinal("TimeVisible"));
+            obj.HourStart = read.GetByte(read.GetOrdinal("HourStart"));
+            obj.MinuteStart = read.GetByte(read.GetOrdinal("MinuteStart"));
+            obj.HourEnd = read.GetByte(read.GetOrdinal("HourEnd"));
+            obj.MinuteEnd = read.GetByte(read.GetOrdinal("MinuteEnd"));
+            obj.MinLev = (short)read.GetInt16(read.GetOrdinal("MinLev"));
+            obj.MaxLev = (short)read.GetInt16(read.GetOrdinal("MaxLev"));
+            obj.DayofWeek = read.GetString(read.GetOrdinal("DayofWeek"));
+            obj.ClassRequired = read.GetString(read.GetOrdinal("ClassRequired"));
+            obj.Conquest = read.GetInt32(read.GetOrdinal("Conquest"));
+            obj.FlagNeeded = read.GetInt32(read.GetOrdinal("FlagNeeded"));
+            obj.CollectQuestIndexes = JsonConvert.DeserializeObject<List<int>>(read.GetString(read.GetOrdinal("CollectQuestIndexes")));
+            obj.FinishQuestIndexes = JsonConvert.DeserializeObject<List<int>>(read.GetString(read.GetOrdinal("FinishQuestIndexes")));
+            DBObjectUtils.updateObjState(obj, obj.Index);
+        }
+
+        //重新从数据库中加载
+        public void reload()
+        {
+            DbDataReader read = MirConfigDB.ExecuteReader("select * from NPCInfo where idx=@idx", new SQLiteParameter("idx", Index));
+            if (read.Read())
+            {
+                load(read, this);
+            }
         }
 
         public static void FromText(string text)
