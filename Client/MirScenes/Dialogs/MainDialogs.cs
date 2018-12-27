@@ -2224,7 +2224,7 @@ namespace Client.MirScenes.Dialogs
         public MirLabel ExpPLabel, BagWLabel, WearWLabel, HandWLabel, MagicRLabel, PoisonRecLabel, HealthRLabel, ManaRLabel, PoisonResLabel, HolyTLabel, FreezeLabel, PoisonAtkLabel;
         public MirLabel HeadingLabel, StatLabel;
         public MirButton NextButton, BackButton;
-
+        //角色装备的物品
         public MirItemCell[] Grid;
         public MagicButton[] Magics;
 

@@ -18,7 +18,7 @@ namespace Client.MirObjects
     public class Effect
     {
         public MLibrary Library;
-
+        //基础索引，总数，持续时间
         public int BaseIndex, Count, Duration;
         public long Start;
 
@@ -36,7 +36,7 @@ namespace Client.MirObjects
         public Point DrawLocation;
         public bool Repeat;
         public long RepeatUntil;
-
+        //背部
         public bool DrawBehind = false;
 
         public long CurrentDelay;
@@ -147,7 +147,7 @@ namespace Client.MirObjects
             Played = null;
         }
     }
-    //mis的特效
+    //mis的特效,投递物品的特效，比如火球，比如火符，比如射箭等
     public class Missile : Effect
     {
         public static List<Missile> Missiles = new List<Missile>();

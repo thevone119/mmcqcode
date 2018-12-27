@@ -382,7 +382,7 @@ namespace Client.MirControls
                     break;
                 case ItemType.Amulet:
                     //if (Item.Info.Shape == 0) return;
-
+                    //装备毒符
                     if (dialog.Grid[(int)EquipmentSlot.Amulet].Item != null && Item.Info.Type == ItemType.Amulet)
                     {
                         if (dialog.Grid[(int)EquipmentSlot.Amulet].Item.Info == Item.Info && dialog.Grid[(int)EquipmentSlot.Amulet].Item.Count < dialog.Grid[(int)EquipmentSlot.Amulet].Item.Info.StackSize)

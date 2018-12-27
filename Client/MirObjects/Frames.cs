@@ -5,14 +5,17 @@ using System.Text;
 
 namespace Client.MirObjects
 {
+    //定义各种动画的帧
     public class FrameSet
     {
-        public static FrameSet Players;
+        public static FrameSet Players;//玩家
         public static List<FrameSet> NPCs; //Make Array
-        public static List<FrameSet> Monsters;
-        public static List<FrameSet> HelperPets; //IntelligentCreature
-        public static List<FrameSet> Gates;
-        public static List<FrameSet> Walls;
+        public static List<FrameSet> Monsters;//这里不用数组是否可以？
+        //针对部分有问题的，用map重新定义吧.优先查找这个map吧
+        public static Dictionary<Monster, FrameSet> MonstersMap;//这里不用数组是否可以？
+        public static List<FrameSet> HelperPets; //IntelligentCreature 非战斗宠物
+        public static List<FrameSet> Gates;//
+        public static List<FrameSet> Walls;//城墙
 
         public Dictionary<MirAction, Frame> Frames = new Dictionary<MirAction, Frame>();
 
@@ -21,7 +24,9 @@ namespace Client.MirObjects
             FrameSet frame;
             NPCs = new List<FrameSet>();
 
+
             Monsters = new List<FrameSet>();
+      
 
             Players = new FrameSet();
 
@@ -34,7 +39,7 @@ namespace Client.MirObjects
             /*
              * PLAYERS
              */
-
+          
             #region Player Frames
             //Common
             Players.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500, 0, 8, 0, 250));
@@ -180,6 +185,7 @@ namespace Client.MirObjects
              */
 
             #region Monster Frames
+            initMonsters();
             //0 - Guard, Guard2
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
@@ -1041,27 +1047,27 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Attack1, new Frame(72, 7, 0, 100));
             frame.Frames.Add(MirAction.Struck, new Frame(128, 2, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(144, 6, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(149, 1, 4, 1000));
+            frame.Frames.Add(MirAction.Dead, new Frame(149, 1, 5, 1000));
 
-            //86 - DarkBeast, LightBeast 
+            //86 - DarkBeast, LightBeast(已调整) 
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 200));
             frame.Frames.Add(MirAction.Attack1, new Frame(96, 7, 0, 100));
             frame.Frames.Add(MirAction.Struck, new Frame(152, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(176, 9, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(184, 1, 0, 1000) { Reverse = true });
+            frame.Frames.Add(MirAction.Dead, new Frame(184, 1, 8, 1000));
             frame.Frames.Add(MirAction.Attack2, new Frame(248, 6, 0, 100));
 
-            //87 - HardenRhino
+            //87 - HardenRhino(已调整)
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(48, 10, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(128, 7, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(128, 7, 0, 100,397,6,0,100));
             frame.Frames.Add(MirAction.Struck, new Frame(184, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(208, 10, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(217, 1, 0, 1000) { Reverse = true });
-            frame.Frames.Add(MirAction.Attack2, new Frame(288, 7, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(217, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Attack2, new Frame(288, 7, 0, 100, 392, 5, -5, 100) { EffectStartTime =500});
 
             //88 - AncientBringer
             Monsters.Add(frame = new FrameSet());
@@ -1911,14 +1917,15 @@ namespace Client.MirObjects
 
             //165 - WaterDragon //ec ai
             Monsters.Add(frame = new FrameSet());
-            frame.Frames.Add(MirAction.Hide, new Frame(0, 8, 0, 500) { Reverse = true });
-            frame.Frames.Add(MirAction.Standing, new Frame(64, 6, 0, 500));
+            frame.Frames.Add(MirAction.Hide, new Frame(0, 8, 0, 500, 400, 8, 0, 500) { Reverse = true });
+            frame.Frames.Add(MirAction.Standing, new Frame(64, 6, 0, 300));
             frame.Frames.Add(MirAction.Attack1, new Frame(112, 8, 0, 100));
             frame.Frames.Add(MirAction.Attack2, new Frame(176, 10, 0, 100));
-            frame.Frames.Add(MirAction.Struck, new Frame(256, 3, 0, 200));
+            frame.Frames.Add(MirAction.Struck, new Frame(256, 3, 0, 200, 548,4,0,200));
             frame.Frames.Add(MirAction.Die, new Frame(280, 15, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(294, 1, 0, 1000));
-            //frame.Frames.Add(MirAction.Walking, new Frame(72, 6, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(294, 1, 14, 1000));
+            //frame.Frames.Add(MirAction.Walking, new Frame(72, 6, 0, 100,500,6,0,100));
+            frame.Frames.Add(MirAction.Walking, new Frame(0, 8, 0, 200, 500, 6, 0, 100));
 
             //166 - BlackTortoise
             Monsters.Add(frame = new FrameSet());
@@ -2277,15 +2284,15 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Die, new Frame(232, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(241, 1, 9, 1000));
 
-            //200 - RestlessJar
+            //200 - RestlessJar（有问题，已改）
             Monsters.Add(frame = new FrameSet());
-            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
-            frame.Frames.Add(MirAction.Attack1, new Frame(48, 9, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(120, 10, 0, 200));
-            frame.Frames.Add(MirAction.Attack3, new Frame(200, 10, 0, 200));
-            frame.Frames.Add(MirAction.Struck, new Frame(280, 3, 0, 200));
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 300));
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(48, 7, 0, 100,384,7,-7,100));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(152, 7, 0, 200,471,5,-5,200));
+            frame.Frames.Add(MirAction.Struck, new Frame(108, 6, 0, 200));
+            frame.Frames.Add(MirAction.Walking, new Frame(208, 8, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(304, 10, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(303, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Dead, new Frame(313, 1, 9, 1000));
 
             //201 - FlamingMutant, FlyingStatue, ManectricClaw
             Monsters.Add(frame = new FrameSet());
@@ -2599,16 +2606,57 @@ namespace Client.MirObjects
 
             #endregion
         }
+
+        //这里针对一些怪物进行重新定位帧
+        static void initMonsters()
+        {
+            //如果这个里面
+            MonstersMap = new Dictionary<Monster, FrameSet>();
+            //重新定义Guard2
+            FrameSet frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
+            //frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(32, 6, 0, 100));
+            MonstersMap.Add(Monster.Guard2, frame);
+
+            //重新定义Jar1
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(2, 2, 2, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(4, 2, 2, 300));
+            frame.Frames.Add(MirAction.Struck, new Frame(34, 2, 0, 200));
+            //frame.Frames.Add(MirAction.Attack1, new Frame(130, 3, 0, 200) { Blend=true });
+            frame.Frames.Add(MirAction.Attack1, new Frame(4, 2, 2, 300));
+            frame.Frames.Add(MirAction.Die, new Frame(50, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(59, 1, 9, 1000));
+            MonstersMap.Add(Monster.Jar1, frame);
+
+            //重新定义Jar2
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 10, 0, 500));
+            frame.Frames.Add(MirAction.Attack2, new Frame(80, 6, 0, 100));//隔位攻击
+            frame.Frames.Add(MirAction.Attack1, new Frame(128, 10, 0, 200));//近身攻击
+            frame.Frames.Add(MirAction.Struck, new Frame(208, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(232, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(241, 1, 9, 1000));
+
+            frame.Frames.Add(MirAction.Walking, new Frame(80, 6, 0, 200));
+
+            MonstersMap.Add(Monster.Jar2, frame);
+
+
+        }
     }
 
     
     //动画的帧
     public class Frame
     {
-        //每4个一组，开始，总数，跳过，延时
+        //每4个一组，开始，总数，跳过，延时,等待开始时间
         public int Start, Count, Skip, Interval;
-        //这4个是特效的，也是每4个一组
-        public int EffectStart, EffectCount, EffectSkip, EffectInterval;
+        //第一组特效
+        public int EffectStart, EffectCount, EffectSkip, EffectInterval, EffectStartTime;
+        //第二组特效
+        public int EStart2, ECount2, ESkip2, EInterval2, ETime2;
         //Reverse翻转，Blend混合
         public bool Reverse, Blend;
 
@@ -2621,6 +2669,12 @@ namespace Client.MirObjects
         {
             get { return EffectCount + EffectSkip; }
         }
+
+        public int EOffSet2
+        {
+            get { return ECount2 + ESkip2; }
+        }
+
         //比如人物站立 0, 4, 0, 500, 0, 8, 0, 250
         public Frame(int start, int count, int skip, int interval, int effectstart = 0, int effectcount = 0, int effectskip = 0, int effectinterval = 0)
         {

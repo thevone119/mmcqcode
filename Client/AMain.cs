@@ -673,7 +673,7 @@ namespace Launcher
 
                     if (Settings.P_AutoStart)
                     {
-                        Launch();
+                        //Launch();
                     }
                     return;
                 }

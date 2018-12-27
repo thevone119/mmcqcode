@@ -52,6 +52,8 @@ namespace Client.MirScenes
         }
         //记录各种跑步，行走时间，攻击时间
         public static long MoveTime, AttackTime, NextRunTime, LogTime, LastRunTime, LastAttackTime;
+        //CanMove:100毫秒一次true,其他循环都是false.
+
         public static bool CanMove, CanRun;
         //各种界面窗口，地图窗口
         public MapControl MapControl;
@@ -60,7 +62,7 @@ namespace Client.MirScenes
         public ChatControlBar ChatControl;
         //这个是背包
         public InventoryDialog InventoryDialog;
-
+        //角色栏
         public CharacterDialog CharacterDialog;
         public CraftDialog CraftDialog;
         public StorageDialog StorageDialog;
@@ -1083,7 +1085,7 @@ namespace Client.MirScenes
                     GameScene.UserSet.LastHPUse1Time = CMain.Time + 2000;
                     if (User.HP * 1.0 / User.MaxHP < GameScene.UserSet.HPLower1 * 1.0 / 100)
                     {
-                        useCell = getUseCell(GameScene.UserSet.HPUse1);
+                        useCell = getUseCell(ItemType.Potion, GameScene.UserSet.HPUse1);
                         if (useCell != null)
                         {
                             useCell.UseItem();
@@ -1096,7 +1098,7 @@ namespace Client.MirScenes
                     GameScene.UserSet.LastHPUse2Time = CMain.Time + 200;
                     if(User.HP * 1.0 / User.MaxHP< GameScene.UserSet.HPLower2 * 1.0 / 100)
                     {
-                        useCell = getUseCell(GameScene.UserSet.HPUse2);
+                        useCell = getUseCell(ItemType.Potion, GameScene.UserSet.HPUse2);
                         if (useCell != null)
                         {
                             useCell.UseItem();
@@ -1109,7 +1111,7 @@ namespace Client.MirScenes
                     GameScene.UserSet.LastHPUse3Time = CMain.Time + 5000;
                     if (User.HP * 1.0 / User.MaxHP < GameScene.UserSet.HPLower3 * 1.0 / 100)
                     {
-                        useCell = getUseCell(GameScene.UserSet.HPUse3);
+                        useCell = getUseCell(ItemType.Scroll, GameScene.UserSet.HPUse3);
                         if (useCell != null)
                         {
                             useCell.UseItem();
@@ -1122,7 +1124,7 @@ namespace Client.MirScenes
                     GameScene.UserSet.LastMPUse1Time = CMain.Time + 2000;
                     if (User.MP*1.0 / User.MaxMP < GameScene.UserSet.MPLower1*1.0 / 100)
                     {
-                        useCell = getUseCell(GameScene.UserSet.MPUse1);
+                        useCell = getUseCell(ItemType.Potion, GameScene.UserSet.MPUse1);
                         
                         if (useCell != null)
                         {
@@ -1186,28 +1188,32 @@ namespace Client.MirScenes
         }
 
         //先检查按钮栏BeltDialog，再检查背包InventoryDialog
-        private MirItemCell getUseCell(string itemname)
+        private MirItemCell getUseCell(ItemType itemtype,string itemname)
         {
             if (itemname == null)
             {
                 return null;
             }
+            List<MirItemCell> likeCell = new List<MirItemCell>();
             itemname = itemname.Trim();
             for (int i=0;i< BeltDialog.Grid.Length; i++)
             {
-                if(BeltDialog.Grid[i]==null|| BeltDialog.Grid[i].Item == null || BeltDialog.Grid[i].Item.Info==null)
+                if(BeltDialog.Grid[i]==null|| BeltDialog.Grid[i].Item == null || BeltDialog.Grid[i].Item.Info==null || BeltDialog.Grid[i].Item.Info.Type!= itemtype)
                 {
                     continue;
                 }
-     
                 if (BeltDialog.Grid[i].Item.Info.Name== itemname)
                 {
                     return BeltDialog.Grid[i];
                 }
+                if (BeltDialog.Grid[i].Item.Info.Name.StartsWith(itemname))
+                {
+                    likeCell.Add(BeltDialog.Grid[i]);
+                }
             }
             for (int i = 0; i < InventoryDialog.Grid.Length; i++)
             {
-                if (InventoryDialog.Grid[i] == null || InventoryDialog.Grid[i].Item == null|| InventoryDialog.Grid[i].Item.Info==null)
+                if (InventoryDialog.Grid[i] == null || InventoryDialog.Grid[i].Item == null|| InventoryDialog.Grid[i].Item.Info==null || InventoryDialog.Grid[i].Item.Info.Type != itemtype)
                 {
                     continue;
                 }
@@ -1215,8 +1221,20 @@ namespace Client.MirScenes
                 {
                     return InventoryDialog.Grid[i];
                 }
+                if (InventoryDialog.Grid[i].Item.Info.Name.StartsWith(itemname))
+                {
+                    likeCell.Add(InventoryDialog.Grid[i]);
+                }
             }
-            return null;
+            MirItemCell retcel = null;
+            foreach (MirItemCell lcell in likeCell)
+            {
+                if(retcel==null|| retcel.Item.Info.Price> lcell.Item.Info.Price)
+                {
+                    retcel = lcell;
+                }
+            }
+            return retcel;
         }
 
         public void DialogProcess()
@@ -1247,6 +1265,7 @@ namespace Client.MirScenes
         //处理数据包
         public override void ProcessPacket(Packet p)
         {
+            //MirLog.info("ProcessPacket:" + p.Index);
             switch (p.Index)
             {
                 case (short)ServerPacketIds.KeepAlive:
@@ -1925,7 +1944,7 @@ namespace Client.MirScenes
         {
             if (MapControl != null && !MapControl.IsDisposed)
                 MapControl.Dispose();
-            MapControl = new MapControl { FileName = Path.Combine(Settings.MapPath, p.FileName + ".map"), Title = p.Title, MiniMap = p.MiniMap, BigMap = p.BigMap, Lights = p.Lights, Lightning = p.Lightning, Fire = p.Fire, MapDarkLight = p.MapDarkLight, Music = p.Music };
+            MapControl = new MapControl { FileName = Path.Combine(Settings.MapPath, p.FileName + ".map"), Title = p.Title, MiniMap = p.MiniMap, BigMap = p.BigMap, Lights = p.Lights, Lightning = p.Lightning, Fire = p.Fire, MapDarkLight = p.MapDarkLight, Music = p.Music, SafeZones=p.SafeZones };
             MapControl.LoadMap();
             InsertControl(0, MapControl);
         }
@@ -4759,8 +4778,11 @@ namespace Client.MirScenes
 
             cell.Locked = false;
 
-            if (!p.Success) return;
-
+            if (!p.Success)
+            {
+                ChatDialog.ReceiveChat(p.msg, ChatType.System);
+                return;
+            }
             cell.Item = null;
 
             User.RefreshStats();
@@ -8603,7 +8625,8 @@ namespace Client.MirScenes
         //视图房屋的xy
         public static int ViewRangeX;
         public static int ViewRangeY;
-
+        //最后释放的毒的类型,用来控制红绿毒切换的
+        public static PoisonType lastPoisonType = PoisonType.Red;
 
         //鼠标的地图上的位置，网格位置
         public static Point MapLocation
@@ -8629,6 +8652,9 @@ namespace Client.MirScenes
         public string Title = String.Empty;
         //小地图，大地图，音乐，设置音乐
         public ushort MiniMap, BigMap, Music, SetMusic;
+        //增加安全区
+        //安全区域
+        public List<SafeZoneInfo> SafeZones = new List<SafeZoneInfo>();
         //灯光？
         public LightSetting Lights;
         public bool Lightning, Fire;
@@ -8862,6 +8888,20 @@ namespace Client.MirScenes
         public override void Draw()
         {
             //Do nothing.
+        }
+
+        //某个点是否在安全区域
+        public bool InSafeZone(Point p)
+        {
+            for (int i = 0; i < SafeZones.Count; i++)
+            {
+                SafeZoneInfo szi = SafeZones[i];
+                if (Functions.InRange(szi.Location, p, szi.Size))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         //创建纹理
@@ -10091,7 +10131,7 @@ namespace Client.MirScenes
 
             MapObject target = null;
 
-            //Targeting
+            //Targeting 释放目标处理
             switch (magic.Spell)
             {
                 case Spell.FireBall:
@@ -10226,6 +10266,8 @@ namespace Client.MirScenes
                         break;
             }
 
+
+
             MirDirection dir = (target == null || target == User) ? User.NextMagicDirection : Functions.DirectionFromPoint(User.CurrentLocation, target.CurrentLocation);
 
             Point location = target != null ? target.CurrentLocation : User.NextMagicLocation;
@@ -10242,6 +10284,65 @@ namespace Client.MirScenes
                 }
                 User.ClearMagic();
                 return;
+            }
+            //这里对自动切毒进行处理
+            if (GameScene.UserSet.switchPoison && magic.Spell== Spell.Poisoning)
+            {
+                //是否需要切换
+                bool needSwitch = true;
+                UserItem pitem = null;
+                if(GameScene.Scene!=null && GameScene.Scene.CharacterDialog!=null && GameScene.Scene.CharacterDialog.Grid != null)
+                {
+                    pitem = GameScene.Scene.CharacterDialog.Grid[(int)EquipmentSlot.Armour].Item;
+                    if (lastPoisonType == PoisonType.Red)
+                    {
+                        lastPoisonType = PoisonType.Green;
+                    }
+                    else
+                    {
+                        lastPoisonType = PoisonType.Red;
+                    }
+                    if (pitem != null && pitem.Info.Type == ItemType.Amulet && pitem.Info.Shape == (short)lastPoisonType)
+                    {
+                        needSwitch = false;
+                    }
+                    //需要切换，则从包袱中找一包毒放上去
+                    if (needSwitch)
+                    {
+                        MirItemCell useCell = null;
+                        for (int i = 0; i < GameScene.Scene.BeltDialog.Grid.Length; i++)
+                        {
+                            MirItemCell tempCell = GameScene.Scene.BeltDialog.Grid[i];
+                            if (tempCell != null && tempCell.Item != null && tempCell.Item.Info!=null
+                                && tempCell.Item.Info.Type == ItemType.Amulet 
+                                && tempCell.Item.Info.Shape == (short)lastPoisonType
+                                )
+                            {
+                                useCell = tempCell;
+                                break;
+                            }
+                        }
+                        if (useCell == null)
+                        {
+                            for (int i = 0; i < GameScene.Scene.InventoryDialog.Grid.Length; i++)
+                            {
+                                MirItemCell tempCell = GameScene.Scene.InventoryDialog.Grid[i];
+                                if (tempCell != null && tempCell.Item != null && tempCell.Item.Info != null
+                                    && tempCell.Item.Info.Type == ItemType.Amulet
+                                    && tempCell.Item.Info.Shape == (short)lastPoisonType
+                                    )
+                                {
+                                    useCell = tempCell;
+                                    break;
+                                }
+                            }
+                        }
+                        if (useCell != null)
+                        {
+                            useCell.UseItem();
+                        }
+                    }
+                }
             }
 
             GameScene.LogTime = CMain.Time + Globals.LogDelay;
@@ -10393,6 +10494,7 @@ namespace Client.MirScenes
         //是否可以钓鱼？
         public bool CanFish(MirDirection dir)
         {
+
             //正在钓鱼，或者钓鱼时间小于1秒，则不允许钓鱼
             if (!GameScene.User.HasFishingRod || GameScene.User.FishingTime + 1000 > CMain.Time) return false;
             //当前姿势不是站立状态不允许钓鱼

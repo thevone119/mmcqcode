@@ -66,7 +66,10 @@ namespace Client.MirObjects
         }
         public long HealthTime;
 
+        //这个是等待处理的动作列表
         public List<QueuedAction> ActionFeed = new List<QueuedAction>();
+
+        //下个动作
         public QueuedAction NextAction
         {
             get { return ActionFeed.Count > 0 ? ActionFeed[0] : null; }
@@ -84,8 +87,10 @@ namespace Client.MirObjects
         public Point DrawLocation, Movement, FinalDrawLocation, OffSetMove;
         public Rectangle DisplayRectangle;
         public int Light, DrawY;
+        //下次运动时间
         public long NextMotion, NextMotion2;
         public MirAction CurrentAction;
+        //如果有新的动作，则这个值为true,就是当前还未执行完的动作将跳过
         public bool SkipFrames;
         
         //Sound
@@ -304,6 +309,7 @@ namespace Client.MirObjects
 
 
         }
+        //显示名称
         public virtual void DrawName()
         {
             CreateLabel();
@@ -346,6 +352,10 @@ namespace Client.MirObjects
             if (MaxHP <= 0)
             {
                 return;
+            }
+            if (Name.IndexOf("恶魔") != -1)
+            {
+                MirLog.info("MaxHP:" + MaxHP + ",hp:" + HP);
             }
             //if (Race != ObjectType.Player && Race != ObjectType.Monster) return;
 

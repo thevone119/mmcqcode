@@ -257,6 +257,7 @@ namespace Client.MirObjects
                 LoadMapType4();
                 return;
             }
+            //目前使用的是维美德2010年的地图
             //wemades 2010 map format i guess title starts with: Map 2010 Ver 1.0
             if ((Bytes[0] == 0x10) && (Bytes[2] == 0x61) && (Bytes[7] == 0x31) && (Bytes[14] == 0x31))
             {
@@ -373,7 +374,11 @@ namespace Client.MirObjects
                         offSet++;
 
                         if (MapCells[x, y].Light >= 100 && MapCells[x, y].Light <= 119)
+                        {
                             MapCells[x, y].FishingCell = true;
+                            //MirLog.info("x:"+x+"y:"+y);
+                        }
+                            
                     }
             }
             catch (Exception ex)

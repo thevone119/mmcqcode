@@ -67,11 +67,11 @@ namespace Client.MirGraphics
                                           ARWeaponsS = new MLibrary[19],
                                           ARHair = new MLibrary[9],
                                           ARHumEffect = new MLibrary[3],
-                                          Monsters = new MLibrary[406],
+                                          Monsters = new MLibrary[430],//怪物
                                           Gates = new MLibrary[2],
                                           Flags = new MLibrary[12],
                                           Mounts = new MLibrary[12],
-                                          NPCs = new MLibrary[200],
+                                          NPCs = new MLibrary[400],
                                           Fishing = new MLibrary[2],
                                           Pets = new MLibrary[14],
                                           Transform = new MLibrary[28],

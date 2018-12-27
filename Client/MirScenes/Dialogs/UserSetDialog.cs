@@ -23,9 +23,9 @@ namespace Client.MirScenes.Dialogs
         public byte currTab = 1;//当前选择的TAB
         //各种开关
         //基本
-        public MirCheckBox ShowLevelBox, ExcuseShiftBox, ShowPingBox, ShowFashionBox;
+        public MirCheckBox ShowLevelBox, ExcuseShiftBox, ShowPingBox, ShowFashionBox, ShowMonNameBox;
         //职业
-        public MirCheckBox SeptumBox, AutoFlamingBox, AutoShieldBox;
+        public MirCheckBox SeptumBox, AutoFlamingBox, AutoShieldBox, switchPoisonBox;
         public MirLabel tx_df;//提醒自动毒符
         //保护
         public MirCheckBox OpenProtectBox;
@@ -196,9 +196,9 @@ namespace Client.MirScenes.Dialogs
                 currTab = 4;
                 UpdateDisplay();
             };
+            //1.基础
             left = 50;
             top = 70;
-            //各种单选框
             ShowLevelBox = new MirCheckBox { Location = new Point(left, top), LabelText = "显示等级", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this};
             ShowLevelBox.Click += (o, e) =>
             {
@@ -222,6 +222,17 @@ namespace Client.MirScenes.Dialogs
             {
                 changeData();
             };
+            //第二列
+            top = 70;
+            left += 80;
+            ShowMonNameBox = new MirCheckBox { Location = new Point(left, top), LabelText = "怪物显名", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            ShowMonNameBox.Click += (o, e) =>
+            {
+                changeData();
+            };
+
+            //2.职业
+            left = 50;
             top = 70;
             SeptumBox = new MirCheckBox { Location = new Point(left, top), LabelText = "隔位刺杀", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
             SeptumBox.Click += (o, e) =>
@@ -243,18 +254,22 @@ namespace Client.MirScenes.Dialogs
             top += 30;
             tx_df = new MirLabel
             {
-                Text = "道士的符，毒可以放在包袱中，自动使用",
+                Text = "符/毒放背包中，自动使用,如关闭自动换毒,则只使用装备的毒",
                 Parent = this,
-                Size = new Size(250, 17),
+                Size = new Size(400, 17),
                 Location = new Point(left, top),
                 DrawFormat = TextFormatFlags.Left | TextFormatFlags.VerticalCenter
             };
+            //第二列
             top = 70;
-            OpenProtectBox = new MirCheckBox { Location = new Point(left, top), LabelText = "开启保护", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
-            OpenProtectBox.Click += (o, e) =>
+            left += 80;
+            switchPoisonBox = new MirCheckBox { Location = new Point(left, top), LabelText = "自动换毒", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            switchPoisonBox.Click += (o, e) =>
             {
                 changeData();
             };
+            //4.物品
+            left = 50;
             top = 70;
             AutoPickUpBox = new MirCheckBox { Location = new Point(left, top), LabelText = "自动拾取", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
             AutoPickUpBox.Click += (o, e) =>
@@ -276,7 +291,14 @@ namespace Client.MirScenes.Dialogs
                 }
             }
 
-            //保护配置
+            //3.保护配置
+            left = 50;
+            top = 70;
+            OpenProtectBox = new MirCheckBox { Location = new Point(left, top), LabelText = "开启保护", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            OpenProtectBox.Click += (o, e) =>
+            {
+                changeData();
+            };
             left = 205; top = 93;
             HPLower1Text = new MirTextBox
             {
@@ -460,11 +482,14 @@ namespace Client.MirScenes.Dialogs
             ExcuseShiftBox.Checked = GameScene.UserSet.ExcuseShift;
             ShowPingBox.Checked = GameScene.UserSet.ShowPing;
             ShowFashionBox.Checked = GameScene.UserSet.ShowFashion;
+            ShowMonNameBox.Checked = GameScene.UserSet.ShowMonName;
+
             SeptumBox.Checked = GameScene.UserSet.Septum;
             AutoFlamingBox.Checked = GameScene.UserSet.AutoFlaming;
             AutoShieldBox.Checked = GameScene.UserSet.AutoShield;
             OpenProtectBox.Checked = GameScene.UserSet.OpenProtect;
             AutoPickUpBox.Checked = GameScene.UserSet.AutoPickUp;
+            switchPoisonBox.Checked = GameScene.UserSet.switchPoison;
 
             HPLower1Text.Text = GameScene.UserSet.HPLower1+"";
             HPLower2Text.Text = GameScene.UserSet.HPLower2 + "";
@@ -492,6 +517,9 @@ namespace Client.MirScenes.Dialogs
             GameScene.UserSet.AutoShield = AutoShieldBox.Checked ;
             GameScene.UserSet.OpenProtect = OpenProtectBox.Checked ;
             GameScene.UserSet.AutoPickUp = AutoPickUpBox.Checked ;
+            GameScene.UserSet.ShowMonName = ShowMonNameBox.Checked;
+            GameScene.UserSet.switchPoison = switchPoisonBox.Checked;
+            
             byte.TryParse(HPLower1Text.Text,out GameScene.UserSet.HPLower1);
             byte.TryParse(HPLower2Text.Text, out GameScene.UserSet.HPLower2);
             byte.TryParse(HPLower3Text.Text, out GameScene.UserSet.HPLower3);
@@ -547,6 +575,10 @@ namespace Client.MirScenes.Dialogs
         //刷新分页
         private void UpdatePage()
         {
+            for (int i = 0; i < ItemRows.Length; i++)
+            {
+                ItemRows[i].Visible = false;
+            }
             int maxPage = ItemAll.Count / ItemRows.Length + 1;
             if (maxPage < 1) maxPage = 1;
 
@@ -556,6 +588,7 @@ namespace Client.MirScenes.Dialogs
             {
                 ItemRows[i - StartIndex].LabelText = ItemAll[i].itemname;
                 ItemRows[i - StartIndex].Checked = ItemAll[i].pick;
+                ItemRows[i - StartIndex].Visible = NextButton.Visible;
             }
         }
 
@@ -566,6 +599,7 @@ namespace Client.MirScenes.Dialogs
             ShowLevelBox.Visible = visible;
             ExcuseShiftBox.Visible = visible;
             ShowPingBox.Visible = visible;
+            ShowMonNameBox.Visible = visible;
             ShowFashionBox.Visible = false;
             if (visible)
             {
@@ -583,6 +617,7 @@ namespace Client.MirScenes.Dialogs
             SeptumBox.Visible = visible;
             AutoFlamingBox.Visible = visible;
             AutoShieldBox.Visible = visible;
+            switchPoisonBox.Visible = visible;
             tx_df.Visible = visible;
             if (visible)
             {

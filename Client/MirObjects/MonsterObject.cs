@@ -26,9 +26,18 @@ namespace Client.MirObjects
         }
         //这里的AI64 AI81分别是什么？
         //81朝向左边就不阻挡？
+
+        private bool _Blocking;
+
         public override bool Blocking
         {
-            get { return AI == 64 || (AI == 81 && Direction == (MirDirection)6) ? false : !Dead; }
+            get {
+                if (GameScene.Scene.MapControl.InSafeZone(CurrentLocation))
+                {
+                    return false;
+                }
+                return AI == 64 || (AI == 81 && Direction == (MirDirection)6) ? false : !Dead;
+            }
         }
 
         public Point ManualLocationOffset
@@ -62,6 +71,7 @@ namespace Client.MirObjects
         public byte Effect;
         public bool Skeleton;
 
+        //帧动画
         public FrameSet Frames;
         public Frame Frame;
         public int FrameIndex, FrameInterval, EffectFrameIndex, EffectFrameInterval;
@@ -204,6 +214,48 @@ namespace Client.MirObjects
 
             BaseSound = (ushort)BaseImage * 10;
 
+            initFrame(info);
+
+            SetAction();
+            SetCurrentEffects();
+
+            if (CurrentAction == MirAction.Standing)
+            {
+                PlayAppearSound();
+                FrameIndex = CMain.Random.Next(Frame.Count);
+            }
+            else if(CurrentAction == MirAction.SitDown)
+            {
+                PlayAppearSound();
+            }
+
+            NextMotion -= NextMotion % 100;
+
+            if (Settings.Effect)
+            {
+                switch (BaseImage)
+                {
+                    case Monster.Weaver:
+                    case Monster.VenomWeaver:
+                    case Monster.ArmingWeaver:
+                    case Monster.ValeBat:
+                    case Monster.CrackingWeaver:
+                    case Monster.GreaterWeaver:
+                    case Monster.CrystalWeaver:
+                        Effects.Add(new Effect(Libraries.Effect, 680, 20, 20 * Frame.Interval, this) { DrawBehind = true, Repeat = true });
+                        break;
+                }
+            }
+        }
+
+        //固化所有怪物的帧数
+        private void initFrame(S.ObjectMonster info)
+        {
+            if (FrameSet.MonstersMap.ContainsKey(BaseImage))
+            {
+                Frames = FrameSet.MonstersMap[BaseImage];
+                return;
+            }
             switch (BaseImage)
             {
                 case Monster.Guard:
@@ -1062,39 +1114,10 @@ namespace Client.MirObjects
                     Frames = FrameSet.Monsters[0];
                     break;
             }
-
-            SetAction();
-            SetCurrentEffects();
-
-            if (CurrentAction == MirAction.Standing)
-            {
-                PlayAppearSound();
-                FrameIndex = CMain.Random.Next(Frame.Count);
-            }
-            else if(CurrentAction == MirAction.SitDown)
-            {
-                PlayAppearSound();
-            }
-
-            NextMotion -= NextMotion % 100;
-
-            if (Settings.Effect)
-            {
-                switch (BaseImage)
-                {
-                    case Monster.Weaver:
-                    case Monster.VenomWeaver:
-                    case Monster.ArmingWeaver:
-                    case Monster.ValeBat:
-                    case Monster.CrackingWeaver:
-                    case Monster.GreaterWeaver:
-                    case Monster.CrystalWeaver:
-                        Effects.Add(new Effect(Libraries.Effect, 680, 20, 20 * Frame.Interval, this) { DrawBehind = true, Repeat = true });
-                        break;
-                }
-            }
+            
         }
 
+        //死循环调用入口
         public override void Process()
         {
             bool update = CMain.Time >= NextMotion || GameScene.CanMove;
@@ -1110,7 +1133,10 @@ namespace Client.MirObjects
             else 
             {
                 DrawFrame = Frame.Start + (Frame.OffSet * (byte)Direction) + FrameIndex;
-                DrawWingFrame = Frame.EffectStart + (Frame.EffectOffSet * (byte)Direction) + EffectFrameIndex;
+                if (Frame.EffectCount > 0)
+                {
+                    DrawWingFrame = Frame.EffectStart + (Frame.EffectOffSet * (byte)Direction) + EffectFrameIndex;
+                }
             }
 
 
@@ -1220,6 +1246,10 @@ namespace Client.MirObjects
             if (colour != DrawColour) GameScene.Scene.MapControl.TextureValid = false;
         }
 
+
+        //这里添加的是动作特效，和动作捆绑
+        //比如攻击特效，一般都在这里加
+        //每个动作调用一次
         public bool SetAction()
         {
             if (NextAction != null && !GameScene.CanMove)
@@ -1253,11 +1283,14 @@ namespace Client.MirObjects
                     break;
                     break;
             }
-
+            //如果没有未处理的动作，默认就是站立的动作
             if (ActionFeed.Count == 0)
             {
                 CurrentAction = Stoned ? MirAction.Stoned : MirAction.Standing;
-                if (CurrentAction == MirAction.Standing) CurrentAction = SitDown ? MirAction.SitDown : MirAction.Standing;
+                if (CurrentAction == MirAction.Standing)
+                {
+                    CurrentAction = SitDown ? MirAction.SitDown : MirAction.Standing;
+                }
 
                 Frames.Frames.TryGetValue(CurrentAction, out Frame);
 
@@ -1269,10 +1302,11 @@ namespace Client.MirObjects
                 }
 
                 FrameIndex = 0;
-
+                EffectFrameIndex = 0;
                 if (Frame == null) return false;
 
                 FrameInterval = Frame.Interval;
+                EffectFrameInterval = Frame.EffectInterval;
             }
             else
             {
@@ -1375,10 +1409,22 @@ namespace Client.MirObjects
                 }
 
                 FrameIndex = 0;
-
+                EffectFrameIndex = 0;
                 if (Frame == null) return false;
 
                 FrameInterval = Frame.Interval;
+                EffectFrameInterval = Frame.EffectInterval;
+
+                //放在Frame中的特效在这里加入
+                if (Frame.EffectCount > 0 && BodyLibrary != null)
+                {
+                    Effects.Add(new Effect(BodyLibrary, Frame.EffectStart + (Frame.EffectOffSet * (byte)Direction), Frame.EffectCount, Frame.EffectCount * Frame.EffectInterval, this,CMain.Time + Frame.EffectStartTime));
+                }
+                //这个是第2组特效
+                if (Frame.ECount2 > 0 && BodyLibrary != null)
+                {
+                    Effects.Add(new Effect(BodyLibrary, Frame.EStart2 + (Frame.EOffSet2 * (byte)Direction), Frame.ECount2, Frame.ECount2 * Frame.EInterval2, this, CMain.Time + Frame.ETime2));
+                }
 
 
                 switch (CurrentAction)
@@ -1428,9 +1474,7 @@ namespace Client.MirObjects
                             case Monster.DarkBeast:
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.DarkBeast], 296 + (int)Direction * 4, 4, Frame.Count * Frame.Interval, this));
                                 break;
-                            case Monster.HardenRhino:
-                                Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.HardenRhino], 379 + (int)Direction * 6, 6, Frame.Count * Frame.Interval, this));
-                                break;
+                            
                             case Monster.AncientBringer:
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.AncientBringer], 512 + (int)Direction * 6, 6, Frame.Count * Frame.Interval, this));
                                 break;
@@ -1463,6 +1507,17 @@ namespace Client.MirObjects
                                 break;
                             case Monster.GreatFoxSpirit:
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.GreatFoxSpirit], 355, 20, Frame.Count * Frame.Interval, this));
+                                break;
+                            case Monster.Jar1:
+                                Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Jar1], 130 + (int)Direction * 3, 3, Frame.Count * Frame.Interval, this));
+                                break;
+                            case Monster.Jar2:
+                                //Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Jar2], 392 + (int)Direction * 6, 6, Frame.Count * Frame.Interval, this));
+                                Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Jar2], 440 + (int)Direction * 10, 10, Frame.Count * Frame.Interval, this));
+                                break;
+                            case Monster.RestlessJar:
+                                
+                               
                                 break;
                             case Monster.EvilMir:
                                 Effects.Add(new Effect(Libraries.Dragon, 60, 8, 8 * Frame.Interval, this));
@@ -1526,6 +1581,13 @@ namespace Client.MirObjects
                                 break;
                             case Monster.ManectricKing:
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.ManectricKing], 640 + (int)Direction * 10, 10, 10 * 100, this));
+                                break;
+                            case Monster.Jar2:
+                                //Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Jar2], 544 + (int)Direction * 10, 10, 500, this));
+                                Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Jar2], 624 + (int)Direction * 8, 8, Frame.Count * Frame.Interval, this));
+                                break;
+                            case Monster.RestlessJar:
+                             
                                 break;
                         }
 
@@ -1767,6 +1829,7 @@ namespace Client.MirObjects
             GameScene.Scene.MapControl.TextureValid = false;
 
             NextMotion = CMain.Time + FrameInterval;
+            NextMotion2 = CMain.Time + EffectFrameInterval;
 
             return true;
         }
@@ -1803,14 +1866,17 @@ namespace Client.MirObjects
 
         }
 
-
+        //死循环处理帧动画
         private void ProcessFrames()
         {
             if (Frame == null) return;
 
+            
+
             switch (CurrentAction)
             {
                 case MirAction.Walking:
+                    //这个是干嘛啊
                     if (!GameScene.CanMove) return;
 
                     GameScene.Scene.MapControl.TextureValid = false;
@@ -2232,6 +2298,15 @@ namespace Client.MirObjects
                                                 if (MapControl.GetObject(TargetID) != null)
                                                     CreateProjectile(224, Libraries.Monsters[(ushort)Monster.AxeSkeleton], false, 3, 30, 0);
                                                 break;
+                                            case Monster.RestlessJar:
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+
+                                                    MirDirection direction = Functions.DirectionFromPoint(CurrentLocation, ob.CurrentLocation);
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.RestlessJar], 391 + (int)direction * 10, 10, 700, ob));
+                                                }
+                                                break;
                                             case Monster.Dark:
                                                 if (MapControl.GetObject(TargetID) != null)
                                                     CreateProjectile(224, Libraries.Monsters[(ushort)Monster.Dark], false, 3, 30, 0);
@@ -2356,6 +2431,7 @@ namespace Client.MirObjects
                                                     SoundManager.PlaySound(BaseSound + 6);
                                                 }
                                                 break;
+                                            
                                             case Monster.HedgeKekTal:
                                                 if (MapControl.GetObject(TargetID) != null)
                                                     CreateProjectile(38, Libraries.Monsters[(ushort)Monster.HedgeKekTal], false, 4, 30, 6);
@@ -2525,6 +2601,14 @@ namespace Client.MirObjects
                                                     SoundManager.PlaySound(BaseSound + 7);
                                                 }
                                                 break;
+                                            case Monster.RestlessJar:
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    MirDirection direction = Functions.DirectionFromPoint(CurrentLocation, ob.CurrentLocation);
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.RestlessJar], 391+ (int)direction *10, 10, 600, ob));
+                                                }
+                                                break;
                                             case Monster.WhiteFoxman:
                                                 missile = CreateProjectile(1160, Libraries.Magic, true, 3, 30, 7);
 
@@ -2533,7 +2617,7 @@ namespace Client.MirObjects
                                                     missile.Complete += (o, e) =>
                                                     {
                                                         if (missile.Target.CurrentAction == MirAction.Dead) return;
-                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.WhiteFoxman], 362, 15, 1800, missile.Target));
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.WhiteFoxman], 362, 20, 2400, missile.Target));
                                                         SoundManager.PlaySound(BaseSound + 7);
                                                     };
                                                 }
@@ -2625,7 +2709,7 @@ namespace Client.MirObjects
                                             Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.MutatedHugger], 128, 7, Frame.Count * FrameInterval, this));
                                             break;
                                         case Monster.CyanoGhast:
-                                            Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.CyanoGhast], 681, 7, Frame.Count * FrameInterval, this));
+                                            Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.CyanoGhast], 457, 7, Frame.Count * FrameInterval, this));
                                             break;
                                     }
                                     break;
@@ -3031,7 +3115,7 @@ namespace Client.MirObjects
                 if (Effects[i].DrawBehind) continue;
                 Effects[i].Draw();
             }
-
+ 
             switch (BaseImage)
             {
                 case Monster.Scarecrow:
@@ -3735,6 +3819,23 @@ namespace Client.MirObjects
                             break;
                     }
                     break;
+                case Monster.Jar2:
+                    if(CurrentAction!= MirAction.Dead)
+                    {
+                        Libraries.Monsters[(ushort)Monster.Jar2].DrawBlend(312 + (FrameIndex + (int)Direction * 10), DrawLocation, Color.White, true);
+                        Libraries.Monsters[(ushort)Monster.Jar2].DrawBlend(382 + (FrameIndex + (int)Direction * 6), DrawLocation, Color.White, true);
+                    }
+                    if (CurrentAction == MirAction.Struck)
+                    {
+                        Libraries.Monsters[(ushort)Monster.Jar2].DrawBlend(520 + (FrameIndex + (int)Direction * 3), DrawLocation, Color.White, true);
+                        //if (FrameIndex >= 2) Libraries.Monsters[(ushort)Monster.Jar2].DrawBlend(624 + (FrameIndex + (int)Direction * 8) - 2, DrawLocation, Color.White, true);
+                    }
+                    if (CurrentAction == MirAction.Die)
+                    {
+                        Libraries.Monsters[(ushort)Monster.Jar2].DrawBlend(544 + (FrameIndex + (int)Direction * 10), DrawLocation, Color.White, true);
+                    }
+
+                    break;
             }
 
 
@@ -3742,6 +3843,11 @@ namespace Client.MirObjects
 
         public override void DrawName()
         {
+            //是否显示怪物名称
+            if (!GameScene.UserSet.ShowMonName)
+            {
+                return;
+            }
             if (!Name.Contains("_"))
             {
                 base.DrawName();

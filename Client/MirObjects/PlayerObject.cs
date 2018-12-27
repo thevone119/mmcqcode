@@ -26,7 +26,13 @@ namespace Client.MirObjects
 
         public override bool Blocking
         {
-            get { return !Dead; }
+            get {
+                if (GameScene.Scene.MapControl.InSafeZone(CurrentLocation))
+                {
+                    return false;
+                }
+                return !Dead;
+            }
         }
 
         public MirGender Gender;
