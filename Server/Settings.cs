@@ -177,6 +177,7 @@ namespace Server
         public static int FishingSuccessStart = 10;
         public static int FishingSuccessMultiplier = 10;
         public static long FishingDelay = 0;
+        //钓鱼的过程中有几率出现巨型多角虫,出现几率5%
         public static int FishingMobSpawnChance = 5;
         public static string FishingMonster = "巨型多角虫";
 
@@ -188,27 +189,27 @@ namespace Server
         public static uint MailItemInsurancePercentage = 5;
         public static uint MailCapacity = 100;
 
-        //Refine Settings
-        public static bool OnlyRefineWeapon = true;
-        public static byte RefineBaseChance = 20;
-        public static int RefineTime = 20;
-        public static byte RefineIncrease = 1;
-        public static byte RefineCritChance = 10;
-        public static byte RefineCritIncrease = 2;
-        public static byte RefineWepStatReduce = 6;
-        public static byte RefineItemStatReduce = 15;
-        public static int RefineCost = 125;
+        //Refine Settings 武器升级系统
+        public static bool OnlyRefineWeapon = true;//只可以升级武器
+        public static byte RefineBaseChance = 20;//基础成功几率
+        public static int RefineTime = 10;//武器升级需要的时间10分钟
+        public static byte RefineIncrease = 1;//每次增加的点数，增加1点
+        public static byte RefineCritChance = 10;//额外的属性增加几率
+        public static byte RefineCritIncrease = 2;//额外属性增加多少倍,也就是有可能一次增加2点
+        public static byte RefineWepStatReduce = 6;//武器每次升级成功率减少多少点,每次减少6点，+7的时候，就减少42点的成功率。几乎就不会成功了
+        public static byte RefineItemStatReduce = 15;//其他物品,每次升级成功率减少多少点
+        public static int RefineCost = 125;//花费费率125%
         //这个是练武器要用到的物品名称
         public static string RefineOreName = "黑铁矿石";
 
-        //Marriage Settings
-        public static int LoverEXPBonus = 5;
-        public static int MarriageCooldown = 7;
-        public static bool WeddingRingRecall = true;
-        public static int MarriageLevelRequired = 10;
-        public static int ReplaceWedRingCost = 125;
+        //Marriage Settings，结婚设置
+        public static int LoverEXPBonus = 10;//爱人的经验增加，组队后可以增加10%经验
+        public static int MarriageCooldown = 3;//离婚后再结婚的时间限制
+        public static bool WeddingRingRecall = true;//允许夫妻传送
+        public static int MarriageLevelRequired = 18;//结婚等级要求
+        public static int ReplaceWedRingCost = 125;//打造结婚戒指的费率125%
 
-        //Mentor Settings
+        //Mentor Settings 师徒系统
         public static byte MentorLevelGap = 10;
         public static bool MentorSkillBoost = true;
         public static byte MentorLength = 7;

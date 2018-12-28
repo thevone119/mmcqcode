@@ -558,17 +558,12 @@ namespace Server.MirObjects
         {
             if (map == null) map = CurrentMap;
             if (map.Cells == null) return false;
-            //最大随机100次，都随机不出来，则返回false
-            for (int i = 0; i < 1000; i++)
+            Point p = map.RandomValidPoint();
+            if(p.IsEmpty)
             {
-                int x = RandomUtils.Next(map.Width);
-                int y = RandomUtils.Next(map.Height);
-                if (map.Valid(x,y))
-                {
-                    return Teleport(map, new Point(x, y));
-                }
+                return false;
             }
-            return false;
+            return Teleport(map, p);
         }
 
         public Point GetRandomPoint(int attempts, int distance, Map map)

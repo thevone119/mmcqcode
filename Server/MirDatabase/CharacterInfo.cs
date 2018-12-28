@@ -75,7 +75,7 @@ namespace Server.MirDatabase
         public bool DoubleSlash;
         public byte MentalState;
         public byte MentalStateLvl;
-        //背包（包括背包的40格+下面的6个按键格），装备，交易，仓库，精炼(改善，这个不知道是扩展背包还是什么)
+        //背包（包括背包的40格+下面的6个按键格,其中0-5是下面的6格按键），装备，交易，仓库，精炼(改善，这个不知道是扩展背包还是什么)
         public UserItem[] Inventory = new UserItem[46], Equipment = new UserItem[14], Trade = new UserItem[10], QuestInventory = new UserItem[40], Refine = new UserItem[16];
         public List<ItemRentalInformation> RentedItems = new List<ItemRentalInformation>();
         public List<ItemRentalInformation> RentedItemsToRemove = new List<ItemRentalInformation>();

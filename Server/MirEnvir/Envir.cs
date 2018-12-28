@@ -177,7 +177,7 @@ namespace Server.MirEnvir
             }
             else
             {
-                string[] lines = File.ReadAllLines(path);
+                string[] lines = File.ReadAllLines(path, EncodingType.GetType(path));
 
                 for (int i = 0; i < lines.Length; i++)
                 {
@@ -1054,7 +1054,7 @@ namespace Server.MirEnvir
 
                 if (!File.Exists(path)) continue;
 
-                string[] lines = File.ReadAllLines(path);
+                string[] lines = File.ReadAllLines(path, EncodingType.GetType(path));
 
                 for (int j = 0; j < lines.Length; j++)
                 {
@@ -1097,7 +1097,7 @@ namespace Server.MirEnvir
 
             }
 
-            string[] lines = File.ReadAllLines(path);
+            string[] lines = File.ReadAllLines(path, EncodingType.GetType(path));
 
             for (int i = 0; i < lines.Length; i++)
             {
@@ -1136,7 +1136,7 @@ namespace Server.MirEnvir
                 newfile.Close();
             }
 
-            string[] lines = File.ReadAllLines(path);
+            string[] lines = File.ReadAllLines(path, EncodingType.GetType(path));
 
             for (int i = 0; i < lines.Length; i++)
             {
@@ -1176,7 +1176,7 @@ namespace Server.MirEnvir
 
             }
 
-            string[] lines = File.ReadAllLines(path);
+            string[] lines = File.ReadAllLines(path, EncodingType.GetType(path));
 
             for (int i = 0; i < lines.Length; i++)
             {

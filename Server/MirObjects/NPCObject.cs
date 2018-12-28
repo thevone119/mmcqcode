@@ -34,7 +34,7 @@ namespace Server.MirObjects
             RefineKey = "[@REFINE]",//精炼，升级吧
             RefineCheckKey = "[@REFINECHECK]",//精炼,检测
             RefineCollectKey = "[@REFINECOLLECT]",//精炼，收集
-            ReplaceWedRingKey = "[@REPLACEWEDDINGRING]",
+            ReplaceWedRingKey = "[@REPLACEWEDDINGRING]",//打造结婚戒指
             BuyBackKey = "[@BUYBACK]",//回购
             SecondBuyKey = "[@SECONDBUY]",//二手
             StorageKey = "[@STORAGE]",//存储物品

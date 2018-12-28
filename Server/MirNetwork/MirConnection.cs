@@ -652,6 +652,9 @@ namespace Server.MirNetwork
                 case (short)ClientPacketIds.RechargeEnd:
                     RechargeEnd((C.RechargeEnd)p);
                     break;
+                case (short)ClientPacketIds.RefreshInventory:
+                    RefreshInventory((C.RefreshInventory)p);
+                    break;
                 default:
                     SMain.Enqueue(string.Format("Invalid packet received. Index : {0}", p.Index));
                     break;
@@ -841,7 +844,12 @@ namespace Server.MirNetwork
         private void RechargeEnd(C.RechargeEnd p)
         {
             PayOrder.PayEnd(p.oid);
+        }
 
+        //客户端发起刷新背包请求
+        private void RefreshInventory(C.RefreshInventory p)
+        {
+            Player.RefreshInventory();
         }
 
         private void StartGame(C.StartGame p)
@@ -1008,7 +1016,7 @@ namespace Server.MirNetwork
 
             Player.CheckRefine(p.UniqueID);
         }
-
+        //打造结婚戒指
         private void ReplaceWedRing(C.ReplaceWedRing p)
         {
             if (Stage != GameStage.Game) return;
@@ -1387,9 +1395,9 @@ namespace Server.MirNetwork
             {
                 Player.AllowLoverRecall = !Player.AllowLoverRecall;
                 if (Player.AllowLoverRecall)
-                    Player.ReceiveChat("你现在允许爱人离婚.", ChatType.Hint);
+                    Player.ReceiveChat("你现在允许夫妻传送.", ChatType.Hint);
                 else
-                    Player.ReceiveChat("你现在拒绝爱人离婚.", ChatType.Hint);
+                    Player.ReceiveChat("你现在拒绝夫妻传送.", ChatType.Hint);
             }
         }
 

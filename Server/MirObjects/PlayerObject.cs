@@ -2219,6 +2219,51 @@ namespace Server.MirObjects
             
 
         }
+
+        //用户刷新背包
+        public void RefreshInventory()
+        {
+            //前面6格是按键的，不刷新
+            List<UserItem> newlist = new List<UserItem>();
+            for (int i=6;i< Info.Inventory.Length; i++)
+            {
+                if (Info.Inventory[i] != null)
+                {
+                    newlist.Add(Info.Inventory[i]);
+
+                }
+            }
+            //排序
+            newlist.Sort((x, y) => {
+                int com = x.Info.Type.CompareTo(y.Info.Type);
+                if (com == 0)
+                {
+                    com=x.Name.CompareTo(y.Name);
+                }
+                return com;
+                });
+    
+            //重新设置背包
+            for (int i = 6; i < Info.Inventory.Length; i++)
+            {
+                if(i - 6 < newlist.Count)
+                {
+                    Info.Inventory[i] = newlist[i-6];
+                }
+                else
+                {
+                    Info.Inventory[i] = null;
+                }
+            }
+            //返回最新的用户背包
+            S.UserInventory packet = new S.UserInventory
+            {
+                Inventory = new UserItem[Info.Inventory.Length],
+            };
+            Info.Inventory.CopyTo(packet.Inventory, 0);
+            Enqueue(packet);
+        }
+
         private void StartGameFailed()
         {
             Enqueue(new S.StartGame { Result = 3 });
@@ -4062,7 +4107,7 @@ namespace Server.MirObjects
                             return;
                         }
 
-
+                        //这里是什么哦 
                         if (Info.Equipment[(int)EquipmentSlot.RingL].WeddingRing == (long)Info.Married)
                         {
                             CharacterInfo Lover = Envir.GetCharacterInfo(Info.Married);
@@ -16815,11 +16860,12 @@ namespace Server.MirObjects
 
                     if (RandomUtils.Next(0, 100) <= getChance)
                     {
+                        SMain.Enqueue("钓到了");
                         FishingChanceCounter = 0;
                        
                         UserItem dropItem = null;
                         //foreach (DropInfo drop in Envir.FishingDrops.Where(x => x.Type == fishingCell.FishingAttribute))
-                        foreach (DropInfo drop in Envir.FishingDrops.Where(x => x.Type == 1))
+                        foreach (DropInfo drop in Envir.FishingDrops)
                         {
                             float DropRate = 1;
                             if (EXPOwner != null && EXPOwner.ItemDropRateOffset > 0)
@@ -16839,8 +16885,8 @@ namespace Server.MirObjects
                             if (dropitem != null)
                             {
                                 dropItem = dropitem.CreateDropItem();
+                                break;
                             }
-                            break;
                         }
 
                         if (dropItem == null)
@@ -16853,7 +16899,7 @@ namespace Server.MirObjects
                             Report.ItemChanged("FishedItem", dropItem, dropItem.Count, 2);
                         }
 
-                        if (RandomUtils.Next(100 - Settings.FishingMobSpawnChance) == 0)
+                        if (RandomUtils.Next(100) < Settings.FishingMobSpawnChance)
                         {
                             MonsterObject mob = MonsterObject.GetMonster(Envir.GetMonsterInfo(Settings.FishingMonster));
 
@@ -18322,6 +18368,8 @@ namespace Server.MirObjects
                 }
             }
         }
+
+        //装备升级，目前只开放武器的升级
         public void RefineItem(ulong uniqueID)
         {
             Enqueue(new S.RepairItem { UniqueID = uniqueID }); //CHECK THIS.
@@ -18524,10 +18572,10 @@ namespace Server.MirObjects
 
             SuccessChance -= AddedStats;
 
-
+            //升级失败
             if (RandomUtils.Next(1, 100) > SuccessChance)
                 Info.CurrentRefine.RefinedValue = RefinedValue.None;
-
+            //增加点数
             if (RandomUtils.Next(1, 100) < Settings.RefineCritChance)
                 Info.CurrentRefine.RefineAdded = (byte)(Info.CurrentRefine.RefineAdded * Settings.RefineCritIncrease);
 
@@ -18542,6 +18590,7 @@ namespace Server.MirObjects
                 ReceiveChat(String.Format("{0} 正在被提炼, 请在 {1} 分钟后取回..", Info.CurrentRefine.FriendlyName, Settings.RefineTime), ChatType.System);
             }
         }
+        //取回升级的物品
         public void CollectRefine()
         {
             S.NPCCollectRefine p = new S.NPCCollectRefine { Success = false };
@@ -18593,6 +18642,7 @@ namespace Server.MirObjects
             Info.CollectTime = 0;
             Enqueue(p);
         }
+        //检查升级的物品是否升级成功
         public void CheckRefine(ulong uniqueID)
         {
             //Enqueue(new S.RepairItem { UniqueID = uniqueID });
@@ -18624,21 +18674,21 @@ namespace Server.MirObjects
 
             if ((Info.Inventory[index].RefinedValue == RefinedValue.DC) && (Info.Inventory[index].RefineAdded > 0))
             {
-                ReceiveChat(String.Format("祝贺你, 你的物品 {0} 拥有 +{1} 攻击.", Info.Inventory[index].FriendlyName, Info.Inventory[index].RefineAdded), ChatType.System);
+                ReceiveChat(String.Format("祝贺你, 你的物品 {0} 获得 +{1} 攻击.", Info.Inventory[index].FriendlyName, Info.Inventory[index].RefineAdded), ChatType.System);
                 Info.Inventory[index].DC = (byte)Math.Min(byte.MaxValue, Info.Inventory[index].DC + Info.Inventory[index].RefineAdded);
                 Info.Inventory[index].RefineAdded = 0;
                 Info.Inventory[index].RefinedValue = RefinedValue.None;
             }
             else if ((Info.Inventory[index].RefinedValue == RefinedValue.MC) && (Info.Inventory[index].RefineAdded > 0))
             {
-                ReceiveChat(String.Format("祝贺你, 你的物品 {0} 拥有 +{1} 魔法.", Info.Inventory[index].FriendlyName, Info.Inventory[index].RefineAdded), ChatType.System);
+                ReceiveChat(String.Format("祝贺你, 你的物品 {0} 获得 +{1} 魔法.", Info.Inventory[index].FriendlyName, Info.Inventory[index].RefineAdded), ChatType.System);
                 Info.Inventory[index].MC = (byte)Math.Min(byte.MaxValue, Info.Inventory[index].MC + Info.Inventory[index].RefineAdded);
                 Info.Inventory[index].RefineAdded = 0;
                 Info.Inventory[index].RefinedValue = RefinedValue.None;
             }
             else if ((Info.Inventory[index].RefinedValue == RefinedValue.SC) && (Info.Inventory[index].RefineAdded > 0))
             {
-                ReceiveChat(String.Format("祝贺你, 你的物品 {0}拥有 +{1} 道术.", Info.Inventory[index].FriendlyName, Info.Inventory[index].RefineAdded), ChatType.System);
+                ReceiveChat(String.Format("祝贺你, 你的物品 {0} 获得 +{1} 道术.", Info.Inventory[index].FriendlyName, Info.Inventory[index].RefineAdded), ChatType.System);
                 Info.Inventory[index].SC = (byte)Math.Min(byte.MaxValue, Info.Inventory[index].SC + Info.Inventory[index].RefineAdded);
                 Info.Inventory[index].RefineAdded = 0;
                 Info.Inventory[index].RefinedValue = RefinedValue.None;
@@ -18731,7 +18781,7 @@ namespace Server.MirObjects
 
             return true;
         }
-
+        //制作结婚戒指
         public void MakeWeddingRing()
         {
             if (CheckMakeWeddingRing())
@@ -18740,7 +18790,7 @@ namespace Server.MirObjects
                 Enqueue(new S.RefreshItem { Item = Info.Equipment[(int)EquipmentSlot.RingL] });
             }
         }
-
+        //替换结婚戒指
         public void ReplaceWeddingRing(ulong uniqueID)
         {
             if (Dead) return;
@@ -18750,18 +18800,13 @@ namespace Server.MirObjects
             UserItem temp = null;
             UserItem CurrentRing = Info.Equipment[(int)EquipmentSlot.RingL];
 
-            if (CurrentRing == null)
+            if (CurrentRing == null || CurrentRing.WeddingRing == -1)
             {
-                ReceiveChat(string.Format("你没有戴戒指来升级."), ChatType.System);
-                return;
+                //ReceiveChat(string.Format("你没有戴戒指来升级."), ChatType.System);
+                //return;
             }
 
-            if (CurrentRing.WeddingRing == -1)
-            {
-                ReceiveChat(string.Format("你没有戴结婚戒指来升级."), ChatType.System);
-                return;
-            }
-
+ 
             int index = -1;
 
             for (int i = 0; i < Info.Inventory.Length; i++)
@@ -18772,7 +18817,13 @@ namespace Server.MirObjects
                 break;
             }
 
-            if (index == -1) return;
+            if (index == -1)
+            {
+                ReceiveChat(string.Format("找不到合适的戒指."), ChatType.System);
+                return;
+            }
+
+                
 
             temp = Info.Inventory[index];
 
@@ -18785,7 +18836,7 @@ namespace Server.MirObjects
 
             if (!CanEquipItem(temp, (int)EquipmentSlot.RingL))
             {
-                ReceiveChat(string.Format("你不能装备你想要使用的物品."), ChatType.System);
+                ReceiveChat(string.Format("当前戒指你无法使用."), ChatType.System);
                 return;
             }
 
@@ -18808,10 +18859,15 @@ namespace Server.MirObjects
 
 
             temp.WeddingRing = (long)Info.Married;
-            CurrentRing.WeddingRing = -1;
+            if (CurrentRing != null)
+            {
+                CurrentRing.WeddingRing = -1;
+                Info.Inventory[index] = CurrentRing;
+            }
+            
 
             Info.Equipment[(int)EquipmentSlot.RingL] = temp;
-            Info.Inventory[index] = CurrentRing;
+           
 
             Enqueue(new S.EquipItem { Grid = MirGridType.Inventory, UniqueID = temp.UniqueID, To = (int)EquipmentSlot.RingL, Success = true });
 
@@ -18820,6 +18876,7 @@ namespace Server.MirObjects
 
         }
 
+        //求婚
         public void MarriageRequest()
         {
 
@@ -18845,22 +18902,31 @@ namespace Server.MirObjects
             //Cell cell = CurrentMap.GetCell(target);
             PlayerObject player = null;
 
-            if (CurrentMap.Objects[target.X, target.Y] == null || CurrentMap.Objects[target.X, target.Y].Count < 1) return;
+            if (CurrentMap.Objects[target.X, target.Y] == null || CurrentMap.Objects[target.X, target.Y].Count < 1)
+            {
+                ReceiveChat(string.Format("你需要面对对方才能结婚."), ChatType.System);
+                return;
+            }
 
+            int playcount = 0;
             for (int i = 0; i < CurrentMap.Objects[target.X, target.Y].Count; i++)
             {
                 MapObject ob = CurrentMap.Objects[target.X, target.Y][i];
                 if (ob.Race != ObjectType.Player) continue;
 
                 player = Envir.GetPlayer(ob.Name);
+                playcount++;
+            }
+            if (playcount != 1)
+            {
+                ReceiveChat(string.Format("你需要面对对方才能结婚."), ChatType.System);
+                return;
             }
 
 
 
             if (player != null)
             {
-
-
                 if (!Functions.FacingEachOther(Direction, CurrentLocation, player.Direction, player.CurrentLocation))
                 {
                     ReceiveChat(string.Format("你需要面对对方才能结婚."), ChatType.System);
@@ -18899,7 +18965,7 @@ namespace Server.MirObjects
 
                 if (player.MarriageProposal != null)
                 {
-                    ReceiveChat(string.Format("{0} 已经有了结婚请柬.", player.Info.Name), ChatType.System);
+                    ReceiveChat(string.Format("{0} 已经发送了结婚请求.", player.Info.Name), ChatType.System);
                     return;
                 }
 
@@ -18914,6 +18980,11 @@ namespace Server.MirObjects
                     ReceiveChat(string.Format("{0} 已经结婚了.", player.Info.Name), ChatType.System);
                     return;
                 }
+                if (player.Info.Gender == Info.Gender)
+                {
+                    ReceiveChat("对不起，目前不允许同性结婚.", ChatType.System);
+                    return;
+                }
 
                 player.MarriageProposal = this;
                 player.Enqueue(new S.MarriageRequest { Name = Info.Name });
@@ -18924,7 +18995,7 @@ namespace Server.MirObjects
                 return;
             }
         }
-
+        //求婚允许，拒绝
         public void MarriageReply(bool accept)
         {
             if (MarriageProposal == null || MarriageProposal.Info == null)
@@ -18969,7 +19040,7 @@ namespace Server.MirObjects
 
             MarriageProposal = null;
         }
-
+        //离婚请求
         public void DivorceRequest()
         {
 
@@ -19041,7 +19112,7 @@ namespace Server.MirObjects
                 return;
             }
         }
-
+        //离婚，拒绝，同意
         public void DivorceReply(bool accept)
         {
             if (DivorceProposal == null || DivorceProposal.Info == null)

@@ -67,6 +67,8 @@ namespace Server.MirEnvir
         //征服，战争信息
         public List<ConquestObject> Conquest = new List<ConquestObject>();
         public ConquestObject tempConquest;
+        //地图加载的时候，随机产生10个可以访问的点，用于随机
+        List<Point> RandomValidPoints = new List<Point>();
 
         public Map(MapInfo info)
         {
@@ -577,7 +579,10 @@ namespace Server.MirEnvir
                     }
 
                     for (int i = 0; i < Info.SafeZones.Count; i++)
+                    {
                         CreateSafeZone(Info.SafeZones[i]);
+                    }
+                    loadRandomValidPoints();
                     return true;
                 }
             }
@@ -590,7 +595,45 @@ namespace Server.MirEnvir
 
             return false;
         }
-        
+
+        //随机加载10个可以访问的点
+        private void loadRandomValidPoints()
+        {
+            for(int i = 0; i < 500; i++)
+            {
+                int x = RandomUtils.Next(Width);
+                int y = RandomUtils.Next(Height);
+                if (Valid(x, y))
+                {
+                    RandomValidPoints.Add(new Point(x, y));
+                    if (RandomValidPoints.Count > 10)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        //随机返回一个可以访问的点
+        public Point RandomValidPoint()
+        {
+            //先随机10次，没有找到，则直接从固定的10个点中找
+            for (int i = 0; i < 10; i++)
+            {
+                int x = RandomUtils.Next(Width);
+                int y = RandomUtils.Next(Height);
+                if (Valid(x, y))
+                {
+                    return new Point(x, y);
+                }
+            }
+            if (RandomValidPoints.Count > 0)
+            {
+                return RandomValidPoints[RandomUtils.Next(RandomValidPoints.Count)];
+            }
+            return Point.Empty;
+        }
+
 
         //某个点是否可以访问，其实就是是否可以行走
         public bool Valid(int x,int y)
@@ -2495,6 +2538,7 @@ namespace Server.MirEnvir
         public List<RouteInfo> Route;
         //刷怪的区域点，一开始的时候就固化了。默认初始双倍的点
         private List<Point> Locs = new List<Point>();//
+        private int _minx, _maxx, _miny, _maxy;
 
         public MapRespawn(RespawnInfo info, Map map)
         {
@@ -2506,6 +2550,7 @@ namespace Server.MirEnvir
         }
 
         //初始化刷怪区域
+        //这里看下还怎么优化
         private void initRespawnRegion()
         {
             if(Map==null)
@@ -2513,10 +2558,10 @@ namespace Server.MirEnvir
                 return;
             }
             //刷怪区域
-            int _minx = Info.Location.X - Info.Spread;
-            int _maxx = Info.Location.X + Info.Spread;
-            int _miny = Info.Location.Y - Info.Spread;
-            int _maxy = Info.Location.Y + Info.Spread;
+            _minx = Info.Location.X - Info.Spread;
+            _maxx = Info.Location.X + Info.Spread;
+            _miny = Info.Location.Y - Info.Spread;
+            _maxy = Info.Location.Y + Info.Spread;
             if (_minx < 0) _minx = 0;
             if (_maxx < 0) _maxx = 0;
             if (_miny < 0) _miny = 0;
@@ -2525,33 +2570,75 @@ namespace Server.MirEnvir
             if (_maxx >= Map.Width) _maxx = Map.Width-1;
             if (_miny >= Map.Height) _miny = Map.Height-1;
             if (_maxy >= Map.Height) _maxy = Map.Height-1;
-            List<Point> listp = new List<Point>();
-            for(int x= _minx;x<= _maxx; x++)
+            //如果区域比较小，小于20*20，直接从点中取
+            if(Math.Abs(_maxx- _minx)* Math.Abs(_maxy - _miny) < 500)
             {
-                for(int y= _miny;y<= _maxy; y++)
+                List<Point> listp = new List<Point>();
+                for (int x = _minx; x <= _maxx; x++)
                 {
-                    if (Map.Valid(x, y))
+                    for (int y = _miny; y <= _maxy; y++)
                     {
-                        listp.Add(new Point(x, y));
+                        if (Map.Valid(x, y))
+                        {
+                            listp.Add(new Point(x, y));
+                        }
+                    }
+                }
+                //默认记录1倍的刷新点
+                for (int i = 0; i < listp.Count && i < Info.Count; i++)
+                {
+                    Point p = listp[RandomUtils.Next(listp.Count)];
+                    listp.Remove(p);
+                    Locs.Add(p);
+                }
+            }
+            else
+            {
+                //随机抽取点
+                int maxcount = Info.Spread * Info.Spread / 2;
+                if (maxcount > 500)
+                {
+                    maxcount = 500;
+                }
+                for(int i=0;i< maxcount; i++)
+                {
+                    Point p = new Point(RandomUtils.Next(_minx, _maxx + 1), RandomUtils.Next(_miny, _maxy + 1));
+                    if (Map.Valid(p.X,p.Y))
+                    {
+                        Locs.Add(p);
+                        if(Locs.Count> Info.Count*2)
+                        {
+                            break;
+                        }
                     }
                 }
             }
-            //默认记录2倍的刷新点
-            for(int i=0;i< listp.Count&&i< Info.Count * 2; i++)
-            {
-                Point p = listp[RandomUtils.Next(listp.Count)];
-                listp.Remove(p);
-                Locs.Add(p);
-            }
+
         }
 
         //怪物的产生
         public bool Spawn()
         {
             MonsterObject ob = MonsterObject.GetMonster(Monster);
-            if (ob == null || Locs.Count==0) return true;
+            if (ob == null|| Locs.Count==0) return true;
+            bool isSpawn = false;
+            //5次随机重生，如果5次都没有随机到点，则从列表中取点
+            for (int i = 0; i < 5; i++)
+            {
+                Point p = new Point(RandomUtils.Next(_minx, _maxx + 1), RandomUtils.Next(_miny, _maxy + 1));
+                if (Map.Valid(p.X, p.Y))
+                {
+                    ob.CurrentLocation = p;
+                    isSpawn = true;
+                    break;
+                }
+            }
 
-            ob.CurrentLocation = Locs[RandomUtils.Next(Locs.Count)];
+            if (!isSpawn)
+            {
+                ob.CurrentLocation = Locs[RandomUtils.Next(Locs.Count)];
+            }
+
             Map.AddObject(ob);
             ob.CurrentMap = Map;
             ob.Respawn = this;
