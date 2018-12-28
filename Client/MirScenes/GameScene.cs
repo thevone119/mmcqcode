@@ -1277,6 +1277,9 @@ namespace Client.MirScenes
                 case (short)ServerPacketIds.UserInformation:
                     UserInformation((S.UserInformation)p);
                     break;
+                case (short)ServerPacketIds.UserInventory:
+                    UserInventory((S.UserInventory)p);
+                    break;
                 case (short)ServerPacketIds.UserLocation:
                     UserLocation((S.UserLocation)p);
                     break;
@@ -1963,6 +1966,15 @@ namespace Client.MirScenes
             foreach (SkillBarDialog Bar in SkillBarDialogs)
                 Bar.Update();
         }
+
+        //服务器端用户的最新的背包
+        private void UserInventory(S.UserInventory p)
+        {
+            User.Inventory = p.Inventory;
+            User.BindAllItems();
+            InventoryDialog.RefreshInventory();
+        }
+
         private void UserLocation(S.UserLocation p)
         {
             MapControl.NextAction = 0;
@@ -5862,7 +5874,7 @@ namespace Client.MirScenes
             String WedRingName = "";
             if (HoverItem.WeddingRing == -1)
             {
-                WedRingName = HoverItem.Info.Type.ToString() +
+                WedRingName = NameChange.getItemType(HoverItem.Info.Type) +
                 "\n" + "重量 " + HoverItem.Weight + text;
             }
             else
@@ -6445,7 +6457,7 @@ namespace Client.MirScenes
                 {
                     if (HoverItem.Info.Type == ItemType.Float)
                     {
-                        ACLabel.Text = LanguageUtils.Format("Nibble Chance + " + (addValue > 0 ? "{0}~{1}% (+{2})" : "{0}~{1}%"), minValue, maxValue + addValue);
+                        ACLabel.Text = LanguageUtils.Format("咬口几率 + " + (addValue > 0 ? "{0}~{1}% (+{2})" : "{0}~{1}%"), minValue, maxValue + addValue);
                     }
                     else if (HoverItem.Info.Type == ItemType.Finder)
                     {
@@ -6453,7 +6465,7 @@ namespace Client.MirScenes
                     }
                     else
                     {
-                        ACLabel.Text = LanguageUtils.Format("Success Chance + " + (addValue > 0 ? "{0}% (+{1})" : "{0}%"), maxValue, maxValue + addValue);
+                        ACLabel.Text = LanguageUtils.Format("成功几率 + " + (addValue > 0 ? "{0}% (+{1})" : "{0}%"), maxValue, maxValue + addValue);
                     }
                 }
 

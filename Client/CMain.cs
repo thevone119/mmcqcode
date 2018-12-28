@@ -84,7 +84,10 @@ namespace Client
             //这句话会卡屏？神经咯。
             //this.ControlBox = true;
             this.Text = Settings.serverName!=null? Settings.serverName:"夜火传奇";
-            
+            //
+            timer1.Start();
+
+
         }
 
         //.net 提供了ProcessCmdKey 重新实现Form的键盘消息,这个针对F10进行特殊处理，避免卡屏
@@ -131,8 +134,10 @@ namespace Client
                 //当系统没有消息时执行
                 while (AppStillIdle)
                 {
+                    //MirLog.info("AppStillIdle");
                     //更新系统时间Time,
                     UpdateTime();
+                    
                     //更新系统，更新画面，每秒更新一次，同时计算帧数
                     UpdateEnviroment();
                     //重置环境，重画，拼命重画
@@ -653,6 +658,16 @@ namespace Client
                                          IntPtr handle2, int sourX, int sourY, int flag);
         [DllImport("gdi32.dll")]
         public static extern int DeleteDC(IntPtr handle);
+
+        //每2秒执行一次，避免窗口最小化的时候卡帧
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if(Timer.ElapsedMilliseconds - Time > 1000)
+            {
+                Application_Idle(sender, e);
+            }
+        }
+
         [DllImport("user32.dll")]
         public static extern int ReleaseDC(IntPtr handle, IntPtr handle2);
         [DllImport("gdi32.dll")]
@@ -713,6 +728,7 @@ namespace Client
 
         private void CMain_FormClosing(object sender, FormClosingEventArgs e)
         {
+            timer1.Stop();
             if (ServerConfig.exitGameType == ExitGameType.Normal && CMain.Time < GameScene.LogTime && GameScene.Scene!=null && GameScene.Scene.ChatDialog!=null)
             {
                 GameScene.Scene.ChatDialog.ReceiveChat("请在 " + (GameScene.LogTime - CMain.Time) / 1000 + " 秒后离开游戏.", ChatType.System);

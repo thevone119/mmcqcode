@@ -324,8 +324,8 @@ namespace Client.MirScenes.Dialogs
                 Location = new Point(this.Size.Width - 105, 101),
                 Size = new Size(40, 14),
             };
-            WeightBar.Visible = false;
-            WeightLabel.Visible = false;
+            WeightBar.Visible = true;
+            WeightLabel.Visible = true;
             //新加入元宝显示
             CreditLabel = new MirLabel
             {
@@ -333,9 +333,9 @@ namespace Client.MirScenes.Dialogs
                 Location = new Point(this.Size.Width - 105, 101),
                 Size = new Size(100, 14),
             };
+            CreditLabel.Visible = false;
 
 
-            
 
             SpaceLabel = new MirLabel
             {
@@ -1412,6 +1412,8 @@ namespace Client.MirScenes.Dialogs
             Visible = false;
         }
     }
+    
+    //这个是背包，添加一个整理背包的按钮
     public sealed class InventoryDialog : MirImageControl
     {
         public MirImageControl WeightBar;
@@ -1419,8 +1421,9 @@ namespace Client.MirScenes.Dialogs
         public MirItemCell[] Grid;
         public MirItemCell[] QuestGrid;
 
-        public MirButton CloseButton, ItemButton, ItemButton2, QuestButton, AddButton;
+        public MirButton CloseButton, ItemButton, ItemButton2, QuestButton, AddButton, RefreshButton;
         public MirLabel GoldLabel, WeightLabel, CreditLabel;
+        public long lastRefreshTime = 0;
 
         public InventoryDialog()
         {
@@ -1499,6 +1502,30 @@ namespace Client.MirScenes.Dialogs
                 messageBox.Show();
             };
 
+            RefreshButton = new MirButton
+            {
+                Index = 10,
+                HoverIndex = 11,
+                PressedIndex = 12,
+                Library = Libraries.MyUi,
+                Location = new Point(216, 7),
+                Parent = this,
+                Sound = SoundList.ButtonA,
+                Text = "整理",
+                CenterText = true,
+            };
+            RefreshButton.Click += (o1, e) =>
+            {
+                //限制3秒内不刷新
+                if(CMain.Time> lastRefreshTime)
+                {
+                    lastRefreshTime = CMain.Time + 3000;
+                    Network.Enqueue(new C.RefreshInventory { });
+                }
+            };
+
+            
+
             CloseButton = new MirButton
             {
                 HoverIndex = 361,
@@ -1572,9 +1599,9 @@ namespace Client.MirScenes.Dialogs
                 Location = new Point(268, 212),
                 Size = new Size(26, 14)
             };
-            WeightLabel.Visible = false;
+            WeightLabel.Visible = true;
             WeightBar.BeforeDraw += WeightBar_BeforeDraw;
-            WeightBar.Visible = false;
+            WeightBar.Visible = true;
 
             CreditLabel = new MirLabel
             {
@@ -1582,6 +1609,7 @@ namespace Client.MirScenes.Dialogs
                 Location = new Point(182, 212),
                 Size = new Size(100, 14)
             };
+            CreditLabel.Visible = false;
 
             for (int i = 0; i < LockBar.Length; i++)
             {
@@ -1661,6 +1689,7 @@ namespace Client.MirScenes.Dialogs
             }
 
             AddButton.Visible = false;
+            RefreshButton.Visible = false;
         }
 
 
@@ -1685,6 +1714,7 @@ namespace Client.MirScenes.Dialogs
                 else
                     grid.Visible = false;
             }
+            RefreshButton.Visible = true;
         }
 
         public void RefreshInventory2()
@@ -1710,6 +1740,7 @@ namespace Client.MirScenes.Dialogs
             }
 
             AddButton.Visible = openLevel >= 10 ? false : true;
+            RefreshButton.Visible = false;
         }
 
         public void Process()

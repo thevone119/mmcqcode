@@ -258,7 +258,7 @@ namespace Client.MirScenes.Dialogs
             {
                 LoverDateLabel.Text = "结婚日期:  " + Date.ToShortDateString();
                 LoverLengthLabel.Text = "时长: " + MarriedDays.ToString() + " 天";
-                AllowButton.Hint = "允许/拒绝 离婚";
+                AllowButton.Hint = "允许/拒绝 传送";
             }
 
 

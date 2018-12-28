@@ -1107,7 +1107,7 @@ namespace Client.MirScenes.Dialogs
                     ConfirmButton.Visible = true;
                     break;
                 case PanelType.ReplaceWedRing:
-                    text = LanguageUtils.Format("Replace: ");
+                    text = LanguageUtils.Format("制作婚戒: ");
                     HoldButton.Visible = false;
                     ConfirmButton.Visible = true;
                     break;
