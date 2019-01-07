@@ -152,6 +152,10 @@ namespace Server.MirDatabase
         public bool IsTempSpell;
         public long CastTime;
 
+        //添加这个字段，可以动态更改技能CD
+        //更改技能CD，要记得发送给客户端变更CD，否则服务器和客户端技能CD会有差异
+        public long addDelay;//增加的延时
+
         public UserMagic()
         {
 

@@ -1244,7 +1244,7 @@ namespace Server.MirObjects
                     newValue = player.Class.ToString();
                     break;
                 case "MAP":
-                    newValue = player.CurrentMap.Info.FileName;
+                    newValue = player.CurrentMap.Info.Mcode;
                     break;
                 case "X_COORD":
                     newValue = player.CurrentLocation.X.ToString();
@@ -1387,7 +1387,7 @@ namespace Server.MirObjects
                     newValue = Monster.Level.ToString(CultureInfo.InvariantCulture);
                     break;
                 case "MAP":
-                    newValue = Monster.CurrentMap.Info.FileName;
+                    newValue = Monster.CurrentMap.Info.Mcode;
                     break;
                 case "X_COORD":
                     newValue = Monster.CurrentLocation.X.ToString();

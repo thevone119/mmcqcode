@@ -85,17 +85,8 @@ namespace Server.MirObjects
 				NameColour = Color.Cyan;
 			else
 			{
-				if (item.Info.Grade == ItemGrade.None)
-					NameColour = Color.White;
-				if (item.Info.Grade == ItemGrade.Common)
-					NameColour = Color.White;
-				if (item.Info.Grade == ItemGrade.Rare)
-					NameColour = Color.DeepSkyBlue;
-				if (item.Info.Grade == ItemGrade.Legendary)
-					NameColour = Color.DarkOrange;
-				if (item.Info.Grade == ItemGrade.Mythical)
-					NameColour = Color.Plum;
-			}
+                NameColour = Item.Info.getNameColor();
+            }
 
             CurrentMap = dropper.CurrentMap;
             CurrentLocation = manualpoint;

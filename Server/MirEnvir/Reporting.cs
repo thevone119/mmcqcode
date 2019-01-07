@@ -55,7 +55,7 @@ namespace Server.MirEnvir
 
         public void MapChange(string source, MapInfo oldMap, MapInfo newMap, string info = "")
         {
-            string task = string.Format("Moved Map {0} => {1}", oldMap.FileName, newMap.FileName);
+            string task = string.Format("Moved Map {0} => {1}", oldMap.Mcode, newMap.Mcode);
 
             Action action = new Action { Source = source, Task = task, AddedInfo = info };
 

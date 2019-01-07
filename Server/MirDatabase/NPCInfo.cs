@@ -264,7 +264,7 @@ namespace Server.MirDatabase
             int x, y;
 
             info.FileName = data[0];
-            info.MapIndex = SMain.EditEnvir.MapInfoList.Where(d => d.FileName == data[1]).FirstOrDefault().Index;
+            info.MapIndex = SMain.EditEnvir.MapInfoList.Where(d => d.Mcode == data[1]).FirstOrDefault().Index;
 
             if (!int.TryParse(data[2], out x)) return;
             if (!int.TryParse(data[3], out y)) return;
@@ -282,7 +282,7 @@ namespace Server.MirDatabase
         public string ToText()
         {
             return string.Format("{0},{1},{2},{3},{4},{5},{6}",
-                FileName, SMain.EditEnvir.MapInfoList.Where(d => d.Index == MapIndex).FirstOrDefault().FileName, Location.X, Location.Y, Name, Image, Rate);
+                FileName, SMain.EditEnvir.MapInfoList.Where(d => d.Index == MapIndex).FirstOrDefault().Mcode, Location.X, Location.Y, Name, Image, Rate);
         }
 
         public override string ToString()

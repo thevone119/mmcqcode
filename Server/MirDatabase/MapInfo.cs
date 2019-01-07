@@ -18,8 +18,8 @@ namespace Server.MirDatabase
     {
         //索引
         public int Index;
-        //文件名，地图名
-        public string FileName = string.Empty, Title = string.Empty;
+        //文件名，地图code,地图名
+        public string FileName = string.Empty, Mcode = string.Empty, Title = string.Empty;
         //小地图，大地图，地图背景音乐
         public ushort MiniMap, BigMap, Music;
         //灯光
@@ -78,6 +78,8 @@ namespace Server.MirDatabase
                 {
                     continue;
                 }
+                obj.Mcode = read.GetString(read.GetOrdinal("Mcode"));
+                
                 obj.Index = read.GetInt32(read.GetOrdinal("Idx"));
                 obj.Title = read.GetString(read.GetOrdinal("Title"));
 
@@ -149,6 +151,7 @@ namespace Server.MirDatabase
             }
             SMain.Enqueue("MapInfo change state:"+ state);
             List<SQLiteParameter> lp = new List<SQLiteParameter>();
+            lp.Add(new SQLiteParameter("Mcode", Mcode));
             lp.Add(new SQLiteParameter("FileName", FileName));
             lp.Add(new SQLiteParameter("Title", Title));
             lp.Add(new SQLiteParameter("MiniMap", MiniMap));

@@ -221,7 +221,7 @@ namespace Server.MirObjects
 
                         if (!match.Success) continue;
 
-                        Map map = Envir.MapList.FirstOrDefault(m => m.Info.FileName == match.Groups[1].Value);
+                        Map map = Envir.MapList.FirstOrDefault(m => m.Info.Mcode == match.Groups[1].Value);
 
                         if (map == null) continue;
 

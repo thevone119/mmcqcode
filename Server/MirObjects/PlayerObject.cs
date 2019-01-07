@@ -342,7 +342,7 @@ namespace Server.MirObjects
         {
             get { return Info.CompletedQuests; }
         }
-        //AttackBonus：攻击加成
+        //AttackBonus：攻击加成，SkillNeckBoost：技能提升，技巧项链
         public byte AttackBonus, MineRate, GemRate, FishRate, CraftRate, SkillNeckBoost;
 
         //初始化玩家
@@ -427,7 +427,7 @@ namespace Server.MirObjects
                     }
                     catch
                     {
-                        SMain.EnqueueDebugging(Name + " Pet logout was null on logout : " + pet != null ? pet.Name : "" + " " + pet.CurrentMap != null ? pet.CurrentMap.Info.FileName : "");
+                        SMain.EnqueueDebugging(Name + " Pet logout was null on logout : " + pet != null ? pet.Name : "" + " " + pet.CurrentMap != null ? pet.CurrentMap.Info.Mcode : "");
                     }
                 }
             }
@@ -1344,7 +1344,7 @@ namespace Server.MirObjects
 
             CallDefaultNPC(DefaultNPCType.Die);
 
-            Report.Died(CurrentMap.Info.FileName);
+            Report.Died(CurrentMap.Info.Mcode);
         }
 
         private void DeathDrop(MapObject killer)
@@ -1942,11 +1942,11 @@ namespace Server.MirObjects
         //检测物品是否已发送到客户端，如果没有发送过的，发送到客户端
         public void CheckItemInfo(ItemInfo info, bool dontLoop = false)
         {
-            if ((dontLoop == false) && (info.ClassBased | info.LevelBased)) //send all potential data so client can display it
+            if ((dontLoop == false) && (info.ClassBased>0 | info.LevelBased>0)) //send all potential data so client can display it
             {
                 for (int i = 0; i < Envir.ItemInfoList.Count; i++)
                 {
-                    if ((Envir.ItemInfoList[i] != info) && (Envir.ItemInfoList[i].Name.StartsWith(info.Name)))
+                    if ((Envir.ItemInfoList[i] != info) && (ItemInfo.IsLevelBased(info,Envir.ItemInfoList[i], ushort.MaxValue) || ItemInfo.IsClassBased(info, Envir.ItemInfoList[i], this.Class)))
                         CheckItemInfo(Envir.ItemInfoList[i], true);
                 }
             }
@@ -2236,6 +2236,10 @@ namespace Server.MirObjects
             //排序
             newlist.Sort((x, y) => {
                 int com = x.Info.Type.CompareTo(y.Info.Type);
+                if (com == 0)
+                {
+                    com = x.Info.Grade.CompareTo(y.Info.Grade);
+                }
                 if (com == 0)
                 {
                     com=x.Name.CompareTo(y.Name);
@@ -2841,7 +2845,7 @@ namespace Server.MirObjects
                 {
                     FastRun = true;
                 }
-
+                //SMain.Enqueue("SkillNeckBoost" + SkillNeckBoost+ "RealItem.Unique:"+ RealItem.Unique);
                 if (RealItem.Type == ItemType.Armour)
                 {
                     Looks_Armour = RealItem.Shape;
@@ -3049,6 +3053,9 @@ namespace Server.MirObjects
                     case ItemSet.Oppressive:
                         MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 1);
                         Agility = (byte)Math.Min(byte.MaxValue, Agility + 1);
+                        break;
+                    case ItemSet.GaleWind://狂风套，加2点攻速
+                        ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 2);
                         break;
                 }
             }
@@ -3887,10 +3894,10 @@ namespace Server.MirObjects
 
                     case "MAKE"://GM创建一件装备,物品命令为MARK 
                         if ((!IsGM && !Settings.TestServer) || parts.Length < 2) return;
-
+                     
                         ItemInfo iInfo = ItemInfo.getItem(parts[1]);
                         if (iInfo == null) return;
-
+ 
                         uint count = 1;
                         if (parts.Length >= 3 && !uint.TryParse(parts[2], out count))
                             count = 1;
@@ -4185,7 +4192,7 @@ namespace Server.MirObjects
                         break;
 
                     case "MAP":
-                        var mapName = CurrentMap.Info.FileName;
+                        var mapName = CurrentMap.Info.Mcode;
                         var mapTitle = CurrentMap.Info.Title;
                         ReceiveChat((string.Format("你当前在 {0}. 地图 ID: {1}", mapTitle, mapName)), ChatType.System);
                         break;
@@ -4262,20 +4269,20 @@ namespace Server.MirObjects
                         switch (parts.Length)
                         {
                             case 2:
-                                ReceiveChat(TeleportRandom(200, 0, map) ? (string.Format("Moved to Map {0}", map.Info.FileName)) :
-                                    (string.Format("Failed movement to Map {0}", map.Info.FileName)), ChatType.System);
+                                ReceiveChat(TeleportRandom(200, 0, map) ? (string.Format("Moved to Map {0}", map.Info.Mcode)) :
+                                    (string.Format("Failed movement to Map {0}", map.Info.Mcode)), ChatType.System);
                                 break;
                             case 3:
-                                ReceiveChat(TeleportRandom(200, 0, map) ? (string.Format("Moved to Map {0}:[{1}]", map.Info.FileName, instanceID)) :
-                                    (string.Format("Failed movement to Map {0}:[{1}]", map.Info.FileName, instanceID)), ChatType.System);
+                                ReceiveChat(TeleportRandom(200, 0, map) ? (string.Format("Moved to Map {0}:[{1}]", map.Info.Mcode, instanceID)) :
+                                    (string.Format("Failed movement to Map {0}:[{1}]", map.Info.Mcode, instanceID)), ChatType.System);
                                 break;
                             case 4:
-                                ReceiveChat(Teleport(map, new Point(x, y)) ? (string.Format("Moved to Map {0} at {1}:{2}", map.Info.FileName, x, y)) :
-                                    (string.Format("Failed movement to Map {0} at {1}:{2}", map.Info.FileName, x, y)), ChatType.System);
+                                ReceiveChat(Teleport(map, new Point(x, y)) ? (string.Format("Moved to Map {0} at {1}:{2}", map.Info.Mcode, x, y)) :
+                                    (string.Format("Failed movement to Map {0} at {1}:{2}", map.Info.Mcode, x, y)), ChatType.System);
                                 break;
                             case 5:
-                                ReceiveChat(Teleport(map, new Point(x, y)) ? (string.Format("Moved to Map {0}:[{1}] at {2}:{3}", map.Info.FileName, instanceID, x, y)) :
-                                    (string.Format("Failed movement to Map {0}:[{1}] at {2}:{3}", map.Info.FileName, instanceID, x, y)), ChatType.System);
+                                ReceiveChat(Teleport(map, new Point(x, y)) ? (string.Format("Moved to Map {0}:[{1}] at {2}:{3}", map.Info.Mcode, instanceID, x, y)) :
+                                    (string.Format("Failed movement to Map {0}:[{1}] at {2}:{3}", map.Info.Mcode, instanceID, x, y)), ChatType.System);
                                 break;
                         }
                         break;
@@ -5119,7 +5126,7 @@ namespace Server.MirObjects
 
                         MapInfo mapInfo = map.Info;
                         mapInfo.CreateInstance();
-                        ReceiveChat(string.Format("Map instance created for map {0}", mapInfo.FileName), ChatType.System);
+                        ReceiveChat(string.Format("Map instance created for map {0}", mapInfo.Mcode), ChatType.System);
                         break;
                     case "STARTCONQUEST":
                         //Needs some work, but does job for now.
@@ -5819,7 +5826,7 @@ namespace Server.MirObjects
         public void RangeAttack(MirDirection dir, Point location, uint targetID)
         {
             LogTime = Envir.Time + Globals.LogDelay;
-
+            //SMain.Enqueue("范围攻击");
             if (Info.Equipment[(int)EquipmentSlot.Weapon] == null) return;
             ItemInfo RealItem = Functions.GetRealItem(Info.Equipment[(int)EquipmentSlot.Weapon].Info, Info.Level, Info.Class, Envir.ItemInfoList);
 
@@ -5854,7 +5861,7 @@ namespace Server.MirObjects
             if (target != null)
             {
                 magic = GetMagic(Spell.Focus);
-
+                int damage = GetAttackPower(MinDC, MaxDC);//这里改为物理攻击
                 if (magic != null && RandomUtils.Next(5) <= magic.Level)
                 {
                     Focus = true;
@@ -5863,7 +5870,7 @@ namespace Server.MirObjects
                 }
 
                 int distance = Functions.MaxDistance(CurrentLocation, target.CurrentLocation);
-                int damage = GetAttackPower(MinMC, MaxMC);
+                
                 damage = (int)(damage * Math.Max(1, (distance * 0.35)));//range boost
                 damage = ApplyArcherState(damage);
                 int chanceToHit = 60 + (Focus ? 30 : 0) - (int)(distance * 1.5);
@@ -5899,6 +5906,7 @@ namespace Server.MirObjects
 
             return;
         }
+
         public void Attack(MirDirection dir, Spell spell)
         {
             LogTime = Envir.Time + Globals.LogDelay;
@@ -6497,6 +6505,7 @@ namespace Server.MirObjects
 
             if (cost > MP)
             {
+                ReceiveChat(string.Format("[" + magic.Info.Name + "]技能无法释放,MP不足"), ChatType.System);
                 Enqueue(new S.UserLocation { Direction = Direction, Location = CurrentLocation });
                 return;
             }
@@ -6768,6 +6777,9 @@ namespace Server.MirObjects
                 case Spell.Portal:
                     Portal(magic, location, out cast);
                     break;
+                case Spell.FixedMove://定点移动，类似闪现
+                    FixedMove(magic, location, out cast);
+                    break;
 
                 default:
                     cast = false;
@@ -7031,6 +7043,7 @@ namespace Server.MirObjects
 
             if (result) LevelMagic(magic);
         }
+        //诱惑之光
         private void ElectricShock(MonsterObject target, UserMagic magic)
         {
             if (target == null || !target.IsAttackTarget(this)) return;
@@ -7050,15 +7063,17 @@ namespace Server.MirObjects
                 return;
             }
 
+            //驯服时间延长
             if (RandomUtils.Next(2) > 0)
             {
                 target.ShockTime = Envir.Time + (magic.Level * 5 + 10) * 1000;
                 target.Target = null;
                 return;
             }
-
+            //等级不够，不能驯服
             if (target.Level > Level + 2 || !target.Info.CanTame) return;
 
+            //等级没有足够高，会暴走
             if (RandomUtils.Next(Level + 20 + magic.Level * 5) <= target.Level + 10)
             {
                 if (RandomUtils.Next(5) > 0 && target.Master == null)
@@ -7068,15 +7083,36 @@ namespace Server.MirObjects
                 }
                 return;
             }
-
+            //驯服数量大于技能等级+2（最多驯服5个）
             if (Pets.Count(t => !t.Dead) >= magic.Level + 2) return;
+            //驯服几率
             int rate = (int)(target.MaxHP / 100);
-            if (rate <= 2) rate = 2;
-            else rate *= 2;
+            if (rate > 20)
+            {
+                rate = 20;
+            }
+            if (rate < 2)
+            {
+                rate = 2;
+            }
+            rate *= 2;
+            
 
             if (RandomUtils.Next(rate) != 0) return;
             //else if (RandomUtils.Next(20) == 0) target.Die();
 
+            //如果是满血的，有5分之1的几率直接死亡，否则1/10几率直接死亡
+            int dieRate = 10;
+            if (target.HP== target.MaxHP)
+            {
+                dieRate = 5;
+            }
+            //
+            if (RandomUtils.Next(dieRate) == 0)
+            {
+                target.Die();
+                return;
+            }
             if (target.Master != null)
             {
                 target.SetHP(target.MaxHP / 10);
@@ -7163,8 +7199,10 @@ namespace Server.MirObjects
             DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, this, magic, damage, CurrentLocation, Direction);
             CurrentMap.ActionList.Add(action);
         }
+        //圣言术
         private void TurnUndead(MapObject target, UserMagic magic)
         {
+            //圣言术，只对不死系怪物有效
             if (target == null || target.Race != ObjectType.Monster || !target.Undead || !target.IsAttackTarget(this)) return;
 
             if (RandomUtils.Next(2) + Level - 1 <= target.Level)
@@ -7199,7 +7237,7 @@ namespace Server.MirObjects
         private void ThunderStorm(UserMagic magic)
         {
             int damage = magic.GetDamage(GetAttackPower(MinMC, MaxMC));
-
+            
             DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, this, magic, damage, CurrentLocation);
             CurrentMap.ActionList.Add(action);
         }
@@ -8629,6 +8667,18 @@ namespace Server.MirObjects
             cast = true;
         }
 
+        //定点移动，闪现
+        private void FixedMove(UserMagic magic, Point location, out bool cast)
+        {
+            cast = false;
+            //如果鼠标的点不能访问，则在方向上查找可访问的点
+            int maxlen = magic.Level * 2 + 5;
+
+            Point movepoint = CurrentMap.getValidPointByLine(CurrentLocation, location, maxlen);
+            Teleport(CurrentMap, movepoint);
+            cast = true;
+        }
+
         #endregion
 
         private void CheckSneakRadius()
@@ -9697,7 +9747,7 @@ namespace Server.MirObjects
 
                 if (activeCoord != location) continue;
 
-                CallDefaultNPC(DefaultNPCType.MapCoord, CurrentMap.Info.FileName, activeCoord.X, activeCoord.Y);
+                CallDefaultNPC(DefaultNPCType.MapCoord, CurrentMap.Info.Mcode, activeCoord.X, activeCoord.Y);
             }
 
             //地图移动
@@ -9793,7 +9843,7 @@ namespace Server.MirObjects
 
             if (mapChanged)
             {
-                CallDefaultNPC(DefaultNPCType.MapEnter, CurrentMap.Info.FileName);
+                CallDefaultNPC(DefaultNPCType.MapEnter, CurrentMap.Info.Mcode);
             }
 
             if (Info.Married != 0)
@@ -9861,7 +9911,7 @@ namespace Server.MirObjects
 
             if (mapChanged)
             {
-                CallDefaultNPC(DefaultNPCType.MapEnter, CurrentMap.Info.FileName);
+                CallDefaultNPC(DefaultNPCType.MapEnter, CurrentMap.Info.Mcode);
 
                 if (Info.Married != 0)
                 {

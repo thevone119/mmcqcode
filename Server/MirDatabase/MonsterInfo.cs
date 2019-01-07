@@ -39,7 +39,7 @@ namespace Server.MirDatabase
         public uint Experience;
         //怪物的掉落物品
         public List<DropInfo> Drops = new List<DropInfo>();
-        //驯服，推动，AutoRev:自动发送血量变化 ,Undead不死系,CanMove是否可以移动
+        //驯服，推动，AutoRev:自动发送血量变化 ,Undead不死系(不能圣言，不能召唤，地狱雷光效果很差),CanMove是否可以移动
         public bool CanTame = true, CanPush = true, AutoRev = true, Undead = false, CanMove=true;
 
         //非数据库字段，是否有重生脚本(比如重生提醒？)
@@ -71,11 +71,13 @@ namespace Server.MirDatabase
                     continue;
                 }
                 obj.Name = read.GetString(read.GetOrdinal("Name"));
-                obj.Name_en = read.GetString(read.GetOrdinal("Name_en"));
-                
                 if (obj.Name == null)
                 {
                     continue;
+                }
+                if (!read.IsDBNull(read.GetOrdinal("Name_en")))
+                {
+                    obj.Name_en = read.GetString(read.GetOrdinal("Name_en"));
                 }
                 obj.Index = read.GetInt32(read.GetOrdinal("Idx"));
 
@@ -122,7 +124,7 @@ namespace Server.MirDatabase
                 if (Format)
                 {
                     obj.LoadDrops();
-                    string path = Path.Combine(Settings.DropPath, obj.Name + ".txt");
+                    string path = Path.Combine(Settings.DropPath, obj.Name + "_" + obj.Index + ".txt");
                     if (File.Exists(path))
                     {
                         List<string> lines = new List<string>();
@@ -161,8 +163,6 @@ namespace Server.MirDatabase
         //保存到数据库
         public void SaveDB()
         {
-            //每次保存，调用一次重新加载爆率
-            LoadDrops();
             byte state = DBObjectUtils.ObjState(this, Index);
             if (state == 0)//没有改变
             {
@@ -232,7 +232,7 @@ namespace Server.MirDatabase
         //加载怪物的掉落物品数据
         public void LoadDrops()
         {
-            string path = Path.Combine(Settings.DropPath, Name + ".txt");
+            string path = Path.Combine(Settings.DropPath, Name +"_"+ Index + ".txt");
             if (!File.Exists(path))
             {
                 string[] contents = new[]
@@ -379,6 +379,7 @@ namespace Server.MirDatabase
 
         //物品列表
         public List<ItemInfo> ItemList = new List<ItemInfo>();
+        private uint PriceCount;//总价格,针对一组爆率里有多个物品的，根据价格决定爆率，价格越低的，出得越多
         //最多爆多少个
         public int MaxCount=1;
 
@@ -460,6 +461,18 @@ namespace Server.MirDatabase
                     string dropRequirement = parts[3];
                     if (dropRequirement.ToUpper() == "Q") info.QuestRequired = true;
                 }
+                //总价格解析,价格默认在1000-1000万之间，1000万除价格，得到爆率的价格，这样价格越高，占比就会越低
+                foreach(ItemInfo _info in info.ItemList)
+                {
+                    if (_info.Price < 1000)
+                    {
+                        info.PriceCount += 10000000 / 1000;
+                    }
+                    else
+                    {
+                        info.PriceCount += 10000000 / _info.Price;
+                    }
+                }
             }
 
             return info;
@@ -509,9 +522,9 @@ namespace Server.MirDatabase
             {
                 DropCount = RandomUtils.Next(MaxCount) + 1;
             }
-            for(int i=0;i< DropCount; i++)
+            for (int i=0;i< DropCount; i++)
             {
-                DropItems.Add(ItemList[RandomUtils.Next(ItemList.Count)]);
+                DropItems.Add(DropItem());
             }
             return DropItems;
         }
@@ -523,6 +536,30 @@ namespace Server.MirDatabase
             {
                 return null;
             }
+            if (ItemList.Count == 1)
+            {
+                return ItemList[0];
+            }
+            //针对多个物品，根据价格决定爆率
+            int macp = RandomUtils.Next((int)PriceCount);
+            uint price1 = 0, price2 = 0;
+            foreach (ItemInfo _info in ItemList)
+            {
+                if (_info.Price < 1000)
+                {
+                    price2 += 10000000 / 1000;
+                }
+                else
+                {
+                    price2 += 10000000 / _info.Price;
+                }
+                if (macp >= price1 && macp < price2)
+                {
+                    return _info;
+                }
+                price1 = price2;
+            }
+            //不会走到这里
             return ItemList[RandomUtils.Next(ItemList.Count)];
         }
 

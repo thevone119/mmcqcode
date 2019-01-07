@@ -205,7 +205,7 @@ namespace Server.MirForms
                             string[] e = c[2].Split(',');
 
 
-                            var toMapIndex = EditEnvir.MapInfoList.FindIndex(a => a.FileName == c[3]); //check existing maps for the connection info
+                            var toMapIndex = EditEnvir.MapInfoList.FindIndex(a => a.Mcode == c[3]); //check existing maps for the connection info
                             var toMap = -1;
 
                             if (toMapIndex >= 0)

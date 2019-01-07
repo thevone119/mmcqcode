@@ -40,7 +40,9 @@ namespace Server
         public static bool Multithreaded = false;//是否开启多线程进行处理
         public static int ThreadLimit = 2;//开启的线程数
         public static int RefreshDelay = 50;//刷新延时
-        
+    
+
+
         public static bool TestServer = false;
 
         public static bool EnforceDBChecks = false;//是否检测数据库的数据，就是是否校验怪物是否存在

@@ -85,6 +85,7 @@ namespace Server.MirObjects.Monsters
             }
             if (armour >= damage)
             {
+                SMain.Enqueue("damage"+ damage);
                 BroadcastDamageIndicator(DamageType.Miss);
                 return 0;
             }

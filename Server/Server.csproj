@@ -46,7 +46,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -115,6 +115,7 @@
       <Link>MirNetwork\ServerPackets.cs</Link>
     </Compile>
     <Compile Include="CommonServer.cs" />
+    <Compile Include="MirDatabase\DataHandle.cs" />
     <Compile Include="MirDatabase\PayOrder.cs" />
     <Compile Include="MirDatabase\MailInfo.cs" />
     <Compile Include="MirDatabase\ConquestInfo.cs" />

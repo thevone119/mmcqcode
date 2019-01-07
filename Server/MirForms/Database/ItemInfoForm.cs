@@ -278,8 +278,8 @@ namespace Server
             CriticalDamagetextBox.Text = info.CriticalDamage.ToString();
             ReflecttextBox.Text = info.Reflect.ToString();
 
-            LevelBasedcheckbox.Checked = info.LevelBased;
-            ClassBasedcheckbox.Checked = info.ClassBased;
+            //LevelBasedcheckbox.Checked = info.LevelBased;
+            //ClassBasedcheckbox.Checked = info.ClassBased;
 
             
             Bind_dontstorecheckbox.Checked = info.Bind.HasFlag(BindMode.DontStore);
@@ -385,8 +385,8 @@ namespace Server
                 if (CriticalRatetextBox.Text != info.CriticalRate.ToString()) CriticalRatetextBox.Text = string.Empty;
                 if (CriticalDamagetextBox.Text != info.CriticalDamage.ToString()) CriticalDamagetextBox.Text = string.Empty;
                 if (ReflecttextBox.Text != info.Reflect.ToString()) ReflecttextBox.Text = string.Empty;
-                if (LevelBasedcheckbox.Checked != info.LevelBased) LevelBasedcheckbox.CheckState = CheckState.Indeterminate;
-                if (ClassBasedcheckbox.Checked != info.ClassBased) ClassBasedcheckbox.CheckState = CheckState.Indeterminate;
+                //if (LevelBasedcheckbox.Checked != info.LevelBased) LevelBasedcheckbox.CheckState = CheckState.Indeterminate;
+                //if (ClassBasedcheckbox.Checked != info.ClassBased) ClassBasedcheckbox.CheckState = CheckState.Indeterminate;
                 if (Bind_dontstorecheckbox.Checked != info.Bind.HasFlag(BindMode.DontStore)) Bind_dontstorecheckbox.CheckState = CheckState.Indeterminate;
                 if (Bind_dontupgradecheckbox.Checked != info.Bind.HasFlag(BindMode.DontUpgrade)) Bind_dontupgradecheckbox.CheckState = CheckState.Indeterminate;
                 if (Bind_dontrepaircheckbox.Checked != info.Bind.HasFlag(BindMode.DontRepair)) Bind_dontrepaircheckbox.CheckState = CheckState.Indeterminate;
@@ -1331,16 +1331,16 @@ namespace Server
         {
             if (ActiveControl != sender) return;
 
-            for (int i = 0; i < _selectedItemInfos.Count; i++)
-                _selectedItemInfos[i].ClassBased = ClassBasedcheckbox.Checked;
+            //for (int i = 0; i < _selectedItemInfos.Count; i++)
+               // _selectedItemInfos[i].ClassBased = ClassBasedcheckbox.Checked;
         }
 
         private void LevelBasedcheckbox_CheckedChanged(object sender, EventArgs e)
         {
             if (ActiveControl != sender) return;
 
-            for (int i = 0; i < _selectedItemInfos.Count; i++)
-                _selectedItemInfos[i].LevelBased = LevelBasedcheckbox.Checked;
+            //for (int i = 0; i < _selectedItemInfos.Count; i++)
+               // _selectedItemInfos[i].LevelBased = LevelBasedcheckbox.Checked;
         }
 
         private void Bind_dontdropcheckbox_CheckedChanged(object sender, EventArgs e)

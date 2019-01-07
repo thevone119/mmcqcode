@@ -591,7 +591,7 @@ namespace Server.MirEnvir
                 SMain.Enqueue(ex);
             }
 
-            SMain.Enqueue("Failed to Load Map: " + Info.FileName);
+            SMain.Enqueue("Failed to Load Map: " + Info.Mcode);
 
             return false;
         }
@@ -632,6 +632,35 @@ namespace Server.MirEnvir
                 return RandomValidPoints[RandomUtils.Next(RandomValidPoints.Count)];
             }
             return Point.Empty;
+        }
+
+        //在2个点之间找出一个可以访问的点
+        //用于随机闪现
+        public Point getValidPointByLine(Point p1, Point p2,int maxlen)
+        {
+            Point retp = Point.Empty;
+            //查找最大范围内所有的点
+            for (int x= p1.X- maxlen;x< p1.X + maxlen; x++)
+            {
+                for(int y=p1.Y- maxlen;y<p1.Y+ maxlen; y++)
+                {
+                    if (!Valid(x, y))
+                    {
+                        continue;
+                    }
+                    int _Distance = Math.Abs(x - p2.X)+ Math.Abs(y - p2.Y);
+                    int Distance = Math.Abs(retp.X - p2.X)+ Math.Abs(retp.Y - p2.Y);
+                    if(_Distance< Distance)
+                    {
+                        retp = new Point(x,y);
+                    }
+                }
+            }
+            if (retp.IsEmpty)
+            {
+                return p1;
+            }
+            return retp;
         }
 
 

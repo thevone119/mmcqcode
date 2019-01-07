@@ -972,7 +972,7 @@ namespace Server.MirEnvir
                 //领地数据
                 ConquestInfos = ConquestInfo.loadAll();
 
-            
+               
 
                 Settings.LinkGuildCreationItems(ItemInfoList);
             }
@@ -2114,7 +2114,8 @@ namespace Server.MirEnvir
         {
             return MapList.FirstOrDefault(t => t.Info.Index == index);
         }
-        //根据
+
+        //根据地图名称查找地图
         public Map GetMapByNameAndInstance(string name, int instanceValue = 0)
         {
             if (instanceValue < 0) instanceValue = 0;
@@ -2122,22 +2123,12 @@ namespace Server.MirEnvir
             List<Map> list = new List<Map>();
             foreach(Map m in MapList)
             {
-                if(String.Equals(m.Info.FileName, name, StringComparison.CurrentCultureIgnoreCase))
+                if(String.Equals(m.Info.Mcode, name, StringComparison.CurrentCultureIgnoreCase))
                 {
                     list.Add(m);
                 }
             }
-            if (list.Count == 0)
-            {
-                foreach (Map m in MapList)
-                {
-                    //增加根据ID查找，方便测试，后续注释掉
-                    if (String.Equals(m.Info.Index + "", name, StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        list.Add(m);
-                    }
-                }
-            }
+            
             if (instanceValue < list.Count)
             {
                 return list[instanceValue];
@@ -2156,6 +2147,14 @@ namespace Server.MirEnvir
         {
             for (int i = 0; i < MonsterInfoList.Count; i++)
                 if (MonsterInfoList[i].Index == index) return MonsterInfoList[i];
+
+            return null;
+        }
+
+        public MonsterInfo GetMonsterInfoByImage(Monster Image)
+        {
+            for (int i = 0; i < MonsterInfoList.Count; i++)
+                if (MonsterInfoList[i].Image == Image) return MonsterInfoList[i];
 
             return null;
         }

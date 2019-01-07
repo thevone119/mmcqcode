@@ -46,7 +46,7 @@ namespace Server
             GoldLabel.Text = String.Format("{0:n0}", Character.AccountInfo.Gold);
 
             if (Character.Player != null)
-                CurrentMapLabel.Text = string.Format("{0} {1}:{2}", Character.Player.CurrentMap.Info.FileName, Character.CurrentLocation.X, Character.CurrentLocation.Y);
+                CurrentMapLabel.Text = string.Format("{0} {1}:{2}", Character.Player.CurrentMap.Info.Mcode, Character.CurrentLocation.X, Character.CurrentLocation.Y);
             else
                 CurrentMapLabel.Text = "OFFLINE";
 
