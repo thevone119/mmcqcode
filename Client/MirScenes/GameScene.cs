@@ -5919,7 +5919,8 @@ namespace Client.MirScenes
             MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
             HoverItem = item;
             ItemInfo realItem = Functions.GetRealItem(item.Info, level, job, ItemInfoList);
-
+            //这里改下,增加绑定到最新的物品
+            item.Info = realItem;
             ItemLabel.Size = new Size(ItemLabel.Size.Width, ItemLabel.Size.Height + 4);
 
             bool fishingItem = false;
@@ -6355,7 +6356,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = string.Format("吸血: {0}%", minValue)
+                    Text = string.Format("吸血: +{0}", minValue)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, HPdrainLabel.DisplayRectangle.Right + 4),
@@ -7169,6 +7170,7 @@ namespace Client.MirScenes
         }
         private MirControl NeedInfoLabel(UserItem item, bool Inspect = false)
         {
+           
             ushort level = Inspect ? InspectDialog.Level : MapObject.User.Level;
             MirClass job = Inspect ? InspectDialog.Class : MapObject.User.Class;
             HoverItem = item;
@@ -7247,7 +7249,7 @@ namespace Client.MirScenes
                             colour = Color.Red;
                         break;
                     default:
-                        text = "Unknown Type Required";
+                        text = "";
                         break;
                 }
 
@@ -7267,6 +7269,7 @@ namespace Client.MirScenes
 
             #endregion
 
+            //MirLog.info(realItem.Name +":"+ realItem.RequiredClass);
             #region CLASS
             if (realItem.RequiredClass != RequiredClass.None)
             {

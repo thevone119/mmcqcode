@@ -3333,6 +3333,8 @@ namespace Client.MirScenes.Dialogs
             }
         }
     }
+
+    //人物状态信息窗口
     public sealed class InspectDialog : MirImageControl
     {
         public static UserItem[] Items = new UserItem[14];
