@@ -411,12 +411,19 @@ namespace Server.MirObjects
             switch (parts[0].ToUpper())
             {
                 case "MOVE":
+                case "MOVECOPY":
                     if (parts.Length < 2) return;
 
                     string tempx = parts.Length > 3 ? parts[2] : "0";
                     string tempy = parts.Length > 3 ? parts[3] : "0";
-
-                    acts.Add(new NPCActions(ActionType.Move, parts[1], tempx, tempy));
+                    if (parts[0].ToUpper().Equals("MOVE"))
+                    {
+                        acts.Add(new NPCActions(ActionType.Move, parts[1], tempx, tempy));
+                    }
+                    if (parts[0].ToUpper().Equals("MOVECOPY"))
+                    {
+                        acts.Add(new NPCActions(ActionType.MoveCopy, parts[1], tempx, tempy));
+                    }
                     break;
 
                 case "INSTANCEMOVE":
@@ -424,6 +431,7 @@ namespace Server.MirObjects
 
                     acts.Add(new NPCActions(ActionType.InstanceMove, parts[1], parts[2], parts[3], parts[4]));
                     break;
+
 
                 case "GIVEGOLD":
                     if (parts.Length < 2) return;
@@ -2555,7 +2563,16 @@ namespace Server.MirObjects
                 switch (act.Type)
                 {
                     case ActionType.Move:
-                        Map map = SMain.Envir.GetMapByNameAndInstance(param[0]);
+                    case ActionType.MoveCopy://移动到副本地图,支持组队进入
+                        Map map = null;
+                        if(act.Type== ActionType.Move)
+                        {
+                            map = SMain.Envir.GetMapByNameAndInstance(param[0]);
+                        }
+                        if(act.Type == ActionType.MoveCopy)
+                        {
+                            map = SMain.Envir.GetMapByNameCopy(param[0]);
+                        }
                         if (map == null) return;
 
                         if (!int.TryParse(param[1], out x)) return;
@@ -2566,7 +2583,7 @@ namespace Server.MirObjects
                         if (coords.X > 0 && coords.Y > 0) player.Teleport(map, coords);
                         else player.TeleportRandom(200, 0, map);
                         break;
-
+ 
                     case ActionType.InstanceMove:
                         int instanceId;
                         if (!int.TryParse(param[1], out instanceId)) return;

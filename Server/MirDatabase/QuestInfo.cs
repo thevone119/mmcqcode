@@ -200,6 +200,7 @@ namespace Server.MirDatabase
             
         }
 
+        //任务脚本
         public void LoadInfo(bool clear = false)
         {
             if (clear) ClearInfo();

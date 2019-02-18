@@ -17,7 +17,7 @@ namespace Server.MirDatabase
         public ulong accIndex;//账号的索引，ID,增加的关联字段
         public ulong Index;
         public string Name;
-        public ushort Level;
+        public ushort Level=1;//默认等级
         public MirClass Class;
         public MirGender Gender;
         public byte Hair;
@@ -77,6 +77,9 @@ namespace Server.MirDatabase
         public byte MentalStateLvl;
         //背包（包括背包的40格+下面的6个按键格,其中0-5是下面的6格按键），装备，交易，仓库，精炼(改善，这个不知道是扩展背包还是什么)
         public UserItem[] Inventory = new UserItem[46], Equipment = new UserItem[14], Trade = new UserItem[10], QuestInventory = new UserItem[40], Refine = new UserItem[16];
+
+        public UserItem[] ItemCollect = new UserItem[10];//这个是收集的客户端提交上来的物品
+
         public List<ItemRentalInformation> RentedItems = new List<ItemRentalInformation>();
         public List<ItemRentalInformation> RentedItemsToRemove = new List<ItemRentalInformation>();
         public bool HasRentedItem;
@@ -113,8 +116,15 @@ namespace Server.MirDatabase
         //这个作废掉
         public int[] Rank = new int[2];//dont save this in db!(and dont send it to clients :p)
 
+        public int[] killMon = new int[10];//杀怪记录
+
+        //角色在线时长
+        public uint onlineTime = 0;//在线时长，每天的
+        public int onlineDay = 0;//当前日期
+
         public CharacterInfo()
         {
+
         }
 
         public CharacterInfo(ClientPackets.NewCharacter p, MirConnection c)
@@ -164,7 +174,7 @@ namespace Server.MirDatabase
 
                 obj.HP = (ushort)read.GetInt32(read.GetOrdinal("HP"));
                 obj.MP = (ushort)read.GetInt32(read.GetOrdinal("MP"));
-                obj.Experience = read.GetInt32(read.GetOrdinal("Experience"));
+                obj.Experience = read.GetInt64(read.GetOrdinal("Experience"));
                 obj.AMode = (AttackMode)read.GetByte(read.GetOrdinal("AMode"));
                 obj.PMode = (PetMode)read.GetByte(read.GetOrdinal("PMode"));
                 obj.PKPoints = read.GetInt32(read.GetOrdinal("PKPoints"));
@@ -176,6 +186,8 @@ namespace Server.MirDatabase
                 {
                     if (obj.Inventory[i] != null)
                     {
+                        //全部取消结婚戒指
+                        obj.Inventory[i].WeddingRing = -1;
                         if (!obj.Inventory[i].BindItem())
                         {
                             obj.Inventory[i] = null;
@@ -188,6 +200,8 @@ namespace Server.MirDatabase
                 {
                     if (obj.Equipment[i] != null)
                     {
+                        //全部取消结婚戒指
+                        obj.Equipment[i].WeddingRing = -1;
                         if (!obj.Equipment[i].BindItem())
                         {
                             obj.Equipment[i] = null;
@@ -206,6 +220,25 @@ namespace Server.MirDatabase
                         }
                     }
                 }
+                //收集上来的临时装备，需要归还给玩家的
+                if (!read.IsDBNull(read.GetOrdinal("ItemCollect")))
+                {
+                    obj.ItemCollect = JsonConvert.DeserializeObject<UserItem[]>(read.GetString(read.GetOrdinal("ItemCollect")));
+                    for (int i = 0; i < obj.ItemCollect.Length; i++)
+                    {
+                        if (obj.ItemCollect[i] != null)
+                        {
+                            if (!obj.ItemCollect[i].BindItem())
+                            {
+                                obj.ItemCollect[i] = null;
+                            }
+                        }
+                    }
+                }
+                
+                
+
+                
                 //魔法技能
                 obj.Magics = JsonConvert.DeserializeObject<List<UserMagic>>(read.GetString(read.GetOrdinal("Magics")));
                 for (int i = 0; i < obj.Magics.Count; i++)
@@ -231,7 +264,7 @@ namespace Server.MirDatabase
                 obj.AllowGroup = read.GetBoolean(read.GetOrdinal("AllowGroup"));
                 obj.Flags = JsonConvert.DeserializeObject<bool[]>(read.GetString(read.GetOrdinal("Flags")));
 
-                obj.GuildIndex = read.GetInt32(read.GetOrdinal("GuildIndex"));
+                obj.GuildIndex = read.GetInt64(read.GetOrdinal("GuildIndex"));
                 obj.AllowTrade = read.GetBoolean(read.GetOrdinal("AllowTrade"));
                 obj.CurrentQuests = JsonConvert.DeserializeObject<List<QuestProgressInfo>>(read.GetString(read.GetOrdinal("CurrentQuests")));
                 if (obj.CurrentQuests != null)
@@ -267,8 +300,9 @@ namespace Server.MirDatabase
                 obj.CollectTime = read.GetInt64(read.GetOrdinal("CollectTime"));
                 //这里的时间要重置的
                 obj.CollectTime += SMain.Envir.Time;
-
+                
                 obj.Friends = JsonConvert.DeserializeObject<List<FriendInfo>>(read.GetString(read.GetOrdinal("Friends")));
+
                 obj.RentedItems = JsonConvert.DeserializeObject<List<ItemRentalInformation>>(read.GetString(read.GetOrdinal("RentedItems")));
                 obj.HasRentedItem = read.GetBoolean(read.GetOrdinal("HasRentedItem"));
                 obj.Married = (ulong)read.GetInt64(read.GetOrdinal("Married"));
@@ -278,13 +312,50 @@ namespace Server.MirDatabase
                 obj.isMentor = read.GetBoolean(read.GetOrdinal("isMentor"));
                 obj.MentorExp = (long)read.GetInt64(read.GetOrdinal("MentorExp"));
                 obj.GSpurchases = JsonConvert.DeserializeObject<Dictionary<int, int>>(read.GetString(read.GetOrdinal("GSpurchases")));
-                
+                //添加杀怪记录
+                if (!read.IsDBNull(read.GetOrdinal("killMon")))
+                {
+                    string killMons = read.GetString(read.GetOrdinal("killMon"));
+                    if(killMons!=null && killMons.Length > 5)
+                    {
+                        obj.killMon = JsonConvert.DeserializeObject<int[]>(killMons);
+                    }
+                }
+
+
+                //添加2个字段
+                //obj.onlineTime = (uint)read.GetInt32(read.GetOrdinal("onlineTime"));
+                //obj.onlineDay = read.GetInt32(read.GetOrdinal("onlineDay"));
+                //
+                obj.RetrieveItem();
                 DBObjectUtils.updateObjState(obj, obj.Index);
                 list.Add(obj);
             }
             return list;
         }
-        
+
+        //归还物品，针对之前被放入收集窗口的装备，重新归还给到账号
+        //重启的时候要做一次归还处理
+        public void RetrieveItem()
+        {
+            //精炼物品归还
+            for(int i=0;i < ItemCollect.Length; i++)
+            {
+                if (ItemCollect[i] != null)
+                {
+                    for(int j=0;j< Inventory.Length; j++)
+                    {
+                        if (Inventory[j] == null)
+                        {
+                            Inventory[j] = ItemCollect[i];
+                            ItemCollect[i] = null;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// 全职业的排行榜
         /// 前20
@@ -293,7 +364,8 @@ namespace Server.MirDatabase
         public static List<Rank_Character_Info> getRankTop()
         {
             List<Rank_Character_Info> list = new List<Rank_Character_Info>();
-            DbDataReader read = MirRunDB.ExecuteReader("select * from CharacterInfo order by Level desc limit 20 ");
+            DbDataReader read = MirRunDB.ExecuteReader("select * from  CharacterInfo where accIndex not in (select idx from AccountInfo where AdminAccount=1) order by Level desc limit 20 ");
+            //DbDataReader read = MirRunDB.ExecuteReader("select * from  CharacterInfo order by Level desc limit 20 ");
             while (read.Read())
             {
                 Rank_Character_Info obj = new Rank_Character_Info();
@@ -318,7 +390,7 @@ namespace Server.MirDatabase
             for(int i = 0; i < 5; i++)
             {
                 list[i] = new List<Rank_Character_Info>();
-                DbDataReader read = MirRunDB.ExecuteReader("select * from CharacterInfo where class=@class order by Level desc  limit 20 ",new SQLiteParameter("class", i));
+                DbDataReader read = MirRunDB.ExecuteReader("select * from  CharacterInfo where accIndex not in (select idx from AccountInfo where AdminAccount=1) and class=@class order by Level desc  limit 20 ", new SQLiteParameter("class", i));
                 while (read.Read())
                 {
                     Rank_Character_Info obj = new Rank_Character_Info();
@@ -412,6 +484,8 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("Friends", JsonConvert.SerializeObject(Friends)));
 
             lp.Add(new SQLiteParameter("RentedItems", JsonConvert.SerializeObject(RentedItems)));
+            lp.Add(new SQLiteParameter("ItemCollect", JsonConvert.SerializeObject(ItemCollect)));
+            
             lp.Add(new SQLiteParameter("HasRentedItem", HasRentedItem));
             lp.Add(new SQLiteParameter("Married", Married));
             lp.Add(new SQLiteParameter("MarriedDate", MarriedDate));
@@ -420,8 +494,10 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("isMentor", isMentor));
             lp.Add(new SQLiteParameter("MentorExp", MentorExp));
             lp.Add(new SQLiteParameter("GSpurchases", JsonConvert.SerializeObject(GSpurchases)));
-
-
+            lp.Add(new SQLiteParameter("killMon", JsonConvert.SerializeObject(killMon)));
+            
+            //lp.Add(new SQLiteParameter("onlineTime", onlineTime));
+            //lp.Add(new SQLiteParameter("onlineDay", onlineDay));
             //新增
             if (state == 1)
             {
@@ -603,6 +679,11 @@ namespace Server.MirDatabase
         public bool Blocked;
         public string Memo;
 
+        public FriendInfo()
+        {
+
+        }
+
         public FriendInfo(CharacterInfo info, bool blocked) 
         {
             Index = info.Index;
@@ -626,6 +707,10 @@ namespace Server.MirDatabase
 
         public ClientFriend CreateClientFriend()
         {
+            if (Info == null)
+            {
+                return null;
+            }
             return new ClientFriend()
             {
                 Index = Index,
@@ -722,6 +807,11 @@ namespace Server.MirDatabase
         public long ExpireTime = -9999;//
         public long BlackstoneTime = 0;
         public long MaintainFoodTime = 0;
+
+        public UserIntelligentCreature()
+        {
+
+        }
 
         public UserIntelligentCreature(IntelligentCreatureType creatureType, int slot, byte effect = 0)
         {

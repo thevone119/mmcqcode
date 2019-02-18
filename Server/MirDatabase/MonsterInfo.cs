@@ -49,6 +49,11 @@ namespace Server.MirDatabase
 
         private long lastFileTime = 0;//爆率文件最后的更事件，如果发生变更，自动重新加载
 
+        public string dropText = "";//爆率配置，如果这里配置了，就不读取文件中的配置了.
+
+        //这里配置支持通用AI.
+        public byte AttackAi=1;//采用了几种攻击方式，默认1
+        public byte AttackRangeAi = 0;//采用了几种范围攻击方式，默认0
 
 
         public MonsterInfo()
@@ -79,6 +84,11 @@ namespace Server.MirDatabase
                 {
                     obj.Name_en = read.GetString(read.GetOrdinal("Name_en"));
                 }
+                if (!read.IsDBNull(read.GetOrdinal("dropText")))
+                {
+                    obj.dropText = read.GetString(read.GetOrdinal("dropText"));
+                }
+                
                 obj.Index = read.GetInt32(read.GetOrdinal("Idx"));
 
                 obj.Image = (Monster)read.GetInt16(read.GetOrdinal("Image"));
@@ -90,6 +100,7 @@ namespace Server.MirDatabase
                 obj.HP = (uint)read.GetInt32(read.GetOrdinal("HP"));
                 obj.Accuracy = read.GetByte(read.GetOrdinal("Accuracy"));
                 obj.Agility = read.GetByte(read.GetOrdinal("Agility"));
+                
                 obj.Light = read.GetByte(read.GetOrdinal("Light"));
 
                 obj.MinAC = (ushort)read.GetInt32(read.GetOrdinal("MinAC"));
@@ -232,41 +243,52 @@ namespace Server.MirDatabase
         //加载怪物的掉落物品数据
         public void LoadDrops()
         {
-            string path = Path.Combine(Settings.DropPath, Name +"_"+ Index + ".txt");
-            if (!File.Exists(path))
+            string[] lines = null;
+            if (dropText != null && dropText.Length > 5)
             {
-                string[] contents = new[]
-                    {
+                lines = dropText.Split(new string[] { "\n" }, StringSplitOptions.None);
+            }
+            else
+            {
+                string path = Path.Combine(Settings.DropPath, Name + "_" + Index + ".txt");
+                if (!File.Exists(path))
+                {
+                    string[] contents = new[]
+                        {
                         ";怪物物品爆率配置，规则如下：几率 物品（支持多个） 一次最多爆多少个 是否任务物品（Q）",
                         ";普通物品:",
                         ";1/10 物品1|物品2|物品3|(HP)DrugMedium 3",
                         ";任务物品:1/10 物品1|物品2|物品3|(HP)DrugMedium 3 Q",
                         ";1/1 物品名称 1 Q",
                     };
-                
-                File.WriteAllLines(path, contents);
-                return;
-            }
-            long LastWriteTime = File.GetLastWriteTime(path).ToBinary();
 
-            if (LastWriteTime== lastFileTime)
-            {
-                return;
-            }
-            if (lastFileTime != 0)
-            {
-                SMain.Enqueue(string.Format("怪物爆率重载: {0}", Name));
-            }
-            lastFileTime = LastWriteTime;
+                    File.WriteAllLines(path, contents);
+                    return;
+                }
+                long LastWriteTime = File.GetLastWriteTime(path).ToBinary();
 
+                if (LastWriteTime == lastFileTime)
+                {
+                    return;
+                }
+                if (lastFileTime != 0)
+                {
+                    SMain.Enqueue(string.Format("怪物爆率重载: {0}", Name));
+                }
+                lastFileTime = LastWriteTime;
+                lines = File.ReadAllLines(path);
+            }
             Drops.Clear();
-            string[] lines = File.ReadAllLines(path);
+            if (lines == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < lines.Length; i++)
             {
                 if (lines[i].StartsWith(";") || string.IsNullOrWhiteSpace(lines[i])) continue;
 
-                DropInfo drop = DropInfo.FromLine(lines[i]);
+                DropInfo drop = DropInfo.FromLine(this.Name,lines[i]);
                 if (drop == null)
                 {
                     SMain.Enqueue(string.Format("Could not load Drop: {0}, Line {1}", Name, lines[i]));
@@ -293,6 +315,67 @@ namespace Server.MirDatabase
                     }
                 });
         }
+
+        //这个是通用的爆率
+        public void LoadCommonDrops()
+        {
+            bool baoyu = false;//宝玉
+            bool baoshi = false;//宝石
+            foreach (DropInfo di in Drops)
+            {
+                if (di.dropLine == null)
+                {
+                    continue;
+                }
+                if(di.dropLine.IndexOf("宝玉")!=-1)
+                {
+                    baoyu=true;
+                }
+                if (di.dropLine.IndexOf("宝石") != -1)
+                {
+                    baoshi = true;
+                }
+            }
+            //大于1000血的都爆宝玉
+            //1000-1万血，血量越高，爆率越高
+            if (!baoyu && HP >= 10000)
+            {
+                string line = HP + "/" + 40000 + " G_宝玉";
+                DropInfo di = DropInfo.FromLine(this.Name,line);
+                Drops.Add(di);
+            }
+            //宝石爆率
+            if (!baoshi)
+            {
+                if ( HP >= 1000 && HP < 2000)
+                {
+                    string line = HP + "/" + 80000 + " G_宝石1";
+                    DropInfo di = DropInfo.FromLine(this.Name,line);
+                    Drops.Add(di);
+                }
+                if (HP >= 2000 && HP < 5000)
+                {
+                    string line = HP + "/" + 80000 + " G_宝石1|G_宝石2";
+                    DropInfo di = DropInfo.FromLine(this.Name,line);
+                    Drops.Add(di);
+                }
+                if (HP >= 5000 && HP < 10000)
+                {
+                    string line = HP + "/" + 80000 + " G_宝石1|G_宝石2|G_宝石3";
+                    DropInfo di = DropInfo.FromLine(this.Name,line);
+                    Drops.Add(di);
+                }
+                if (HP >= 10000)
+                {
+                    string line = HP + "/" + 80000 + " G_宝石2|G_宝石3";
+                    DropInfo di = DropInfo.FromLine(this.Name,line);
+                    Drops.Add(di);
+                }
+            }
+            
+        }
+
+        
 
         public static void FromText(string text)
         {
@@ -368,9 +451,11 @@ namespace Server.MirDatabase
     //1/1 (HP)DrugMedium Q
     //优化规则 1/1 (HP)DrugMedium|(HP)DrugMedium|(HP)DrugMedium|(HP)DrugMedium 3 Q
     //支持物品分组，规则：1/1 g_物品组1|g_物品组2|(g_物品组3|g_物品组4 3 Q
+    //数量支持4-5这种最少爆多少个，最多爆多少个的配置
     public class DropInfo
     {
         public string Percentage;//这个是配置中的百分比
+        public string dropLine;//这是原始的配置
         public double Chance;//几率，改成double,好计算一点哦。
         public uint Gold;//黄金
 
@@ -380,10 +465,12 @@ namespace Server.MirDatabase
         //物品列表
         public List<ItemInfo> ItemList = new List<ItemInfo>();
         private uint PriceCount;//总价格,针对一组爆率里有多个物品的，根据价格决定爆率，价格越低的，出得越多
+        //最少爆多少个
+        public int MinCount = 1;
         //最多爆多少个
-        public int MaxCount=1;
+        public int MaxCount = 1;
 
-        public static DropInfo FromLine(string s)
+        public static DropInfo FromLine(string monname,string s)
         {
             string[] parts = s.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 
@@ -394,6 +481,7 @@ namespace Server.MirDatabase
             {
                 return null;
             }
+            info.dropLine = s;
             info.Percentage = parts[0];
             string[] Chances = parts[0].Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
             if(Chances==null || Chances.Length != 2)
@@ -441,6 +529,7 @@ namespace Server.MirDatabase
                         ItemInfo _info = ItemInfo.getItem(itname);
                         if (_info == null)
                         {
+                            SMain.Enqueue(string.Format("Could not load Drop FOR ITEMNAME : {0},mob:{1}", itname, monname));
                             continue;
                         }
                         info.ItemList.Add(_info);
@@ -453,7 +542,17 @@ namespace Server.MirDatabase
                 //总数解析
                 if (parts.Length > 2)
                 {
-                    if (!int.TryParse(parts[2], out info.MaxCount) || info.MaxCount <= 0) return null;
+                    if (parts[2].IndexOf("-") != -1)
+                    {
+                        string[] counts = parts[2].Split('-');
+                        int.TryParse(counts[0], out info.MinCount);
+                        int.TryParse(counts[1], out info.MaxCount);
+                        if (info.MinCount <= 0 || info.MaxCount <= 0) return null;
+                    }
+                    else
+                    {
+                        if (!int.TryParse(parts[2], out info.MaxCount) || info.MaxCount <= 0) return null;
+                    }
                 }
                 //任务解析
                 if (parts.Length > 3)
@@ -464,13 +563,13 @@ namespace Server.MirDatabase
                 //总价格解析,价格默认在1000-1000万之间，1000万除价格，得到爆率的价格，这样价格越高，占比就会越低
                 foreach(ItemInfo _info in info.ItemList)
                 {
-                    if (_info.Price < 1000)
+                    if (_info.DropWeight < 1000)
                     {
                         info.PriceCount += 10000000 / 1000;
                     }
                     else
                     {
-                        info.PriceCount += 10000000 / _info.Price;
+                        info.PriceCount += 10000000 / _info.DropWeight;
                     }
                 }
             }
@@ -520,7 +619,7 @@ namespace Server.MirDatabase
             //先计算掉落多少个
             if (MaxCount > 1)
             {
-                DropCount = RandomUtils.Next(MaxCount) + 1;
+                DropCount = RandomUtils.Next(MinCount,MaxCount+1);
             }
             for (int i=0;i< DropCount; i++)
             {
@@ -545,13 +644,13 @@ namespace Server.MirDatabase
             uint price1 = 0, price2 = 0;
             foreach (ItemInfo _info in ItemList)
             {
-                if (_info.Price < 1000)
+                if (_info.DropWeight < 1000)
                 {
                     price2 += 10000000 / 1000;
                 }
                 else
                 {
-                    price2 += 10000000 / _info.Price;
+                    price2 += 10000000 / _info.DropWeight;
                 }
                 if (macp >= price1 && macp < price2)
                 {

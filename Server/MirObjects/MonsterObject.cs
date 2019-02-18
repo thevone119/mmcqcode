@@ -300,9 +300,25 @@ namespace Server.MirObjects
         public uint HP, MaxHP;
         public ushort MoveSpeed;
 
+        //怪物的经验，经验这里太乱了，先根据血量,防御，攻击等计算经验
+        //血量在1-1.5倍之间，在100-1万之间
+        //
         public virtual uint Experience 
         { 
-            get { return Info.Experience; } 
+            get {
+                //根据怪物的血量，敏捷，防御，攻击等属性计算怪物的最终经验值
+                uint cc = (uint)(Math.Min(Math.Max(0,Info.Agility - 10),20) * 10 + Math.Max(Info.MaxAC-5,0) * 5 + Math.Max(Info.MaxMAC-5,0) * 5 + Math.Max(Info.MaxDC,Info.MaxMC) * 5);
+                if(cc> Info.HP*2)
+                {
+                    cc = Info.HP * 2;
+                }
+                cc = cc + Info.HP;
+                if (cc > 10000)
+                {
+                    return cc * 3/2;
+                }
+                return (uint)(cc / 10000.0 * 0.5 * cc) + cc;
+            } 
         }
         public int DeadDelay
         {
@@ -329,7 +345,7 @@ namespace Server.MirObjects
         public byte PetLevel;
         public uint PetExperience;
         public byte MaxPetLevel;
-        public long TameTime;
+        public long TameTime;//怪物的叛变时间,目前的BB不会叛变？
 
         public int RoutePoint;
         public bool Waiting;
@@ -702,7 +718,10 @@ namespace Server.MirObjects
 
                 PlayerObject playerObj = (PlayerObject)EXPOwner;
                 playerObj.CheckGroupQuestKill(Info);
+                playerObj.killMon(this);
             }
+
+         
 
             if (Respawn != null)
                 Respawn.Count--;
@@ -1631,6 +1650,7 @@ namespace Server.MirObjects
 
             return true;
         }
+        //改写下这里，支持多种攻击手段
         protected virtual void Attack()
         {
             if (BindingShotCenter) ReleaseBindingShot();
@@ -2056,6 +2076,7 @@ namespace Server.MirObjects
                 BroadcastDamageIndicator(DamageType.Miss);
                 return 0;
             }
+       
             //暴击
             if ((attacker.CriticalRate * Settings.CriticalRateWeight) > RandomUtils.Next(100))
             {
@@ -2165,7 +2186,7 @@ namespace Server.MirObjects
             ChangeHP(armour - damage);
             return damage - armour;
         }
-        //攻击怪物
+        //怪物被攻击
         public override int Attacked(MonsterObject attacker, int damage, DefenceType type = DefenceType.ACAgility)
         {
             if (Target == null && attacker.IsAttackTarget(this))

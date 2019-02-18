@@ -54,10 +54,10 @@ namespace Server.MirObjects
         public GuildObject()
         {
         }
-        public GuildObject(PlayerObject owner, string name)
+        public  GuildObject(PlayerObject owner, string name)
         {
             Name = name;
-            Rank Owner = new Rank() { Name = "Leader", Options = (RankOptions)255 , Index = 0};
+            Rank Owner = new Rank() { Name = "领袖", Options = (RankOptions)255 , Index = 0};
             GuildMember Leader = new GuildMember() { name = owner.Info.Name, Player = owner, Id = owner.Info.Index, LastLogin = Envir.Now, Online = true};
             Owner.Members.Add(Leader);
             Ranks.Add(Owner);
@@ -102,7 +102,7 @@ namespace Server.MirObjects
                 obj.StoredItems = JsonConvert.DeserializeObject<GuildStorageItem[]>(read.GetString(read.GetOrdinal("StoredItems")));
                 for (int i = 0; i < obj.StoredItems.Length; i++)
                 {
-                    if (obj.StoredItems != null&& obj.StoredItems[i].Item!=null)
+                    if (obj.StoredItems != null&& obj.StoredItems[i]!=null && obj.StoredItems[i].Item!=null)
                     {
                         obj.StoredItems[i].Item.BindItem();
                     }
@@ -144,6 +144,11 @@ namespace Server.MirObjects
             lp.Add(new SQLiteParameter("BuffList", JsonConvert.SerializeObject(BuffList)));
             lp.Add(new SQLiteParameter("Notice", JsonConvert.SerializeObject(Notice)));
 
+
+            
+            lp.Add(new SQLiteParameter("MemberCap", MemberCap));
+            lp.Add(new SQLiteParameter("MaxExperience", MaxExperience));
+            
             lp.Add(new SQLiteParameter("FlagImage", FlagImage));
             lp.Add(new SQLiteParameter("FlagColour", FlagColour.ToArgb()));
 
@@ -283,7 +288,7 @@ namespace Server.MirObjects
             if (Character == null) return false;
             if ((RankIndex == 0) && (Character.Level < Settings.Guild_RequiredLevel))
             {
-                Self.ReceiveChat(String.Format("A guild leader needs to be at least level {0}", Settings.Guild_RequiredLevel), ChatType.System);
+                Self.ReceiveChat(String.Format("一个公会领袖至少需要有{0} 级", Settings.Guild_RequiredLevel), ChatType.System);
                 return false;
             }
 
@@ -292,7 +297,7 @@ namespace Server.MirObjects
             {
                 if (MemberRank.Members.Count <= 2)
                 {
-                    Self.ReceiveChat("A guild needs at least 2 leaders.", ChatType.System);
+                    Self.ReceiveChat("一个公会至少需要两个领袖.", ChatType.System);
                     return false;
                 }
                 for (int i = 0; i < MemberRank.Members.Count; i++)
@@ -300,7 +305,7 @@ namespace Server.MirObjects
                     if ((MemberRank.Members[i].Player != null) && (MemberRank.Members[i] != Member))
                         goto AllOk;
                 }
-                Self.ReceiveChat("You need at least 1 leader online.", ChatType.System);
+                Self.ReceiveChat("你至少需要一个在线的公会领袖.", ChatType.System);
                 return false;
             }
 
@@ -336,11 +341,11 @@ namespace Server.MirObjects
         {
             if (Ranks.Count >= byte.MaxValue)
             {
-                Self.ReceiveChat("You cannot have anymore ranks.", ChatType.System);
+                Self.ReceiveChat("你不能再拥有职位了.", ChatType.System);
                 return false;
             }
             int NewIndex = Ranks.Count > 1? Ranks.Count -1: 1;
-            Rank NewRank = new Rank(){Index = NewIndex, Name = String.Format("Rank-{0}",NewIndex), Options = (RankOptions)0};
+            Rank NewRank = new Rank(){Index = NewIndex, Name = String.Format("职位-{0}",NewIndex), Options = (RankOptions)0};
             Ranks.Insert(NewIndex, NewRank);
             Ranks[Ranks.Count - 1].Index = Ranks.Count - 1;
             List<Rank> NewRankList = new List<Rank>();
@@ -354,12 +359,12 @@ namespace Server.MirObjects
         {
             if ((RankIndex >= Ranks.Count) || (Option > 7))
             {
-                Self.ReceiveChat("Rank not found!", ChatType.System);
+                Self.ReceiveChat("职位不存在!", ChatType.System);
                 return false;
             }
             if (Self.MyGuildRank.Index >= RankIndex)
             {
-                Self.ReceiveChat("You cannot change the options of your own rank!", ChatType.System);
+                Self.ReceiveChat("你不能改变自己职位的选项!", ChatType.System);
                 return false;
             }
             if ((Enabled != "true") && (Enabled != "false"))
@@ -389,7 +394,7 @@ namespace Server.MirObjects
 
             if (SelfRankIndex > RankIndex)
             {
-                Self.ReceiveChat("Your rank is not adequate.", ChatType.System);
+                Self.ReceiveChat("你的职位不够.", ChatType.System);
                 return false;
             }
             if (RankIndex >= Ranks.Count)
@@ -433,20 +438,20 @@ namespace Server.MirObjects
             if (Member == null) return false;
             if (((Kicker.MyGuildRank.Index >= MemberRank.Index) && (Kicker.MyGuildRank.Index != 0)) && (Kicker.Info.Name != membername))
             {
-                Kicker.ReceiveChat("Your rank is not adequate.", ChatType.System);
+                Kicker.ReceiveChat("你的职位不够.", ChatType.System);
                 return false;
             }
             if (MemberRank.Index == 0)
             {
                 if (MemberRank.Members.Count < 2)
                 {
-                    Kicker.ReceiveChat("You cannot leave the guild when you're leader.", ChatType.System);
+                    Kicker.ReceiveChat("当你是公会领袖时，你不能离开公会。.", ChatType.System);
                     return false;
                 }
                 for (int i = 0; i < MemberRank.Members.Count; i++)
                     if ((MemberRank.Members[i].Online) && (MemberRank.Members[i] != Member))
                         goto AllOk;
-                Kicker.ReceiveChat("You need at least 1 leader online.", ChatType.System);
+                Kicker.ReceiveChat("你至少需要一个在线公会领袖.", ChatType.System);
                 return false;
             }
             AllOk:
@@ -480,7 +485,7 @@ namespace Server.MirObjects
                 formermember.Info.GuildIndex = -1;
                 formermember.MyGuild = null;
                 formermember.MyGuildRank = null;
-                formermember.ReceiveChat(kickself ? "You have left your guild." : "You have been removed from your guild.", ChatType.Guild);
+                formermember.ReceiveChat(kickself ? "你已经离开你的公会了." : "你已经被从你的公会除名了.", ChatType.Guild);
                 formermember.RefreshStats();
                 formermember.Enqueue(new ServerPackets.GuildStatus() { GuildName = "", GuildRankName = "", MyOptions = (RankOptions)0 });
                 formermember.BroadcastInfo();

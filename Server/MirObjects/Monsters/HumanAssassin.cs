@@ -9,6 +9,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //刺客的分身，烈火身
     public class HumanAssassin : MonsterObject
     {
         public byte AttackRange = 1;
@@ -19,7 +20,7 @@ namespace Server.MirObjects.Monsters
         protected internal HumanAssassin(MonsterInfo info)
             : base(info)
         {
-            ExplosionTime = Envir.Time + 1000 * 10;
+            ExplosionTime = Envir.Time + 1000 * 12;
             Summoned = true;
         }
 
@@ -246,7 +247,7 @@ namespace Server.MirObjects.Monsters
 
         protected override void Attack()
         {
-            if (AttackDamage >= 500) Die();
+            if (AttackDamage >= 500+ PetLevel*100) Die();
 
             ShockTime = 0;
 

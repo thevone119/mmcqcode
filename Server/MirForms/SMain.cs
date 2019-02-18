@@ -21,6 +21,8 @@ namespace Server
         private static readonly ConcurrentQueue<string> DebugLog = new ConcurrentQueue<string>();
         private static readonly ConcurrentQueue<string> ChatLog = new ConcurrentQueue<string>();
 
+        private static long lastBackUpTime = 0;//最后数据备份时间
+
         public SMain()
         {
                 InitializeComponent();
@@ -69,7 +71,7 @@ namespace Server
         {
             try
             {
-                Text = string.Format("Total: {0}W, Real: {1}W,RunTime:{2}分钟", Envir.LastCount / 10000, Envir.LastRealCount/10000, Envir.Stopwatch.ElapsedMilliseconds/1000/60);
+                Text = string.Format("{0}W,{1}W,{2}分钟,{3}", Envir.LastCount / 10000, Envir.LastRealCount/10000, Envir.Stopwatch.ElapsedMilliseconds/1000/60, System.Environment.CurrentDirectory);
                 PlayersLabel.Text = string.Format("Players: {0}", Envir.Players.Count);
                 MonsterLabel.Text = string.Format("Monsters: {0}", Envir.MonsterCount);
                 ConnectionsLabel.Text = string.Format("Connections: {0}", Envir.Connections.Count);
@@ -132,6 +134,37 @@ namespace Server
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
+            }
+            //增加数据备份功能,5分钟备份一次
+            try
+            {
+                lastBackUpTime++;
+                if(lastBackUpTime > 60*5)
+                {
+                    lastBackUpTime = 0;
+                    //File.Copy(AppDomain.CurrentDomain.BaseDirectory + @"mir_config.db", AppDomain.CurrentDomain.BaseDirectory + @"BackUp/mir_config.db_" + DateTime.Now.ToString("yyyyMMddHH"));
+                    File.Copy(AppDomain.CurrentDomain.BaseDirectory + @"mir_run.db", AppDomain.CurrentDomain.BaseDirectory + @"BackUp/mir_run.db_" + DateTime.Now.ToString("yyyyMMddHH"),true);
+                    //清理超过7天的备份文件
+                    string[] fileNames = Directory.GetFiles(@".\BackUp", "*.*", SearchOption.TopDirectoryOnly);
+                    string fileName;
+                    for (int i = 0; i < fileNames.Length; i++)
+                    {
+                        fileName = fileNames[i];
+                        try
+                        {
+                            if (File.GetLastWriteTime(fileName) < DateTime.Now.AddDays(-7))
+                                File.Delete(fileNames[i]);
+                        }
+                        catch (Exception ex2)
+                        {
+                            Enqueue(ex2);
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Enqueue(ex);
             }
         }
         //刷新在线用户视图

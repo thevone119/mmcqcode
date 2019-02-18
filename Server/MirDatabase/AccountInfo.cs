@@ -49,7 +49,7 @@ namespace Server.MirDatabase
         public UserItem[] Storage = new UserItem[80];
         public bool HasExpandedStorage;
         public DateTime ExpandedStorageExpiryDate;
-        public uint Gold;//金币,金币是账号上的金币，多角色共享
+        public uint Gold=1000;//金币,金币是账号上的金币，多角色共享，开始金币，1000
         public uint Credit;//积分，信用,也可称作元宝
 
         [JsonIgnore]

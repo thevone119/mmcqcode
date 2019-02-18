@@ -6,11 +6,12 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //地狱将军
     public class FlameQueen : MonsterObject
     {
-        public long FearTime;
+        public long FearTime;//恐惧
         public byte AttackRange = 7;
-        private long MassAttackTime;
+        private long MassAttackTime;//大屠杀时间
 
         protected internal FlameQueen(MonsterInfo info)
             : base(info)
@@ -31,8 +32,9 @@ namespace Server.MirObjects.Monsters
             }
 
             Direction = Functions.DirectionFromPoint(CurrentLocation, Target.CurrentLocation);
-
-            if((HP * 100 / MaxHP) < 20 && MassAttackTime < Envir.Time)
+            int damage = GetAttackPower(MinDC, MaxDC);
+            //血量低于20%，几率性进行范围攻击,2-6秒发怒一次
+            if ((HP * 100 / MaxHP) < 20 && MassAttackTime < Envir.Time)
             {
                 ShockTime = 0;
                 ActionTime = Envir.Time + 500;
@@ -44,13 +46,11 @@ namespace Server.MirObjects.Monsters
 
                 if (targets.Count == 0) return;
 
-                int damage = GetAttackPower(MinDC, MaxDC);
-
                 for (int i = 0; i < targets.Count; i++)
                 {
                     int delay = Functions.MaxDistance(CurrentLocation, targets[i].CurrentLocation) * 50 + 750; //50 MS per Step
 
-                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.ACAgility);
+                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage * 4 / 3, DefenceType.ACAgility);
                     ActionList.Add(action);
                 }
 
@@ -64,12 +64,16 @@ namespace Server.MirObjects.Monsters
                 && RandomUtils.Next(3) == 0)
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
+                DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, Target, damage*4/3, DefenceType.ACAgility);
+                ActionList.Add(action);
             }
             else
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0 });
+                DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, Target, damage, DefenceType.ACAgility);
+                ActionList.Add(action);
             }
-
+            
             ShockTime = 0;
             ActionTime = Envir.Time + 500;
             AttackTime = Envir.Time + (AttackSpeed);

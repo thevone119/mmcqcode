@@ -37,6 +37,10 @@ namespace Server.MirObjects
             ReplaceWedRingKey = "[@REPLACEWEDDINGRING]",//打造结婚戒指
             BuyBackKey = "[@BUYBACK]",//回购
             SecondBuyKey = "[@SECONDBUY]",//二手
+            ItemCollectKey0 = "[@ITEMCOLLECT0]",//物品收集(装备熔炼,装备熔炼，提升品质，提升灵性)
+            ItemCollectKey1 = "[@ITEMCOLLECT1]",//物品收集(装备合成，宝石合成,2合1，3合1等）
+            ItemCollectKey2 = "[@ITEMCOLLECT2]",//物品收集()
+            ItemCollectKey3 = "[@ITEMCOLLECT3]",//物品收集
             StorageKey = "[@STORAGE]",//存储物品
             ConsignKey = "[@CONSIGN]",//寄售
             MarketKey = "[@MARKET]",//市场
@@ -113,7 +117,7 @@ namespace Server.MirObjects
             }
 
             LoadInfo();
-            LoadGoods();
+            //LoadGoods();
         }
         //加载配置
         public void LoadInfo(bool clear = false)
@@ -171,6 +175,8 @@ namespace Server.MirObjects
                 SMain.Envir.CustomCommands.Clear();
             }
         }
+        //作废掉，不保存这个
+        //这个是不是
         public void LoadGoods()
         {
             string path = Settings.GoodsPath + Info.Index.ToString() + ".msd";
@@ -910,6 +916,46 @@ namespace Server.MirObjects
 
                     player.Enqueue(new S.NPCGoods { List = (from x in CraftGoods where x.CanCraft(player) select x.Item).ToList(), Rate = PriceRate(player), Type = PanelType.Craft });
                     break;
+                case ItemCollectKey0:
+                    for (int i = 0; i < player.Info.ItemCollect.Length; i++)
+                    {
+                        if (player.Info.ItemCollect[i] != null)
+                        {
+                            player.ItemCollectCancel();
+                        }
+                    }
+                    player.Enqueue(new S.NPCItemCollect() { Rate = (Settings.RefineCost), type = 0 });
+                    break;
+                case ItemCollectKey1:
+                    for (int i = 0; i < player.Info.ItemCollect.Length; i++)
+                    {
+                        if (player.Info.ItemCollect[i] != null)
+                        {
+                            player.ItemCollectCancel();
+                        }
+                    }
+                    player.Enqueue(new S.NPCItemCollect() { Rate = (Settings.RefineCost), type = 1 });
+                    break;
+                case ItemCollectKey2:
+                    for (int i = 0; i < player.Info.ItemCollect.Length; i++)
+                    {
+                        if (player.Info.ItemCollect[i] != null)
+                        {
+                            player.ItemCollectCancel();
+                        }
+                    }
+                    player.Enqueue(new S.NPCItemCollect() { Rate = (Settings.RefineCost), type = 2 });
+                    break;
+                case ItemCollectKey3:
+                    for (int i = 0; i < player.Info.ItemCollect.Length; i++)
+                    {
+                        if (player.Info.ItemCollect[i] != null)
+                        {
+                            player.ItemCollectCancel();
+                        }
+                    }
+                    player.Enqueue(new S.NPCItemCollect() { Rate = (Settings.RefineCost), type = 3 });
+                    break;
                 case RefineKey:
                     if (player.Info.CurrentRefine != null)
                     {
@@ -1460,7 +1506,9 @@ namespace Server.MirObjects
                 if (Conq != null) Conq.GoldStorage += (cost - baseCost);
             }
             player.GainItem(item);
+            //删除二手物品
 
+            SecondUserItem.removeItem(goods);
             if (isUsed)
             {
                 UsedGoods.Remove(goods); //If used or buyback will destroy whole stack instead of reducing to remaining quantity
@@ -1478,6 +1526,11 @@ namespace Server.MirObjects
             {
                 BuyBack[player.Name].Remove(goods); //If used or buyback will destroy whole stack instead of reducing to remaining quantity
                 player.Enqueue(new S.NPCGoods { List = BuyBack[player.Name], Rate = PriceRate(player) });
+            }
+            //删除二手物品
+            if (isSecondBuy)
+            {
+                SecondUserItem.removeItem(goods);
             }
         }
         //NPC处卖物品
@@ -1647,7 +1700,8 @@ namespace Server.MirObjects
 
     public enum ActionType
     {
-        Move,
+        Move,//移动到某地图
+        MoveCopy,//移动到副本地图
         InstanceMove,
         GiveGold,
         TakeGold,
@@ -1743,8 +1797,8 @@ namespace Server.MirObjects
         CheckRange,
         Check,
         CheckHum,
-        CheckMon,
-        CheckExactMon,
+        CheckMon,//检测怪物
+        CheckExactMon,//检测准确的怪物，具体的怪物
         Random,
         Groupleader,
         GroupCount,

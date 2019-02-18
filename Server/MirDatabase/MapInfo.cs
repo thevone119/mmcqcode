@@ -49,8 +49,8 @@ namespace Server.MirDatabase
         public List<Point> ActiveCoords = new List<Point>();
 
         //实例包裹
-        [JsonIgnore]
-        public InstanceInfo Instance;
+        //[JsonIgnore]
+        //public InstanceInfo Instance;
 
         public MapInfo()
         {
@@ -225,27 +225,29 @@ namespace Server.MirDatabase
             if (!map.Load()) return;
 
             SMain.Envir.MapList.Add(map);
-
+            /**
             if (Instance == null)
             {
                 Instance = new InstanceInfo(this, map);
             }
-
+            **/
             for (int i = 0; i < SafeZones.Count; i++)
                 if (SafeZones[i].StartPoint)
                     SMain.Envir.StartPoints.Add(SafeZones[i]);
         }
-
-        public void CreateInstance()
+        //创建一个新的实例，副本
+        public Map CreateInstance()
         {
-            if (Instance.MapList.Count == 0) return;
+            //if (Instance.MapList.Count == 0) return;
 
             Map map = new Map(this);
-            if (!map.Load()) return;
-
+            if (!map.Load())
+            {
+                return null;
+            }
             SMain.Envir.MapList.Add(map);
-
-            Instance.AddMap(map);
+            return map;
+            //Instance.AddMap(map);
         }
 
         public void CreateSafeZone()
@@ -387,7 +389,7 @@ namespace Server.MirDatabase
     //这个是副本么？
     public class InstanceInfo
     {
-        //Constants
+        //Constants ，常量
         public int PlayerCap = 2;
         public int MaxInstanceCount = 10;
 
@@ -400,9 +402,10 @@ namespace Server.MirDatabase
          Create new instance from here if all current maps are full
          Destroy maps when instance is empty - process loop in map or here?
          Change NPC INSTANCEMOVE to move and create next available instance
-
+            如果所有当前映射都已满，则从此处创建新实例
+            当实例为空时销毁映射-在映射中还是在此处循环？
+            将npc instance move更改为move并创建下一个可用实例
         */
-
         public InstanceInfo(MapInfo mapInfo, Map map)
         {
             MapInfo = mapInfo;

@@ -6,6 +6,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //鬼魅蛇
     public class CharmedSnake : MonsterObject
     {
         public bool Summoned;
@@ -188,7 +189,7 @@ namespace Server.MirObjects.Monsters
             if (damage == 0) return;
 
             //if (Target.Attacked(this, damage, DefenceType.MAC) <= 0) return;
-            Target.Attacked(this, damage, DefenceType.MAC);
+            Target.Attacked(this, damage, DefenceType.Agility);
 
             if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist)
             {
@@ -227,7 +228,7 @@ namespace Server.MirObjects.Monsters
                             case ObjectType.Player:
                                 //Only targets
                                 if (!target.IsAttackTarget(this) || target.Dead) break;
-                                target.Attacked(this, 10 * PetLevel, DefenceType.MACAgility);
+                                target.Attacked(this, 10 * PetLevel, DefenceType.Agility);
                                 break;
                         }
                     }

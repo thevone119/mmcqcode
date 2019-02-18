@@ -1819,5 +1819,30 @@ namespace Server
         {
 
         }
+
+        private void but_clear_Click(object sender, EventArgs e)
+        {
+            //
+            Dictionary<string, string> cfdic = new Dictionary<string, string>();
+            for (int i = 0; i < Envir.MapInfoList.Count; i++)
+            {
+                string fn = Envir.MapInfoList[i].FileName.ToUpper() + ".MAP";
+                if (!cfdic.ContainsKey(fn))
+                {
+                    cfdic.Add(fn, "");
+                }
+            }
+
+            string[] files = Directory.GetFiles(Settings.MapPath, "*.*", SearchOption.AllDirectories);
+            foreach (string f in files)
+            {
+                FileInfo fi = new FileInfo(f);
+                if (!cfdic.ContainsKey(fi.Name.ToUpper()))
+                {
+                    fi.Delete();
+                }
+            }
+
+        }
     }
 }

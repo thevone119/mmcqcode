@@ -333,7 +333,7 @@ namespace Server.MirDatabase
         {
             return (int)Math.Round((MPower() / 4F) * (Level + 1) + DefPower());
         }
-
+        //蓝耗
         public int MPower()
         {
             if (Info.MPowerBonus > 0)

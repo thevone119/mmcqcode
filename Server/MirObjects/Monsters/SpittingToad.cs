@@ -6,6 +6,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //蛤蟆
     public class SpittingToad : MonsterObject
     {
         public bool Summoned;
@@ -122,7 +123,7 @@ namespace Server.MirObjects.Monsters
 
             int delay = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation) * 50 + 500; //50 MS per Step
 
-            DelayedAction action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + delay, Target, damage, DefenceType.MAC);
+            DelayedAction action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + delay, Target, damage, DefenceType.Agility);
             ActionList.Add(action);
 
             if (Target.Dead)

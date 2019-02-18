@@ -9,6 +9,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //召唤图腾
     public class SnakeTotem : MonsterObject
     {
         public bool Summoned;

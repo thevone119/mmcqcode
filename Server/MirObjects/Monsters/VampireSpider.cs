@@ -6,6 +6,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //召唤蜘蛛,改为远程攻击
     public class VampireSpider : MonsterObject
     {
         public bool Summoned;
@@ -25,6 +26,7 @@ namespace Server.MirObjects.Monsters
 
         public override void Process()
         {
+            //自动死亡处理，主人离开超过15格，或者超过时间，自动死亡
             if (!Dead && Summoned)
             {
                 if (Master != null)
@@ -108,17 +110,20 @@ namespace Server.MirObjects.Monsters
                 }
             }
         }
-
+        //是否在攻击范围，改为远程攻击
         protected override bool InAttackRange()
         {
             if (Target.CurrentMap != CurrentMap) return false;
             if (Target.CurrentLocation == CurrentLocation) return false;
-
+            //这里改为远程攻击
+            return Functions.InRange(CurrentLocation, Target.CurrentLocation, Info.ViewRange);
+            /**
             int x = Math.Abs(Target.CurrentLocation.X - CurrentLocation.X);
             int y = Math.Abs(Target.CurrentLocation.Y - CurrentLocation.Y);
 
             if (x > 1 || y > 1) return false;
             return (x <= 1 && y <= 1) || (x == y || x % 2 == y % 2);
+            **/
         }
         protected override void Attack()
         {
@@ -146,36 +151,8 @@ namespace Server.MirObjects.Monsters
             if (damage == 0) return;
 
             int value = 0;
-
-            Point target = Functions.PointMove(CurrentLocation, Direction, 1);
-
-            if (target == Target.CurrentLocation)
-            {
-                value = Target.Attacked(this, damage, DefenceType.MACAgility);
-                if (value > 0 && Master != null) MasterVampire(value, Target);
-            }
-            else
-            {
-                if (!CurrentMap.ValidPoint(target)) return;
-
-                //Cell cell = CurrentMap.GetCell(target);
-                if (CurrentMap.Objects == null) return;
-
-                for (int o = 0; o < CurrentMap.Objects[target.X, target.Y].Count; o++)
-                {
-                    MapObject ob = CurrentMap.Objects[target.X, target.Y][o];
-                    if (ob.Race == ObjectType.Monster || ob.Race == ObjectType.Player)
-                    {
-                        if (!ob.IsAttackTarget(this)) continue;
-
-                        value = ob.Attacked(this, damage, DefenceType.MACAgility);
-                        if (value > 0 && Master != null) MasterVampire(value, ob);
-                    }
-                    else continue;
-
-                    break;
-                }
-            }
+            value = Target.Attacked(this, damage, DefenceType.Agility);
+            if (value > 0 && Master != null) MasterVampire(value, Target);
         }
 
         private void MasterVampire(int value, MapObject ob)

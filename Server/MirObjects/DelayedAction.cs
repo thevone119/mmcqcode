@@ -7,9 +7,9 @@ namespace Server.MirObjects
 {
     public enum DelayedType
     {
-        Magic,
-        Damage,
-        RangeDamage,
+        Magic,//魔法
+        Damage,//伤害
+        RangeDamage,//范围伤害
         Spawn,
         Die,
         Recall,

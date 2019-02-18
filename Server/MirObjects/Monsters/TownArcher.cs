@@ -4,7 +4,7 @@ using System;
 using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
-{
+{   //弓箭护卫
     public class TownArcher : MonsterObject
     {
         public long FearTime;

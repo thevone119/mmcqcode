@@ -8,6 +8,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //地狱守门人
     class HellKeeper : MonsterObject
     {
         protected override bool CanMove { get { return false; } }

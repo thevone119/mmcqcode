@@ -655,6 +655,18 @@ namespace Server.MirNetwork
                 case (short)ClientPacketIds.RefreshInventory:
                     RefreshInventory((C.RefreshInventory)p);
                     break;
+                case (short)ClientPacketIds.DepositItemCollect:
+                    DepositItemCollect((C.DepositItemCollect)p);
+                    break;
+                case (short)ClientPacketIds.RetrieveItemCollect:
+                    RetrieveItemCollect((C.RetrieveItemCollect)p);
+                    break;
+                case (short)ClientPacketIds.ItemCollectCancel:
+                    ItemCollectCancel((C.ItemCollectCancel)p);
+                    break;
+                case (short)ClientPacketIds.ConfirmItemCollect:
+                    ConfirmItemCollect((C.ConfirmItemCollect)p);
+                    break;
                 default:
                     SMain.Enqueue(string.Format("Invalid packet received. Index : {0}", p.Index));
                     break;
@@ -851,6 +863,37 @@ namespace Server.MirNetwork
         {
             Player.RefreshInventory();
         }
+
+        //放入收集物品
+        private void DepositItemCollect(C.DepositItemCollect p)
+        {
+            if (Stage != GameStage.Game) return;
+
+            Player.DepositItemCollect(p.From, p.To);
+        }
+        //取回收集物品
+        private void RetrieveItemCollect(C.RetrieveItemCollect p)
+        {
+            if (Stage != GameStage.Game) return;
+
+            Player.RetrieveItemCollect(p.From, p.To);
+        }
+
+        //取消物品收集
+        private void ItemCollectCancel(C.ItemCollectCancel p)
+        {
+            if (Stage != GameStage.Game) return;
+
+            Player.ItemCollectCancel();
+            //Player.RefreshInventory();
+        }
+        private void ConfirmItemCollect(C.ConfirmItemCollect p)
+        {
+            if (Stage != GameStage.Game) return;
+
+            Player.ConfirmItemCollect(p.type);
+        }
+        
 
         private void StartGame(C.StartGame p)
         {

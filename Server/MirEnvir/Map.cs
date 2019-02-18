@@ -1820,13 +1820,13 @@ namespace Server.MirEnvir
                                 }
 
                             if (!cast) continue;
-
+                            //TickSpeed = 440,改下这里，改为4段伤害
                             SpellObject ob = new SpellObject
                                 {
                                     Spell = Spell.Blizzard,
                                     Value = value,
                                     ExpireTime = Envir.Time + 3000,
-                                    TickSpeed = 440,
+                                    TickSpeed = 500,
                                     Caster = player,
                                     CurrentLocation = new Point(x, y),
                                     CastLocation = location,
@@ -1881,13 +1881,13 @@ namespace Server.MirEnvir
                                 }
 
                             if (!cast) continue;
-
+                            //这里修改下，TickSpeed440,改为500，最多4段伤害
                             SpellObject ob = new SpellObject
                             {
                                 Spell = Spell.MeteorStrike,
                                 Value = value,
                                 ExpireTime = Envir.Time + 3000,
-                                TickSpeed = 440,
+                                TickSpeed = 500,
                                 Caster = player,
                                 CurrentLocation = new Point(x, y),
                                 CastLocation = location,
@@ -2097,7 +2097,7 @@ namespace Server.MirEnvir
 
                 #region Plague
 
-                case Spell.Plague:
+                case Spell.Plague://瘟疫，这里要增加瘟疫的一次性伤害
                     value = (int)data[2];
                     location = (Point)data[3];
 
@@ -2158,7 +2158,17 @@ namespace Server.MirEnvir
 
                                                 tempOb.ChangeMP(-tempValue);
                                             }
-
+                                            //这里增加伤害,群体伤害，40%的真实伤害
+                                            int dvalue = value * 4 / 10 + value/15*magic.Level;
+                                            if (dvalue < 10)
+                                            {
+                                                dvalue = 10;
+                                            }
+                                            if (dvalue > 60)
+                                            {
+                                                dvalue = 60;
+                                            }
+                                            target.Attacked(player, dvalue, DefenceType.Agility, false);
                                             train = true;
                                         }
                                         break;
@@ -2576,6 +2586,11 @@ namespace Server.MirEnvir
             Monster = SMain.Envir.GetMonsterInfo(info.MonsterIndex);
             LoadRoutes();
             initRespawnRegion();
+            //这里设置下，最大重生时间不超过3个小时
+            if (RespawnTime > 180)
+            {
+                RespawnTime = 180;
+            }
         }
 
         //初始化刷怪区域

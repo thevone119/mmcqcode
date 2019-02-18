@@ -5,6 +5,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //寒冰守护/神炎火守护神/紫电守护神
     public class HellKnight : MonsterObject
     {
         public bool Summoned;

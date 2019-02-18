@@ -88,6 +88,7 @@ namespace Server
             this.StartPointCheckBox = new System.Windows.Forms.CheckBox();
             this.SafeZoneInfoListBox = new System.Windows.Forms.ListBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.Copyids = new System.Windows.Forms.Button();
             this.RPasteButton = new System.Windows.Forms.Button();
             this.RCopyButton = new System.Windows.Forms.Button();
             this.RemoveRButton = new System.Windows.Forms.Button();
@@ -157,7 +158,7 @@ namespace Server
             this.ExportMongenButton = new System.Windows.Forms.Button();
             this.VisualizerButton = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.Copyids = new System.Windows.Forms.Button();
+            this.but_clear = new System.Windows.Forms.Button();
             this.MapTabs.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage6.SuspendLayout();
@@ -761,6 +762,16 @@ namespace Server
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Respawns";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // Copyids
+            // 
+            this.Copyids.Location = new System.Drawing.Point(353, 6);
+            this.Copyids.Name = "Copyids";
+            this.Copyids.Size = new System.Drawing.Size(75, 21);
+            this.Copyids.TabIndex = 23;
+            this.Copyids.Text = "Copyids";
+            this.Copyids.UseVisualStyleBackColor = true;
+            this.Copyids.Click += new System.EventHandler(this.Copyids_Click);
             // 
             // RPasteButton
             // 
@@ -1480,21 +1491,22 @@ namespace Server
             this.VisualizerButton.UseVisualStyleBackColor = true;
             this.VisualizerButton.Click += new System.EventHandler(this.VisualizerButton_Click);
             // 
-            // Copyids
+            // but_clear
             // 
-            this.Copyids.Location = new System.Drawing.Point(353, 6);
-            this.Copyids.Name = "Copyids";
-            this.Copyids.Size = new System.Drawing.Size(75, 21);
-            this.Copyids.TabIndex = 23;
-            this.Copyids.Text = "Copyids";
-            this.Copyids.UseVisualStyleBackColor = true;
-            this.Copyids.Click += new System.EventHandler(this.Copyids_Click);
+            this.but_clear.Location = new System.Drawing.Point(471, 31);
+            this.but_clear.Name = "but_clear";
+            this.but_clear.Size = new System.Drawing.Size(87, 21);
+            this.but_clear.TabIndex = 32;
+            this.but_clear.Text = "clear.map";
+            this.but_clear.UseVisualStyleBackColor = true;
+            this.but_clear.Click += new System.EventHandler(this.but_clear_Click);
             // 
             // MapInfoForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(759, 310);
+            this.Controls.Add(this.but_clear);
             this.Controls.Add(this.VisualizerButton);
             this.Controls.Add(this.ExportMongenButton);
             this.Controls.Add(this.ImportMongenButton);
@@ -1656,5 +1668,6 @@ namespace Server
         private ComboBox ConquestComboBox;
         private Label label25;
         private Button Copyids;
+        private Button but_clear;
     }
 }

@@ -78,7 +78,8 @@ namespace Server.MirEnvir
         //线程
         private Thread _thread;
         private TcpListener _listener;
-        private bool StatusPortEnabled = true;
+        //这几个是干嘛的，状态端口？监听状态的么，先关闭试下
+        private bool StatusPortEnabled = false;
         public List<MirStatusConnection> StatusConnections = new List<MirStatusConnection>();
         private TcpListener _StatusPort;
         private int _sessionID;
@@ -157,6 +158,8 @@ namespace Server.MirEnvir
         public List<Rank_Character_Info> RankTop = new List<Rank_Character_Info>();
         public List<Rank_Character_Info>[] RankClass = new List<Rank_Character_Info>[5];
         //public int[] RankBottomLevel = new int[6];
+        //最高等级
+        public int MaxLevel = 0;
 
         //静态加载一些规则，正则
         static Envir()
@@ -464,7 +467,7 @@ namespace Server.MirEnvir
                         {
                             saveTime = Time + Settings.SaveDelay * Settings.Minute;
                             SaveAccounts();
-                            SaveGuilds();
+                            //SaveGuilds();
                             SaveGoods();
                             SaveConquests();
                         }
@@ -473,11 +476,11 @@ namespace Server.MirEnvir
                         if (Time >= userTime)
                         {
                             userTime = Time + Settings.Minute * 10;
-                            //小于10个人不发送
-                            if (Players.Count > 10)
+                            //小于20个人不发送
+                            if (Players.Count > 20)
                             {
                                 userTime = Time + Settings.Minute * 5;
-                                Broadcast(new S.Chat{Message = string.Format("当前在线人数: {0}", Players.Count+10),Type = ChatType.Hint});
+                                Broadcast(new S.Chat{Message = string.Format("当前在线人数: {0}", Players.Count + Players.Count/2),Type = ChatType.Hint});
                             }
                         }
 
@@ -519,7 +522,7 @@ namespace Server.MirEnvir
                 StopNetwork();
                 StopEnvir();
                 SaveAccounts();
-                SaveGuilds();
+                //SaveGuilds();
                 SaveConquests(true);
 
             }
@@ -805,6 +808,8 @@ namespace Server.MirEnvir
                     mail.SaveDB();
                 }
                 PayOrder.SaveAll();
+                //
+                SaveGuilds();
             }
             catch (Exception ex)
             {
@@ -1021,9 +1026,9 @@ namespace Server.MirEnvir
             lock (LoadLock)
             {
                 //int count = 0;
-
                 GuildList.Clear();
                 GuildList = GuildObject.loadAll();
+                SMain.Enqueue("加载公会信息:"+ GuildList.Count);
             }
         }
 
@@ -1032,6 +1037,10 @@ namespace Server.MirEnvir
         public void LoadRank()
         {
             RankTop = CharacterInfo.getRankTop();
+            if(RankTop!=null && RankTop.Count > 0)
+            {
+                MaxLevel = RankTop[0].level;
+            }
             RankClass = CharacterInfo.getRankClass();
         }
 
@@ -1060,7 +1069,7 @@ namespace Server.MirEnvir
                 {
                     if (lines[j].StartsWith(";") || string.IsNullOrWhiteSpace(lines[j])) continue;
 
-                    DropInfo drop = DropInfo.FromLine(lines[j]);
+                    DropInfo drop = DropInfo.FromLine("",lines[j]);
                     if (drop == null)
                     {
                         SMain.Enqueue(string.Format("Could not load fishing drop: {0}", lines[j]));
@@ -1103,7 +1112,7 @@ namespace Server.MirEnvir
             {
                 if (lines[i].StartsWith(";") || string.IsNullOrWhiteSpace(lines[i])) continue;
 
-                DropInfo drop = DropInfo.FromLine(lines[i]);
+                DropInfo drop = DropInfo.FromLine("",lines[i]);
                 if (drop == null)
                 {
                     SMain.Enqueue(string.Format("Could not load Awakening drop: {0}", lines[i]));
@@ -1142,7 +1151,7 @@ namespace Server.MirEnvir
             {
                 if (lines[i].StartsWith(";") || string.IsNullOrWhiteSpace(lines[i])) continue;
 
-                DropInfo drop = DropInfo.FromLine(lines[i]);
+                DropInfo drop = DropInfo.FromLine("",lines[i]);
                 if (drop == null)
                 {
                     SMain.Enqueue(string.Format("Could not load strongbox drop: {0}", lines[i]));
@@ -1182,7 +1191,7 @@ namespace Server.MirEnvir
             {
                 if (lines[i].StartsWith(";") || string.IsNullOrWhiteSpace(lines[i])) continue;
 
-                DropInfo drop = DropInfo.FromLine(lines[i]);
+                DropInfo drop = DropInfo.FromLine("",lines[i]);
                 if (drop == null)
                 {
                     SMain.Enqueue(string.Format("Could not load blackstone drop: {0}", lines[i]));
@@ -1456,7 +1465,11 @@ namespace Server.MirEnvir
             }
 
             for (int i = 0; i < MonsterInfoList.Count; i++)
+            {
                 MonsterInfoList[i].LoadDrops();
+                MonsterInfoList[i].LoadCommonDrops();
+            }
+                
 
             LoadFishingDrops();
             LoadAwakeningMaterials();
@@ -2114,6 +2127,40 @@ namespace Server.MirEnvir
         {
             return MapList.FirstOrDefault(t => t.Info.Index == index);
         }
+
+
+        //根据地图名称查找地图，创建副本
+        public Map GetMapByNameCopy(string name)
+        {
+            List<Map> list = new List<Map>();
+            foreach (Map m in MapList)
+            {
+                if (String.Equals(m.Info.Mcode, name, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    list.Add(m);
+                }
+            }
+            if (list.Count == 0)
+            {
+                return null;
+            }
+            //创建一个副本
+            if (list.Count == 1)
+            {
+                return list[0].Info.CreateInstance();
+            }
+            //第一个不算副本哈
+            for(int i=1;i< list.Count; i++)
+            {
+                if (list[i].Players.Count == 0)
+                {
+                    return list[i];
+                }
+            }
+            //
+            return list[0].Info.CreateInstance();
+        }
+
 
         //根据地图名称查找地图
         public Map GetMapByNameAndInstance(string name, int instanceValue = 0)

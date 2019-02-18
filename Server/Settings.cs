@@ -39,7 +39,7 @@ namespace Server
         public static string GMPassword = "Gmcc12#$";
         public static bool Multithreaded = false;//是否开启多线程进行处理
         public static int ThreadLimit = 2;//开启的线程数
-        public static int RefreshDelay = 50;//刷新延时
+        public static int RefreshDelay = 40;//刷新延时
     
 
 
@@ -83,13 +83,19 @@ namespace Server
 
         //Optional
         public static bool SafeZoneBorder = true,//安全区是否带边框
-                           SafeZoneHealing = false,
-                           GameMasterEffect = false,
-                           GatherOrbsPerLevel = true,
-                           ExpMobLevelDifference = true;
+                           SafeZoneHealing = true,//安全区治疗
+                           GameMasterEffect = false,//GM的魔法是否看到
+                           GatherOrbsPerLevel = true,//这个是影响游戏技能的
+                           ExpMobLevelDifference = true;//经验根据等级进行减少
+
+        //等级限制，等级补差。
+        public static bool openFatigue = false;//是否开启防疲劳系统
+        public static bool openLevelExpSup = true;//是否开启等级经验补偿
+
+
 
         //Database
-        public static int SaveDelay = 5;
+        public static int SaveDelay = 5;//数据保存时间，多少分钟
         public static short CredxGold = 30;
 
         //Game(游戏设置)
@@ -127,25 +133,25 @@ namespace Server
                              Zuma5 = "祖玛弓箭手3",
                              Zuma6 = "祖玛雕像3",
                              Zuma7 = "祖玛卫士3",
-                             Turtle1 = "RedTurtle",//目前没有这个怪物哦
-                             Turtle2 = "GreenTurtle",
-                             Turtle3 = "BlueTurtle",
-                             Turtle4 = "TowerTurtle",
-                             Turtle5 = "FinialTurtle",
+                             Turtle1 = "红海龟",//169
+                             Turtle2 = "绿海龟",//170
+                             Turtle3 = "蓝海龟",//171
+                             Turtle4 = "玄武龟",//185
+                             Turtle5 = "幽冥龟",//186
                              BoneMonster1 = "骷髅长枪兵",
                              BoneMonster2 = "骷髅刀斧手",
                              BoneMonster3 = "骷髅弓箭手",
                              BoneMonster4 = "骷髅锤兵",
-                             BehemothMonster1 = "Hugger",//这几个怪物也没有
-                             BehemothMonster2 = "PoisonHugger",
-                             BehemothMonster3 = "MutatedHugger",
-                             HellKnight1 = "HellKnight1",//这几个也没有
-                             HellKnight2 = "HellKnight2",
-                             HellKnight3 = "HellKnight3",
-                             HellKnight4 = "HellKnight4",
-                             HellBomb1 = "HellBomb1",
-                             HellBomb2 = "HellBomb2",
-                             HellBomb3 = "HellBomb3",
+                             BehemothMonster1 = "紫电小蜘蛛",//161
+                             BehemothMonster2 = "剧毒小蜘蛛",//160
+                             BehemothMonster3 = "爆炸小蜘蛛",//162
+                             HellKnight1 = "地狱双刃鬼",//这几个也没有
+                             HellKnight2 = "地狱长矛鬼",
+                             HellKnight3 = "地狱魔焰鬼",
+                             HellKnight4 = "地狱巨镰鬼",
+                             HellBomb1 = "地狱锤兵",//这些是地狱中的守护神召唤的帮手
+                             HellBomb2 = "地狱炮兵",
+                             HellBomb3 = "地狱投石手",
                              WhiteSnake = "白灵蛇",
                              AngelName = "精灵",//召唤月灵
                              BombSpiderName = "爆裂蜘蛛",
@@ -165,7 +171,7 @@ namespace Server
         public static int PKTownPositionX = 848,
                           PKTownPositionY = 677;
 
-        public static uint MaxDropGold = 20000;
+        public static uint MaxDropGold = 20000;//最大掉落金币
         public static bool DropGold = true;//金币是否掉落，如果金币不掉落，则直接给到用户的账号哦
 
 
@@ -198,9 +204,9 @@ namespace Server
         public static byte RefineIncrease = 1;//每次增加的点数，增加1点
         public static byte RefineCritChance = 10;//额外的属性增加几率
         public static byte RefineCritIncrease = 2;//额外属性增加多少倍,也就是有可能一次增加2点
-        public static byte RefineWepStatReduce = 6;//武器每次升级成功率减少多少点,每次减少6点，+7的时候，就减少42点的成功率。几乎就不会成功了
+        public static byte RefineWepStatReduce = 7;//武器每次升级成功率减少多少点,每次减少6点，+7的时候，就减少42点的成功率。几乎就不会成功了
         public static byte RefineItemStatReduce = 15;//其他物品,每次升级成功率减少多少点
-        public static int RefineCost = 125;//花费费率125%
+        public static int RefineCost = 300;//花费费率225%
         //这个是练武器要用到的物品名称
         public static string RefineOreName = "黑铁矿石";
 
@@ -236,28 +242,33 @@ namespace Server
         public static List<RandomItemStat> RandomItemStatsList = new List<RandomItemStat>();
         public static List<MineSet> MineSetList = new List<MineSet>();
         
+        //这里的属性，很变态
         //item related settings
-        public static byte MaxMagicResist = 6,
-                    MagicResistWeight = 10,
-                    MaxPoisonResist = 6,
-                    PoisonResistWeight = 10,//中毒几率,权重？
-                    MaxCriticalRate = 18,
+        public static byte MaxMagicResist = 10,//最大的魔法躲避，10点，50%
+                    MagicResistWeight = 20,//最大的魔法命中，与魔法躲避相对应
+                    MaxPoisonResist = 10,//最大中毒躲避，10点，50%
+                    PoisonResistWeight = 20,//中毒几率,权重？
+                    MaxCriticalRate = 5,//最大暴击率，5点 25%
                     CriticalRateWeight = 5,//暴击几率的权重，比如用户当前5点暴击，那么乘这个，就是25%的暴击几率
-                    MaxCriticalDamage = 10,
-                    CriticalDamageWeight = 50,//暴击伤害的权重
-                    MaxFreezing = 6,
-                    FreezingAttackWeight = 10,
-                    MaxPoisonAttack = 6,
+                    MaxCriticalDamage = 10,//最大暴击伤害 10点，每点10%暴击伤害
+                    CriticalDamageWeight = 100,//暴击伤害的权重，比如有5点暴击伤害，那么处于权重*10，那么就是双倍伤害了
+                    MaxFreezing = 6,//最大冰冻伤害,每点10%
+                    FreezingAttackWeight = 10,//权重，20，每点就是5%
+                    MaxPoisonAttack = 6,//毒性伤害，影响施毒术，毒云等，每点10%，每点1点伤害，1秒时长
                     PoisonAttackWeight = 10,
                     MaxHealthRegen = 8,
                     HealthRegenWeight = 10,
                     MaxManaRegen = 8,
-                    ManaRegenWeight = 10,
-                    MaxPoisonRecovery = 6,
-                    MaxLuck = 10;
+                    ManaRegenWeight = 10,//
+                    MaxPoisonRecovery = 6,//最大的毒性恢复
+                    MaxLuck = 10;//最大幸运,人物自身带1点，加到9就最大伤害了
 
-        public static Boolean PvpCanResistMagic = false,
-                              PvpCanResistPoison = false,
+        public static byte MaxQuality = 5,//最大品质
+                           MaxSpiritual = 5,//最大灵性
+                           MaxSamsaracount = 5;//最大轮回次数
+        //是否PK魔法躲避
+        public static Boolean PvpCanResistMagic = true,
+                              PvpCanResistPoison = true,
                               PvpCanFreeze = false;
 
         //Guild related settings
@@ -265,10 +276,13 @@ namespace Server
         public static float Guild_ExpRate = 0.01f;
         public static uint Guild_WarCost = 3000;
         public static long Guild_WarTime = 180;
-
+        //创建行会需要的物品
         public static List<ItemVolume> Guild_CreationCostList = new List<ItemVolume>();
+        //公会升级经验
         public static List<long> Guild_ExperienceList = new List<long>();
+        //公会成员限制
         public static List<int> Guild_MembercapList = new List<int>();
+        //公会buff
         public static List<GuildBuffInfo> Guild_BuffList = new List<GuildBuffInfo>();
 
         public static void LoadVersion()
@@ -292,7 +306,7 @@ namespace Server
             VersionPath = Reader.ReadString("General", "VersionPath", VersionPath);
             CheckVersion = Reader.ReadBoolean("General", "CheckVersion", CheckVersion);
             RelogDelay = Reader.ReadUInt16("General", "RelogDelay", RelogDelay);
-            GMPassword = Reader.ReadString("General", "GMPassword", GMPassword);
+            //GMPassword = Reader.ReadString("General", "GMPassword", GMPassword);
             Multithreaded = Reader.ReadBoolean("General", "Multithreaded", Multithreaded);
             ThreadLimit = Reader.ReadInt32("General", "ThreadLimit", ThreadLimit);
             RefreshDelay = Reader.ReadInt32("General", "RefreshDelay", RefreshDelay);
@@ -405,6 +419,7 @@ namespace Server
             PoisonResistWeight = Reader.ReadByte("Items","PoisonResistWeight",PoisonResistWeight);
             MaxCriticalRate = Reader.ReadByte("Items","MaxCriticalRate",MaxCriticalRate);
             CriticalRateWeight = Reader.ReadByte("Items","CriticalRateWeight",CriticalRateWeight);
+
             MaxCriticalDamage = Reader.ReadByte("Items","MaxCriticalDamage",MaxCriticalDamage);
             CriticalDamageWeight = Math.Max((byte)1,Reader.ReadByte("Items","CriticalDamageWeight",CriticalDamageWeight));
             MaxFreezing = Reader.ReadByte("Items","MaxFreezing",MaxFreezing);
@@ -983,7 +998,7 @@ namespace Server
             if (!File.Exists(ConfigPath + @".\GuildSettings.ini"))
             {
                 Guild_CreationCostList.Add(new ItemVolume(){Amount = 1000000});
-                Guild_CreationCostList.Add(new ItemVolume(){ItemName = "WoomaHorn",Amount = 1});
+                Guild_CreationCostList.Add(new ItemVolume(){ItemName = "沃玛号角",Amount = 1});
                 return;
             }
             InIReader reader = new InIReader(ConfigPath + @".\GuildSettings.ini");
