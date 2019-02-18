@@ -66,6 +66,7 @@ namespace Client
 
         //Graphics
         public static bool FullScreen = true, TopMost = true;
+        //public static string FontName = "Tahoma"; //"MS Sans Serif"
         public static string FontName = "Tahoma"; //"MS Sans Serif"
         public static bool FPSCap = true;
         public static int MaxFPS = 100;
@@ -125,7 +126,7 @@ namespace Client
 
         public static bool
             SkillMode = false,
-            SkillBar = false,//是否显示技能条？左上角的么
+            SkillBar = true,//是否显示技能条？左上角的么
             //SkillSet = true,
             Effect = true,
             LevelEffect = true,
@@ -169,15 +170,20 @@ namespace Client
         //是否开启更新功能
         public static bool P_Patcher = true;
         //更新的路径
-        public static string P_Host = @"http://mirfiles.co.uk/mir2/cmir/patch/"; //ftp://212.67.209.184
+        //public static string P_Host = @"http://mirfiles.co.uk/mir2/cmir/patch/"; //ftp://212.67.209.184
+        public static string P_Host = @"ftp://47.106.70.111";
         public static string P_PatchFileName = @"PList.gz";
-        public static bool P_NeedLogin = false;//是否需要登录
-        public static string P_Login = string.Empty;//登录账户
-        public static string P_Password = string.Empty;//登录密码
+        public static bool P_NeedLogin = true;//是否需要登录
+        public static string P_Login = "mirread";//登录账户
+        public static string P_Password = "mir12#$";//登录密码
         //public static string P_ServerName = string.Empty;//服务器的名称，后面不放在这里，通过选区读取
-        public static string P_BrowserAddress = "https://launcher.mironline.co.uk/web/";
+        //public static string P_BrowserAddress = "https://launcher.mironline.co.uk/web/";
+        public static string P_BrowserAddress = "http://47.106.70.111:8090/mir/client_inc.html";
         public static string P_Client = Application.StartupPath + "\\";
         public static bool P_AutoStart = false;//更新完成后是否自动开始
+        //增加客户端的名称，用户自动更新，用其他EXE，更新当前客户端的EXE
+        public static string P_ClientName = System.AppDomain.CurrentDomain.FriendlyName;
+
 
         public static void Load()
         {
@@ -265,6 +271,11 @@ namespace Client
  
             P_BrowserAddress = Reader.ReadString("Launcher", "Browser", P_BrowserAddress);
 
+            //P_ClientName = Reader.ReadString("Launcher", "ClientName", P_ClientName);
+            
+
+
+
             if (!P_Host.EndsWith("/")) P_Host += "/";
             if (P_Host.StartsWith("www.", StringComparison.OrdinalIgnoreCase)) P_Host = P_Host.Insert(0, "http://");
             if (P_BrowserAddress.StartsWith("www.", StringComparison.OrdinalIgnoreCase)) P_BrowserAddress = P_BrowserAddress.Insert(0, "http://");
@@ -337,6 +348,9 @@ namespace Client
 
             Reader.Write("Launcher", "Browser", P_BrowserAddress);
             Reader.Write("Launcher", "AutoStart", P_AutoStart);
+            Reader.Write("Launcher", "ClientName", P_ClientName);
+ 
+            
         }
 
         public static void LoadTrackedQuests(string Charname)

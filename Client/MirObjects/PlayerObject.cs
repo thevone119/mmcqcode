@@ -1384,8 +1384,14 @@ namespace Client.MirObjects
                                 if (GameScene.Slaying && TargetObject != null)
                                     Spell = Spell.Slaying;
 
-                                if (GameScene.Thrusting && GameScene.Scene.MapControl.HasTarget(Functions.PointMove(CurrentLocation, Direction, 2)))
+                                //MirLog.info("刺杀箭法1"+ GameScene.Thrusting);
+                                //if (GameScene.Thrusting && GameScene.Scene.MapControl.HasTarget(Functions.PointMove(CurrentLocation, Direction, 2)))
+                                if (GameScene.Thrusting) 
+                                {
                                     Spell = Spell.Thrusting;
+                                    //MirLog.info("刺杀箭法2" + GameScene.Thrusting);
+                                }
+                                   
 
                                 if (GameScene.HalfMoon)
                                 {

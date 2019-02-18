@@ -35,44 +35,52 @@ namespace Client.MirSounds
 
         public void Play()
         {
-            if (_mStream == null) return;
+            if (_mStream == null|| _mStream.Length<10) return;
 
             _mStream.Seek(0, SeekOrigin.Begin);
-
-            if (_loop)
+            //声音播放直接捕获异常，声音播放不了，也不出现问题
+            try
             {
-                if (_bufferList.Count == 0)
-                    _bufferList.Add(new SecondaryBuffer(_mStream, new BufferDescription { BufferBytes = (int)_mStream.Length, ControlVolume = true }, SoundManager.Device) { Volume = SoundManager.Vol });
-                else if (_bufferList[0] == null || _bufferList[0].Disposed)
-                    _bufferList[0] = new SecondaryBuffer(_mStream, new BufferDescription { BufferBytes = (int)_mStream.Length, ControlVolume = true }, SoundManager.Device) { Volume = SoundManager.Vol };
-
-                if (!_bufferList[0].Status.Playing)
-                    _bufferList[0].Play(0, BufferPlayFlags.Looping);
-            }
-            else
-            {
-                for (int i = _bufferList.Count - 1; i >= 0; i--)
+                if (_loop)
                 {
-                    if (_bufferList[i] == null || _bufferList[i].Disposed)
-                    {
-                        _bufferList.RemoveAt(i);
-                        continue;
-                    }
+                    if (_bufferList.Count == 0)
+                        _bufferList.Add(new SecondaryBuffer(_mStream, new BufferDescription { BufferBytes = (int)_mStream.Length, ControlVolume = true }, SoundManager.Device) { Volume = SoundManager.Vol });
+                    else if (_bufferList[0] == null || _bufferList[0].Disposed)
+                        _bufferList[0] = new SecondaryBuffer(_mStream, new BufferDescription { BufferBytes = (int)_mStream.Length, ControlVolume = true }, SoundManager.Device) { Volume = SoundManager.Vol };
 
-                    if (!_bufferList[i].Status.Playing)
-                    {
-                        _bufferList[i].Play(0, BufferPlayFlags.Default);
-                        return;
-                    }
+                    if (!_bufferList[0].Status.Playing)
+                        _bufferList[0].Play(0, BufferPlayFlags.Looping);
                 }
+                else
+                {
+                    for (int i = _bufferList.Count - 1; i >= 0; i--)
+                    {
+                        if (_bufferList[i] == null || _bufferList[i].Disposed)
+                        {
+                            _bufferList.RemoveAt(i);
+                            continue;
+                        }
 
-                if (_bufferList.Count >= Settings.SoundOverLap) return;
+                        if (!_bufferList[i].Status.Playing)
+                        {
+                            _bufferList[i].Play(0, BufferPlayFlags.Default);
+                            return;
+                        }
+                    }
 
-                SecondaryBuffer buffer = new SecondaryBuffer(_mStream, new BufferDescription { BufferBytes = (int)_mStream.Length, ControlVolume = true }, SoundManager.Device) { Volume = SoundManager.Vol };
-                buffer.Play(0, BufferPlayFlags.Default);
-                _bufferList.Add(buffer);
+                    if (_bufferList.Count >= Settings.SoundOverLap) return;
+
+                    SecondaryBuffer buffer = new SecondaryBuffer(_mStream, new BufferDescription { BufferBytes = (int)_mStream.Length, ControlVolume = true }, SoundManager.Device) { Volume = SoundManager.Vol };
+                    buffer.Play(0, BufferPlayFlags.Default);
+                    _bufferList.Add(buffer);
+                }
             }
-
+            catch(Exception e)
+            {
+                CMain.SaveError(e.ToString());
+                CMain.SaveError("error:"+fname);
+                
+            }
         }
         public void Stop()
         {

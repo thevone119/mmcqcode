@@ -387,6 +387,7 @@ namespace Client.MirScenes.Dialogs
             GameScene.Scene.NPCDropDialog.Hide();
             GameScene.Scene.NPCAwakeDialog.Hide();
             GameScene.Scene.RefineDialog.Hide();
+            GameScene.Scene.ItemCollectDialog.Hide();
             GameScene.Scene.StorageDialog.Hide();
             GameScene.Scene.TrustMerchantDialog.Hide();
             GameScene.Scene.InventoryDialog.Location = new Point(0, 0);
@@ -400,6 +401,8 @@ namespace Client.MirScenes.Dialogs
             CheckQuestButtonDisplay();
         }
     }
+
+    //食物系统么？
     public sealed class NPCGoodsDialog : MirImageControl
     {
         public int StartIndex;
@@ -737,6 +740,8 @@ namespace Client.MirScenes.Dialogs
             GameScene.Scene.InventoryDialog.Show();
         }
     }
+
+    //NPC放置物品，单个物品窗口
     public sealed class NPCDropDialog : MirImageControl
     {
 
@@ -835,7 +840,7 @@ namespace Client.MirScenes.Dialogs
                         GameScene.Scene.ChatDialog.ReceiveChat("不能卖这个物品.", ChatType.System);
                         return;
                     }
-                    if (GameScene.Gold + TargetItem.Price() / 2 <= uint.MaxValue)
+                    if (GameScene.Gold + TargetItem.SellPrice() / 2 <= uint.MaxValue)
                     {
                         Network.Enqueue(new C.SellItem { UniqueID = TargetItem.UniqueID, Count = TargetItem.Count });
                         TargetItem = null;
@@ -1122,7 +1127,7 @@ namespace Client.MirScenes.Dialogs
                 switch (PType)
                 {
                     case PanelType.Sell:
-                        text += (TargetItem.Price() / 2).ToString();
+                        text += (TargetItem.SellPrice() / 2).ToString();
                         break;
                     case PanelType.Repair:
                         text += (TargetItem.RepairPrice() * GameScene.NPCRate).ToString();
@@ -1171,6 +1176,7 @@ namespace Client.MirScenes.Dialogs
             Visible = true;
         }
     }
+    //觉醒
     public sealed class NPCAwakeDialog : MirImageControl
     {
 
@@ -1788,7 +1794,7 @@ namespace Client.MirScenes.Dialogs
         }
     }
 
-
+    //武器升级窗口
     public sealed class RefineDialog : MirImageControl
     {
         public MirItemCell[] Grid;
@@ -1864,6 +1870,7 @@ namespace Client.MirScenes.Dialogs
         }
 
     }
+    //仓库存储
     public sealed class StorageDialog : MirImageControl
     {
         public MirItemCell[] Grid;
@@ -2078,6 +2085,130 @@ namespace Client.MirScenes.Dialogs
                     grid.Visible = true;
             }
         }
+
+        public MirItemCell GetCell(ulong id)
+        {
+            for (int i = 0; i < Grid.Length; i++)
+            {
+                if (Grid[i].Item == null || Grid[i].Item.UniqueID != id) continue;
+                return Grid[i];
+            }
+            return null;
+        }
+    }
+
+    //物品收集窗口，用于收集客户端的物品，提交到服务器进行物品合成等逻辑处理
+    public sealed class ItemCollectDialog : MirImageControl
+    {
+        public MirItemCell[] Grid;
+        public static UserItem[] ItemCollectSlots = new UserItem[10];
+        public MirButton ConfirmButton, CloseButton;
+        public MirLabel NameLabel;//显示的标题
+        public byte type = 0;
+        public ItemCollectDialog()
+        {
+            Index = 389;
+            Library = Libraries.Prguse;
+            Location = new Point(0, 225);
+            Sort = true;
+
+            NameLabel = new MirLabel
+            {
+                Parent = this,
+                Location = new Point(20, 10),
+                Size = new Size(150, 14),
+                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter,
+                NotControl = true,
+            };
+
+            #region Buttons
+            ConfirmButton = new MirButton
+            {
+                Index = 520,
+                HoverIndex = 521,
+                Location = new Point(135, 120),
+                Size = new Size(48, 25),
+                Library = Libraries.Title,
+                Parent = this,
+                PressedIndex = 522,
+                Sound = SoundList.ButtonA,
+            };
+            ConfirmButton.Click += (o, e) =>
+            {
+                //确认收集
+                Network.Enqueue(new C.ConfirmItemCollect() { type = type });
+            };
+
+            CloseButton = new MirButton
+            {
+                HoverIndex = 361,
+                Index = 360,
+                Location = new Point(Size.Width - 23, 3),
+                Library = Libraries.Prguse2,
+                Parent = this,
+                PressedIndex = 362,
+                Sound = SoundList.ButtonA,
+            };
+            CloseButton.Click += (o, e) =>
+            {
+                Hide();
+                
+            };
+
+            #endregion
+
+
+            #region Grids
+            Grid = new MirItemCell[5 * 2];
+
+            for (int x = 0; x < 5; x++)
+            {
+                for (int y = 0; y < 2; y++)
+                {
+                    Grid[2 * x + y] = new MirItemCell
+                    {
+                        ItemSlot = 2 * x + y,
+                        GridType = MirGridType.ItemCollect,
+                        Parent = this,
+                        Location = new Point(x * 36 + 10 + x, y * 32 + 39 + y),
+                    };
+                }
+            }
+            #endregion
+        }
+
+        public void Hide()
+        {
+            Visible = false;
+            ItemCancel();
+        }
+
+        public void Show()
+        {
+            switch (type)
+            {
+                case 0:
+                    NameLabel.Text = "装备熔炼";
+                    break;
+                case 1:
+                    NameLabel.Text = "装备合成";
+                    break;
+            }
+            Visible = true;
+        }
+
+        public void ItemCancel()
+        {
+            Network.Enqueue(new C.ItemCollectCancel());
+        }
+
+        public void ItemReset()
+        {
+            for (int i = 0; i < Grid.Length; i++)
+                Grid[i].Item = null;
+        }
+
+
 
         public MirItemCell GetCell(ulong id)
         {

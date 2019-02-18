@@ -24,7 +24,9 @@ namespace Launcher
         private FileInformation _currentFile;
         //是否已完成
         public bool Completed, Checked, CleanFiles, LabelSwitch, ErrorFound,WinClose, RefreshServer;
-        
+
+        public string errorMsg = null;
+
         public List<FileInformation> OldList;
         public Queue<FileInformation> DownloadList;
 
@@ -88,9 +90,10 @@ namespace Launcher
                 }
                 else
                 {
-                    ShowMessage("找不到更新列表");
+                    //ShowMessage("找不到更新列表");
 
                     //MessageBox.Show("找不到更新列表.");
+                    errorMsg = "客户端更新失败，找不到更新列表...";
                     Completed = true;
                     ErrorFound = true;
                     return;
@@ -113,8 +116,8 @@ namespace Launcher
             }
             catch (EndOfStreamException ex)
             {
-
-                ShowMessage("读取更新列表错误");
+                errorMsg = "读取更新列表错误";
+                //ShowMessage("读取更新列表错误");
                 Completed = true;
                 SaveError(ex.ToString());
             }
@@ -128,7 +131,7 @@ namespace Launcher
         //显示操作提醒
         private void ShowMessage(string msg)
         {
-            MessageBox.Show(msg, "提示", MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+            MessageBox.Show(msg, "提示", MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
         }
 
 
@@ -214,7 +217,7 @@ namespace Launcher
         {
             for (int i = 0; i < OldList.Count; i++)
             {
-                if (fileName.EndsWith(OldList[i].FileName))
+                if (fileName.EndsWith(OldList[i].FileName, StringComparison.CurrentCultureIgnoreCase))
                     return true;
             }
 
@@ -234,19 +237,20 @@ namespace Launcher
         {
             FileInformation info = GetFileInformation(Settings.P_Client + old.FileName);
             _currentCount++;
-
-            if (info == null || old.Length != info.Length || old.Creation != info.Creation)
+            //如果是exe，则判断修改时间
+            if ((old.FileName.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase)))
             {
-                if ((old.FileName.EndsWith(System.AppDomain.CurrentDomain.FriendlyName)))
+                //针对客户端程序，多加一个时间判断，如果是新的文件则不处理
+                if (info != null && info.Creation < old.Creation)
                 {
-                    //针对客户端程序，多加一个时间判断，如果是新的文件则不处理
-                    if(info != null && info.Creation > old.Creation)
-                    {
-                        return;
-                    }
-                    FileMove(Settings.P_Client + System.AppDomain.CurrentDomain.FriendlyName, Settings.P_Client + oldClientName);
-                    Restart = true;
+                    DownloadList.Enqueue(old);
+                    _totalBytes += old.Length;
                 }
+                return;
+            }
+            //不是exe,则判断长度
+            if (info == null || old.Length != info.Length )
+            {
                 DownloadList.Enqueue(old);
                 _totalBytes += old.Length;
             }
@@ -254,6 +258,7 @@ namespace Launcher
 
         //新的下载文件处理
         //直接下载覆盖本地文件
+        //先下载到临时目录，后面下载成功后，判断文件是否完整，如果完整才替换
         //如果已经下载完成，则任务是成功了，否则是失败的
         //返回成功，失败
         public bool Download(FileInformation info)
@@ -262,9 +267,13 @@ namespace Launcher
             string fileName = info.FileName.Replace(@"\", "/");
             if (fileName != "PList.gz")
                 fileName += ".gz";
-            //不存在则创建
-            if (!Directory.Exists(Settings.P_Client + Path.GetDirectoryName(info.FileName)))
-                Directory.CreateDirectory(Settings.P_Client + Path.GetDirectoryName(info.FileName));
+            string tempfile = Settings.P_Client + "download/" + info.FileName;
+            string rfile = Settings.P_Client  + info.FileName;
+            //不存在目录则创建
+            if (!Directory.Exists(Path.GetDirectoryName(tempfile)))
+                Directory.CreateDirectory(Path.GetDirectoryName(tempfile));
+            if (!Directory.Exists(Path.GetDirectoryName(rfile)))
+                Directory.CreateDirectory(Path.GetDirectoryName(rfile));
 
             long t_completedBytes = _completedBytes;
             _currentBytes = 0;
@@ -276,14 +285,14 @@ namespace Launcher
                 reqFTP.UsePassive = false;
                 if (Settings.P_NeedLogin)
                 {
-                    reqFTP.Credentials = new NetworkCredential(Settings.P_Login, Settings.Password);
+                    reqFTP.Credentials = new NetworkCredential(Settings.P_Login, Settings.P_Password);
                 }
 
                 FtpWebResponse response = (FtpWebResponse)reqFTP.GetResponse();
 
                 using (Stream ftpStream = response.GetResponseStream())
                 {
-                    using (FileStream outputStream = new FileStream(Settings.P_Client + info.FileName, FileMode.Create))
+                    using (FileStream outputStream = new FileStream(tempfile, FileMode.Create))
                     {
                         int bufferSize = 2048;
                         int readCount;
@@ -319,6 +328,27 @@ namespace Launcher
                 _completedBytes = t_completedBytes;
                 _currentBytes = 0;
             }
+            else
+            {
+                //下载成功，则复制替换旧的文件
+                try
+                {
+                    //
+                    if ((info.FileName.EndsWith(System.AppDomain.CurrentDomain.FriendlyName, StringComparison.CurrentCultureIgnoreCase)))
+                    {
+                        FileMove(Settings.P_Client + System.AppDomain.CurrentDomain.FriendlyName, Settings.P_Client + oldClientName);
+                        Restart = true;
+                    }
+                    File.Copy(tempfile, rfile, true);
+                    File.Delete(tempfile);
+                }
+                catch(Exception e)
+                {
+                    File.AppendAllText(@".\Config\Error.txt",
+                                       string.Format("[{0}] {1}{2}", DateTime.Now, info.FileName + " file copy Error. (" + e.Message + ")", Environment.NewLine));
+                }
+            }
+          
             return ret;
 
         }
@@ -331,21 +361,23 @@ namespace Launcher
             fileName = fileName.Replace(@"\", "/");
 
             if (fileName != "PList.gz")
-                fileName += Path.GetExtension(fileName);
+                fileName += ".gz";
             byte[] ret = new byte[1];
             try
             {
+                MirLog.info("downfile:"+ fileName);
                 using (MemoryStream mStream = new MemoryStream())
                 {
                     using (BinaryWriter gStream = new BinaryWriter(mStream))
                     {
                         FtpWebRequest reqFTP = (FtpWebRequest)FtpWebRequest.Create(new Uri(Settings.P_Host + fileName));
                         reqFTP.Method = WebRequestMethods.Ftp.DownloadFile;
+                        reqFTP.Timeout = 5000;
                         reqFTP.UseBinary = true;
                         reqFTP.UsePassive = false;
                         if (Settings.P_NeedLogin)
                         {
-                            reqFTP.Credentials = new NetworkCredential(Settings.P_Login, Settings.Password);
+                            reqFTP.Credentials = new NetworkCredential(Settings.P_Login, Settings.P_Password);
                         }
     
                         FtpWebResponse response = (FtpWebResponse)reqFTP.GetResponse();
@@ -375,7 +407,7 @@ namespace Launcher
             {
                 System.Console.WriteLine("下载文件失败：" + fileName);
             }
-            if (ret.Length > 1)
+            if (ret.Length > 10)
             {
                 return ret;
             }
@@ -421,10 +453,16 @@ namespace Launcher
             if (!File.Exists(fileName)) return null;
 
             FileInfo info = new FileInfo(fileName);
+            String FileName = fileName.Remove(0, Settings.P_Client.Length);
+            if(FileName.StartsWith("/")|| FileName.StartsWith("\\"))
+            {
+                FileName = FileName.Substring(1);
+            }
             return new FileInformation
             {
-                FileName = fileName.Remove(0, Settings.P_Client.Length),
+                FileName = FileName,
                 Length = (int)info.Length,
+                Compressed = (int)info.Length,
                 Creation = info.LastWriteTime
             };
         }
@@ -434,6 +472,11 @@ namespace Launcher
             if (Settings.P_BrowserAddress != "") Main_browser.Navigate(new Uri(Settings.P_BrowserAddress));
 
             if (File.Exists(Settings.P_Client + oldClientName)) File.Delete(Settings.P_Client + oldClientName);
+
+            if(!Directory.Exists(Settings.P_Client + "download"))
+            {
+                Directory.CreateDirectory(Settings.P_Client + "download");
+            }
 
             //Launch_pb.Enabled = false;
             ProgressCurrent_pb.Width = 5;
@@ -445,7 +488,8 @@ namespace Launcher
 
         private void Launch_pb_Click(object sender, EventArgs e)
         {
-            if (!Completed)
+      
+            if (Settings.P_Patcher && !Completed)
             {
                 ShowMessage("正在进行客户端更新，请等待更新完成后再进入游戏.");
                 return;
@@ -645,7 +689,15 @@ namespace Launcher
                     else
                     {
                         ActionLabel.Text = "";
-                        CurrentFile_label.Text = "已完成更新.";
+                        if (_totalBytes > 0)
+                        {
+                            CurrentFile_label.Text = "已完成更新.";
+                        }
+                        else
+                        {
+                            CurrentFile_label.Text = "已是最新版客户端.";
+                        }
+                            
                         SpeedLabel.Text = "";
                         ProgressCurrent_pb.Width = 550;
                         TotalProg_pb.Width = 550;
@@ -685,17 +737,20 @@ namespace Launcher
                 TotalPercent_label.Visible = true;
 
                 if (LabelSwitch) ActionLabel.Text = string.Format("{0} 文件完成", _fileCount - _currentCount);
-                else ActionLabel.Text = string.Format("{0:#,##0}MB 完成",  ((_totalBytes) - (_completedBytes + _currentBytes)) / 1024 / 1024);
+                else ActionLabel.Text = string.Format("{0:#,##0}MB 待更新",  ((_totalBytes) - (_completedBytes + _currentBytes)) / 1024 / 1024);
 
-                //ActionLabel.Text = string.Format("{0:#,##0}MB / {1:#,##0}MB", (_completedBytes + _currentBytes) / 1024 / 1024, _totalBytes / 1024 / 1024);
+                ActionLabel.Text = string.Format("{0:#,##0}MB / {1:#,##0}MB", (_completedBytes + _currentBytes) / 1024 / 1024, _totalBytes / 1024 / 1024);
 
                 if (_currentFile != null)
                 {
                     //FileLabel.Text = string.Format("{0}, ({1:#,##0} MB) / ({2:#,##0} MB)", _currentFile.FileName, _currentBytes / 1024 / 1024, _currentFile.Compressed / 1024 / 1024);
                     CurrentFile_label.Text = string.Format("{0}", _currentFile.FileName);
                     SpeedLabel.Text = (_currentBytes / 1024F / _stopwatch.Elapsed.TotalSeconds).ToString("#,##0.##") + "KB/s";
-                    CurrentPercent_label.Text = ((int)(100 * _currentBytes / _currentFile.Compressed)).ToString() + "%";
-                    ProgressCurrent_pb.Width = (int)( 5.5 * (100 * _currentBytes / _currentFile.Compressed));
+                    if (_currentFile.Compressed> 0)
+                    {
+                        CurrentPercent_label.Text = ((int)(100 * _currentBytes / _currentFile.Compressed)).ToString() + "%";
+                        ProgressCurrent_pb.Width = (int)(5.5 * (100 * _currentBytes / _currentFile.Compressed));
+                    }
                 }
                 if (_totalBytes > 0)
                 {
@@ -703,9 +758,10 @@ namespace Launcher
                     TotalProg_pb.Width = (int)(5.5 * (100 * (_completedBytes + _currentBytes) / _totalBytes));
                 }
             }
-            catch
+            catch(Exception ex)
             {
-                
+                File.AppendAllText(@".\Config\Error.txt",
+                                       string.Format("[{0}] {1}{2}", DateTime.Now, ex, Environment.NewLine));
             }
         }
 
@@ -763,12 +819,29 @@ namespace Launcher
             catch { }
         }
 
+        //获取文件的版本号
+        public static long getFileVersion(string fileName)
+        {
+            long ret = 0;
+            try
+            {
+                FileVersionInfo myFileVersionInfo = FileVersionInfo.GetVersionInfo(fileName);
+                long.TryParse(myFileVersionInfo.FileVersion.Replace(".",""), out ret);
+            }
+            catch (Exception ex)
+            {
+                //LogHelper.Error(ex);
+            }
+            return ret;
+        }
+
     }
 
     //文件列表信息
     public class FileInformation
     {
         //文件名称 相对路径，如：\Sound\wolf_ride01.wav  \Client.exe \Data\ChrSel.Lib
+        //文件名不包含前面的“/”
         public string FileName; //Relative.相对路径的文件名
         //文件长度，压缩后的文件长度
         public int Length, Compressed;
@@ -784,13 +857,25 @@ namespace Launcher
         public FileInformation(BinaryReader reader)
         {
             FileName = reader.ReadString();
+            if (FileName.StartsWith("/") || FileName.StartsWith("\\"))
+            {
+                FileName = FileName.Substring(1);
+            }
             Length = reader.ReadInt32();
             Compressed = reader.ReadInt32();
+            if (Compressed == 0)
+            {
+                Compressed = Length;
+            }
 
             Creation = DateTime.FromBinary(reader.ReadInt64());
         }
         public void Save(BinaryWriter writer)
         {
+            if (FileName.StartsWith("/") || FileName.StartsWith("\\"))
+            {
+                FileName = FileName.Substring(1);
+            }
             writer.Write(FileName);
             writer.Write(Length);
             writer.Write(Compressed);

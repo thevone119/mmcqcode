@@ -605,6 +605,8 @@ namespace Client.MirScenes.Dialogs
             ChatTextBox.TextBox.KeyPress += ChatTextBox_KeyPress;
             ChatTextBox.TextBox.KeyDown += ChatTextBox_KeyDown;
             ChatTextBox.TextBox.KeyUp += ChatTextBox_KeyUp;
+            //支持中文，避免切换输入法
+            ChatTextBox.ImeMode= ImeMode.HangulFull;
 
             HomeButton = new MirButton
             {
@@ -935,9 +937,21 @@ namespace Client.MirScenes.Dialogs
 
                     string[] parts = l.Text.Split(':', ' ');
                     if (parts.Length == 0) return;
-
-                    string name = Regex.Replace(parts[0], "[^A-Za-z0-9]", "");
-
+                    //修改这里对私聊的完善，支持
+                    //string name = Regex.Replace(parts[0], "[^A-Za-z0-9]", "");
+                    string name = parts[0];
+                    if (name == null)
+                    {
+                        return;
+                    }
+                    if (name.EndsWith("=>"))
+                    {
+                        name = name.Substring(0, name.IndexOf("=>"));
+                    }
+                    if (name.StartsWith("/"))
+                    {
+                        name = name.Substring(1);
+                    }
                     ChatTextBox.SetFocus();
                     ChatTextBox.Text = string.Format("/{0} ", name);
                     ChatTextBox.Visible = true;
@@ -1707,6 +1721,13 @@ namespace Client.MirScenes.Dialogs
                 ItemButton2.Index = 169;
             }
 
+            foreach (MirItemCell grid in Grid)
+            {
+                if (grid.Item != null)
+                {
+                    grid.Locked = false;
+                }
+            }
             foreach (var grid in Grid)
             {
                 if (grid.ItemSlot < 46)
@@ -2336,7 +2357,7 @@ namespace Client.MirScenes.Dialogs
                 SCLabel.Text = string.Format("{0}-{1}", MapObject.User.MinSC, MapObject.User.MaxSC);
                 HealthLabel.Text = string.Format("{0}/{1}", MapObject.User.HP, MapObject.User.MaxHP);
                 ManaLabel.Text = string.Format("{0}/{1}", MapObject.User.MP, MapObject.User.MaxMP);
-                CritRLabel.Text = string.Format("{0}%", MapObject.User.CriticalRate);
+                CritRLabel.Text = string.Format("{0}", MapObject.User.CriticalRate);
                 CritDLabel.Text = string.Format("{0}", MapObject.User.CriticalDamage);
                 AttkSpdLabel.Text = string.Format("{0}", MapObject.User.ASpeed);
                 AccLabel.Text = string.Format("+{0}", MapObject.User.Accuracy);
@@ -4877,6 +4898,7 @@ namespace Client.MirScenes.Dialogs
     {
         private MirLabel pointlab;
 
+        private long LastTeleportTime = 0;
 
         public BigMapDialog()
         {
@@ -5042,6 +5064,17 @@ namespace Client.MirScenes.Dialogs
             if (!map.M2CellInfo[x, y].CanWalk())
             {
                 GameScene.Scene.ChatDialog.ReceiveChat("自动寻路目标不可达", ChatType.System);
+                return;
+            }
+            //这里判断下是否可以传送，如果可以传送，则直接传送即可哦
+      
+            if (GameScene.User.HasTeleportRing && LastTeleportTime< CMain.Time)
+            {
+                LastTeleportTime = CMain.Time + 3000;//3秒之内只触发一次传送
+                Network.Enqueue(new C.Chat
+                {
+                    Message = "@move " + x + " " + y
+                });
                 return;
             }
             long startTime = CMain.Timer.ElapsedMilliseconds;

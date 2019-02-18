@@ -113,7 +113,7 @@ namespace Client.MirGraphics
             Device.SetDialogBoxesEnabled(true);
 
             LoadTextures();
-            LoadPixelsShaders();
+            //LoadPixelsShaders();
         }
 
         //像素着色加载

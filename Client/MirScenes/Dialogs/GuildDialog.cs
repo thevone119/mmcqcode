@@ -19,7 +19,9 @@ using Effect = Client.MirObjects.Effect;
 
 using Client.MirScenes.Dialogs;
 using System.Drawing.Imaging;
-
+/// <summary>
+/// 公会窗口
+/// </summary>
 namespace Client.MirScenes.Dialogs
 {
 
@@ -487,7 +489,7 @@ namespace Client.MirScenes.Dialogs
             MembersShowOffline = new MirLabel
             {
                 Visible = true,
-                Text = "Show Offline",
+                Text = "显示在线",
                 Location = new Point(245, 309),
                 Parent = MembersPage,
                 Size = new Size(150, 12),
@@ -621,7 +623,7 @@ namespace Client.MirScenes.Dialogs
                 Location = new Point(36, 283),
                 NotControl = true,
                 Parent = StatusPage,
-                Text = "Recruit Member",
+                Text = "招募成员",
                 Size = new Size(150, 15)
             };
 
@@ -773,7 +775,7 @@ namespace Client.MirScenes.Dialogs
             RankPage.BeforeDraw += (o, e) => RequestUpdateMembers();
             RanksSelectTextL = new MirLabel()
             {
-                Text = "Edit Rank",
+                Text = "编辑职位",
                 Location = new Point(42, 18),
                 Size = new Size(150, 20),
                 ForeColour = Color.White,
@@ -783,7 +785,7 @@ namespace Client.MirScenes.Dialogs
             };
             RanksSelectTextR = new MirLabel()
             {
-                Text = "Select Rank",
+                Text = "选择职位",
                 Location = new Point(198, 18),
                 Size = new Size(150, 20),
                 ForeColour = Color.White,
@@ -835,7 +837,7 @@ namespace Client.MirScenes.Dialogs
             {
                 RanksChangeName();
             };
-            String[] Options = { "Edit ranks", "Recruit member", "Kick member", "Store item", "Retrieve item", "Alter alliance", "Change notice", "Activate Buff" };
+            String[] Options = { "编辑职位", "招募成员", "剔除成员", "存物品", "取物品", "变更联盟", "更改公告", "激活Buff" };
             RanksOptionsButtons = new MirButton[8];
             RanksOptionsStatus = new MirImageControl[8];
             RanksOptionsTexts = new MirLabel[8];
@@ -979,11 +981,11 @@ namespace Client.MirScenes.Dialogs
             {
                 string Error = "";
                 if (GameScene.Scene.GuildDialog.SparePoints < BuffInfo.PointsRequirement)
-                    Error = "Insufficient points available.";
+                    Error = "点数不足.";
                 if (GameScene.Scene.GuildDialog.Level < BuffInfo.LevelRequirement)
-                    Error = "Guild level too low.";
+                    Error = "公会等级太低.";
                 if (!GameScene.Scene.GuildDialog.GetMyOptions().HasFlag(RankOptions.CanActivateBuff))
-                    Error = "Guild rank does not allow buff activation.";
+                    Error = "公会等级不允许激活buff.";
                 if (Error != "")
                 {
                     MirMessageBox messageBox = new MirMessageBox(Error);
@@ -998,11 +1000,11 @@ namespace Client.MirScenes.Dialogs
             {
                 string Error = "";
                 if (Buff.Active)
-                    Error = "Buff is still active.";
+                    Error = "buff仍处于激活状态.";
                 if (GameScene.Scene.GuildDialog.Gold < BuffInfo.ActivationCost)
-                    Error = "Insufficient guild funds.";
+                    Error = "公会资金不足.";
                 if (!GameScene.Scene.GuildDialog.GetMyOptions().HasFlag(RankOptions.CanActivateBuff))
-                    Error = "Guild rank does not allow buff activation.";
+                    Error = "公会等级不允许激活buff.";
                 if (Error != "")
                 {
                     MirMessageBox messageBox = new MirMessageBox(Error);
@@ -1191,92 +1193,92 @@ namespace Client.MirScenes.Dialogs
 
             if (BuffAc > 0)
             {
-                text += LanguageUtils.Format("Increases AC by: 0-{0}.", BuffAc);
+                text += LanguageUtils.Format("防御提升: 0-{0}.", BuffAc);
                 if (text != "") text += "\n";
             }
             if (BuffMac > 0)
             {
-                text += LanguageUtils.Format("Increases MAC by: 0-{0}.", BuffMac);
+                text += LanguageUtils.Format("魔御提升: 0-{0}.", BuffMac);
                 if (text != "") text += "\n";
             }
             if (BuffDc > 0)
             {
-                text += LanguageUtils.Format("Increases DC by: 0-{0}.", BuffDc);
+                text += LanguageUtils.Format("攻击提升: 0-{0}.", BuffDc);
                 if (text != "") text += "\n";
             }
             if (BuffMc > 0)
             {
-                text += LanguageUtils.Format("Increases MC by: 0-{0}.", BuffMc);
+                text += LanguageUtils.Format("魔法提升: 0-{0}.", BuffMc);
                 if (text != "") text += "\n";
             }
             if (BuffSc > 0)
             {
-                text += LanguageUtils.Format("Increases SC by: 0-{0}.", BuffSc);
+                text += LanguageUtils.Format("道术提升: 0-{0}.", BuffSc);
                 if (text != "") text += "\n";
             }
             if (BuffMaxHp > 0)
             {
-                text += LanguageUtils.Format("Increases Hp by: {0}.", BuffMaxHp);
+                text += LanguageUtils.Format("HP提升: {0}.", BuffMaxHp);
                 if (text != "") text += "\n";
             }
             if (BuffMaxMp > 0)
             {
-                text += LanguageUtils.Format("Increases MP by: {0}.", BuffMaxMp);
+                text += LanguageUtils.Format("法力值提升: {0}.", BuffMaxMp);
                 if (text != "") text += "\n";
             }
             if (BuffHpRegen > 0)
             {
-                text += LanguageUtils.Format("Increases Health regen by: {0}.", BuffHpRegen);
+                text += LanguageUtils.Format("生命恢复提升: {0}.", BuffHpRegen);
                 if (text != "") text += "\n";
             }
             if (BuffMPRegen > 0)
             {
-                text += LanguageUtils.Format("Increases Mana regen by: {0}.", BuffMPRegen);
+                text += LanguageUtils.Format("法力恢复提升: {0}.", BuffMPRegen);
                 if (text != "") text += "\n";
             }
             if (BuffMineRate > 0)
             {
-                text += LanguageUtils.Format("Increases Mining success by: {0}%.", BuffMineRate * 5);
+                text += LanguageUtils.Format("挖矿成功率提升: {0}%.", BuffMineRate * 5);
                 if (text != "") text += "\n";
             }
             if (BuffGemRate > 0)
             {
-                text += LanguageUtils.Format("Increases Gem success by: {0}%.", BuffGemRate * 5);
+                text += LanguageUtils.Format("宝玉成功率提升: {0}%.", BuffGemRate * 5);
                 if (text != "") text += "\n";
             }
             if (BuffFishRate > 0)
             {
-                text += LanguageUtils.Format("Increases Fishing success by: {0}%.", BuffFishRate * 5);
+                text += LanguageUtils.Format("钓鱼成功率提升: {0}%.", BuffFishRate * 5);
                 if (text != "") text += "\n";
             }
             if (BuffExpRate > 0)
             {
-                text += LanguageUtils.Format("Increases Experience by: {0}%.", BuffExpRate);
+                text += LanguageUtils.Format("经验加成: {0}%.", BuffExpRate);
                 if (text != "") text += "\n";
             }
             if (BuffCraftRate > 0)
             {
-                text += LanguageUtils.Format("Increases Crafting success by: {0}%.", BuffCraftRate * 5);
+                text += LanguageUtils.Format("制作成功率提升: {0}%.", BuffCraftRate * 5);
                 if (text != "") text += "\n";
             }
             if (BuffSkillRate > 0)
             {
-                text += LanguageUtils.Format("Increases Skill training by: {0}.", BuffSkillRate);
+                text += LanguageUtils.Format("技能修炼提升: {0}.", BuffSkillRate);
                 if (text != "") text += "\n";
             }
             if (BuffAttack > 0)
             {
-                text += LanguageUtils.Format("Increases Damage by: {0}.", BuffAttack);
+                text += LanguageUtils.Format("伤害提升: {0}.", BuffAttack);
                 if (text != "") text += "\n";
             }
             if (BuffDropRate > 0)
             {
-                text += LanguageUtils.Format("Droprate increased by: {0}%.", BuffDropRate);
+                text += LanguageUtils.Format("提升爆率: {0}%.", BuffDropRate);
                 if (text != "") text += "\n";
             }
             if (BuffGoldRate > 0)
             {
-                text += LanguageUtils.Format("Goldrate increased by: 0-{0}.", BuffGoldRate);
+                text += LanguageUtils.Format("金币获取提升: 0-{0}.", BuffGoldRate);
                 if (text != "") text += "\n";
             }
 
@@ -1585,7 +1587,7 @@ namespace Client.MirScenes.Dialogs
                     RankNames.Add(Ranks[i].Name);
                 }
                 else
-                    RankNames.Add("Missing Rank");
+                    RankNames.Add("缺失职位");
             }
             for (int i = 0; i < MembersRanks.Length; i++)
             {
@@ -1595,7 +1597,7 @@ namespace Client.MirScenes.Dialogs
             RanksSelectBox.Items = RankNames.ToList();
             RanksSelectBox.MinimumOption = 0;
             if (RankNames.Count < 255)
-                RanksSelectBox.Items.Add("Add New");
+                RanksSelectBox.Items.Add("新增");
             UpdateMembers();
             UpdateRanks();
         }
@@ -1613,7 +1615,7 @@ namespace Client.MirScenes.Dialogs
         {
             if (SelectedIndex >= Ranks.Count) return;
             if (LastGuildMsg > CMain.Time) return;
-            MirMessageBox messageBox = new MirMessageBox(LanguageUtils.Format("Are you sure you want to change the rank of {0} to {1}?", MembersName[Index].Text, Ranks[SelectedIndex].Name), MirMessageBoxButtons.YesNo);
+            MirMessageBox messageBox = new MirMessageBox(LanguageUtils.Format("您确定要把 {0}更改 为 {1}?", MembersName[Index].Text, Ranks[SelectedIndex].Name), MirMessageBoxButtons.YesNo);
 
             messageBox.YesButton.Click += (o, a) =>
             {
@@ -1636,7 +1638,7 @@ namespace Client.MirScenes.Dialogs
         {
             if (MembersName[Index].Text == MapControl.User.Name) return;
             if (LastGuildMsg > CMain.Time) return;
-            MirMessageBox messageBox = new MirMessageBox(LanguageUtils.Format("Are you sure you want to kick {0}?", MembersName[Index].Text), MirMessageBoxButtons.YesNo);
+            MirMessageBox messageBox = new MirMessageBox(LanguageUtils.Format("你确定要剔除 {0}?", MembersName[Index].Text), MirMessageBoxButtons.YesNo);
 
             messageBox.YesButton.Click += (o, a) =>
             {
@@ -1983,10 +1985,10 @@ namespace Client.MirScenes.Dialogs
             {
                 if (Ranks.Count == 255) return;
                 if (LastGuildMsg > CMain.Time) return;
-                MirMessageBox messageBox = new MirMessageBox(LanguageUtils.Format("Are you sure you want to create a new rank?"), MirMessageBoxButtons.YesNo);
+                MirMessageBox messageBox = new MirMessageBox(LanguageUtils.Format("你想创建新的职位吗?"), MirMessageBoxButtons.YesNo);
                 messageBox.YesButton.Click += (o, a) =>
                 {
-                    Network.Enqueue(new C.EditGuildMember { ChangeType = 4, RankName = LanguageUtils.Format("Rank-{0}", Ranks.Count - 1) });
+                    Network.Enqueue(new C.EditGuildMember { ChangeType = 4, RankName = LanguageUtils.Format("职位-{0}", Ranks.Count - 1) });
                     LastGuildMsg = CMain.Time + 5000;
                 };
                 messageBox.Show();
@@ -2268,7 +2270,7 @@ namespace Client.MirScenes.Dialogs
 
             if (MapControl.User.GuildName == "")
             {
-                MirMessageBox messageBox = new MirMessageBox("你还没有行会.", MirMessageBoxButtons.OK);
+                MirMessageBox messageBox = new MirMessageBox("你还没有公会.", MirMessageBoxButtons.OK);
                 messageBox.Show();
                 return;
             }

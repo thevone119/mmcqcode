@@ -14,6 +14,7 @@ namespace Client
 
         public static  void Load()
         {
+            slist.Clear();
             FileInfo fileInf = new FileInfo(cpath);
             if (!fileInf.Exists)
             {

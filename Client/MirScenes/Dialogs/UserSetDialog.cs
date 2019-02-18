@@ -25,7 +25,7 @@ namespace Client.MirScenes.Dialogs
         //基本
         public MirCheckBox ShowLevelBox, ExcuseShiftBox, ShowPingBox, ShowFashionBox, ShowMonNameBox;
         //职业
-        public MirCheckBox SeptumBox, AutoFlamingBox, AutoShieldBox, switchPoisonBox;
+        public MirCheckBox SeptumBox, AutoFlamingBox, AutoShieldBox, switchPoisonBox, AutoHasteBox;
         public MirLabel tx_df;//提醒自动毒符
         //保护
         public MirCheckBox OpenProtectBox;
@@ -268,6 +268,13 @@ namespace Client.MirScenes.Dialogs
             {
                 changeData();
             };
+            //自动体迅
+            top += 30;
+            AutoHasteBox = new MirCheckBox { Location = new Point(left, top), LabelText = "自动体迅", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            AutoHasteBox.Click += (o, e) =>
+            {
+                changeData();
+            };
             //4.物品
             left = 50;
             top = 70;
@@ -487,6 +494,8 @@ namespace Client.MirScenes.Dialogs
             SeptumBox.Checked = GameScene.UserSet.Septum;
             AutoFlamingBox.Checked = GameScene.UserSet.AutoFlaming;
             AutoShieldBox.Checked = GameScene.UserSet.AutoShield;
+
+            AutoHasteBox.Checked = GameScene.UserSet.AutoHaste;
             OpenProtectBox.Checked = GameScene.UserSet.OpenProtect;
             AutoPickUpBox.Checked = GameScene.UserSet.AutoPickUp;
             switchPoisonBox.Checked = GameScene.UserSet.switchPoison;
@@ -515,6 +524,8 @@ namespace Client.MirScenes.Dialogs
             GameScene.UserSet.Septum = SeptumBox.Checked ;
             GameScene.UserSet.AutoFlaming = AutoFlamingBox.Checked ;
             GameScene.UserSet.AutoShield = AutoShieldBox.Checked ;
+
+            GameScene.UserSet.AutoHaste = AutoHasteBox.Checked;
             GameScene.UserSet.OpenProtect = OpenProtectBox.Checked ;
             GameScene.UserSet.AutoPickUp = AutoPickUpBox.Checked ;
             GameScene.UserSet.ShowMonName = ShowMonNameBox.Checked;
@@ -617,6 +628,7 @@ namespace Client.MirScenes.Dialogs
             SeptumBox.Visible = visible;
             AutoFlamingBox.Visible = visible;
             AutoShieldBox.Visible = visible;
+            AutoHasteBox.Visible = visible;
             switchPoisonBox.Visible = visible;
             tx_df.Visible = visible;
             if (visible)

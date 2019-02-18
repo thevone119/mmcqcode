@@ -46,7 +46,9 @@ namespace Client
         {
             this.StartPosition = FormStartPosition.Manual;
             ReLoc();
-            pictureBox1.ImageLocation = string.Format(@"http://mobile.qq.com/qrcode?url="+ payurl);
+
+            pictureBox1.ImageLocation = string.Format(@"http://47.106.70.111:8090/comm/down_qr_img?url=" + payurl);
+            //CMain.SaveError("query_Link=" + query_Link);
             lab_oid.Text = "订单号："+ oid;
             if (payType == 1)
             {

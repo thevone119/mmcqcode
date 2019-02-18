@@ -7,12 +7,12 @@ using System.Security;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Legend of Mir")]
+[assembly: AssemblyTitle("夜火传奇")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Legend of Mir")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyCopyright("Copyright 2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -36,8 +36,8 @@ using System.Security;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2018.9.25.1919")]
-[assembly: AssemblyFileVersion("2018.9.25.1919")]
+[assembly: AssemblyVersion("2019.02.02.12")]
+[assembly: AssemblyFileVersion("2019.02.02.12")]
 
 [assembly: NeutralResourcesLanguage("zh-CN")]
 

@@ -89,7 +89,7 @@ namespace Client.MirScenes.Dialogs
             {
                 if (GameScene.SelectedCell == null && GameScene.Gold > 0)
                 {
-                    MirAmountBox amountBox = new MirAmountBox("Trade Amount:", 116, GameScene.Gold);
+                    MirAmountBox amountBox = new MirAmountBox("交易金币:", 116, GameScene.Gold);
 
                     amountBox.OKButton.Click += (c, a) =>
                     {

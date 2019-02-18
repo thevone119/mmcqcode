@@ -118,9 +118,9 @@ namespace Client.MirScenes.Dialogs
             Dictionary<string, string> keybinds = new Dictionary<string, string>();
 
             List<HelpPage> imagePages = new List<HelpPage> { 
-                new HelpPage("Shortcut Information", -1, new ShortcutPage1 { Parent = this } ) { Parent = this, Location = location, Visible = false }, 
-                new HelpPage("Shortcut Information", -1, new ShortcutPage2 { Parent = this } ) { Parent = this, Location = location, Visible = false }, 
-                new HelpPage("Chat Shortcuts", -1, new ShortcutPage3 { Parent = this } ) { Parent = this, Location = location, Visible = false }, 
+                new HelpPage("快捷键使用", -1, new ShortcutPage1 { Parent = this } ) { Parent = this, Location = location, Visible = false }, 
+                new HelpPage("快捷键使用", -1, new ShortcutPage2 { Parent = this } ) { Parent = this, Location = location, Visible = false }, 
+                new HelpPage("聊天快捷方式", -1, new ShortcutPage3 { Parent = this } ) { Parent = this, Location = location, Visible = false }, 
                 new HelpPage("Movements", 0, null) { Parent = this, Location = location, Visible = false }, 
                 new HelpPage("Attacking", 1, null) { Parent = this, Location = location, Visible = false }, 
                 new HelpPage("Collecting Items", 2, null) { Parent = this, Location = location, Visible = false },
@@ -223,24 +223,24 @@ namespace Client.MirScenes.Dialogs
         public ShortcutPage1()
         {
             Shortcuts = new List<ShortcutInfo>();
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Exit), "Exit the game"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Logout), "Log out"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Bar1Skill1) + "-" + CMain.InputKeys.GetKey(KeybindOptions.Bar1Skill8), "Skill buttons"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Inventory), "Inventory window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Equipment), "Status window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Skills), "Skill window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Group), "Group window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Trade), "Trade window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Friends), "Friend window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Minimap), "Minimap window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Guilds), "Guild window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.GameShop), "Gameshop window (open / close)"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Exit), "退出游戏"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Logout), "小退"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Bar1Skill1) + "-" + CMain.InputKeys.GetKey(KeybindOptions.Bar1Skill8), "技能按钮"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Inventory), "角色背包"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Equipment), "角色信息"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Skills), "技能窗口"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Group), "组队窗口"));
+            Shortcuts.Add(new ShortcutInfo("Ctrl + G", "快速添加队友"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Trade), "交易窗口"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Guilds), "公会信息"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.GameShop), "商城信息"));
             //Shortcuts.Add(new ShortcutInfo("K", "Rental window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Relationship), "Engagement window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Belt), "Belt window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Options), "Option window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Help), "Help window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Mount), "Mount / Dismount ride"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Bigmap), "显示大地图，大地图中右键点击可自动寻路"));
+
+
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Options), "系统选项"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Help), "帮助窗口"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Mount), "骑马"));
 
             LoadKeyBinds();
         }
@@ -250,26 +250,25 @@ namespace Client.MirScenes.Dialogs
         public ShortcutPage2()
         {
             Shortcuts = new List<ShortcutInfo>();
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.ChangePetmode), "Toggle pet attack pet"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.ChangePetmode), "切换宠物攻击模式"));
             //Shortcuts.Add(new ShortcutInfo("Ctrl + F", "Change the font in the chat box"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.ChangeAttackmode), "Toggle player attack mode"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.AttackmodePeace), "Peace Mode - Attack monsters only"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.AttackmodeGroup), "Group Mode - Attack all subjects except your group members"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.AttackmodeGuild), "Guild Mode - Attack all subjects except your guild members"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.AttackmodeRedbrown), "Good/Evil Mode - Attack PK players and monsters only"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.AttackmodeAll), "All Attack Mode - Attack all subjects"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Bigmap), "Show the field map"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Skillbar), "Show the skill bar"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Autorun), "Auto run on / off"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Cameramode), "Show / Hide interface"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Pickup), "Highlight / Pickup Items"));
-            Shortcuts.Add(new ShortcutInfo("Ctrl + Right Click", "Show other players kits"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.ChangeAttackmode), "切换自身攻击模式"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Belt), "关闭/开启 数字按钮"));
+            
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Minimap), "小地图开关"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Skillbar), "显示技能栏"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Autorun), "自动跑步开关"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Cameramode), "显示/隐藏操作界面"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Pickup), "手动捡取脚下的物品"));
+            Shortcuts.Add(new ShortcutInfo("Ctrl + 鼠标右键", "查看玩家信息"));
             //Shortcuts.Add(new ShortcutInfo("F12", "Chat macros"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Screenshot), "Screen Capture"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Fishing), "Open / Close fishing window"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Mentor), "Mentor window (open / close)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.CreaturePickup), "Creature Pickup (Multi Mouse Target)"));
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.CreatureAutoPickup), "Creature Pickup (Single Mouse Target)"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Screenshot), "截屏"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Fishing), "打开/关闭钓鱼窗口"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Relationship), "结婚窗口"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Mentor), "师徒窗口"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Friends), "好友窗口"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.CreaturePickup), "宠物捡取 (多目标)"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.CreatureAutoPickup), "宠物捡取 (单目标)"));
 
             LoadKeyBinds();
         }
@@ -280,9 +279,9 @@ namespace Client.MirScenes.Dialogs
         {
             Shortcuts = new List<ShortcutInfo>();
             //Shortcuts.Add(new ShortcutInfo("` / Ctrl", "Change the skill bar"));
-            Shortcuts.Add(new ShortcutInfo("/(username)", "Command to whisper to others"));
-            Shortcuts.Add(new ShortcutInfo("!(text)", "Command to shout to others nearby"));
-            Shortcuts.Add(new ShortcutInfo("!~(text)", "Command to guild chat"));
+            Shortcuts.Add(new ShortcutInfo("/(玩家名称)", "私聊玩家"));
+            Shortcuts.Add(new ShortcutInfo("!", "向附近的人喊话，配合喇叭可全服喊话"));
+            Shortcuts.Add(new ShortcutInfo("!~", "公会聊天"));
 
             LoadKeyBinds();
         }
@@ -310,7 +309,7 @@ namespace Client.MirScenes.Dialogs
 
             MirLabel shortcutTitleLabel = new MirLabel
             {
-                Text = "Shortcuts",
+                Text = "快捷键",
                 DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter,
                 ForeColour = Color.White,
                 Font = new Font(Settings.FontName, 10F),
@@ -322,7 +321,7 @@ namespace Client.MirScenes.Dialogs
 
             MirLabel infoTitleLabel = new MirLabel
             {
-                Text = "Information",
+                Text = "功能",
                 DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter,
                 ForeColour = Color.White,
                 Font = new Font(Settings.FontName, 10F),

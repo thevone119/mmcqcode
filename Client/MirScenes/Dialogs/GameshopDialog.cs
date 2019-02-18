@@ -419,7 +419,7 @@ namespace Client.MirScenes.Dialogs
                     Location = new Point(15, 103 + (15 * i)),
                     Text = "Testing - " + i.ToString(),
                     ForeColour = Color.Gray,
-                    Font = new Font(Settings.FontName, 7F),
+                    Font = new Font(Settings.FontName, 8F),
                 };
                 Filters[i].Click += (o, e) =>
                 {

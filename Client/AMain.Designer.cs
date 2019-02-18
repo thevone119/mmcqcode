@@ -192,7 +192,7 @@ namespace Launcher
             this.CurrentFile_label.Name = "CurrentFile_label";
             this.CurrentFile_label.Size = new System.Drawing.Size(362, 16);
             this.CurrentFile_label.TabIndex = 27;
-            this.CurrentFile_label.Text = "更新完成.";
+            this.CurrentFile_label.Text = "正在检测客户端版本，请稍候.";
             this.CurrentFile_label.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.CurrentFile_label.Visible = false;
             // 
@@ -357,7 +357,7 @@ namespace Launcher
             this.MinimizeBox = false;
             this.Name = "AMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Launcher";
+            this.Text = "夜火传奇";
             this.TransparencyKey = System.Drawing.Color.Black;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.AMain_FormClosed);
             this.Load += new System.EventHandler(this.AMain_Load);

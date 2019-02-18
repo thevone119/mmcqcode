@@ -58,11 +58,11 @@
     <PlatformTarget>x86</PlatformTarget>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\Client\</OutputPath>
+    <OutputPath>obj\Release\</OutputPath>
     <DefineConstants>
     </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>2</WarningLevel>
+    <WarningLevel>1</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <DebugSymbols>false</DebugSymbols>
@@ -72,7 +72,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>MIR2.ICO</ApplicationIcon>
+    <ApplicationIcon>Resources\miricon2.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>9E5B013900C639479A5BE07D94C6D9183B921CCA</ManifestCertificateThumbprint>
@@ -97,23 +97,19 @@
   <ItemGroup>
     <Reference Include="Microsoft.DirectX, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Client\DirectX\Microsoft.DirectX.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\Build\Client\DirectX\Microsoft.DirectX.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Client\DirectX\Microsoft.DirectX.Direct3D.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\Build\Client\DirectX\Microsoft.DirectX.Direct3D.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.DirectX.Direct3DX, Version=1.0.2909.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Client\DirectX\Microsoft.DirectX.Direct3DX.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\Build\Client\DirectX\Microsoft.DirectX.Direct3DX.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.DirectX.DirectSound, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Client\DirectX\Microsoft.DirectX.DirectSound.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\Build\Client\DirectX\Microsoft.DirectX.DirectSound.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -350,6 +346,9 @@
     <None Include="Resources\zfb_logo.png" />
     <None Include="Resources\pay_ok.png" />
     <None Include="Resources\qrcode_timeout.png" />
+    <None Include="Resources\icon1.ico" />
+    <None Include="Resources\miricon1.ico" />
+    <None Include="Resources\miricon2.ico" />
     <Content Include="TextFile1.HLSL" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

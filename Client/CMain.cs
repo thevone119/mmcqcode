@@ -16,6 +16,8 @@ using Client.MirScenes;
 using Client.MirSounds;
 using Microsoft.DirectX.Direct3D;
 using Font = System.Drawing.Font;
+using System.Collections.Concurrent;
+using System.Text;
 
 namespace Client
 {
@@ -52,6 +54,8 @@ namespace Client
         //快捷键处理
         public static bool Shift, Alt, Ctrl, Tilde;
         public static KeyBindSettings InputKeys = new KeyBindSettings();
+        //这里先把异常日志放入队列
+        private static readonly ConcurrentQueue<string> ErrorLog = new ConcurrentQueue<string>();
 
         public CMain()
         {
@@ -610,16 +614,12 @@ namespace Client
                 image.Save(Path.Combine(path, string.Format("Image {0}.Png", count)), ImageFormat.Png);
             }
         }
-
+        //这里会因为出现异常卡客户端帧数，优化下
         public static void SaveError(string ex)
         {
             try
             {
-                if (Settings.RemainingErrorLogs-- > 0)
-                {
-                    File.AppendAllText(@".\Error.txt",
-                                       string.Format("[{0}] {1}{2}", Now, ex, Environment.NewLine));
-                }
+                ErrorLog.Enqueue(string.Format("[{0}] {1}{2}", Now, ex, Environment.NewLine));
             }
             catch
             {
@@ -666,6 +666,24 @@ namespace Client
             {
                 Application_Idle(sender, e);
             }
+            //在这里输出日志
+            StringBuilder sb = new StringBuilder();
+            while (!ErrorLog.IsEmpty)
+            {
+                string message;
+                if (!ErrorLog.TryDequeue(out message)) continue;
+                sb.Append(message);
+            }
+            if (sb.Length > 0)
+            {
+                File.AppendAllText(@".\Config\Error" + "(" + DateTime.Now.Date.ToString("yyyy-MM-dd") + ").txt", sb.ToString());
+                sb.Clear();
+            }
+        }
+        
+        private void ErrorLogSaveThread()
+        {
+            
         }
 
         [DllImport("user32.dll")]

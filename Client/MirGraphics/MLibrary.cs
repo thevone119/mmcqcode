@@ -475,6 +475,7 @@ namespace Client.MirGraphics
     //图像加载器（这个不改增加另外的类实现这个类的功能）
     //修改下这个，让它支持网络图像？
     //目前的参数是2个，一个是filename，表示图像文件路径，一个是index,表示图像在文件中的位置
+    //修改这个类，支持微端，支持在线下载更新,这个实现比较简单了
     public sealed class MLibrary
     {
         private const string Extention = ".Lib";
@@ -915,7 +916,7 @@ namespace Client.MirGraphics
             int h = Height;// + (4 - Height % 4) % 4;
             //这里改下，适配拉伸,不行，如果拉伸了，其他用到的都会拉伸,有缓存的
             GraphicsStream stream = null;
-
+        
             Image = new Texture(DXManager.Device, w, h, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);
             stream = Image.LockRectangle(0, LockFlags.Discard);
             Data = (byte*)stream.InternalDataPointer;
@@ -926,7 +927,7 @@ namespace Client.MirGraphics
 
             stream.Dispose();
             Image.UnlockRectangle(0);
-
+            
             if (HasMask)
             {
                 reader.ReadBytes(12);

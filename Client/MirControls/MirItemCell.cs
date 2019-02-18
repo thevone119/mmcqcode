@@ -98,6 +98,8 @@ namespace Client.MirControls
                         return GameScene.Refine;
                     case MirGridType.Craft:
                         return CraftDialog.IngredientSlots;
+                    case MirGridType.ItemCollect:
+                        return ItemCollectDialog.ItemCollectSlots;
 
                     default:
                         throw new NotImplementedException();
@@ -985,6 +987,66 @@ namespace Client.MirControls
                                 break;
                             #endregion
 
+                            #region From 物品收集（取回物品）
+                            case MirGridType.ItemCollect: //From ItemCollect
+                                if (Item != null && GameScene.SelectedCell.Item.Info.Type == ItemType.Amulet)
+                                {
+                                    if (GameScene.SelectedCell.Item.Info == Item.Info && Item.Count < Item.Info.StackSize)
+                                    {
+                                        Network.Enqueue(new C.MergeItem { GridFrom = GameScene.SelectedCell.GridType, GridTo = GridType, IDFrom = GameScene.SelectedCell.Item.UniqueID, IDTo = Item.UniqueID });
+
+                                        Locked = true;
+                                        GameScene.SelectedCell.Locked = true;
+                                        GameScene.SelectedCell = null;
+                                        return;
+                                    }
+                                }
+
+                                if (GameScene.SelectedCell.Item.Weight + MapObject.User.CurrentBagWeight > MapObject.User.MaxBagWeight)
+                                {
+                                    GameScene.Scene.ChatDialog.ReceiveChat("太重了.", ChatType.System);
+                                    GameScene.SelectedCell = null;
+                                    return;
+                                }
+
+                                if (Item != null)
+                                {
+                                    if (GameScene.SelectedCell.Item.Info == Item.Info && Item.Count < Item.Info.StackSize)
+                                    {
+                                        Network.Enqueue(new C.MergeItem { GridFrom = GameScene.SelectedCell.GridType, GridTo = GridType, IDFrom = GameScene.SelectedCell.Item.UniqueID, IDTo = Item.UniqueID });
+
+                                        Locked = true;
+                                        GameScene.SelectedCell.Locked = true;
+                                        GameScene.SelectedCell = null;
+                                        return;
+                                    }
+                                }
+
+
+                                if (Item == null)
+                                {
+                                    Network.Enqueue(new C.RetrieveItemCollect { From = GameScene.SelectedCell.ItemSlot, To = ItemSlot });
+
+                                    Locked = true;
+                                    GameScene.SelectedCell.Locked = true;
+                                    GameScene.SelectedCell = null;
+                                    return;
+                                }
+
+                                for (int x = 5; x < ItemArray.Length; x++)
+                                    if (ItemArray[x] == null)
+                                    {
+                                        Network.Enqueue(new C.RetrieveItemCollect { From = GameScene.SelectedCell.ItemSlot, To = x });
+
+                                        MirItemCell temp = x < GameScene.User.BeltIdx ? GameScene.Scene.BeltDialog.Grid[x] : GameScene.Scene.InventoryDialog.Grid[x - GameScene.User.BeltIdx];
+
+                                        if (temp != null) temp.Locked = true;
+                                        GameScene.SelectedCell.Locked = true;
+                                        GameScene.SelectedCell = null;
+                                        return;
+                                    }
+                                break;
+                            #endregion
                             #region From Item Renting Dialog
 
                             case MirGridType.Renting:
@@ -1287,8 +1349,61 @@ namespace Client.MirControls
 
                     #endregion
 
+                    #region To 放入收集物品
+                    case MirGridType.ItemCollect:
+                        switch (GameScene.SelectedCell.GridType)
+                        {
+                            #region From ItemCollect
+                            case MirGridType.ItemCollect: //From ItemCollect
+                                if (Item != null)
+                                {
+                                    if (GameScene.SelectedCell.Item.Info == Item.Info && Item.Count < Item.Info.StackSize)
+                                    {
+                                        //Merge.
+                                        Network.Enqueue(new C.MergeItem { GridFrom = GameScene.SelectedCell.GridType, GridTo = GridType, IDFrom = GameScene.SelectedCell.Item.UniqueID, IDTo = Item.UniqueID });
+
+                                        Locked = true;
+                                        GameScene.SelectedCell.Locked = true;
+                                        GameScene.SelectedCell = null;
+                                        return;
+                                    }
+                                }
+
+                                Network.Enqueue(new C.MoveItem { Grid = GridType, From = GameScene.SelectedCell.ItemSlot, To = ItemSlot });
+                                Locked = true;
+                                GameScene.SelectedCell.Locked = true;
+                                GameScene.SelectedCell = null;
+                                return;
+                            #endregion
+
+                            #region From Inventory
+                            case MirGridType.Inventory: //From Inventory
+                                if (Item != null)
+                                {
+                                    if (GameScene.SelectedCell.Item.Info == Item.Info && Item.Count < Item.Info.StackSize)
+                                    {
+                                        Network.Enqueue(new C.MergeItem { GridFrom = GameScene.SelectedCell.GridType, GridTo = GridType, IDFrom = GameScene.SelectedCell.Item.UniqueID, IDTo = Item.UniqueID });
+
+                                        Locked = true;
+                                        GameScene.SelectedCell.Locked = true;
+                                        GameScene.SelectedCell = null;
+                                        return;
+                                    }
+                                }
+
+                                Network.Enqueue(new C.DepositItemCollect { From = GameScene.SelectedCell.ItemSlot, To = ItemSlot });
+                                Locked = true;
+                                GameScene.SelectedCell.Locked = true;
+                                GameScene.SelectedCell = null;
+                                return;
+                                #endregion
+                        }
+                        break;
+
+                    #endregion
+
                     #region To Refine 
-                  
+
                     case MirGridType.Refine:
 
                         switch (GameScene.SelectedCell.GridType)

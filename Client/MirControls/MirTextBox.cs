@@ -252,7 +252,7 @@ namespace Client.MirControls
             TextBox.ParentChanged += TextBox_VisibleChanged;
             TextBox.KeyUp += TextBoxOnKeyUp;  
             TextBox.KeyPress += TextBox_KeyPress;
-
+            //TextBox.ImeMode = ImeMode.HangulFull;
             Shown += MirTextBox_Shown;
             TextBox.MouseMove += CMain.CMain_MouseMove;
         }
@@ -265,6 +265,15 @@ namespace Client.MirControls
                     CMain.CMain_KeyUp(sender, e);
                     break;
 
+            }
+        }
+
+        //支持变更输入法的模式，支持中文方便
+        public ImeMode ImeMode { get {
+                return TextBox.ImeMode;
+            }
+            set {
+                TextBox.ImeMode = value;
             }
         }
 

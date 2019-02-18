@@ -39,6 +39,12 @@ namespace Client
         //开启切换则自动切换，不开启切换，则优先使用最近的毒
         public bool switchPoison = true;//切换红绿毒
 
+        //自动体迅风
+        public bool AutoHaste = true;
+        public long LastHasteTime = 0;//最后体迅风时间
+        //风身术
+        public bool AutoLightBody = true;
+
         //保护
         public bool OpenProtect = true;
 
@@ -125,6 +131,8 @@ namespace Client
             AutoFlaming = Reader.ReadBoolean("UserSettings", "AutoFlaming", AutoFlaming);
             AutoShield = Reader.ReadBoolean("UserSettings", "AutoShield", AutoShield);
             AutoPoison = Reader.ReadBoolean("UserSettings", "AutoPoison", AutoPoison);
+            AutoHaste = Reader.ReadBoolean("UserSettings", "AutoHaste", AutoHaste);
+            AutoLightBody = Reader.ReadBoolean("UserSettings", "AutoLightBody", AutoLightBody);
             OpenProtect = Reader.ReadBoolean("UserSettings", "OpenProtect", OpenProtect);
             AutoPickUp = Reader.ReadBoolean("UserSettings", "AutoPickUp", AutoPickUp);
             ShowMonName = Reader.ReadBoolean("UserSettings", "ShowMonName", ShowMonName);
@@ -160,6 +168,10 @@ namespace Client
             Reader.Write("UserSettings", "AutoFlaming", AutoFlaming);
             Reader.Write("UserSettings", "AutoShield", AutoShield);
             Reader.Write("UserSettings", "AutoPoison", AutoPoison);
+
+            Reader.Write("UserSettings", "AutoHaste", AutoHaste);
+            Reader.Write("UserSettings", "AutoLightBody", AutoLightBody);
+  
             Reader.Write("UserSettings", "OpenProtect", OpenProtect);
             Reader.Write("UserSettings", "AutoPickUp", AutoPickUp);
             Reader.Write("UserSettings", "ShowMonName", ShowMonName);

@@ -48,8 +48,10 @@ namespace Client
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
-                if (Settings.P_Patcher) Application.Run(PForm = new Launcher.AMain());
-                else Application.Run(Form = new CMain());
+                Application.Run(PForm = new Launcher.AMain());
+
+                //if (Settings.P_Patcher) Application.Run(PForm = new Launcher.AMain());
+                //else Application.Run(Form = new CMain());
                 //Application.Run(Form = new CMain());
                 //Application.Run( new Test());
                 Settings.Save();
