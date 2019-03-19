@@ -18,6 +18,8 @@ using Microsoft.DirectX.Direct3D;
 using Font = System.Drawing.Font;
 using System.Collections.Concurrent;
 using System.Text;
+using S = ServerPackets;
+using C = ClientPackets;
 
 namespace Client
 {
@@ -174,8 +176,8 @@ namespace Client
             Shift = e.Shift;
             Alt = e.Alt;
             Ctrl = e.Control;
-
-            if (e.KeyCode == Keys.Oem8)
+            //这个~应该是Oemtilde键才对？
+            if (e.KeyCode == Keys.Oem8|| e.KeyCode== Keys.Oemtilde)
                 CMain.Tilde = true;
 
             try
@@ -207,7 +209,7 @@ namespace Client
             Alt = e.Alt;
             Ctrl = e.Control;
 
-            if (e.KeyCode == Keys.Oem8)
+            if (e.KeyCode == Keys.Oem8 || e.KeyCode == Keys.Oemtilde)
                 CMain.Tilde = false;
             //这个进行截屏处理？应该捕获不了这个键哦
             KeyBind kb = GetKeyBind(e.KeyCode);
@@ -746,12 +748,18 @@ namespace Client
 
         private void CMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            timer1.Stop();
+            
             if (ServerConfig.exitGameType == ExitGameType.Normal && CMain.Time < GameScene.LogTime && GameScene.Scene!=null && GameScene.Scene.ChatDialog!=null)
             {
                 GameScene.Scene.ChatDialog.ReceiveChat("请在 " + (GameScene.LogTime - CMain.Time) / 1000 + " 秒后离开游戏.", ChatType.System);
                 e.Cancel = true;
+                return;
             }
+
+            //Network.Enqueue(new C.ItemCollectCancel());
+            //Network.Enqueue(new C.RefineCancel());
+            timer1.Stop();
+
         }
     }
 }

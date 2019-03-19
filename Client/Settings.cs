@@ -125,7 +125,7 @@ namespace Client
                              Password = "";
 
         public static bool
-            SkillMode = false,
+            SkillMode = false,//技能模式是否开启
             SkillBar = true,//是否显示技能条？左上角的么
             //SkillSet = true,
             Effect = true,
@@ -136,7 +136,7 @@ namespace Client
             TransparentChat = false,
             DuraView = false,//是否显示持久面板
             DisplayDamage = true,
-            TargetDead = false,
+            TargetDead = false,//死亡的是否作为目标，影响到复活术哦，如果死了不作为目标，复活术就没法使用了,做到外挂中配置
             ExpandedBuffWindow = true;
 
         public static int[,] SkillbarLocation = new int[2, 2] { { 0, 0 }, { 216, 0 }  };
@@ -231,7 +231,7 @@ namespace Client
             FontName = Reader.ReadString("Game", "FontName", FontName);
             TransparentChat = Reader.ReadBoolean("Game", "TransparentChat", TransparentChat);
             DisplayDamage = Reader.ReadBoolean("Game", "DisplayDamage", DisplayDamage);
-            TargetDead = Reader.ReadBoolean("Game", "TargetDead", TargetDead);
+            //TargetDead = Reader.ReadBoolean("Game", "TargetDead", TargetDead);
             ExpandedBuffWindow = Reader.ReadBoolean("Game", "ExpandedBuffWindow", ExpandedBuffWindow);
             DuraView = Reader.ReadBoolean("Game", "DuraWindow", DuraView);
 

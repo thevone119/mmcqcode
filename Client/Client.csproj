@@ -165,6 +165,8 @@
       <DependentUpon>Config.cs</DependentUpon>
     </Compile>
     <Compile Include="KeyBindSettings.cs" />
+    <Compile Include="MirControls\MirPlayerSale.cs" />
+    <Compile Include="MirControls\MirPlayerShopCell.cs" />
     <Compile Include="MirControls\MirGameShopCell.cs" />
     <Compile Include="MirControls\MirAmountBox.cs" />
     <Compile Include="MirControls\MirAnimatedButton.cs" />
@@ -202,6 +204,7 @@
     <Compile Include="MirScenes\Dialogs\ChatNoticeDialog.cs" />
     <Compile Include="MirScenes\Dialogs\ChatOptionDialog.cs" />
     <Compile Include="MirScenes\Dialogs\FishingDialog.cs" />
+    <Compile Include="MirScenes\Dialogs\PlayerShopDialog.cs" />
     <Compile Include="MirScenes\Dialogs\RechargeDialog.cs" />
     <Compile Include="MirScenes\Dialogs\UserSetDialog.cs" />
     <Compile Include="MirScenes\Dialogs\FriendDialog.cs" />

@@ -30,6 +30,7 @@ namespace Client.MirScenes
     public sealed class GameScene : MirScene
     {
         public static GameScene Scene;
+        public bool isExit = false;//是否退出游戏
         //当前游戏用户
         public static UserObject User
         {
@@ -95,7 +96,9 @@ namespace Client.MirScenes
         
 
         public BigMapDialog BigMapDialog;
-        public TrustMerchantDialog TrustMerchantDialog;
+        //public TrustMerchantDialog TrustMerchantDialog;
+        public PlayerShopDialog PlayerShopDialog;
+
         public CharacterDuraPanel CharacterDuraPanel;
         public DuraStatusDialog DuraStatusPanel;
         public TradeDialog TradeDialog;
@@ -151,6 +154,10 @@ namespace Client.MirScenes
         public static List<ClientRecipeInfo> RecipeInfoList = new List<ClientRecipeInfo>();
         //这个buff和用户中的buff有什么区别？
         public List<Buff> Buffs = new List<Buff>();
+        //这个记录别的玩家，怪物的零时BUF,过期可以删除
+        public static Dictionary<string,Buff> bufdic = new Dictionary<string, Buff>();
+        public static long bufProcessTime = 0;
+
         //
         public static UserItem[] Storage = new UserItem[80];
         public static UserItem[] GuildStorage = new UserItem[112];
@@ -246,7 +253,8 @@ namespace Client.MirScenes
             GuildDialog = new GuildDialog { Parent = this, Visible = false };
 
             BigMapDialog = new BigMapDialog { Parent = this, Visible = false };
-            TrustMerchantDialog = new TrustMerchantDialog { Parent = this, Visible = false };
+            //TrustMerchantDialog = new TrustMerchantDialog { Parent = this, Visible = false };
+            PlayerShopDialog = new PlayerShopDialog { Parent = this, Visible = false };
             //持久面板，先注释掉
             CharacterDuraPanel = new CharacterDuraPanel { Parent = this, Visible = false };
             //持久面板，先注释掉
@@ -360,6 +368,9 @@ namespace Client.MirScenes
         {
             //bool skillMode = Settings.SkillMode ? CMain.Tilde : CMain.Ctrl;
             //bool altBind = skillMode ? Settings.SkillSet : !Settings.SkillSet;
+            //MirLog.info("key:"+ e.KeyCode== Keys.Oemtilde);
+            //MirLog.info("key:" + CMain.Ctrl);
+            
             KeyBind KeyCheck = CMain.GetKeyBind(e.KeyCode);
             if (KeyCheck == null)
             {
@@ -512,7 +523,8 @@ namespace Client.MirScenes
                     GuildDialog.Hide();
                     InspectDialog.Hide();
                     StorageDialog.Hide();
-                    TrustMerchantDialog.Hide();
+                    //TrustMerchantDialog.Hide();
+                    PlayerShopDialog.Hide();
                     //CharacterDuraPanel.Hide();
                     QuestListDialog.Hide();
                     QuestDetailDialog.Hide();
@@ -856,16 +868,20 @@ namespace Client.MirScenes
                     User.NextMagicDirection = MapControl.MouseDirection();
                     break;
             }
-
         }
         //退出游戏
         public void QuitGame()
         {
             if (ServerConfig.exitGameType== ExitGameType.noWait||CMain.Time >= LogTime)
             {
+                Network.Enqueue(new C.ItemCollectCancel());
+                Network.Enqueue(new C.RefineCancel());
                 //If Last Combat < 10 CANCEL
                 MirMessageBox messageBox = new MirMessageBox("确定要退出游戏么?", MirMessageBoxButtons.YesNo);
-                messageBox.YesButton.Click += (o, e) => Program.Form.Close();
+                messageBox.YesButton.Click += (o, e) => {
+                    isExit = true;
+                    Program.Form.Close();
+                };
                 messageBox.Show();
             }
             else
@@ -1033,6 +1049,8 @@ namespace Client.MirScenes
             MainDialog.Process();
             InventoryDialog.Process();
             GameShopDialog.Process();
+            //
+            PlayerShopDialog.Process();
             MiniMapDialog.Process();
             foreach (SkillBarDialog Bar in Scene.SkillBarDialogs)
                 Bar.Process();
@@ -1053,16 +1071,82 @@ namespace Client.MirScenes
             {
                 return;
             }
-            //添加自动烈火处理,相当于2秒按一次
+
+            //这里加入BUF自动删除
+            if ( CMain.Time > bufProcessTime)
+            {
+                bufProcessTime = CMain.Time + 300;
+                List<string> rmkey = new List<string>();
+                foreach (KeyValuePair<string, Buff> bf in bufdic)
+                {
+                    if (bf.Value.Expire < CMain.Time)
+                    {
+                        rmkey.Add(bf.Key);
+                        for (int i = MapControl.Objects.Count - 1; i >= 0; i--)
+                        {
+                            MapObject ob = MapControl.Objects[i];
+                            if (ob.ObjectID != bf.Value.ObjectID) continue;
+                            ob.Buffs.Remove(bf.Value.Type);
+                            ob.RemoveBuffEffect(bf.Value.Type);
+                        }
+                    }
+                }
+                foreach (string key in rmkey)
+                {
+                    bufdic.Remove(key);
+                }
+            }
+
+            //添加自动烈火处理,相当于0.5秒按一次，身前有怪物，人物才释放
             if (GameScene.UserSet.AutoFlaming && CMain.Time > GameScene.UserSet.LastFlamingTime && CMain.Time<LastAttackTime+7000)
             {
-                GameScene.UserSet.LastFlamingTime = CMain.Time + 2000;
+                GameScene.UserSet.LastFlamingTime = CMain.Time + 200;
                 ClientMagic mag = User.GetMagic(Spell.FlamingSword);
                 if (mag != null)
                 {
-                    UseSpell(mag);
+                    bool hasMon = false;
+                    List<MapObject> listitem = MapControl.M2CellInfo[User.Front.X, User.Front.Y].CellObjects;
+                    if (listitem != null && listitem.Count > 0)
+                    {
+                        for (int i = 0; i < listitem.Count; i++)
+                        {
+                            if (listitem[i].Race == ObjectType.Player || listitem[i].Race == ObjectType.Monster)
+                            {
+                                hasMon = true;
+                            }
+                        }
+                    }
+                    if (mag != null && hasMon)
+                    {
+                        UseSpell(mag);
+                    }
                 }
             }
+            //添加自动龙血处理,相当于1.5秒按一次,15秒没攻击了，就不放了
+            if (GameScene.UserSet.AutoFury && CMain.Time > GameScene.UserSet.LastFuryTime && CMain.Time < LastAttackTime + 15000)
+            {
+                GameScene.UserSet.LastFuryTime = CMain.Time + 1500;
+                ClientMagic mag = User.GetMagic(Spell.Fury);
+                if (mag != null)
+                {
+                    if (mag.CastTime!=0)
+                    {
+                        if(mag.CastTime + mag.Delay < CMain.Time)
+                        {
+                            GameScene.UserSet.LastFuryTime += mag.Delay;
+                            UseSpell(mag);
+                        }
+                    }
+                    else
+                    {
+                        GameScene.UserSet.LastFuryTime += mag.Delay;
+                        UseSpell(mag);
+                    }
+                }
+            }
+            
+
+
             //添加魔法盾处理,相当于半秒检测1次，判断buff是否存在
             if (GameScene.UserSet.AutoShield && CMain.Time > GameScene.UserSet.LastShieldTime)
             {
@@ -1084,7 +1168,7 @@ namespace Client.MirScenes
                     UseSpell(mag);
                 }
             }
-            
+
             //自动喝药处理,
             //1.快速恢复药 200毫秒喝一瓶。
             //2.缓慢恢复的药，就2秒一瓶.
@@ -1154,6 +1238,7 @@ namespace Client.MirScenes
             {
                 GameScene.UserSet.AutoPickUpTime = CMain.Time + 300;
                 //判断当前位置是否有需要的物品
+                
                 List<MapObject> listitem = MapControl.M2CellInfo[User.CurrentLocation.X, User.CurrentLocation.Y].CellObjects;
                 if (listitem != null && listitem.Count > 0)
                 {
@@ -1651,6 +1736,12 @@ namespace Client.MirScenes
                     break;
                 case (short)ServerPacketIds.NPCConsign:
                     NPCConsign();
+                    break;
+                case (short)ServerPacketIds.NPCConsignCredit:
+                    NPCConsignCredit();
+                    break;
+                case (short)ServerPacketIds.NPCConsignDoulbe:
+                    NPCConsignDoulbe();
                     break;
                 case (short)ServerPacketIds.NPCMarket:
                     NPCMarket((S.NPCMarket)p);
@@ -4434,7 +4525,7 @@ namespace Client.MirScenes
             }
 
             if (!buff.Visible || buff.ObjectID <= 0) return;
-
+            //这里有问题啊，只有添加，没有期限
             for (int i = MapControl.Objects.Count - 1; i >= 0; i--)
             {
                 MapObject ob = MapControl.Objects[i];
@@ -4447,6 +4538,7 @@ namespace Client.MirScenes
                     }
 
                     ob.AddBuffEffect(buff.Type);
+                    bufdic[buff.ObjectID+"_"+ buff.Type] = buff;
                     return;
                 }
             }
@@ -4484,6 +4576,11 @@ namespace Client.MirScenes
 
                 ob.Buffs.Remove(p.Type);
                 ob.RemoveBuffEffect(p.Type);
+                //删除BUF
+                if(bufdic.ContainsKey(p.ObjectID + "_" + p.Type))
+                {
+                    bufdic.Remove(p.ObjectID + "_" + p.Type);
+                }
                 return;
             }
         }
@@ -4853,26 +4950,43 @@ namespace Client.MirScenes
             NPCDropDialog.PType = PanelType.Consign;
             NPCDropDialog.Show();
         }
+
+        private void NPCConsignCredit()
+        {
+            if (!NPCDialog.Visible) return;
+            NPCDropDialog.PType = PanelType.ConsignCredit;
+            NPCDropDialog.Show();
+        }
+
+        private void NPCConsignDoulbe()
+        {
+            if (!NPCDialog.Visible) return;
+            NPCDropDialog.PType = PanelType.ConsignDoulbe;
+            NPCDropDialog.Show();
+        }
+
+        //服务器端返回市场
         private void NPCMarket(S.NPCMarket p)
         {
             for (int i = 0; i < p.Listings.Count; i++)
                 Bind(p.Listings[i].Item);
-            if (!TrustMerchantDialog.Visible)
+            PlayerShopDialog.UserMode = p.UserMode;
+            if (!PlayerShopDialog.Visible)
             {
-                TrustMerchantDialog.Show();
+                PlayerShopDialog.Show();
             }
-            TrustMerchantDialog.UserMode = p.UserMode;
-            TrustMerchantDialog.Page = p.cpage;
-            TrustMerchantDialog.PageCount = p.pageCount;
+            PlayerShopDialog.Page = p.cpage;
+            PlayerShopDialog.PageCount = p.pageCount;
             if (p.cpage == 0)
             {
-                TrustMerchantDialog.Listings = p.Listings;
+                PlayerShopDialog.SearchResult = p.Listings;
             }
             else
             {
-                TrustMerchantDialog.Listings.AddRange(p.Listings);
+                PlayerShopDialog.SearchResult.AddRange(p.Listings);
             }
-            TrustMerchantDialog.UpdateInterface();
+            PlayerShopDialog.UpdateShop();
+            //MirLog.info("count:" + PlayerShopDialog.SearchResult.Count);
         }
         
         private void ConsignItem(S.ConsignItem p)
@@ -4912,10 +5026,10 @@ namespace Client.MirScenes
                     MirMessageBox.Show("此物品已过期.");
                     break;
                 case 4:
-                    MirMessageBox.Show("你没有足够的金币来买这个物品.");
+                    MirMessageBox.Show("你没有足够的资金来买这个物品.");
                     break;
                 case 5:
-                    MirMessageBox.Show("你没有足够的负重或空间来购买这个物品.");
+                    MirMessageBox.Show("负重或背包空间不足.");
                     break;
                 case 6:
                     MirMessageBox.Show("你不能买你自己的东西.");
@@ -4925,7 +5039,7 @@ namespace Client.MirScenes
                     break;
                 case 8:
                     //MirMessageBox.Show("You cannot hold enough gold to get your sale");
-                    MirMessageBox.Show("您的金币不足");
+                    MirMessageBox.Show("您的资金不足");
                     break;
                 case 9:
                     //MirMessageBox.Show("You cannot hold enough gold to get your sale");
@@ -5277,7 +5391,7 @@ namespace Client.MirScenes
 
         private void MentorRequest(S.MentorRequest p)
         {
-            MirMessageBox messageBox = new MirMessageBox(string.Format("{0} (等级 {1} 职业{2}) 邀请和你建立师徒关系.", p.Name, p.Level, GameScene.User.Class.ToString()), MirMessageBoxButtons.YesNo);
+            MirMessageBox messageBox = new MirMessageBox(string.Format("{0} (等级 {1} 职业{2}) 邀请和你建立师徒关系.", p.Name, p.Level, NameChange.getMirClass(GameScene.User.Class)), MirMessageBoxButtons.YesNo);
 
             messageBox.YesButton.Click += (o, e) => Network.Enqueue(new C.MentorReply { AcceptInvite = true });
             messageBox.NoButton.Click += (o, e) => { Network.Enqueue(new C.MentorReply { AcceptInvite = false }); messageBox.Dispose(); };
@@ -6193,7 +6307,7 @@ namespace Client.MirScenes
             if (minValue > 0 || maxValue > 0 || addValue > 0)
             {
                 count++;
-                text = string.Format("灵性 + {0}", minValue);
+                text = string.Format("灵性 {0}/{1}", HoverItem.samsaracount,minValue);
 
                 MirLabel SCLabel = new MirLabel
                 {
@@ -6210,31 +6324,7 @@ namespace Client.MirScenes
             }
             #endregion
 
-            #region samsaracount 轮回
-
-            minValue = HoverItem.samsaracount;
-            maxValue = 0;
-            addValue = (!HoverItem.Info.NeedIdentify || HoverItem.Identified) ? HoverItem.samsaracount : 0;
-
-            if (minValue > 0 || maxValue > 0 || addValue > 0)
-            {
-                count++;
-                text = string.Format("轮回 + {0}", minValue);
-
-                MirLabel SCLabel = new MirLabel
-                {
-                    AutoSize = true,
-                    ForeColour = minValue > 0 ? Color.Cyan : Color.White,
-                    Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
-                    OutLine = true,
-                    Parent = ItemLabel,
-                    //Text = string.Format("SC + {0}~{1}", minValue, maxValue + addValue)
-                    Text = text
-                };
-                ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, SCLabel.DisplayRectangle.Right + 4),
-                    Math.Max(ItemLabel.Size.Height, SCLabel.DisplayRectangle.Bottom));
-            }
-            #endregion
+            
 
 
             #region LUCK / SUCCESS 幸运
@@ -8588,7 +8678,7 @@ namespace Client.MirScenes
 
         public void Rankings(S.Rankings p)
         {
-            RankingDialog.RecieveRanks(p.Listings, p.RankType);
+            RankingDialog.RecieveRanks(p.Listings, p.RankType,p.RankType2);
         }
 
         public void Opendoor(S.Opendoor p)
@@ -9320,7 +9410,7 @@ namespace Client.MirScenes
                 Libraries.Background.Draw(21, 0, 0); //village entrance
             }
         }
-
+        //画各种对象
         private void DrawObjects()
         {
             for (int y = User.Movement.Y - ViewRangeY; y <= User.Movement.Y + ViewRangeY + 25; y++)
@@ -10439,7 +10529,9 @@ namespace Client.MirScenes
                     if (User.NextMagicObject != null)
                     {
                         if (User.NextMagicObject.Dead && User.NextMagicObject.Race == ObjectType.Player)
+                        {
                             target = User.NextMagicObject;
+                        }
                     }
                     break;
                 case Spell.Trap:
@@ -10484,7 +10576,18 @@ namespace Client.MirScenes
             //这里对自动切毒进行处理
             if (GameScene.UserSet.switchPoison && magic.Spell== Spell.Poisoning)
             {
-                //是否需要切换
+                if (lastPoisonType == PoisonType.Red)
+                {
+                    lastPoisonType = PoisonType.Green;
+                    Network.Enqueue(new C.MagicParameter() { Parameter = 1 });
+                }
+                else
+                {
+                    lastPoisonType = PoisonType.Red;
+                    Network.Enqueue(new C.MagicParameter() { Parameter = 2 });
+                }
+
+                /**
                 bool needSwitch = true;
                 UserItem pitem = null;
                 if(GameScene.Scene!=null && GameScene.Scene.CharacterDialog!=null && GameScene.Scene.CharacterDialog.Grid != null)
@@ -10502,7 +10605,7 @@ namespace Client.MirScenes
                     {
                         needSwitch = false;
                     }
-                    //需要切换，则从包袱中找一包毒放上去
+                    
                     if (needSwitch)
                     {
                         MirItemCell useCell = null;
@@ -10539,6 +10642,7 @@ namespace Client.MirScenes
                         }
                     }
                 }
+                **/
             }
 
             GameScene.LogTime = CMain.Time + Globals.LogDelay;
@@ -10931,16 +11035,16 @@ namespace Client.MirScenes
                     text = string.Format("神圣战甲术\n防御提升: 0-{0}.\n", Values[0]);
                     break;
                 case BuffType.ProtectionField:
-                    text = string.Format("铁 布 衫\n防御提升: 0-{0}.\n", Values[0]);
+                    text = string.Format("护身气幕\n防御提升: 0-{0}.\n", Values[0]);
                     break;
                 case BuffType.Rage:
                     text = string.Format("剑 气 爆\n攻击提升: 0-{0}.\n", Values[0]);
                     break;
                 case BuffType.ImmortalSkin:
-                    text = string.Format("金刚不坏\n攻击降低:  {0}-{0}\n防御提升:  {1}-{1}\n", Values[0], Values[1]);
+                    text = string.Format("金刚不坏\n攻击降低:  0-{0}\n防御提升:  0-{1}\n", Values[0], Values[1]);
                     break;
                 case BuffType.CounterAttack:
-                    text = string.Format("罗汉金身\n双防提升:  {0}−{1}\n受到伤害反弹\n", Values[0], Values[0]);
+                    text = string.Format("天务\n双防提升:  {0}−{1}\n受到伤害反弹\n", Values[0], Values[0]);
                     break;
                 case BuffType.UltimateEnhancer:
                     if (GameScene.User.Class == MirClass.Wizard || GameScene.User.Class == MirClass.Archer)

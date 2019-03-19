@@ -6,17 +6,17 @@ using Client.MirSounds;
 
 namespace Client.MirControls
 {
-    //输入数量的格子，寄售也是通过这个输入金币
-    public sealed class MirAmountBox : MirImageControl
+    //寄售输入金币/元宝的
+    public sealed class MirPlayerSale : MirImageControl
     {
-        public MirLabel TitleLabel, TextLabel;
+        public MirLabel TitleLabel, TextLabel,pricr1Label, pricr2Label;
         public MirButton OKButton, CancelButton, CloseButton;
-        public MirTextBox InputTextBox;
+        public MirTextBox InputTextBox, InputTextCreditBox;
         public MirControl ItemImage;
         public int ImageIndex;
-        public uint Amount, MinAmount, MaxAmount;
+        public uint Amount, CreditPrice, MinAmount, MaxAmount;
 
-        public MirAmountBox(string title, int image, uint max, uint min = 0, uint defaultAmount = 0)
+        public MirPlayerSale(string title, int image, uint max, uint min = 0, uint defaultAmount = 0)
         {
             ImageIndex = image;
             MaxAmount = max;
@@ -25,7 +25,7 @@ namespace Client.MirControls
             Modal = true;
             Movable = false;
 
-            Index = 238;
+            Index = 537;
             Library = Libraries.Prguse;
 
             Location = new Point((Settings.ScreenWidth - Size.Width) / 2, (Settings.ScreenHeight - Size.Height) / 2);
@@ -43,7 +43,7 @@ namespace Client.MirControls
             {
                 HoverIndex = 361,
                 Index = 360,
-                Location = new Point(180, 3),
+                Location = new Point(170, 3),
                 Library = Libraries.Prguse2,
                 Parent = this,
                 PressedIndex = 362,
@@ -53,7 +53,7 @@ namespace Client.MirControls
 
             ItemImage = new MirControl
             {
-                Location = new Point(15, 34),
+                Location = new Point(10, 30),
                 Size = new Size(38, 34),
                 Parent = this,
             };
@@ -64,114 +64,85 @@ namespace Client.MirControls
                 HoverIndex = 201,
                 Index = 200,
                 Library = Libraries.Title,
-                Location = new Point(23, 76),
+                Location = new Point(18, 132),
                 Parent = this,
                 PressedIndex = 202,
             };
-            OKButton.Click += (o, e) => Dispose();
+            OKButton.Click += (o, e) => {
+                uint.TryParse(InputTextCreditBox.Text, out CreditPrice);
+                uint.TryParse(InputTextBox.Text, out Amount);
+                if (Amount > MaxAmount)
+                {
+                    Amount = MaxAmount;
+                }
+                if (CreditPrice > MaxAmount)
+                {
+                    CreditPrice = MaxAmount;
+                }
+                Dispose();
+            };
 
             CancelButton = new MirButton
             {
                 HoverIndex = 204,
                 Index = 203,
                 Library = Libraries.Title,
-                Location = new Point(110, 76),
+                Location = new Point(102, 132),
                 Parent = this,
                 PressedIndex = 205,
             };
             CancelButton.Click += (o, e) => Dispose();
+
+            pricr1Label = new MirLabel
+            {
+                AutoSize = true,
+                Location = new Point(10, 70),
+                Parent = this,
+                NotControl = true,
+                Text = "金币价格："
+            };
+
 
             InputTextBox = new MirTextBox
             {
                 Parent = this,
                 Border = true,
                 BorderColour = Color.Lime,
-                Location = new Point(58, 43),
-                Size = new Size(132, 19),
+                Location = new Point(73, 70),
+                Size = new Size(100, 18),
             };
             InputTextBox.SetFocus();
             InputTextBox.TextBox.KeyPress += MirInputBox_KeyPress;
             InputTextBox.TextBox.TextChanged += TextBox_TextChanged;
-            InputTextBox.Text = (defaultAmount > 0 && defaultAmount <= MaxAmount) ? defaultAmount.ToString() : MaxAmount.ToString();
+            InputTextBox.Text = MinAmount.ToString();
             InputTextBox.TextBox.SelectionStart = 0;
             InputTextBox.TextBox.SelectionLength = InputTextBox.Text.Length;
 
-        }
-        public MirAmountBox(string title, int image, string message)
-        {
-            ImageIndex = image;
-
-            Modal = true;
-            Movable = false;
-
-            Index = 238;
-            Library = Libraries.Prguse;
-
-            Location = new Point((800 - Size.Width) / 2, (600 - Size.Height) / 2);
-
-
-
-            TitleLabel = new MirLabel
+            pricr2Label = new MirLabel
             {
                 AutoSize = true,
-                Location = new Point(19, 8),
+                Location = new Point(10, 95),
                 Parent = this,
                 NotControl = true,
-                Text = title
+                Text = "元宝价格："
             };
 
-            TextLabel = new MirLabel
+            InputTextCreditBox = new MirTextBox
             {
-                AutoSize = true,
-                Location = new Point(60, 43),
-                ForeColour = Color.Yellow,
                 Parent = this,
-                NotControl = true,
-                Text = message
+                Border = true,
+                BorderColour = Color.Lime,
+                Location = new Point(73, 95),
+                Size = new Size(100, 18),
             };
+            InputTextCreditBox.TextBox.KeyPress += InputTextCredit_KeyPress;
+            InputTextCreditBox.TextBox.TextChanged += TextBox_TextChanged;
+            InputTextCreditBox.Text = MinAmount.ToString();
+            InputTextCreditBox.TextBox.SelectionStart = 0;
+            InputTextCreditBox.TextBox.SelectionLength = InputTextCreditBox.Text.Length;
 
-            CloseButton = new MirButton
-            {
-                HoverIndex = 361,
-                Index = 360,
-                Location = new Point(180, 3),
-                Library = Libraries.Prguse2,
-                Parent = this,
-                PressedIndex = 362,
-                Sound = SoundList.ButtonA,
-            };
-            CloseButton.Click += (o, e) => Dispose();
-
-            ItemImage = new MirControl
-            {
-                Location = new Point(15, 34),
-                Size = new Size(38, 34),
-                Parent = this,
-            };
-            ItemImage.AfterDraw += (o, e) => DrawItem();
-
-            OKButton = new MirButton
-            {
-                HoverIndex = 201,
-                Index = 200,
-                Library = Libraries.Title,
-                Location = new Point(23, 76),
-                Parent = this,
-                PressedIndex = 202,
-            };
-            OKButton.Click += (o, e) => Dispose();
-
-            CancelButton = new MirButton
-            {
-                HoverIndex = 204,
-                Index = 203,
-                Library = Libraries.Title,
-                Location = new Point(110, 76),
-                Parent = this,
-                PressedIndex = 205,
-            };
-            CancelButton.Click += (o, e) => Dispose();
         }
+       
 
         void TextBox_TextChanged(object sender, EventArgs e)
         {
@@ -192,12 +163,60 @@ namespace Client.MirControls
             }
             else
             {
-                InputTextBox.BorderColour = Color.Red;
-                OKButton.Visible = false;
+                //InputTextBox.BorderColour = Color.Red;
+                //OKButton.Visible = false;
             }
         }
 
+        void InputTextCredit_TextChanged(object sender, EventArgs e)
+        {
+            if (uint.TryParse(InputTextCreditBox.Text, out CreditPrice) && CreditPrice >= MinAmount)
+            {
+                InputTextCreditBox.BorderColour = Color.Lime;
+
+                OKButton.Visible = true;
+                if (CreditPrice > MaxAmount)
+                {
+                    CreditPrice = MaxAmount;
+                    InputTextCreditBox.Text = MaxAmount.ToString();
+                    InputTextCreditBox.TextBox.SelectionStart = InputTextCreditBox.Text.Length;
+                }
+
+                if (CreditPrice == MaxAmount)
+                    InputTextCreditBox.BorderColour = Color.Orange;
+            }
+            else
+            {
+                //InputTextCreditBox.BorderColour = Color.Red;
+                //OKButton.Visible = false;
+            }
+        }
+
+        
+
         void MirInputBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar)
+                && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+
+            if (e.KeyChar == (char)Keys.Enter)
+            {
+                if (OKButton != null && !OKButton.IsDisposed)
+                    OKButton.InvokeMouseClick(EventArgs.Empty);
+                e.Handled = true;
+            }
+            else if (e.KeyChar == (char)Keys.Escape)
+            {
+                if (CancelButton != null && !CancelButton.IsDisposed)
+                    CancelButton.InvokeMouseClick(EventArgs.Empty);
+                e.Handled = true;
+            }
+        }
+
+        void InputTextCredit_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar)
                 && !char.IsDigit(e.KeyChar))

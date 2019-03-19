@@ -23,9 +23,9 @@ namespace Client.MirScenes.Dialogs
         public byte currTab = 1;//当前选择的TAB
         //各种开关
         //基本
-        public MirCheckBox ShowLevelBox, ExcuseShiftBox, ShowPingBox, ShowFashionBox, ShowMonNameBox;
+        public MirCheckBox ShowLevelBox, ExcuseShiftBox, ShowPingBox, ShowFashionBox, ShowMonNameBox, ShowTargetDead, ShowMonCorpse;
         //职业
-        public MirCheckBox SeptumBox, AutoFlamingBox, AutoShieldBox, switchPoisonBox, AutoHasteBox;
+        public MirCheckBox SeptumBox, AutoFlamingBox, AutoShieldBox, switchPoisonBox, AutoHasteBox, AutoFuryBox;
         public MirLabel tx_df;//提醒自动毒符
         //保护
         public MirCheckBox OpenProtectBox;
@@ -230,6 +230,21 @@ namespace Client.MirScenes.Dialogs
             {
                 changeData();
             };
+            top += 30;
+            ShowMonCorpse = new MirCheckBox { Location = new Point(left, top), LabelText = "显示尸体", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            ShowMonCorpse.Click += (o, e) =>
+            {
+                changeData();
+            };
+            top += 30;
+            ShowTargetDead = new MirCheckBox { Location = new Point(left, top), LabelText = "尸体可点", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            ShowTargetDead.Click += (o, e) =>
+            {
+                changeData();
+            };
+      
+
+            
 
             //2.职业
             left = 50;
@@ -275,6 +290,15 @@ namespace Client.MirScenes.Dialogs
             {
                 changeData();
             };
+            //自动血龙
+            top += 30;
+            AutoFuryBox = new MirCheckBox { Location = new Point(left, top), LabelText = "自动血龙", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            AutoFuryBox.Click += (o, e) =>
+            {
+                changeData();
+            };
+
+            
             //4.物品
             left = 50;
             top = 70;
@@ -490,12 +514,15 @@ namespace Client.MirScenes.Dialogs
             ShowPingBox.Checked = GameScene.UserSet.ShowPing;
             ShowFashionBox.Checked = GameScene.UserSet.ShowFashion;
             ShowMonNameBox.Checked = GameScene.UserSet.ShowMonName;
-
+            ShowTargetDead.Checked = Settings.TargetDead;
+            ShowMonCorpse.Checked = GameScene.UserSet.ShowMonCorpse;
             SeptumBox.Checked = GameScene.UserSet.Septum;
             AutoFlamingBox.Checked = GameScene.UserSet.AutoFlaming;
             AutoShieldBox.Checked = GameScene.UserSet.AutoShield;
 
             AutoHasteBox.Checked = GameScene.UserSet.AutoHaste;
+            AutoFuryBox.Checked = GameScene.UserSet.AutoFury;
+            
             OpenProtectBox.Checked = GameScene.UserSet.OpenProtect;
             AutoPickUpBox.Checked = GameScene.UserSet.AutoPickUp;
             switchPoisonBox.Checked = GameScene.UserSet.switchPoison;
@@ -526,11 +553,15 @@ namespace Client.MirScenes.Dialogs
             GameScene.UserSet.AutoShield = AutoShieldBox.Checked ;
 
             GameScene.UserSet.AutoHaste = AutoHasteBox.Checked;
+            GameScene.UserSet.AutoFury = AutoFuryBox.Checked;
             GameScene.UserSet.OpenProtect = OpenProtectBox.Checked ;
             GameScene.UserSet.AutoPickUp = AutoPickUpBox.Checked ;
             GameScene.UserSet.ShowMonName = ShowMonNameBox.Checked;
             GameScene.UserSet.switchPoison = switchPoisonBox.Checked;
-            
+
+            Settings.TargetDead = ShowTargetDead.Checked;
+            GameScene.UserSet.ShowMonCorpse = ShowMonCorpse.Checked;
+
             byte.TryParse(HPLower1Text.Text,out GameScene.UserSet.HPLower1);
             byte.TryParse(HPLower2Text.Text, out GameScene.UserSet.HPLower2);
             byte.TryParse(HPLower3Text.Text, out GameScene.UserSet.HPLower3);
@@ -611,7 +642,9 @@ namespace Client.MirScenes.Dialogs
             ExcuseShiftBox.Visible = visible;
             ShowPingBox.Visible = visible;
             ShowMonNameBox.Visible = visible;
-            ShowFashionBox.Visible = false;
+            ShowTargetDead.Visible = visible;
+            ShowMonCorpse.Visible = visible;
+            ShowFashionBox.Visible = visible;
             if (visible)
             {
                 BaseButton.Index = tabPressedIndex;
@@ -629,6 +662,7 @@ namespace Client.MirScenes.Dialogs
             AutoFlamingBox.Visible = visible;
             AutoShieldBox.Visible = visible;
             AutoHasteBox.Visible = visible;
+            AutoFuryBox.Visible = visible;
             switchPoisonBox.Visible = visible;
             tx_df.Visible = visible;
             if (visible)

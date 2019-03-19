@@ -389,7 +389,8 @@ namespace Client.MirScenes.Dialogs
             GameScene.Scene.RefineDialog.Hide();
             GameScene.Scene.ItemCollectDialog.Hide();
             GameScene.Scene.StorageDialog.Hide();
-            GameScene.Scene.TrustMerchantDialog.Hide();
+            //GameScene.Scene.TrustMerchantDialog.Hide();
+            GameScene.Scene.PlayerShopDialog.Hide();
             GameScene.Scene.InventoryDialog.Location = new Point(0, 0);
         }
 
@@ -733,8 +734,9 @@ namespace Client.MirScenes.Dialogs
             for (int i = 0; i < Cells.Length; i++)
             {
                 Cells[i].Recipe = PType == PanelType.Craft;
+                //重置数量
+                //Cells[i].Item.Count = Cells[i].Item.Info.StackSize;
             }
-
             Visible = true;
 
             GameScene.Scene.InventoryDialog.Show();
@@ -879,10 +881,10 @@ namespace Client.MirScenes.Dialogs
                 case PanelType.Consign:
                     if (TargetItem.Info.Bind.HasFlag(BindMode.DontStore))
                     {
-                        GameScene.Scene.ChatDialog.ReceiveChat("无法存储此物品.", ChatType.System);
+                        GameScene.Scene.ChatDialog.ReceiveChat("无法寄售此物品.", ChatType.System);
                         return;
                     }
-                    MirAmountBox box = new MirAmountBox("寄售价格:", TargetItem.Image, Globals.MaxConsignment, Globals.MinConsignment)
+                    MirAmountBox box = new MirAmountBox("寄售价格（金币）:", TargetItem.Image, Globals.MaxConsignment, Globals.MinConsignment)
                     {
                         InputTextBox = { Text = string.Empty },
                         Amount = 0
@@ -891,7 +893,46 @@ namespace Client.MirScenes.Dialogs
                     box.Show();
                     box.OKButton.Click += (o, e) =>
                     {
-                        Network.Enqueue(new C.ConsignItem { UniqueID = TargetItem.UniqueID, Price = box.Amount });
+                        Network.Enqueue(new C.ConsignItem { UniqueID = TargetItem.UniqueID, GoldPrice = box.Amount });
+                        TargetItem = null;
+                    };
+                    return;
+                case PanelType.ConsignCredit:
+                    if (TargetItem.Info.Bind.HasFlag(BindMode.DontStore))
+                    {
+                        GameScene.Scene.ChatDialog.ReceiveChat("无法寄售此物品.", ChatType.System);
+                        return;
+                    }
+                    MirAmountBox boxCredit = new MirAmountBox("寄售价格（元宝）:", TargetItem.Image, Globals.MaxConsignment, 10)
+                    {
+                        InputTextBox = { Text = string.Empty },
+                        Amount = 0
+                    };
+
+                    boxCredit.Show();
+                    boxCredit.OKButton.Click += (o, e) =>
+                    {
+                        Network.Enqueue(new C.ConsignItem { UniqueID = TargetItem.UniqueID, CreditPrice = boxCredit.Amount });
+                        TargetItem = null;
+                    };
+                    return;
+                case PanelType.ConsignDoulbe:
+                    if (TargetItem.Info.Bind.HasFlag(BindMode.DontStore))
+                    {
+                        GameScene.Scene.ChatDialog.ReceiveChat("无法寄售此物品.", ChatType.System);
+                        return;
+                    }
+                    MirPlayerSale boxDouble = new MirPlayerSale("寄售价格:", TargetItem.Image, Globals.MaxConsignment, 10)
+                    {
+                        Amount=10,
+                        CreditPrice=10
+                    };
+
+                    boxDouble.Show();
+                    
+                    boxDouble.OKButton.Click += (o, e) =>
+                    {
+                        Network.Enqueue(new C.ConsignItem { UniqueID = TargetItem.UniqueID, GoldPrice = boxDouble.Amount, CreditPrice= boxDouble.CreditPrice });
                         TargetItem = null;
                     };
                     return;
@@ -1010,7 +1051,7 @@ namespace Client.MirScenes.Dialogs
             //////////////////////////////////////
 
             if (GameScene.SelectedCell == null || GameScene.SelectedCell.GridType != MirGridType.Inventory ||
-                (PType != PanelType.Sell && PType != PanelType.Consign && GameScene.SelectedCell.Item != null && GameScene.SelectedCell.Item.Info.Durability == 0))
+                (PType != PanelType.Sell && PType != PanelType.Consign&& PType != PanelType.ConsignCredit && PType != PanelType.ConsignDoulbe && GameScene.SelectedCell.Item != null && GameScene.SelectedCell.Item.Info.Durability == 0))
                 return;
             /*
             if (GameScene.SelectedCell.Item != null && (GameScene.SelectedCell.Item.Info.StackSize > 1 && GameScene.SelectedCell.Item.Count > 1))
@@ -1077,6 +1118,12 @@ namespace Client.MirScenes.Dialogs
                     text = LanguageUtils.Format("S. Repair: ");
                     break;
                 case PanelType.Consign:
+                    InfoLabel.Text = LanguageUtils.Format("Consignment: ");
+                    return;
+                case PanelType.ConsignCredit:
+                    InfoLabel.Text = LanguageUtils.Format("Consignment: ");
+                    return;
+                case PanelType.ConsignDoulbe:
                     InfoLabel.Text = LanguageUtils.Format("Consignment: ");
                     return;
                 case PanelType.Disassemble:
@@ -2192,6 +2239,12 @@ namespace Client.MirScenes.Dialogs
                     break;
                 case 1:
                     NameLabel.Text = "装备合成";
+                    break;
+                case 2:
+                    NameLabel.Text = "装备轮回";
+                    break;
+                case 3:
+                    NameLabel.Text = "装备回收";
                     break;
             }
             Visible = true;

@@ -783,6 +783,7 @@ namespace Client.MirControls
             //这里和上面的重复了？
             CleanTime = CMain.Time + Settings.CleanDelay;
         }
+        //这里XP黑屏
         protected void DrawChildControls()
         {
             if (Controls != null)

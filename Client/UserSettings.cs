@@ -19,18 +19,26 @@ namespace Client
         //显示ping
         public bool ShowPing = true;
         //显示时装
-        public bool ShowFashion = false;
+        public bool ShowFashion = true;
 
         //显示怪物名称
         public bool ShowMonName = true;
         //显示玩家姓名
         public bool ShowPlayName = true;
 
+        //显示怪物尸体
+        public bool ShowMonCorpse = true;//显示尸体
+
         //隔位刺杀
         public bool Septum = true;
         //自动烈火
         public bool AutoFlaming = true;
         public long LastFlamingTime = 0;//最后自动烈火时间
+
+        //自动龙血
+        public bool AutoFury = false;
+        public long LastFuryTime = 0;//最后自动烈火时间
+
         //自动开盾
         public bool AutoShield = true;
         public long LastShieldTime = 0;//最后自动开盾时间
@@ -38,6 +46,8 @@ namespace Client
         public bool AutoPoison = true;
         //开启切换则自动切换，不开启切换，则优先使用最近的毒
         public bool switchPoison = true;//切换红绿毒
+
+
 
         //自动体迅风
         public bool AutoHaste = true;
@@ -132,10 +142,14 @@ namespace Client
             AutoShield = Reader.ReadBoolean("UserSettings", "AutoShield", AutoShield);
             AutoPoison = Reader.ReadBoolean("UserSettings", "AutoPoison", AutoPoison);
             AutoHaste = Reader.ReadBoolean("UserSettings", "AutoHaste", AutoHaste);
+            AutoFury = Reader.ReadBoolean("UserSettings", "AutoFury", AutoFury);
+            
             AutoLightBody = Reader.ReadBoolean("UserSettings", "AutoLightBody", AutoLightBody);
             OpenProtect = Reader.ReadBoolean("UserSettings", "OpenProtect", OpenProtect);
             AutoPickUp = Reader.ReadBoolean("UserSettings", "AutoPickUp", AutoPickUp);
             ShowMonName = Reader.ReadBoolean("UserSettings", "ShowMonName", ShowMonName);
+
+            ShowMonCorpse = Reader.ReadBoolean("UserSettings", "ShowMonCorpse", ShowMonCorpse);
             
 
             HPLower1 = Reader.ReadByte("UserSettings", "HPLower1", HPLower1);
@@ -170,12 +184,15 @@ namespace Client
             Reader.Write("UserSettings", "AutoPoison", AutoPoison);
 
             Reader.Write("UserSettings", "AutoHaste", AutoHaste);
+            Reader.Write("UserSettings", "AutoFury", AutoFury);
             Reader.Write("UserSettings", "AutoLightBody", AutoLightBody);
   
             Reader.Write("UserSettings", "OpenProtect", OpenProtect);
             Reader.Write("UserSettings", "AutoPickUp", AutoPickUp);
             Reader.Write("UserSettings", "ShowMonName", ShowMonName);
-            
+            Reader.Write("UserSettings", "ShowMonCorpse", ShowMonCorpse);
+
+
             Reader.Write("UserSettings", "HPLower1", HPLower1);
             Reader.Write("UserSettings", "HPLower2", HPLower2);
             Reader.Write("UserSettings", "HPLower3", HPLower3);

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Drawing;
+using Client.MirScenes;
 
 namespace Client.MirObjects
 {
@@ -165,6 +166,11 @@ namespace Client.MirObjects
                         case Monster.SSabukWall3:
                         case Monster.HellLord:
                             continue;
+                    }
+                    //不显示尸体，在这里做处理
+                    if(!GameScene.UserSet.ShowMonCorpse&& CellObjects[i].Dead)
+                    {
+                        continue;
                     }
                 }
 

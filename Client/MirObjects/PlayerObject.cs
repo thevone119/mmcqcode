@@ -108,8 +108,24 @@ namespace Client.MirObjects
         public bool RidingMount, Sprint, FastRun, Fishing, FoundFish;
         public long StanceTime, MountTime, FishingTime;
         public long BlizzardStopTime, ReincarnationStopTime, SlashingBurstTime;
+        //骑马，时装
+        public short MountType = -1, _TransformType = -1;
 
-        public short MountType = -1, TransformType = -1;
+        public short TransformType
+        {
+            set
+            {
+                _TransformType = value;
+            }
+            get
+            {
+                if (GameScene.UserSet.ShowFashion)
+                {
+                    return _TransformType;
+                }
+                return -1;
+            }
+        }
 
         public string GuildName;
         public string GuildRankName;
@@ -1386,14 +1402,18 @@ namespace Client.MirObjects
 
                                 //MirLog.info("刺杀箭法1"+ GameScene.Thrusting);
                                 //if (GameScene.Thrusting && GameScene.Scene.MapControl.HasTarget(Functions.PointMove(CurrentLocation, Direction, 2)))
-                                if (GameScene.Thrusting) 
+                                if (!GameScene.Slaying&&GameScene.Thrusting) 
                                 {
                                     Spell = Spell.Thrusting;
                                     //MirLog.info("刺杀箭法2" + GameScene.Thrusting);
                                 }
-                                   
 
-                                if (GameScene.HalfMoon)
+                                if (GameScene.Thrusting && GameScene.Scene.MapControl.HasTarget(Functions.PointMove(CurrentLocation, Direction, 2)))
+                                {
+                                    Spell = Spell.Thrusting;
+                                }
+
+                                    if (GameScene.HalfMoon)
                                 {
                                     if (TargetObject != null || GameScene.Scene.MapControl.CanHalfMoon(CurrentLocation, Direction))
                                     {

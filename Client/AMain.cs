@@ -106,7 +106,14 @@ namespace Launcher
                 Checked = true;
                 _fileCount = 0;
                 _currentCount = 0;
-
+                //如果更新文件大于512M，则提示更新失败
+                if(_totalBytes / 1024 / 1024 > 512)
+                {
+                    errorMsg = "客户端更新失败，待更新文件过大，请重新下载最新客户端...";
+                    Completed = true;
+                    ErrorFound = true;
+                    return;
+                }
 
                 _fileCount = DownloadList.Count;
                 DownloadAll();
@@ -684,7 +691,14 @@ namespace Launcher
                     //出现过错误
                     if (ErrorFound)
                     {
-                        CurrentFile_label.Text = "客户端更新发生错误，为了游戏体验，请重新更新.";
+                        if (errorMsg != null)
+                        {
+                            CurrentFile_label.Text = errorMsg;
+                        }
+                        else
+                        {
+                            CurrentFile_label.Text = "客户端更新发生错误，为了游戏体验，请重新更新.";
+                        }
                     }
                     else
                     {

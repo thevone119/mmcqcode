@@ -49,7 +49,10 @@ namespace Client.MirObjects
 
         public bool Blend = true;
 
-        
+        public Point Front
+        {
+            get { return Functions.PointMove(CurrentLocation, Direction, 1); }
+        }
 
         public uint HP;
         public uint MaxHP;
@@ -353,10 +356,7 @@ namespace Client.MirObjects
             {
                 return;
             }
-            if (Name.IndexOf("恶魔") != -1)
-            {
-                MirLog.info("MaxHP:" + MaxHP + ",hp:" + HP);
-            }
+
             //if (Race != ObjectType.Player && Race != ObjectType.Monster) return;
 
             if (CMain.Time >= HealthTime)

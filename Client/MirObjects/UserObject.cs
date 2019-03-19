@@ -635,6 +635,9 @@ namespace Client.MirObjects
                         Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + magic.Level * 3);
                         MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + (magic.Level + 1) * 3);
                         break;
+                    case Spell.Slaying:
+                        Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + magic.Level);
+                        break;
                     case Spell.FatalSword:
                         Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + magic.Level);
                         break;
@@ -723,6 +726,21 @@ namespace Client.MirObjects
                         break;
                     case BuffType.Transform:
                         TransformType = (short)buff.Values[0];
+                        if (buff.Values.Length >= 12)
+                        {
+                            MinAC = (ushort)Math.Min(ushort.MaxValue, MinAC + buff.Values[1]);
+                            MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + buff.Values[2]);
+                            MinMAC = (ushort)Math.Min(ushort.MaxValue, MinMAC + buff.Values[3]);
+                            MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + buff.Values[4]);
+                            MinDC = (ushort)Math.Min(ushort.MaxValue, MinDC + buff.Values[5]);
+                            MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + buff.Values[6]);
+                            MinMC = (ushort)Math.Min(ushort.MaxValue, MinMC + buff.Values[7]);
+                            MaxMC = (ushort)Math.Min(ushort.MaxValue, MaxMC + buff.Values[8]);
+                            MinSC = (ushort)Math.Min(ushort.MaxValue, MinSC + buff.Values[9]);
+                            MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxSC + buff.Values[10]);
+
+                            Luck = (sbyte)Math.Min(ushort.MaxValue, Luck + buff.Values[11]);
+                        }
                         break;
 
                     case BuffType.Impact:

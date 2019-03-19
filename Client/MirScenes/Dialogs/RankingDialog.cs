@@ -16,15 +16,20 @@ namespace Client.MirScenes.Dialogs
     {
         public MirButton AllButton, WarButton, WizButton, TaoButton, SinButton, ArchButton, Tab7, NextButton, PrevButton;
         public MirButton CloseButton;
-        public MirLabel MyRank;
+        //人，地，天3个榜单 人榜是等级，地榜是地狱，天榜是天关
+        public MirButton rButton0, rButton1, rButton2;
+        public MirLabel MyRank2;
 
-        public byte RankType = 0;
+        public byte RankType = 0;//职业
+        public byte RankType2 = 0;//榜单类型，人0，地1，天2
         public int RowOffset = 0;
         public RankingRow[] Rows = new RankingRow[20];
-        public List<Rank_Character_Info>[] RankList = new List<Rank_Character_Info>[6];
+
+        //6职业，3类型
+        public List<Rank_Character_Info>[,] RankList = new List<Rank_Character_Info>[6,3];
         public int[] Rank = new int[6];
 
-        public long[] LastRequest = new long[6];
+        public long[,] LastRequest = new long[6,3];//查询限制3秒才可以点一次
 
 
         public RankingDialog()
@@ -146,18 +151,50 @@ namespace Client.MirScenes.Dialogs
             };
             PrevButton.Click += (o, e) => Move(-1);
 
-            MyRank = new MirLabel
+ 
+
+            rButton0 = new MirButton
             {
-                Text = "",
+                Index = 1108,
+                HoverIndex = 1107,
+                PressedIndex = 1106,
+                Library = Libraries.Prguse,
+                Location = new Point(230, 36),
                 Parent = this,
-                Font = new Font(Settings.FontName, 10F, FontStyle.Bold),
-                ForeColour = Color.BurlyWood,
-                Location = new Point(229, 36),
-                Size = new Size(82,22),
-                DrawFormat = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter,
-                //AutoSize = true
+                Text = "人",
+                Hint = "人榜",
+                CenterText = true,
+                Sound = SoundList.ButtonA,
             };
-            MyRank.Click += (o, e) => GoToMyRank();
+            rButton0.Click += (o, e) => RequestRanks2(0);
+            rButton1 = new MirButton
+            {
+                Index = 1108,
+                HoverIndex = 1107,
+                PressedIndex = 1106,
+                Library = Libraries.Prguse,
+                Location = new Point(260, 36),
+                Parent = this,
+                Text = "地",
+                Hint = "地榜",
+                CenterText = true,
+                Sound = SoundList.ButtonA,
+            };
+            rButton1.Click += (o, e) => RequestRanks2(1);
+            rButton2 = new MirButton
+            {
+                Index = 1108,
+                HoverIndex = 1107,
+                PressedIndex = 1106,
+                Library = Libraries.Prguse,
+                Location = new Point(290, 36),
+                Parent = this,
+                Text = "天",
+                Hint = "天榜",
+                CenterText = true,
+                Sound = SoundList.ButtonA,
+            };
+            rButton2.Click += (o, e) => RequestRanks2(2);
 
 
             for (int i = 0; i < Rows.Count(); i++)
@@ -169,9 +206,13 @@ namespace Client.MirScenes.Dialogs
                     Size = new Size(285,15),
                 };
             }
-            for (int i = 0; i < RankList.Length; i++)
+
+            for (int i = 0; i < RankList.GetLength(0); i++)
             {
-                RankList[i] = new List<Rank_Character_Info>();
+                for(int j=0;j< RankList.GetLength(1);j++)
+                {
+                    RankList[i,j] = new List<Rank_Character_Info>();
+                }
             }
         }
 
@@ -205,7 +246,7 @@ namespace Client.MirScenes.Dialogs
         {
             if (distance > 0)
             {//go down
-                RowOffset = RowOffset < RankList[RankType].Count - 20 ? ++RowOffset : RowOffset;
+                //RowOffset = RowOffset < RankList[RankType].Count - 20 ? ++RowOffset : RowOffset;
             }
             else
             {//go up
@@ -214,22 +255,32 @@ namespace Client.MirScenes.Dialogs
             UpdateRanks();
         }
 
+        //
+        public void RequestRanks2(byte RankType2)
+        {
+            this.RankType2 = RankType2;
+            RequestRanks(RankType);
+        }
+
+
         public void RequestRanks(byte RankType)
         {
             if (RankType > 6) return;
-            if ((LastRequest[RankType] != 0) && ((LastRequest[RankType] + 300 * 1000) > CMain.Time))
+            if ((LastRequest[RankType, RankType2] != 0) && ((LastRequest[RankType, RankType2] + 3 * 1000) > CMain.Time))
             {
                 SelectRank(RankType);
                 return;
             }
-            LastRequest[RankType] = CMain.Time;
-            MirNetwork.Network.Enqueue(new ClientPackets.GetRanking { RankIndex = RankType});
+            LastRequest[RankType, RankType2] = CMain.Time;
+            MirNetwork.Network.Enqueue(new ClientPackets.GetRanking { RankIndex = RankType, RankType= RankType2 });
+            SelectRank(RankType);
         }
 
-        public void RecieveRanks(List<Rank_Character_Info> Ranking, byte rankType)
+        //接受到服务器端返回的榜单
+        public void RecieveRanks(List<Rank_Character_Info> Ranking, byte rankType, byte rankType2)
         {
-            RankList[rankType].Clear();
-            RankList[rankType] = Ranking;
+            RankList[rankType, rankType2].Clear();
+            RankList[rankType, rankType2] = Ranking;
             //循环计算我的榜单
             for(int i=0;i< Ranking.Count; i++)
             {
@@ -256,13 +307,27 @@ namespace Client.MirScenes.Dialogs
         {
             for (int i = 0; i < Rows.Count(); i++)
             {
-                if (RowOffset + i >= RankList[RankType].Count) break;
-                Rows[i].Update(RankList[RankType][RowOffset + i], RowOffset + i + 1);
+                if (RowOffset + i >= RankList[RankType, RankType2].Count) break;
+                Rows[i].Update(RankList[RankType, RankType2][RowOffset + i], RowOffset + i + 1);
             }
-            if (Rank[RankType] == 0)
-                MyRank.Text = LanguageUtils.Format("Not Listed");
-            else
-                MyRank.Text = LanguageUtils.Format("Ranked: {0}", Rank[RankType]); ;
+            if (RankType2 == 0)
+            {
+                rButton0.Index = 1107;
+                rButton1.Index = 1108;
+                rButton2.Index = 1108;
+            }
+            if (RankType2 == 1)
+            {
+                rButton0.Index = 1108;
+                rButton1.Index = 1107;
+                rButton2.Index = 1108;
+            }
+            if (RankType2 == 2)
+            {
+                rButton0.Index = 1108;
+                rButton1.Index = 1108;
+                rButton2.Index = 1107;
+            }
 
         }
 

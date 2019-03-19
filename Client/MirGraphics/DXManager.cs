@@ -272,7 +272,11 @@ namespace Client.MirGraphics
         public static void SetGrayscale(bool value)
         {
             GrayScale = value;
-
+            if (OSystem.isXP())
+            {
+                Sprite.Flush();
+                return;
+            }
             if (value == true)
             {
                 if (Device.PixelShader == GrayScalePixelShader) return;
@@ -406,6 +410,11 @@ namespace Client.MirGraphics
 
         public static void SetNormal(float blend, Color tintcolor)
         {
+            if (OSystem.isXP())
+            {
+                Sprite.Flush();
+                return;
+            }
             if (Device.PixelShader == NormalPixelShader)
                 return;
 
@@ -418,6 +427,12 @@ namespace Client.MirGraphics
 
         public static void SetGrayscale(float blend, Color tintcolor)
         {
+            if (OSystem.isXP())
+            {
+                Sprite.Flush();
+                return;
+            }
+
             if (Device.PixelShader == GrayScalePixelShader)
                 return;
 
@@ -430,6 +445,11 @@ namespace Client.MirGraphics
 
         public static void SetBlendMagic(float blend, Color tintcolor)
         {
+            if (OSystem.isXP())
+            {
+                Sprite.Flush();
+                return;
+            }
             if (Device.PixelShader == MagicPixelShader || MagicPixelShader == null)
                 return;
 

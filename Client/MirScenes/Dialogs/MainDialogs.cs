@@ -2379,7 +2379,7 @@ namespace Client.MirScenes.Dialogs
                 string Expstr = "";
                 if (MapObject.User.MaxExperience > 10000)
                 {
-                    Expstr += MapObject.User.Experience / 10000 + "万/" + MapObject.User.MaxExperience / 1000 + "万";
+                    Expstr += MapObject.User.Experience / 10000 + "万/" + MapObject.User.MaxExperience / 10000 + "万";
                 }
                 else
                 {
@@ -3797,7 +3797,7 @@ namespace Client.MirScenes.Dialogs
             SkillModeOn.Click += (o, e) =>
             {
                 Settings.SkillMode = true;
-                GameScene.Scene.ChatDialog.ReceiveChat("<技能模式 2>", ChatType.Hint);
+                GameScene.Scene.ChatDialog.ReceiveChat("<技能模式 ~>", ChatType.Hint);
                 ToggleSkillButtons(false);
             };
 
@@ -3814,7 +3814,7 @@ namespace Client.MirScenes.Dialogs
             SkillModeOff.Click += (o, e) =>
             {
                 Settings.SkillMode = false;
-                GameScene.Scene.ChatDialog.ReceiveChat("<技能模式 1>", ChatType.Hint);
+                GameScene.Scene.ChatDialog.ReceiveChat("<技能模式 Ctrl>", ChatType.Hint);
                 ToggleSkillButtons(true);
             };
 
