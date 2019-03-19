@@ -16,6 +16,7 @@ namespace Server.MirDatabase
         public Point Location;
         //总数，传播范围，延时，随机延时
         public ushort Count, Spread, Delay, RandomDelay;
+        public byte RespawnType;//重生方式 0：默认 1:手工
         //这个是朝向么？朝向都给固定了?坑爹么
         public byte Direction;
         //这个是怪物的巡逻路线

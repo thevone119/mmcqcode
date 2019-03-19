@@ -96,7 +96,7 @@ namespace Server.MirDatabase
 
         //查询分页,page从0开始
         //UserMatch：卖：true, 买：false
-        public static S.NPCMarket SearchPage(ulong CharacterIndex,string MatchName, bool UserMatch,int page=0)
+        public static S.NPCMarket SearchPage(ulong CharacterIndex,byte itemtype,string MatchName, bool UserMatch,int page=0,int pagesize=8)
         {
             if (MatchName != null)
             {
@@ -157,16 +157,24 @@ namespace Server.MirDatabase
                 {
                     continue;
                 }
+                if (itemtype > 0&& itemtype<100&& itemtype != (byte)info.Item.Info.Type)
+                {
+                    continue;
+                }
+                if (itemtype == 100 && (byte)info.Item.Info.Type<=20)
+                {
+                    continue;
+                }
                 listSearch.Add(info);
             }
             //取分页内容
             List<ClientAuction> listings = new List<ClientAuction>();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < pagesize; i++)
             {
-                if (i + page * 10 >= listSearch.Count) break;
-                listings.Add(listSearch[i + page * 10].CreateClientAuction(UserMatch));
+                if (i + page * pagesize >= listSearch.Count) break;
+                listings.Add(listSearch[i + page * pagesize].CreateClientAuction(UserMatch));
             }
-            return new S.NPCMarket { Listings = listings, cpage= page,pageCount = (listSearch.Count - 1) / 10 + 1, UserMode = UserMatch };
+            return new S.NPCMarket { Listings = listings, cpage= page,pageCount = (listSearch.Count - 1) / pagesize + 1, UserMode = UserMatch };
         }
 
         //取某件商品

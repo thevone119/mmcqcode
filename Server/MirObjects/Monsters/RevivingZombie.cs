@@ -18,7 +18,7 @@ namespace Server.MirObjects.Monsters
             : base(info)
         {
             RevivalCount = 0;
-            LifeCount = RandomUtils.Next(3);
+            LifeCount = RandomUtils.Next(3);//这里改下，最多复活3次
         }
 
         public override void Die()
@@ -34,7 +34,12 @@ namespace Server.MirObjects.Monsters
             if (Dead && Envir.Time > DieTime + RevivalTime && RevivalCount < LifeCount)
             {
                 RevivalCount++;
-
+                //复活的把爆率减一倍
+                this.Info = this.Info.Clone();
+                foreach (DropInfo drop in Info.Drops)
+                {
+                    drop.Chance = drop.Chance*0.5;
+                }
                 uint newhp = MaxHP * (100 - (25 * RevivalCount)) / 100;
                 Revive(newhp, false);
             }

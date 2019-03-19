@@ -196,7 +196,7 @@ namespace Server.MirEnvir
             }
         }
 
-        //处理所有的订单,每10秒处理一次,是针对超过5分钟，小于6分钟，未支付的订单进行状态的查询
+        //处理所有的订单,每10秒处理一次,是针对超过5分钟，小于10分钟，未支付的订单进行状态的查询
         private static void ProcessAll()
         {
             if (SMain.Envir.Time < processAllTime)
@@ -206,7 +206,7 @@ namespace Server.MirEnvir
             processAllTime = SMain.Envir.Time + 1000*10;
             long ct = UniqueKeyHelper.TotalMilliseconds();
             long mint = 1000 * 60 * 5;
-            long maxt = 1000 * 60 * 6;
+            long maxt = 1000 * 60 * 10;
             lock (lockObj)
             {
                 foreach (PayOrder p in listall)

@@ -103,7 +103,7 @@ namespace Server.MirObjects
             //Cell cell = CurrentMap.GetCell(CurrentLocation);
             for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
                 ProcessSpell(CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i]);
-
+            //
             if ((Spell == Spell.MapLava) || (Spell == Spell.MapLightning)) Value = 0;
         }
         public void ProcessSpell(MapObject ob)
@@ -175,17 +175,19 @@ namespace Server.MirObjects
                     if (ob is PlayerObject)
                     {
                         PlayerObject pOb = (PlayerObject)ob;
-                        if (pOb.Account.AdminAccount && pOb.Observer)
+                        if (pOb.Observer)
                             return;
+                        //这里要有伤害啊
+                        ob.Struck(Value, DefenceType.MAC);
                     }
                     break;
                 case Spell.MapLightning:
-                    if (ob is PlayerObject)
-                    {
-                        PlayerObject pOb = (PlayerObject)ob;
-                        if (pOb.Account.AdminAccount && pOb.Observer)
-                            return;
-                    }
+                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) return;
+                    if (ob.Dead) return;
+                    if(ob.Race == ObjectType.Monster && ob.Master == null) return;
+                    //这里要有伤害啊
+                    SMain.Enqueue("闪电伤害" + Value);
+                    ob.Struck(Value, DefenceType.MAC);
                     break;
                 case Spell.MapQuake1:
                 case Spell.MapQuake2:

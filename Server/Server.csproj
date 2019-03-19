@@ -120,6 +120,7 @@
     <Compile Include="MirDatabase\MailInfo.cs" />
     <Compile Include="MirDatabase\ConquestInfo.cs" />
     <Compile Include="MirDatabase\RecipeInfo.cs" />
+    <Compile Include="MirEnvir\FBMap.cs" />
     <Compile Include="MirEnvir\Reporting.cs" />
     <Compile Include="MirEnvir\RespawnTimer.cs" />
     <Compile Include="MirForms\Account\PlayerInfoForm.cs">
@@ -281,6 +282,7 @@
     <Compile Include="MirObjects\KillMonAward.cs" />
     <Compile Include="MirObjects\MapObject.cs" />
     <Compile Include="MirObjects\MonsterObject.cs" />
+    <Compile Include="MirObjects\Monsters\CyanoGhast.cs" />
     <Compile Include="MirObjects\Monsters\Jar2.cs" />
     <Compile Include="MirObjects\Monsters\HellBomb.cs" />
     <Compile Include="MirObjects\Monsters\FlameAssassin.cs" />

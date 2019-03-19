@@ -6,6 +6,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //地狱长矛鬼
     class FlameSpear : MonsterObject
     {
         public long FearTime;

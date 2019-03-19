@@ -155,8 +155,8 @@ namespace Server.MirEnvir
 
         //排行榜,排行榜其实定期缓存就行了？10分钟循环计算一次不就行了？靠了
         //只显示TOP10
-        public List<Rank_Character_Info> RankTop = new List<Rank_Character_Info>();
-        public List<Rank_Character_Info>[] RankClass = new List<Rank_Character_Info>[5];
+        //public List<Rank_Character_Info> RankTop = new List<Rank_Character_Info>();
+        public List<Rank_Character_Info>[,] RankClass = new List<Rank_Character_Info>[6,3];
         //public int[] RankBottomLevel = new int[6];
         //最高等级
         public int MaxLevel = 0;
@@ -207,6 +207,15 @@ namespace Server.MirEnvir
             return false;
         }
 
+        //获取魔法信息
+        public MagicInfo getMagicInfo(Spell spell)
+        {
+            for (int i = 0; i < MagicInfoList.Count; i++)
+            {
+                if (MagicInfoList[i].Spell == spell) return MagicInfoList[i];
+            }
+            return null;
+        }
 
 
         //初始化魔法信息（在数据库读取多好啊，靠了）
@@ -476,11 +485,11 @@ namespace Server.MirEnvir
                         if (Time >= userTime)
                         {
                             userTime = Time + Settings.Minute * 10;
-                            //小于20个人不发送
-                            if (Players.Count > 20)
+                            //小于50个人不发送
+                            if (Players.Count > 50)
                             {
                                 userTime = Time + Settings.Minute * 5;
-                                Broadcast(new S.Chat{Message = string.Format("当前在线人数: {0}", Players.Count + Players.Count/2),Type = ChatType.Hint});
+                                //Broadcast(new S.Chat{Message = string.Format("当前在线人数: {0}", Players.Count + Players.Count/2),Type = ChatType.Hint});
                             }
                         }
 
@@ -1034,14 +1043,131 @@ namespace Server.MirEnvir
 
         //加载排行榜
         //每5分钟加载刷新一次
+        //只排前20
         public void LoadRank()
         {
-            RankTop = CharacterInfo.getRankTop();
-            if(RankTop!=null && RankTop.Count > 0)
+            for (int i = 0; i < RankClass.GetLength(0); i++)
             {
-                MaxLevel = RankTop[0].level;
+                for (int j = 0; j < RankClass.GetLength(1); j++)
+                {
+                    if(RankClass[i, j] != null)
+                    {
+                        RankClass[i, j].Clear();
+                    }
+                    else
+                    {
+                        RankClass[i, j] = new List<Rank_Character_Info>();
+                    }
+                }
             }
-            RankClass = CharacterInfo.getRankClass();
+            //地榜得分保留3天，超过3天每天降100分
+            for (int ac = 0; ac < CharacterList.Count; ac++)
+            {
+
+            }
+            int day = Now.DayOfYear;
+
+            List<Rank_Character_Info> all0 = new List<Rank_Character_Info>();//人榜
+            List<Rank_Character_Info> all1 = new List<Rank_Character_Info>();//地帮
+            //在内存中计算排行榜
+            for (int ac = 0; ac < CharacterList.Count; ac++)
+            {
+                if (CharacterList[ac].Deleted)
+                {
+                    continue;
+                }
+                if(CharacterList[ac].AccountInfo!=null && CharacterList[ac].AccountInfo.AdminAccount)
+                {
+                    continue;
+                }
+                //地榜得分保留3天，超过3天每天降100分
+                if (CharacterList[ac].fb1_createday == 0|| CharacterList[ac].fb1_createday> day)
+                {
+                    CharacterList[ac].fb1_createday = day;
+                }
+                if (day - CharacterList[ac].fb1_createday > 2)
+                {
+                    CharacterList[ac].fb1_score = CharacterList[ac].fb1_score - (day - CharacterList[ac].fb1_createday) * 100;
+                }
+                if (CharacterList[ac].fb1_score < 0)
+                {
+                    CharacterList[ac].fb1_score = 0;
+                }
+
+
+
+                Rank_Character_Info r0 = new Rank_Character_Info() { Class = CharacterList[ac].Class, Name = CharacterList[ac].Name, CharacterId= CharacterList[ac].Index, level = CharacterList[ac].Level, Experience = CharacterList[ac].Experience };
+                Rank_Character_Info r1 = new Rank_Character_Info() { Class = CharacterList[ac].Class, Name = CharacterList[ac].Name, CharacterId = CharacterList[ac].Index, level = CharacterList[ac].fb1_score };
+                if (CharacterList[ac].Player != null)
+                {
+                    r0.PlayerId = CharacterList[ac].Player.ObjectID;
+                    r1.PlayerId = CharacterList[ac].Player.ObjectID;
+                }
+                all0.Add(r0);
+                all1.Add(r1);
+            }
+            //先排序
+            all0.Sort(delegate (Rank_Character_Info p2, Rank_Character_Info p1) {
+                if (p1.level.CompareTo(p2.level) == 0)
+                {
+                    return p1.Experience.CompareTo(p2.Experience);
+                }
+                return p1.level.CompareTo(p2.level);
+            });
+            all1.Sort(delegate (Rank_Character_Info p2, Rank_Character_Info p1) { return p1.level.CompareTo(p2.level); });
+
+            if (all0.Count > 0)
+            {
+                MaxLevel = all0[0].level;
+            }
+            //放入各自的榜单
+            for (int i = 0; i < RankClass.GetLength(0); i++)
+            {
+                for (int j = 0; j < RankClass.GetLength(1); j++)
+                {
+                    if (j == 0)//人榜
+                    {
+                        for(int c = 0;  c< all0.Count; c++)
+                        {
+                            if(RankClass[i, j].Count >= 20)
+                            {
+                                break;
+                            }
+                            if(i== 0)
+                            {
+                                RankClass[i, j].Add(all0[c]);
+                            }
+                            else if (i == ((byte)all0[c].Class + 1))
+                            {
+                                RankClass[i, j].Add(all0[c]);
+                            }
+                        }
+                    }
+                    if (j == 1)//地榜
+                    {
+                        for (int c = 0; c < all1.Count; c++)
+                        {
+                            if (RankClass[i, j].Count >= 20)
+                            {
+                                break;
+                            }
+                            if (i == 0)
+                            {
+                                RankClass[i, j].Add(all1[c]);
+                            }
+                            else if (i == ((byte)all1[c].Class + 1))
+                            {
+                                RankClass[i, j].Add(all1[c]);
+                            }
+                        }
+                    }
+                    if (j == 2)//天榜
+                    {
+                        
+                    }
+                }
+            }
+
         }
 
         //加载钓鱼，掉落物品
@@ -2130,7 +2256,7 @@ namespace Server.MirEnvir
 
 
         //根据地图名称查找地图，创建副本
-        public Map GetMapByNameCopy(string name)
+        public Map GetMapByNameCopy(string name,int fb_id)
         {
             List<Map> list = new List<Map>();
             foreach (Map m in MapList)
@@ -2144,21 +2270,32 @@ namespace Server.MirEnvir
             {
                 return null;
             }
+            Map retm = null;
             //创建一个副本
             if (list.Count == 1)
             {
-                return list[0].Info.CreateInstance();
+                retm = list[0].Info.CreateInstance();
+                SMain.Enqueue("创建地图副本：" + fb_id+",idx:" + list.Count );
+                retm.fbmap = FBMap.getInstance(fb_id);
+                return retm;
             }
             //第一个不算副本哈
             for(int i=1;i< list.Count; i++)
             {
-                if (list[i].Players.Count == 0)
+                if (list[i].InactiveCount > 5)
                 {
-                    return list[i];
+                    retm = list[i];
+                    retm.Clear();
+                    SMain.Enqueue("创建地图副本：" + fb_id + ",idx:" + i);
+                    retm.fbmap = FBMap.getInstance(fb_id);
+                    return retm;
                 }
             }
             //
-            return list[0].Info.CreateInstance();
+            retm = list[0].Info.CreateInstance();
+            SMain.Enqueue("创建地图副本：" + fb_id + ",idx:" + list.Count);
+            retm.fbmap = FBMap.getInstance(fb_id);
+            return retm;
         }
 
 
@@ -2206,6 +2343,18 @@ namespace Server.MirEnvir
             return null;
         }
 
+        //通过NPC名称，查找NPC
+        public NPCInfo GetNPCInfoByName(string name)
+        {
+            foreach (NPCInfo n in NPCInfoList)
+            {
+                if (String.Equals(n.Name, name, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return n;
+                }
+            }
+            return null;
+        }
         //没用到
         public NPCObject GetNPC(string name)
         {
@@ -2227,20 +2376,19 @@ namespace Server.MirEnvir
 
         public MonsterInfo GetMonsterInfo(string name, bool Strict = false)
         {
+            //先查找完全相同的
             for (int i = 0; i < MonsterInfoList.Count; i++)
             {
                 MonsterInfo info = MonsterInfoList[i];
-                if (Strict)
-                {
-                    if (info.Name != name) continue;
-                    return info;
-                }
-                else
-                {
-                    //if (info.Name != name && !info.Name.Replace(" ", "").StartsWith(name, StringComparison.OrdinalIgnoreCase)) continue;
-                    if (String.Compare(info.Name, name, StringComparison.OrdinalIgnoreCase) != 0 && String.Compare(info.Name.Replace(" ", ""), name.Replace(" ", ""), StringComparison.OrdinalIgnoreCase) != 0) continue;
-                    return info;
-                }
+                if (info.Name != name) continue;
+                return info;
+            }
+            //找不到再查找类似名称的
+            for (int i = 0; i < MonsterInfoList.Count; i++)
+            {
+                MonsterInfo info = MonsterInfoList[i];
+                if (info.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase)) continue;
+                return info;
             }
             return null;
         }

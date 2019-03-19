@@ -3,6 +3,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //³àÑª¿ñÄ§
     public class CrazyManworm : MonsterObject
     {
         protected internal CrazyManworm(MonsterInfo info)

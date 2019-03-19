@@ -6,6 +6,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //Íäµ¶Á÷»ê
     public class HellSlasher : MonsterObject
     {
         protected internal HellSlasher(MonsterInfo info)

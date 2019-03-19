@@ -228,13 +228,13 @@ namespace Server.MirObjects.Monsters
             switch (type)
             {
                 case DefenceType.ACAgility:
-                    output = "物理";
+                    output = "物理敏捷";
                     break;
                 case DefenceType.AC:
                     output = "物理";
                     break;
                 case DefenceType.MACAgility:
-                    output = "魔法";
+                    output = "魔法敏捷";
                     break;
                 case DefenceType.MAC:
                     output = "魔法";

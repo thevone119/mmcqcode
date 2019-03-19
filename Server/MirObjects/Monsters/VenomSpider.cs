@@ -6,6 +6,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //∂æ÷©÷Î£ø
     public class VenomSpider : MonsterObject
     {
         protected internal VenomSpider(MonsterInfo info)

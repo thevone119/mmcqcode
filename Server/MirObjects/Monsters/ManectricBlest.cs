@@ -7,6 +7,7 @@ using System.Collections.Generic;
 
 namespace Server.MirObjects.Monsters
 {
+    //冰狱天将
     public class ManectricBlest : MonsterObject
     {
         private int _attackCount = 0;

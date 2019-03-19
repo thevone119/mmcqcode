@@ -18,6 +18,8 @@ namespace Server.MirObjects
     /// </summary>
     public sealed class NPCObject : MapObject
     {
+        //已经卖出的物品，这里记录下，避免买装备刷装备
+        private static Dictionary<ulong, byte> hasBuy = new Dictionary<ulong, byte>();
 
         public override ObjectType Race
         {
@@ -39,10 +41,17 @@ namespace Server.MirObjects
             SecondBuyKey = "[@SECONDBUY]",//二手
             ItemCollectKey0 = "[@ITEMCOLLECT0]",//物品收集(装备熔炼,装备熔炼，提升品质，提升灵性)
             ItemCollectKey1 = "[@ITEMCOLLECT1]",//物品收集(装备合成，宝石合成,2合1，3合1等）
-            ItemCollectKey2 = "[@ITEMCOLLECT2]",//物品收集()
-            ItemCollectKey3 = "[@ITEMCOLLECT3]",//物品收集
+            ItemCollectKey2 = "[@ITEMCOLLECT2]",//物品收集(装备轮回，放入轮回中)
+            ItemCollectKey3 = "[@ITEMCOLLECT3]",//物品收集(装备回收)
+            CancelSaItem = "[@CANCELSAITEM]",//装备取消轮回
+            getRewards0 = "[@GETREWARDS0]",//获得奖励0(轮回奖励,根据排行获得相应的攻击属性加成)
+            getRewards1 = "[@GETREWARDS1]",//获得奖励1
+            getRewards2 = "[@GETREWARDS2]",//获得奖励1
+
             StorageKey = "[@STORAGE]",//存储物品
             ConsignKey = "[@CONSIGN]",//寄售
+            ConsignCreditKey = "[@CONSIGNCREDIT]",//寄售
+            ConsignDoulbeKey = "[@CONSIGNDOUBLE]",//寄售
             MarketKey = "[@MARKET]",//市场
             ConsignmentsKey = "[@CONSIGNMENT]",//寄售
             CraftKey = "[@CRAFT]",//工艺
@@ -61,7 +70,8 @@ namespace Server.MirObjects
             DowngradeKey = "[@DOWNGRADE]",//降级
             ResetKey = "[@RESET]",//重置
             PearlBuyKey = "[@PEARLBUY]",//珍珠购买
-            BuyUsedKey = "[@BUYUSED]";//买
+            BuyUsedKey = "[@BUYUSED]",//买
+            GetBuf = "[@GETBUF]";//获得BUF
 
 
         //public static Regex Regex = new Regex(@"[^\{\}]<.*?/(.*?)>");
@@ -103,7 +113,7 @@ namespace Server.MirObjects
                 return (((Info.Rate / 100F) * Conq.npcRate) + Info.Rate) / 100F;
         }
 
-        public NPCObject(NPCInfo info)
+        public NPCObject(NPCInfo info,bool _spawned=true)
         {
             Info = info;
             NameColour = Color.Lime;
@@ -112,13 +122,35 @@ namespace Server.MirObjects
             {
                 Direction = (MirDirection)RandomUtils.Next(3);
                 TurnTime = Envir.Time + RandomUtils.Next(100);
-
-                Spawned();
+                if (_spawned)
+                {
+                    Spawned();
+                }
             }
 
             LoadInfo();
             //LoadGoods();
         }
+
+        
+
+        //这个创建一个新的NPC，零时的NPC，给副本使用的
+        public bool SpawnNew(Map temp, Point location)
+        {
+            CurrentMap = temp;
+            if(location== Point.Empty)
+            {
+                CurrentLocation = temp.RandomValidPoint();
+            }
+            else
+            {
+                CurrentLocation = location;
+            }
+            CurrentMap.AddObject(this);
+            Spawned();
+            return true;
+        }
+
         //加载配置
         public void LoadInfo(bool clear = false)
         {
@@ -956,6 +988,85 @@ namespace Server.MirObjects
                     }
                     player.Enqueue(new S.NPCItemCollect() { Rate = (Settings.RefineCost), type = 3 });
                     break;
+                case CancelSaItem:
+                    if (player.Info.SaItem == null)
+                    {
+                        player.ReceiveChat("您当前没有在轮回中的装备.", ChatType.System);
+                        break;
+                    }
+                    UserItem item = player.Info.SaItem.Clone();
+                    if (player.CanGainItem(item))
+                    {
+                        player.Info.SaItem = null;
+                        player.GainItem(item);
+                        player.ReceiveChat("已把轮回中的装备返回给你.", ChatType.System);
+                    }
+                    else
+                    {
+                        player.ReceiveChat("请检查你的背包空间，负重是否足够.", ChatType.System);
+                    }
+                    break;
+                case getRewards0:
+                    //获得轮回排行奖励
+                    //计算排行榜
+                    int ctype = (byte)player.Class + 1;
+                    int addval = -1;
+                    byte addtype = 0;
+                    if (Envir.RankClass.GetLength(0)< ctype)
+                    {
+                        player.ReceiveChat("还没有地榜排行，无法获得奖励.", ChatType.System);
+                        return;
+                    }
+                    for(int i=0;i< Envir.RankClass[ctype, 1].Count; i++)
+                    {
+                        if(Envir.RankClass[ctype, 1][i].CharacterId== player.Info.Index)
+                        {
+                            addval = 5-i;
+                        }
+                    }
+                    if (addval <= 0)
+                    {
+                        player.ReceiveChat("您没有进入地榜职业前5名(地榜5分钟更新一次)，无法获得奖励.", ChatType.System);
+                        return;
+                    }
+                    
+                    if (player.MaxDC > player.MaxSC && player.MaxDC > player.MaxMC)
+                    {
+                        addtype = 0;
+                    }
+                    if (player.MaxMC > player.MaxSC && player.MaxMC > player.MaxDC)
+                    {
+                        addtype = 1;
+                    }
+                    if (player.MaxSC > player.MaxDC && player.MaxSC > player.MaxMC)
+                    {
+                        addtype = 2;
+                    }
+                    switch (addtype)
+                    {
+                        case 0:
+                            player.AddBuff(new Buff { Type = BuffType.Impact, Caster = this, ExpireTime = Envir.Time + 3 * Settings.Hour, Values = new int[] { addval } });
+                            player.ReceiveChat($"根据您的地榜排名，您获得了{addval}点攻击属性加成.", ChatType.System);
+                            break;
+                        case 1:
+                            player.AddBuff(new Buff { Type = BuffType.Magic, Caster = this, ExpireTime = Envir.Time + 3 * Settings.Hour, Values = new int[] { addval } });
+                            player.ReceiveChat($"根据您的地榜排名，您获得了{addval}点魔法属性加成.", ChatType.System);
+                            break;
+                        case 2:
+                            player.AddBuff(new Buff { Type = BuffType.Taoist, Caster = this, ExpireTime = Envir.Time + 3 * Settings.Hour, Values = new int[] { addval } });
+                            player.ReceiveChat($"根据您的地榜排名，您获得了{addval}点道术属性加成.", ChatType.System);
+                            break;
+                    }
+                   
+                    break;
+
+                case GetBuf:
+                    if(player.MaxDC> player.MaxSC && player.MaxDC > player.MaxMC)
+                    {
+                        player.AddBuff(new Buff { Type = BuffType.Impact, Caster = this, ExpireTime = Envir.Time + 3 * Settings.Hour, Values = new int[] { 5 } });
+                    }
+                    
+                    break;
                 case RefineKey:
                     if (player.Info.CurrentRefine != null)
                     {
@@ -1009,13 +1120,19 @@ namespace Server.MirObjects
                 case ConsignKey:
                     player.Enqueue(new S.NPCConsign());
                     break;
+                case ConsignCreditKey:
+                    player.Enqueue(new S.NPCConsignCredit());
+                    break;
+                case ConsignDoulbeKey:
+                    player.Enqueue(new S.NPCConsignDoulbe());
+                    break;
                 case MarketKey:
                     player.UserMatch = false;
-                    player.MarketSearch(string.Empty);
+                    player.MarketSearch(string.Empty,0);
                     break;
                 case ConsignmentsKey:
                     player.UserMatch = true;
-                    player.MarketSearch(string.Empty);
+                    player.MarketSearch(string.Empty,0);
                     break;
                 case GuildCreateKey:
                     if (player.Info.Level < Settings.Guild_RequiredLevel)
@@ -1411,10 +1528,18 @@ namespace Server.MirObjects
 
         public override int CurrentMapIndex { get; set; }
 
+        //这里加入可以变更NPC位置
+        private Point _CurrentLocation = Point.Empty;
         public override Point CurrentLocation
         {
-            get { return Info.Location; }
-            set { throw new NotSupportedException(); }
+            get {
+                if (_CurrentLocation != Point.Empty)
+                {
+                    return _CurrentLocation;
+                }
+                return Info.Location;
+            }
+            set { _CurrentLocation=value; }
         }
 
         public override MirDirection Direction { get; set; }
@@ -1432,6 +1557,10 @@ namespace Server.MirObjects
 
         public void Buy(PlayerObject player, ulong index, uint count)
         {
+            if (hasBuy.ContainsKey(index))
+            {
+                return;
+            }
             UserItem goods = null;
 
             for (int i = 0; i < Goods.Count; i++)
@@ -1489,8 +1618,16 @@ namespace Server.MirObjects
                 if (cost > player.Info.PearlCount) return;
             }
             else if (cost > player.Account.Gold) return;
-
-            UserItem item = (isBuyBack || isUsed || isSecondBuy) ? goods : goods.Info.CreateFreshItem();
+            UserItem item = null;
+            if (isBuyBack|| isUsed|| isSecondBuy)
+            {
+                item = goods;
+                hasBuy[index] = 1;
+            }
+            else
+            {
+                item = goods.Info.CreateFreshItem();
+            }
             item.Count = goods.Count;
 
             if (!player.CanGainItem(item)) return;
@@ -1507,8 +1644,21 @@ namespace Server.MirObjects
             }
             player.GainItem(item);
             //删除二手物品
-
+           
             SecondUserItem.removeItem(goods);
+            if (player.NPCPage.Key.ToUpper() == SecondBuyKey)//二手买卖
+            {
+                List<UserItem> secondList = SecondUserItem.listAll();
+                if (secondList.Count > 0)
+                {
+                    for (int i = 0; i < secondList.Count; i++)
+                    {
+                        player.CheckItem(secondList[i]);
+                    }
+                }
+                player.Enqueue(new S.NPCGoods { List = secondList, Rate = PriceRate(player), Type = PanelType.Buy });
+                return;
+            }
             if (isUsed)
             {
                 UsedGoods.Remove(goods); //If used or buyback will destroy whole stack instead of reducing to remaining quantity
@@ -1526,11 +1676,6 @@ namespace Server.MirObjects
             {
                 BuyBack[player.Name].Remove(goods); //If used or buyback will destroy whole stack instead of reducing to remaining quantity
                 player.Enqueue(new S.NPCGoods { List = BuyBack[player.Name], Rate = PriceRate(player) });
-            }
-            //删除二手物品
-            if (isSecondBuy)
-            {
-                SecondUserItem.removeItem(goods);
             }
         }
         //NPC处卖物品
@@ -1702,6 +1847,8 @@ namespace Server.MirObjects
     {
         Move,//移动到某地图
         MoveCopy,//移动到副本地图
+        GroupMoveCopy,//组队进入副本
+        CancelSaItem,//取消轮回
         InstanceMove,
         GiveGold,
         TakeGold,
@@ -1748,7 +1895,8 @@ namespace Server.MirObjects
         AddToGuild,
         RemoveFromGuild,
         RefreshEffects,
-        ChangeHair,
+        ChangeHair,//改变发型
+        QueryHair,//查询发型
         CanGainExp,
         ComposeMail,
         AddMailItem,

@@ -120,12 +120,30 @@ namespace Server.MirObjects.Monsters
             Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, TargetID = Target.ObjectID });
             AttackTime = Envir.Time + AttackSpeed + 500;
             if (damage == 0) return;
-
+            
             int delay = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation) * 50 + 500; //50 MS per Step
 
-            DelayedAction action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + delay, Target, damage, DefenceType.Agility);
-            ActionList.Add(action);
+           
+            //这里要增加几率麻痹
+            if(Target.Race== ObjectType.Monster && RandomUtils.Next(6- this.PetLevel) == 1 && Target.MaxHealth<5000)
+            {
+                Target.ApplyPoison(new Poison
+                {
+                    Owner = this,
+                    Duration = 3,
+                    PType = PoisonType.Paralysis,
+                    Value = damage,
+                    TickSpeed = 1000
+                }, this);
 
+                //DelayedAction action = new DelayedAction(DelayedType.Poison, Envir.Time + delay, Target, damage, DefenceType.Agility);
+                //ActionList.Add(action);
+            }
+            else
+            {
+                DelayedAction action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + delay, Target, damage, DefenceType.Agility);
+                ActionList.Add(action);
+            }
             if (Target.Dead)
                 FindTarget();
         }

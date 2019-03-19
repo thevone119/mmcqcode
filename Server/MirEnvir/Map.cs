@@ -27,6 +27,20 @@ namespace Server.MirEnvir
         private static byte LowWall = 0;
         private static byte Fishing = 4;
 
+
+        public string getTitle()
+        {
+            if (Info == null)
+            {
+                return "";
+            }
+            if (fbmap != null)
+            {
+                return fbmap.Title;
+            }
+            return Info.Title;
+        }
+
         private static Envir Envir
         {
             get { return SMain.Envir; }
@@ -52,9 +66,11 @@ namespace Server.MirEnvir
         private Dictionary<string, MineSpot> MineDic = new Dictionary<string, MineSpot>();
         //雷电时间，地火时间，空闲时间
         public long LightningTime, FireTime, InactiveTime;
+
+        public int FireInterval = 15000;//默认间隔2-15秒,触发雷电，熔岩伤害
         //怪物总数
         public int MonsterCount;
-        //空闲总次数，一开始默认空闲100
+        //空闲总次数，一开始默认空闲100,其实是空闲分钟数,默认是空闲5分钟，则停止当前地图的任何处理
         public uint InactiveCount=100;
         //NPC
         public List<NPCObject> NPCs = new List<NPCObject>();
@@ -69,6 +85,12 @@ namespace Server.MirEnvir
         public ConquestObject tempConquest;
         //地图加载的时候，随机产生10个可以访问的点，用于随机
         List<Point> RandomValidPoints = new List<Point>();
+
+
+        //增加几个处理副本的参数
+        public FBMap fbmap;//副本地图的处理
+
+     
 
         public Map(MapInfo info)
         {
@@ -693,6 +715,29 @@ namespace Server.MirEnvir
             return Valid(x,y);
         }
 
+        //判断某个点是否空的
+        //就是某个点有没有被阻塞
+        public bool EmptyPoint(int x, int y)
+        {
+            if(!Valid(x, y))
+            {
+                return false;
+            }
+            if (Objects[x, y] == null)
+            {
+                return true;
+            }
+            foreach(MapObject o in Objects[x, y])
+            {
+                if (o.Blocking)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+       
 
         public void Add(MapObject mapObject)
         {
@@ -708,6 +753,46 @@ namespace Server.MirEnvir
             Objects[x, y].Add(mapObject);
         }
 
+        public void Clear()
+        {
+            try
+            {
+                for (int w = 0; w < Width; w++)
+                {
+                    for (int h = 0; h < Height; h++)
+                    {
+                        if (Objects[w, h] == null)
+                        {
+                            continue;
+                        }
+                        foreach (MapObject o in Objects[w, h])
+                        {
+                            if (o.Race == ObjectType.Monster && !o.Dead)
+                            {
+                                o.Dead = true;
+                                o.Despawn();
+                                MonsterCount--;
+                                SMain.Envir.MonsterCount--;
+                            }
+                            if (o.Race == ObjectType.Merchant)
+                            {
+
+
+                            }
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                SMain.Enqueue("副本清理数据出错");
+                SMain.Enqueue(ex);
+            }
+            Objects = null;
+            Objects = new List<MapObject>[Width, Height];
+            MonsterCount = 0;
+            fbmap = null;
+        }
 
         public void Remove(MapObject mapObject)
         {
@@ -870,6 +955,7 @@ namespace Server.MirEnvir
             try
             {
                 ProcessRespawns();
+               
                 //处理门的开关？，这里好像只处理关门，不处理开门
                 //process doors
                 for (int i = 0; i < Doors.Count; i++)
@@ -879,7 +965,6 @@ namespace Server.MirEnvir
                         Doors[i].DoorState = 0;
                         //broadcast that door is closed
                         Broadcast(new S.Opendoor() { DoorIndex = Doors[i].index, Close = true }, Doors[i].Location);
-
                     }
                 }
 
@@ -888,7 +973,7 @@ namespace Server.MirEnvir
                 //整个地图的几乎所有玩家都会看到？那如果很多玩家，就会产生非常多的闪电哦。
                 if ((Info.Lightning) && Envir.Time > LightningTime)
                 {
-                    LightningTime = Envir.Time + RandomUtils.Next(3000, 15000);
+                    LightningTime = Envir.Time + RandomUtils.Next(2000, FireInterval);
                     for (int i = Players.Count - 1; i >= 0; i--)
                     {
                         PlayerObject player = Players[i];
@@ -922,7 +1007,7 @@ namespace Server.MirEnvir
                 //地图火灾，熔岩伤害
                 if ((Info.Fire) && Envir.Time > FireTime)
                 {
-                    FireTime = Envir.Time + RandomUtils.Next(3000, 15000);
+                    FireTime = Envir.Time + RandomUtils.Next(2000, FireInterval);
                     for (int i = Players.Count - 1; i >= 0; i--)
                     {
                         PlayerObject player = Players[i];
@@ -974,6 +1059,8 @@ namespace Server.MirEnvir
                         InactiveCount = 0;
                     }
                 }
+                //地图的副本处理
+                ProcessFB();
             }
             catch(Exception ex)
             {
@@ -992,6 +1079,11 @@ namespace Server.MirEnvir
                 MapRespawn respawn = Respawns[i];
                 if ((respawn.Info.RespawnTicks != 0) && (Envir.RespawnTick.CurrentTickcounter < respawn.NextSpawnTick)) continue;
                 if ((respawn.Info.RespawnTicks == 0) && (Envir.Time < respawn.RespawnTime)) continue;
+                //手工刷怪的不在这里处理
+                if (respawn.Info.RespawnType != 0)
+                {
+                    continue;
+                }
                 //小于等于2个的，一般都是大BOSS，不做倍率调整哦.
                 int markCount = respawn.Info.Count;
                 if (markCount > 2)
@@ -1042,6 +1134,23 @@ namespace Server.MirEnvir
 
                     }
                 }
+            }
+        }
+
+        //各种副本处理
+        private void ProcessFB()
+        {
+            if (fbmap == null)
+            {
+                return;
+            }
+            try
+            {
+                fbmap.ProcessFB(this);
+            }
+            catch(Exception ex)
+            {
+                SMain.Enqueue(ex);
             }
         }
 
@@ -1826,7 +1935,7 @@ namespace Server.MirEnvir
                                     Spell = Spell.Blizzard,
                                     Value = value,
                                     ExpireTime = Envir.Time + 3000,
-                                    TickSpeed = 500,
+                                    TickSpeed = 440,
                                     Caster = player,
                                     CurrentLocation = new Point(x, y),
                                     CastLocation = location,
@@ -1887,7 +1996,7 @@ namespace Server.MirEnvir
                                 Spell = Spell.MeteorStrike,
                                 Value = value,
                                 ExpireTime = Envir.Time + 3000,
-                                TickSpeed = 500,
+                                TickSpeed = 440,
                                 Caster = player,
                                 CurrentLocation = new Point(x, y),
                                 CastLocation = location,
@@ -2129,9 +2238,9 @@ namespace Server.MirEnvir
                                             PoisonType poison;
                                             if (new int[] { 0, 1, 3 }.Contains(chance)) //3 in 15 chances it'll slow
                                                 poison = PoisonType.Slow;
-                                            else if (new int[] { 3, 4 }.Contains(value)) //2 in 15 chances it'll freeze
+                                            else if (new int[] { 3, 4 }.Contains(chance)) //2 in 15 chances it'll freeze
                                                 poison = PoisonType.Frozen;
-                                            else if (new int[] { 5, 6, 7, 8, 9 }.Contains(value)) //5 in 15 chances it'll red/green
+                                            else if (new int[] { 5, 6, 7, 8, 9,10 }.Contains(chance)) //6 in 15 chances it'll red/green
                                                 poison = (PoisonType)data[4];
                                             else //5 in 15 chances it'll do nothing
                                                 poison = PoisonType.None;
@@ -2696,7 +2805,84 @@ namespace Server.MirEnvir
             Count++;
             Map.MonsterCount++;
             SMain.Envir.MonsterCount++;
+            //这里增加一个随机刷的怪紫色精英怪
+            RandomSpawn();
             return true;
+        }
+
+        //这里是随机刷一些紫色怪，蓝怪
+        public void RandomSpawn()
+        {
+            //2000分之1,10倍爆率
+            if (RandomUtils.Next(1000) == 1&& Info.Count > 1 && Monster.HP<5000)
+            {
+                SMain.Enqueue("刷新紫色精英怪："+ Monster.Name+",在："+Map.getTitle());
+                //先复制怪物info
+                MonsterInfo minfo = Monster.Clone();
+                foreach (DropInfo drop in minfo.Drops)
+                {
+                    //每层爆率增加10%
+                    drop.Chance = (drop.Chance) * 10;
+                    if (drop.Gold > 0)
+                    {
+                        drop.Gold = drop.Gold * 3;
+                    }
+                }
+                //加入宝玉的爆率
+                DropInfo drop2 = DropInfo.FromLine("副本_宝玉", String.Format("1/1 G_宝玉"));
+                minfo.Drops.Add(drop2);
+
+                DropInfo drop3 = DropInfo.FromLine("副本_药水", String.Format("1/1 G_药剂3 5-8"));
+                minfo.Drops.Add(drop3);
+                //
+                DropInfo drop4 = DropInfo.FromLine("副本_装备", String.Format("1/1 G_武器20|G_武器26|G_沃玛首饰|G_盔甲3 2-4"));
+                //
+                if (minfo.HP > 500)
+                {
+                    drop4 = DropInfo.FromLine("副本_装备", String.Format("1/1 G_武器30|G_祖玛|G_盔甲3 2-4"));
+                }
+                minfo.Drops.Add(drop4);
+                //加入书页爆率
+                DropInfo drop5 = DropInfo.FromLine("副本_书页", String.Format("1/10 G_书页残卷"));
+                drop5.Chance = minfo.HP * 1.01 / 100000;
+                if (drop5.Chance > 0.5)
+                {
+                    drop5.Chance = 0.5;
+                }
+                minfo.Drops.Add(drop5);
+
+                minfo.Name = minfo.Name + "[" + "变异" + "]";
+                minfo.Level = (ushort)(minfo.Level + 10);
+                minfo.HP = (uint)(minfo.HP * 2 + 100);
+                minfo.MaxAC = (ushort)(minfo.MaxAC * 4 / 3);
+                minfo.MaxMAC = (ushort)(minfo.MaxAC * 4 / 3);
+                minfo.MaxDC = (ushort)(minfo.MaxDC * 15 / 10);//1.5倍的基础攻击
+                minfo.MaxMC = (ushort)(minfo.MaxMC * 15 / 10);//1.5倍的基础攻击
+                int AttackSpeed = minfo.AttackSpeed - 300 ;
+
+                if (minfo.AttackSpeed < 500)
+                {
+                    AttackSpeed = 500;
+                }
+                minfo.AttackSpeed = (ushort)AttackSpeed;
+                int MoveSpeed = minfo.MoveSpeed - 300 ;
+                if (MoveSpeed < 500)
+                {
+                    MoveSpeed = 500;
+                }
+                minfo.MoveSpeed = (ushort)MoveSpeed;
+
+
+                MonsterObject monster = MonsterObject.GetMonster(minfo);
+                monster.IsCopy = true;
+                monster.NameColour = Color.DeepSkyBlue;
+                monster.ChangeNameColour = Color.DeepSkyBlue;
+                monster.RefreshAll();
+
+                //位置随机刷
+                monster.SpawnNew(Map, Point.Empty);
+            }
+
         }
 
         //加载怪物自动行走路径，针对大刀守卫
@@ -2723,4 +2909,6 @@ namespace Server.MirEnvir
             }
         }
     }
+
+
 }

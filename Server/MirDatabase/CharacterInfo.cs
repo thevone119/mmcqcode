@@ -20,7 +20,7 @@ namespace Server.MirDatabase
         public ushort Level=1;//默认等级
         public MirClass Class;
         public MirGender Gender;
-        public byte Hair;
+        public byte Hair;//发型
         public long GuildIndex = -1;
 
         public string CreationIP;
@@ -83,7 +83,8 @@ namespace Server.MirDatabase
         public List<ItemRentalInformation> RentedItems = new List<ItemRentalInformation>();
         public List<ItemRentalInformation> RentedItemsToRemove = new List<ItemRentalInformation>();
         public bool HasRentedItem;
-        public UserItem CurrentRefine = null;
+        public UserItem CurrentRefine = null;//当前升级物品，目前只有武器
+        public UserItem SaItem = null;//当前轮回物品，几乎所有装备都支持轮回
         public long CollectTime = 0;
         public List<UserMagic> Magics = new List<UserMagic>();
         public List<PetInfo> Pets = new List<PetInfo>();
@@ -117,10 +118,22 @@ namespace Server.MirDatabase
         public int[] Rank = new int[2];//dont save this in db!(and dont send it to clients :p)
 
         public int[] killMon = new int[10];//杀怪记录
+        public Dictionary<int, int> killMon2 = new Dictionary<int, int>();//杀怪记录,所有怪物的记录哦
+
+        //这个记录各种手工实现的逻辑(这个是保存到数据库的)
+        public Dictionary<string, int> saveKey = new Dictionary<string, int>();
+        //这个记录各种手工实现的逻辑（这个是零时的，重启后无效的）
+        public Dictionary<string, int> tempKey = new Dictionary<string, int>();
 
         //角色在线时长
         public uint onlineTime = 0;//在线时长，每天的
         public int onlineDay = 0;//当前日期
+
+        //记录地狱副本的层级，得分，总用时,创建时间（日）
+        public int fb1_level;
+        public int fb1_score;
+        public int fb1_usetime;
+        public int fb1_createday;
 
         public CharacterInfo()
         {
@@ -289,6 +302,7 @@ namespace Server.MirDatabase
                 obj.IntelligentCreatures = JsonConvert.DeserializeObject<List<UserIntelligentCreature>>(read.GetString(read.GetOrdinal("IntelligentCreatures")));
                 obj.PearlCount = read.GetInt32(read.GetOrdinal("PearlCount"));
                 obj.CompletedQuests = JsonConvert.DeserializeObject<List<int>>(read.GetString(read.GetOrdinal("CompletedQuests")));
+                //武器升级物品
                 obj.CurrentRefine = JsonConvert.DeserializeObject<UserItem>(read.GetString(read.GetOrdinal("CurrentRefine")));
                 if (obj.CurrentRefine != null)
                 {
@@ -297,6 +311,24 @@ namespace Server.MirDatabase
                         obj.CurrentRefine = null;
                     }
                 }
+                if (!read.IsDBNull(read.GetOrdinal("SaItem")))
+                {
+                    obj.SaItem = JsonConvert.DeserializeObject<UserItem>(read.GetString(read.GetOrdinal("SaItem")));
+                    if (obj.SaItem != null)
+                    {
+                        if (!obj.SaItem.BindItem())
+                        {
+                            obj.SaItem = null;
+                        }
+                    }
+                }
+
+                if (!read.IsDBNull(read.GetOrdinal("killMon2")))
+                {
+                    obj.killMon2 = JsonConvert.DeserializeObject<Dictionary<int, int>>(read.GetString(read.GetOrdinal("killMon2")));
+                }
+
+                
                 obj.CollectTime = read.GetInt64(read.GetOrdinal("CollectTime"));
                 //这里的时间要重置的
                 obj.CollectTime += SMain.Envir.Time;
@@ -321,7 +353,20 @@ namespace Server.MirDatabase
                         obj.killMon = JsonConvert.DeserializeObject<int[]>(killMons);
                     }
                 }
+                //这个是各种key记录
+                if (!read.IsDBNull(read.GetOrdinal("saveKey")))
+                {
+                    string saveKey = read.GetString(read.GetOrdinal("saveKey"));
+                    if (saveKey != null && saveKey.Length > 5)
+                    {
+                        obj.saveKey = JsonConvert.DeserializeObject<Dictionary<string, int>>(saveKey);
+                    }
+                }
 
+                obj.fb1_level = read.GetInt32(read.GetOrdinal("fb1_level"));
+                obj.fb1_score = read.GetInt32(read.GetOrdinal("fb1_score"));
+                obj.fb1_usetime = read.GetInt32(read.GetOrdinal("fb1_usetime"));
+                obj.fb1_createday = read.GetInt32(read.GetOrdinal("fb1_createday"));
 
                 //添加2个字段
                 //obj.onlineTime = (uint)read.GetInt32(read.GetOrdinal("onlineTime"));
@@ -356,54 +401,7 @@ namespace Server.MirDatabase
             }
         }
 
-        /// <summary>
-        /// 全职业的排行榜
-        /// 前20
-        /// </summary>
-        /// <returns></returns>
-        public static List<Rank_Character_Info> getRankTop()
-        {
-            List<Rank_Character_Info> list = new List<Rank_Character_Info>();
-            DbDataReader read = MirRunDB.ExecuteReader("select * from  CharacterInfo where accIndex not in (select idx from AccountInfo where AdminAccount=1) order by Level desc limit 20 ");
-            //DbDataReader read = MirRunDB.ExecuteReader("select * from  CharacterInfo order by Level desc limit 20 ");
-            while (read.Read())
-            {
-                Rank_Character_Info obj = new Rank_Character_Info();
-                obj.Class = (MirClass)read.GetInt16(read.GetOrdinal("Class"));
-                obj.level = read.GetInt32(read.GetOrdinal("level"));
-                obj.Name = read.GetString(read.GetOrdinal("Name"));
-                obj.PlayerId = (ulong)read.GetInt64(read.GetOrdinal("Idx"));
-                obj.Experience = (long)read.GetInt64(read.GetOrdinal("Experience"));
-                list.Add(obj);
-            }
-            return list;
-        }
-
-        /// <summary>
-        /// 5职业的排行榜
-        /// 前20
-        /// </summary>
-        /// <returns></returns>
-        public static List<Rank_Character_Info>[] getRankClass()
-        {
-            List<Rank_Character_Info>[] list = new List<Rank_Character_Info>[5];
-            for(int i = 0; i < 5; i++)
-            {
-                list[i] = new List<Rank_Character_Info>();
-                DbDataReader read = MirRunDB.ExecuteReader("select * from  CharacterInfo where accIndex not in (select idx from AccountInfo where AdminAccount=1) and class=@class order by Level desc  limit 20 ", new SQLiteParameter("class", i));
-                while (read.Read())
-                {
-                    Rank_Character_Info obj = new Rank_Character_Info();
-                    obj.Class = (MirClass)read.GetInt16(read.GetOrdinal("Class"));
-                    obj.level= read.GetInt32(read.GetOrdinal("level"));
-                    obj.Name = read.GetString(read.GetOrdinal("Name"));
-                    obj.PlayerId = (ulong)read.GetInt64(read.GetOrdinal("Idx"));
-                    obj.Experience = (long)read.GetInt64(read.GetOrdinal("Experience"));
-                    list[i].Add(obj);
-                }
-            }
-            return list;
-        }
+      
 
         //保存到数据库
         public void SaveDB()
@@ -495,7 +493,15 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("MentorExp", MentorExp));
             lp.Add(new SQLiteParameter("GSpurchases", JsonConvert.SerializeObject(GSpurchases)));
             lp.Add(new SQLiteParameter("killMon", JsonConvert.SerializeObject(killMon)));
-            
+            lp.Add(new SQLiteParameter("saveKey", JsonConvert.SerializeObject(saveKey)));
+            lp.Add(new SQLiteParameter("SaItem", JsonConvert.SerializeObject(SaItem)));
+            lp.Add(new SQLiteParameter("fb1_level", fb1_level));
+            lp.Add(new SQLiteParameter("fb1_score", fb1_score));
+            lp.Add(new SQLiteParameter("fb1_usetime", fb1_usetime));
+            lp.Add(new SQLiteParameter("fb1_createday", fb1_createday));
+
+            lp.Add(new SQLiteParameter("killMon2", JsonConvert.SerializeObject(killMon2)));
+
             //lp.Add(new SQLiteParameter("onlineTime", onlineTime));
             //lp.Add(new SQLiteParameter("onlineDay", onlineDay));
             //新增
@@ -518,7 +524,57 @@ namespace Server.MirDatabase
             DBObjectUtils.updateObjState(this, Index);
         }
 
+        //获取零时值,默认0
+        public int getTempValue(string key)
+        {
+            if (tempKey.ContainsKey(key))
+            {
+                return tempKey[key];
+            }
+            else
+            {
+                return 0;
+            }
+        }
 
+        //更新零时值
+        public void putTempValue(string key ,int val)
+        {
+            if (tempKey.ContainsKey(key))
+            {
+                tempKey[key]=val;
+            }
+            else
+            {
+                tempKey.Add(key,val);
+            }
+        }
+
+        //获取零时值,默认0
+        public int getSaveValue(string key)
+        {
+            if (saveKey.ContainsKey(key))
+            {
+                return saveKey[key];
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        //更新零时值
+        public void putSaveValue(string key, int val)
+        {
+            if (saveKey.ContainsKey(key))
+            {
+                saveKey[key] = val;
+            }
+            else
+            {
+                saveKey.Add(key, val);
+            }
+        }
 
         public ListViewItem CreateListView()
         {

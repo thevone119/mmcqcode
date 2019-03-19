@@ -81,7 +81,9 @@ namespace Server.MirObjects
 
         public long CellTime, BrownTime, PKPointTime, LastHitTime, EXPOwnerTime;
         public Color NameColour = Color.White;
-        
+        //增加一个字段，可以更改怪物名称
+        public Color ChangeNameColour = Color.White;
+
         public bool Dead, Undead, Harvested, AutoRev;
 
         public List<KeyValuePair<string, string>> NPCVar = new List<KeyValuePair<string, string>>();
@@ -171,7 +173,7 @@ namespace Server.MirObjects
         public List<MonsterObject> Pets = new List<MonsterObject>();
         public List<Buff> Buffs = new List<Buff>();
 
-        public List<PlayerObject> GroupMembers;
+        public List<PlayerObject> GroupMembers;//组队成员，包含自己
 
         public virtual AttackMode AMode { get; set; }
 
@@ -211,6 +213,13 @@ namespace Server.MirObjects
 
         }
         
+        //增加一个方法，方便查看状态
+        public string toString()
+        {
+            //用反射
+            return ReflectionUtils.ObjectToString(this);
+        }
+
         //死循环调用入口
         public virtual void Process()
         {
@@ -789,7 +798,7 @@ namespace Server.MirObjects
         public bool RealTime;
         public DateTime RealTimeExpire;
 
-        public bool Paused;
+        public bool Paused;//Buff是否暂停
 
         public Buff() { }
 

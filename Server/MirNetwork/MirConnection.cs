@@ -667,6 +667,9 @@ namespace Server.MirNetwork
                 case (short)ClientPacketIds.ConfirmItemCollect:
                     ConfirmItemCollect((C.ConfirmItemCollect)p);
                     break;
+                case (short)ClientPacketIds.MagicParameter:
+                    MagicParameter((C.MagicParameter)p);
+                    break;
                 default:
                     SMain.Enqueue(string.Format("Invalid packet received. Index : {0}", p.Index));
                     break;
@@ -893,6 +896,14 @@ namespace Server.MirNetwork
 
             Player.ConfirmItemCollect(p.type);
         }
+
+        private void MagicParameter(C.MagicParameter p)
+        {
+            if (Stage != GameStage.Game) return;
+
+            Player.MagicParameter = p.Parameter;
+        }
+
         
 
         private void StartGame(C.StartGame p)
@@ -1332,20 +1343,20 @@ namespace Server.MirNetwork
         {
             if (Stage != GameStage.Game) return;
 
-            Player.ConsignItem(p.UniqueID, p.Price);
+            Player.ConsignItem(p.UniqueID, p.GoldPrice,p.CreditPrice);
         }
         private void MarketSearch(C.MarketSearch p)
         {
             if (Stage != GameStage.Game) return;
 
-            Player.MarketSearch(p.Match,p.Page);
+            Player.MarketSearch(p.Match, p.itemtype,p.Page);
         }
      
         private void MarketBuy(C.MarketBuy p)
         {
             if (Stage != GameStage.Game) return;
 
-            Player.MarketBuy(p.AuctionID);
+            Player.MarketBuy(p.AuctionID, p.payType);
         }
         private void MarketGetBack(C.MarketGetBack p)
         {
@@ -1580,7 +1591,7 @@ namespace Server.MirNetwork
                 return;
             }
 
-            Player.ReceiveChat("转世失败", ChatType.System);
+            Player.ReceiveChat("复活失败", ChatType.System);
         }
 
         private void CancelReincarnation()
@@ -1803,7 +1814,7 @@ namespace Server.MirNetwork
         private void GetRanking(C.GetRanking p)
         {
             if (Stage != GameStage.Game) return;
-            Player.GetRanking(p.RankIndex);
+            Player.GetRanking(p.RankIndex,p.RankType);
         }
 
         private void Opendoor(C.Opendoor p)

@@ -50,12 +50,13 @@ namespace Server.MirObjects.Monsters
                     if (selfDestruct)
                     {
                         Die();
-                        DieTime = Envir.Time + 3000;
+                        //DieTime = Envir.Time + 3000;
                     }
                 }
-                base.Process();
+                //base.Process();
             }
-            else if (Envir.Time >= DieTime) Despawn();
+            base.Process();
+            //else if (Envir.Time >= DieTime) Despawn();
         }
 
         public override void Process(DelayedAction action)
@@ -161,7 +162,7 @@ namespace Server.MirObjects.Monsters
         {
             base.Die();
 
-            DeadTime = 0;
+            //DeadTime = 0;
             
             //Kill Minions
             for (int i = SlaveList.Count - 1; i >= 0; i--)

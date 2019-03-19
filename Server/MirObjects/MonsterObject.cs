@@ -21,207 +21,209 @@ namespace Server.MirObjects
             switch (info.AI)
             {
                 case 1:
-                case 2:
+                case 2://鸡,鹿
                     return new Deer(info);
-                case 3:
+                case 3://龙蛇宝箱,树
                     return new Tree(info);
-                case 4:
+                case 4://毒蜘蛛
                     return new SpittingSpider(info);
-                case 5:
+                case 5://食人花
                     return new CannibalPlant(info);
-                case 6:
+                case 6://带刀护卫
                     return new Guard(info);
-                case 7:
+                case 7://洞蛆,楔蛾
                     return new CaveMaggot(info);
-                case 8:
+                case 8://掷斧骷髅,黑暗战士,祖玛弓箭手
                     return new AxeSkeleton(info);
-                case 9:
+                case 9://狼,蝎子
                     return new HarvestMonster(info);
-                case 10:
+                case 10://火焰沃玛
                     return new FlamingWooma(info);
-                case 11:
+                case 11://沃玛教主
                     return new WoomaTaurus(info);
-                case 12:
+                case 12://角蝇
                     return new BugBagMaggot(info);
-                case 13:
+                case 13://赤月恶魔
                     return new RedMoonEvil(info);
-                case 14:
+                case 14://触龙神
                     return new EvilCentipede(info);
-                case 15:
+                case 15://祖玛雕像
                     return new ZumaMonster(info);
-                case 16:
+                case 16://祖玛赤雷
                     return new RedThunderZuma(info);
-                case 17:
+                case 17://祖玛教主
                     return new ZumaTaurus(info);
-                case 18:
+                case 18://神兽
                     return new Shinsu(info);
-                case 19:
+                case 19://虹魔蝎卫
                     return new KingScorpion(info);
-                case 20:
+                case 20://虹魔教主
                     return new DarkDevil(info);
-                case 21:
+                case 21://肉食性食尸鬼(未知是什么)
                     return new IncarnatedGhoul(info);
-                case 22:
+                case 22://祖玛教主_封魔
                     return new IncarnatedZT(info);
-                case 23:
+                case 23://商店护卫,变异骷髅
                     return new BoneFamiliar(info);
-                case 24:
+                case 24://僧侣僵尸
                     return new DigOutZombie(info);
-                case 25:
+                case 25://腐肉僵尸
                     return new RevivingZombie(info);
-                case 26:
+                case 26://雷电僵尸
                     return new ShamanZombie(info);
-                case 27:
+                case 27://狂热血蜥蜴,蚂蚁司令官
                     return new Khazard(info);
-                case 28:
+                case 28://恶灵尸王
                     return new ToxicGhoul(info);
-                case 29:
+                case 29://骷髅长枪兵
                     return new BoneSpearman(info);
-                case 30:
+                case 30://黄泉教主
                     return new BoneLord(info);
-                case 31:
+                case 31://牛魔法师
                     return new RightGuard(info);
-                case 32:
+                case 32://牛魔祭祀
                     return new LeftGuard(info);
-                case 33:
+                case 33://牛魔王
                     return new MinotaurKing(info);
-                case 34:
+                case 34://幻影寒虎
                     return new FrostTiger(info);
-                case 35:
+                case 35://沙虫
                     return new SandWorm(info);
-                case 36:
+                case 36://浮龙金蛇
                     return new Yimoogi(info);
-                case 37:
+                case 37://神石毒魔蛛1
                     return new CrystalSpider(info);
-                case 38:
+                case 38://精灵
                     return new HolyDeva(info);
-                case 39:
+                case 39://幻影蜘蛛
                     return new RootSpider(info);
-                case 40:
+                case 40://爆裂蜘蛛
                     return new BombSpider(info);
                 case 41:
-                case 42:
+                case 42://镇魂石
                     return new YinDevilNode(info);
-                case 43:
+                case 43://破凰魔神,火龙教主？
                     return new OmaKing(info);
-                case 44:
+                case 44://狐狸战士
                     return new BlackFoxman(info);
-                case 45:
+                case 45://狐狸法师
                     return new RedFoxman(info);
-                case 46:
+                case 46://狐狸道士
                     return new WhiteFoxman(info);
-                case 47:
+                case 47://悲月魂石
                     return new TrapRock(info);
-                case 48:
+                case 48://九尾魂石
                     return new GuardianRock(info);
-                case 49:
+                case 49://闪电元素
                     return new ThunderElement(info);
-                case 50:
+                case 50://悲月天珠
                     return new GreatFoxSpirit(info);
-                case 51:
+                case 51://悲月刺蛙
                     return new HedgeKekTal(info);
-                case 52:
+                case 52://破天魔龙
                     return new EvilMir(info);
-                case 53:
+                case 53://破天魔龙
                     return new EvilMirBody(info);
-                case 54:
+                case 54://火龙守护兽
                     return new DragonStatue(info);
-                case 55:
+                case 55://分身
                     return new HumanWizard(info);
-                case 56:
+                case 56://练功师
                     return new Trainer(info);
-                case 57:
+                case 57://弓箭护卫
                     return new TownArcher(info);
-                case 58:
+                case 58://大刀护卫
                     return new Guard(info);
-                case 59:
+                case 59://刺客分身
                     return new HumanAssassin(info);
-                case 60:
+                case 60://召唤蜘蛛
                     return new VampireSpider(info);
-                case 61:
+                case 61://召唤蛤蟆
                     return new SpittingToad(info);
-                case 62:
+                case 62://召唤图腾
                     return new SnakeTotem(info);
-                case 63:
+                case 63://鬼魅蛇
                     return new CharmedSnake(info);
-                case 64:
+                case 64://宝贝猪,小鸡
                     return new IntelligentCreatureObject(info);
-                case 65:
+                case 65://赤血利刃
                     return new MutatedManworm(info);
-                case 66:
+                case 66://赤血狂魔
                     return new CrazyManworm(info);
-                case 67:
+                case 67://黑暗多脚怪
                     return new DarkDevourer(info);
-                case 68:
+                case 68://足球
                     return new Football(info);
-                case 69:
+                case 69://紫电小蜘蛛
                     return new PoisonHugger(info);
-                case 70:
+                case 70://剧毒小蜘蛛
                     return new Hugger(info);
-                case 71:
+                case 71://怨恶
                     return new Behemoth(info);
-                case 72:
+                case 72://幽冥龟
                     return new FinialTurtle(info);
-                case 73:
+                case 73://大龟王
                     return new TurtleKing(info);
-                case 74:
+                case 74://光明龟
                     return new LightTurtle(info);
-                case 75:
+                case 75://溶混鬼
                     return new WitchDoctor(info);
-                case 76:
+                case 76://弯刀流魂
                     return new HellSlasher(info);
-                case 77:
+                case 77://拔舌流魂
                     return new HellPirate(info);
-                case 78:
+                case 78://吞魂鬼
                     return new HellCannibal(info);
-                case 79:
+                case 79://地狱守门人
                     return new HellKeeper(info);
-                case 80:
+                case 80://守卫弓手
                     return new ConquestArcher(info);
-                case 81:
+                case 81://大门
                     return new Gate(info);
-                case 82:
+                case 82://城堡Gi西
                     return new Wall(info);
-                case 83:
+                case 83://风暴战士
                     return new Tornado(info);
-                case 84:
+                case 84://野兽王
                     return new WingedTigerLord(info);
 
-                case 86:
+                case 86://冰狱战将
                     return new ManectricClaw(info);
-                case 87:
+                case 87://冰狱天将
                     return new ManectricBlest(info);
-                case 88:
+                case 88://冰狱魔王
                     return new ManectricKing(info);
-                case 89:
+                case 89://冰柱
                     return new IcePillar(info);
-                case 90:
+                case 90://地狱炮兵
                     return new TrollBomber(info);
-                case 91:
+                case 91://地狱统领
                     return new TrollKing(info);
-                case 92:
+                case 92://地狱长矛鬼
                     return new FlameSpear(info);
-                case 93:
+                case 93://地狱魔焰鬼
                     return new FlameMage(info);
-                case 94:
+                case 94://地狱巨镰鬼
                     return new FlameScythe(info);
-                case 95:
+                case 95://地狱双刃鬼
                     return new FlameAssassin(info);
-                case 96:
+                case 96://地狱将军
                     return new FlameQueen(info);
-                case 97:
+                case 97://寒冰守护神,紫电守护神
                     return new HellKnight(info);
-                case 98:
+                case 98://炎魔太子
                     return new HellLord(info);
-                case 99:
+                case 99://寒冰球
                     return new HellBomb(info);
-                case 100:
+                case 100://
                     return new VenomSpider(info);
                 case 101:
                     return new Jar2(info);
                 case 102:
                     return new RestlessJar(info);
-                    
+                case 103://赤血鬼魂
+                    return new CyanoGhast(info);
+
 
                 //unfinished
                 case 253:
@@ -248,20 +250,39 @@ namespace Server.MirObjects
 
         public MonsterInfo Info;
         public MapRespawn Respawn;
-        
+
+        //允许更改怪物名称
+        private string _name = null;
         public override string Name
         {
-            get { return Master == null ? Info.GameName : string.Format("{0}({1})", Info.GameName, Master.Name); }
-            set { throw new NotSupportedException(); }
+            get {
+                if (_name != null)
+                {
+                    return _name;
+                }
+                return Master == null ? Info.GameName : string.Format("{0}({1})", Info.GameName, Master.Name);
+            }
+            set { _name = value; }
         }
 
         public override int CurrentMapIndex { get; set; }
         public override Point CurrentLocation { get; set; }
         public override sealed MirDirection Direction { get; set; }
+
+        //允许更改怪物等级
+        private ushort _Level;
         public override ushort Level
         {
-            get { return Info.Level; }
-            set { throw new NotSupportedException(); }
+            get {
+                if (_Level > 0)
+                {
+                    return _Level;
+                }
+                return Info.Level;
+            }
+            set {
+                _Level=value;
+            }
         }
 
         public override sealed AttackMode AMode
@@ -342,6 +363,8 @@ namespace Server.MirObjects
         public long ShockTime, RageTime, HallucinationTime;
         public bool BindingShotCenter, PoisonStopRegen = true;
 
+        public float HealthScale = 0.022F;//生命恢复的比例,外部可以更改这个值
+
         public byte PetLevel;
         public uint PetExperience;
         public byte MaxPetLevel;
@@ -349,6 +372,9 @@ namespace Server.MirObjects
 
         public int RoutePoint;
         public bool Waiting;
+
+        //是否副本怪物
+        public bool IsCopy = false;
         //这个是怪物的奴隶
         public List<MonsterObject> SlaveList = new List<MonsterObject>();
         public List<RouteInfo> Route = new List<RouteInfo>();
@@ -408,6 +434,37 @@ namespace Server.MirObjects
             RegenTime = RandomUtils.Next(RegenDelay) + Envir.Time;
             SearchTime = RandomUtils.Next(SearchDelay) + Envir.Time;
             RoamTime = RandomUtils.Next(RoamDelay) + Envir.Time;
+        }
+
+        //这个是召唤一个新的怪物，更改了怪物的各种属性的，不用
+        public bool SpawnNew(Map temp, Point location)
+        {
+            CurrentMap = temp;
+            if(location== Point.Empty)
+            {
+                CurrentLocation = temp.RandomValidPoint();
+            }
+            else
+            {
+                CurrentLocation = location;
+            }
+           
+
+            CurrentMap.AddObject(this);
+
+            //RefreshAll();
+            SetHP(MaxHP);
+
+            Spawned();
+            Envir.MonsterCount++;
+            CurrentMap.MonsterCount++;
+            return true;
+        }
+
+        //随机刷到地图某个位置
+        public bool Spawn(Map temp)
+        {
+            return Spawn(temp, temp.RandomValidPoint());
         }
         //这个重生是在当前位置重生，如僵尸的复活
         //如怪物召唤小怪，也是通过这个方法进行召唤的
@@ -594,7 +651,10 @@ namespace Server.MirObjects
             if (ShockTime < Envir.Time) BindingShotCenter = false;
 
             Color colour = Color.White;
-            
+            if(ChangeNameColour!= Color.White)
+            {
+                colour = ChangeNameColour;
+            }
             switch (PetLevel)
             {
                 case 1:
@@ -718,9 +778,16 @@ namespace Server.MirObjects
 
                 PlayerObject playerObj = (PlayerObject)EXPOwner;
                 playerObj.CheckGroupQuestKill(Info);
-                playerObj.killMon(this);
+                if (!IsCopy)
+                {
+                    playerObj.killMon(this);
+                }
             }
-
+            //如果是副本怪物，则调用副本处理方法
+            if (IsCopy && CurrentMap.fbmap!=null)
+            {
+                CurrentMap.fbmap.monDie(this);
+            }
          
 
             if (Respawn != null)
@@ -827,11 +894,11 @@ namespace Server.MirObjects
                 {
                     if(EXPOwner.ItemDropRateOffset > 0)
                     {
-                        DropRate = DropRate * (1 + EXPOwner.ItemDropRateOffset / 100);
+                        DropRate = DropRate * (1 + EXPOwner.ItemDropRateOffset / 100.0f);
                     }
                     if (EXPOwner.GoldDropRateOffset > 0)
                     {
-                        addGold = drop.Gold * (EXPOwner.GoldDropRateOffset / 100);
+                        addGold = drop.Gold * (EXPOwner.GoldDropRateOffset / 100.0f);
                     }
                 }
               
@@ -895,7 +962,7 @@ namespace Server.MirObjects
             {
                 foreach (var player in Envir.Players)
                 {
-                    player.ReceiveChat($"{Name} 掉落 {item.FriendlyName}，在{CurrentMap.Info.Title}", ChatType.System2);
+                    player.ReceiveChat($"{Name} 掉落 {item.FriendlyName}，在{CurrentMap.getTitle()}", ChatType.System2);
                 }
             }
             return ob.Drop(Settings.DropRange);
@@ -1108,14 +1175,14 @@ namespace Server.MirObjects
             if (Dead) return;
 
             int healthRegen = 0;
-
+            //这个是怪物的生命恢复
             if (CanRegen)
             {
                 RegenTime = Envir.Time + RegenDelay;
 
 
                 if (HP < MaxHP)
-                    healthRegen += (int)(MaxHP * 0.022F) + 1;
+                    healthRegen += (int)(MaxHP * HealthScale) + 1;
             }
 
 
@@ -1222,6 +1289,12 @@ namespace Server.MirObjects
                         {
                             MoveSpeed = Info.MoveSpeed;
                             AttackSpeed = Info.AttackSpeed;
+                            //这里增加代码，解决道士宝宝中毒后无法回复攻速，移速
+                            if (Info.Name == Settings.SkeletonName || Info.Name == Settings.ShinsuName || Info.Name == Settings.AngelName)
+                            {
+                                MoveSpeed = (ushort)Math.Min(ushort.MaxValue, (Math.Max(ushort.MinValue, MoveSpeed - MaxPetLevel * 130)));
+                                AttackSpeed = (ushort)Math.Min(ushort.MaxValue, (Math.Max(ushort.MinValue, AttackSpeed - MaxPetLevel * 70)));
+                            }
                         }
                         break;
                 }
@@ -2339,6 +2412,7 @@ namespace Server.MirObjects
                 if ((PoisonList[i].PType != PoisonType.Green) && ((PoisonList[i].Duration - PoisonList[i].Time) > p.Duration)) return;//cant cast 1 second poison to make a 1minute poison go away!
                 if (p.PType == PoisonType.DelayedExplosion) return;
                 if ((PoisonList[i].PType == PoisonType.Frozen) || (PoisonList[i].PType == PoisonType.Slow) || (PoisonList[i].PType == PoisonType.Paralysis) || (PoisonList[i].PType == PoisonType.LRParalysis)) return;//prevents mobs from being perma frozen/slowed
+                //毒覆盖，不叠加
                 PoisonList[i] = p;
                 return;
             }

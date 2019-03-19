@@ -56,6 +56,7 @@ namespace Server.MirObjects
         }
         public  GuildObject(PlayerObject owner, string name)
         {
+            
             Name = name;
             Rank Owner = new Rank() { Name = "领袖", Options = (RankOptions)255 , Index = 0};
             GuildMember Leader = new GuildMember() { name = owner.Info.Name, Player = owner, Id = owner.Info.Index, LastLogin = Envir.Now, Online = true};
@@ -98,6 +99,11 @@ namespace Server.MirObjects
                 for (int i = 0; i < obj.Ranks.Count; i++)
                 {
                     obj.Membercount += obj.Ranks[i].Members.Count;
+                    //这里要重置下，不在线的哟
+                    for(int j=0;j< obj.Ranks[i].Members.Count; j++)
+                    {
+                        obj.Ranks[i].Members[j].Online = false;
+                    }
                 }
                 obj.StoredItems = JsonConvert.DeserializeObject<GuildStorageItem[]>(read.GetString(read.GetOrdinal("StoredItems")));
                 for (int i = 0; i < obj.StoredItems.Length; i++)

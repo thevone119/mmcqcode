@@ -23,7 +23,7 @@ namespace Server.MirObjects.Monsters
                 _target = value;
                 if (SisterMobReady()) SisterMob.Target = value;
 
-                NoAttack = value == null ? true : false;
+                //NoAttack = value == null ? true : false;
             }
         }
 
@@ -31,7 +31,8 @@ namespace Server.MirObjects.Monsters
             : base(info)
         {
             SpawnTime = Envir.Time + 4000;
-            NoAttack = true;
+            //NoAttack = true;
+
         }
 
         protected bool SisterMobReady()
@@ -128,7 +129,7 @@ namespace Server.MirObjects.Monsters
         protected override void ProcessAI()
         {
             if (Dead) return;
-
+            //主蛇传送
             if (!IsChild && HP <= MaxHP / 10 && !FinalTeleport)
             {
                 Point teleportlocation = CurrentLocation;
@@ -164,6 +165,7 @@ namespace Server.MirObjects.Monsters
                 Functions.MaxDistance(CurrentLocation, SisterMob.CurrentLocation) < 10)
                 {
                     MoveTo(SisterMob.CurrentLocation);
+                    //Teleport(CurrentMap, SisterMob.CurrentLocation);
                     return;
                 }
             }
@@ -195,8 +197,8 @@ namespace Server.MirObjects.Monsters
         {
             ActionTime = Envir.Time + 300;
             AttackTime = Envir.Time + AttackSpeed;
-
-            MonsterObject mob = GetMonster(Envir.GetMonsterInfo(Name));
+            MonsterInfo minfo = Envir.GetMonsterInfo(Name).Clone();
+            MonsterObject mob = GetMonster(minfo);
 
             if (mob == null)
             {
@@ -226,15 +228,7 @@ namespace Server.MirObjects.Monsters
         {
             for (int i = 0; i < attempts; i++)
             {
-                Point location;
-
-                if (distance <= 0)
-                    location = new Point(RandomUtils.Next(CurrentMap.Width), RandomUtils.Next(CurrentMap.Height));
-                else
-                    location = new Point(CurrentLocation.X + RandomUtils.Next(-distance, distance + 1),
-                                         CurrentLocation.Y + RandomUtils.Next(-distance, distance + 1));
-
-                if (Teleport(CurrentMap, location, true, 1)) return true;
+                if (Teleport(CurrentMap, CurrentMap.RandomValidPoint(), true, 1)) return true;
             }
 
             return false;

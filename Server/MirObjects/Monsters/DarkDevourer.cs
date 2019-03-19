@@ -7,6 +7,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //ºÚ°µ¶à½Å¹Ö
     class DarkDevourer : MonsterObject
     {
         private const byte AttackRange = 9;

@@ -7,6 +7,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //±ùÓüÕ½½«
     public class ManectricClaw : MonsterObject
     {
         private const byte AttackRange = 3;
@@ -108,7 +109,7 @@ namespace Server.MirObjects.Monsters
                                     {
                                         if (RandomUtils.Next(Settings.PoisonResistWeight) >= target.PoisonResist)
                                         {
-                                            if (RandomUtils.Next(5) == 0)
+                                            if (RandomUtils.Next(4) == 0)
                                             {
                                                 target.ApplyPoison(new Poison
                                                 {
@@ -120,7 +121,7 @@ namespace Server.MirObjects.Monsters
                                                 target.OperateTime = 0;
                                             }
 
-                                            if (RandomUtils.Next(5) == 0)
+                                            if (RandomUtils.Next(4) == 0)
                                             {
                                                 target.ApplyPoison(new Poison
                                                 {

@@ -4,6 +4,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //幻影蜘蛛
     class RootSpider : BugBagMaggot
     {
 

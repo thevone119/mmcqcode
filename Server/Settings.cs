@@ -50,8 +50,8 @@ namespace Server
         public static string DefaultNPCFilename = "00Default";//默认NPC，系统固定创建，不需要存放在数据库中，不显示在地图中
         public static string FishingDropFilename = "00Fishing";
 	    public static string AwakeningDropFilename = "00Awakening";
-        public static string StrongboxDropFilename = "00Strongbox";//宝盒
-        public static string BlackstoneDropFilename = "00Blackstone";
+        public static string StrongboxDropFilename = "00Strongbox";//神奇的盒子宝盒
+        public static string BlackstoneDropFilename = "00Blackstone";//黑色灵物石
         public static string MonsterNPCFilename = "00Monster";//默认的怪物NPC
         public static string RobotNPCFilename = "00Robot";//默认的机器NPC
 
@@ -111,7 +111,7 @@ namespace Server
         public static int ItemTimeOut = 5,
                           PlayerDiedItemTimeOut = 5,//玩家死亡掉落物品增加多少时间,可以给玩家重新捡回物品，这个有个毛的用啊。统一5分钟算了。靠
                           DropRange = 4,
-                          DropStackSize = 5,
+                          DropStackSize = 6,
                           PKDelay = 12;
 
         public static long PetTimeOut = 5;
@@ -145,10 +145,10 @@ namespace Server
                              BehemothMonster1 = "紫电小蜘蛛",//161
                              BehemothMonster2 = "剧毒小蜘蛛",//160
                              BehemothMonster3 = "爆炸小蜘蛛",//162
-                             HellKnight1 = "地狱双刃鬼",//这几个也没有
-                             HellKnight2 = "地狱长矛鬼",
-                             HellKnight3 = "地狱魔焰鬼",
-                             HellKnight4 = "地狱巨镰鬼",
+                             HellKnight1 = "寒冰守护神",//这几个也没有
+                             HellKnight2 = "炎火守护神",
+                             HellKnight3 = "紫电守护神",
+                             HellKnight4 = "赤雷守护神",
                              HellBomb1 = "地狱锤兵",//这些是地狱中的守护神召唤的帮手
                              HellBomb2 = "地狱炮兵",
                              HellBomb3 = "地狱投石手",
@@ -180,7 +180,7 @@ namespace Server
         //这个是召唤宠物需要的物品
         public static string CreatureBlackStoneName = "黑色灵物石";
 
-        //Fishing Settings,钓鱼要巨型多角虫干嘛哦
+        //Fishing Settings,钓鱼要巨型多角虫干嘛哦，钓鱼应该记录出现海龟，爆东西
         public static int FishingAttempts = 30;
         public static int FishingSuccessStart = 10;
         public static int FishingSuccessMultiplier = 10;
@@ -218,19 +218,19 @@ namespace Server
         public static int ReplaceWedRingCost = 125;//打造结婚戒指的费率125%
 
         //Mentor Settings 师徒系统
-        public static byte MentorLevelGap = 10;
-        public static bool MentorSkillBoost = true;
-        public static byte MentorLength = 7;
-        public static byte MentorDamageBoost = 10;
-        public static byte MentorExpBoost = 10;
-        public static byte MenteeExpBank = 1;
+        public static byte MentorLevelGap = 10;//师徒等级差
+        public static bool MentorSkillBoost = true;//师徒的技能促进，有老师的，学技能更快
+        public static byte MentorLength = 3;//导师的冷却时间，天数，就是解除师徒后，多少天才可以重新寻找徒弟
+        public static byte MentorDamageBoost = 10;//伤害增强
+        public static byte MentorExpBoost = 10;//经验增强
+        public static byte MenteeExpBank = 1;//经验存储
 
         //Gem Settings
         public static bool GemStatIndependent = true;
 
 
-        //Goods Settings
-        public static bool GoodsOn = true;
+        //Goods Settings,什么鸟，直接关闭
+        public static bool GoodsOn = false;
         public static uint GoodsMaxStored = 50;
         public static uint GoodsBuyBackTime = 60;
         public static uint GoodsBuyBackMaxStored = 20;
@@ -252,12 +252,12 @@ namespace Server
                     CriticalRateWeight = 5,//暴击几率的权重，比如用户当前5点暴击，那么乘这个，就是25%的暴击几率
                     MaxCriticalDamage = 10,//最大暴击伤害 10点，每点10%暴击伤害
                     CriticalDamageWeight = 100,//暴击伤害的权重，比如有5点暴击伤害，那么处于权重*10，那么就是双倍伤害了
-                    MaxFreezing = 6,//最大冰冻伤害,每点10%
-                    FreezingAttackWeight = 10,//权重，20，每点就是5%
-                    MaxPoisonAttack = 6,//毒性伤害，影响施毒术，毒云等，每点10%，每点1点伤害，1秒时长
-                    PoisonAttackWeight = 10,
-                    MaxHealthRegen = 8,
-                    HealthRegenWeight = 10,
+                    MaxFreezing = 10,//最大冰冻伤害,每点10%
+                    FreezingAttackWeight = 20,//权重，20，每点就是5%
+                    MaxPoisonAttack = 10,//毒性伤害，影响施毒术，毒云等，每点10%，每点1点伤害，1秒时长
+                    PoisonAttackWeight =20,
+                    MaxHealthRegen = 8,//HP恢复
+                    HealthRegenWeight = 10,//恢复权重
                     MaxManaRegen = 8,
                     ManaRegenWeight = 10,//
                     MaxPoisonRecovery = 6,//最大的毒性恢复
@@ -267,9 +267,9 @@ namespace Server
                            MaxSpiritual = 5,//最大灵性
                            MaxSamsaracount = 5;//最大轮回次数
         //是否PK魔法躲避
-        public static Boolean PvpCanResistMagic = true,
-                              PvpCanResistPoison = true,
-                              PvpCanFreeze = false;
+        public static Boolean PvpCanResistMagic = true,//PK是否魔法躲避
+                              PvpCanResistPoison = true,//PK是否中毒
+                              PvpCanFreeze = true;//PK是否可以冰冻
 
         //Guild related settings
         public static byte Guild_RequiredLevel = 22, Guild_PointPerLevel = 0;

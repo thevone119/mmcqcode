@@ -7,6 +7,7 @@ using System.Collections.Generic;
 
 namespace Server.MirObjects.Monsters
 {
+    //石魔兽
     public class StoningStatue : MonsterObject
     {
         private long _areaTime = long.MaxValue;
@@ -86,7 +87,10 @@ namespace Server.MirObjects.Monsters
                     if (RandomUtils.Next(Settings.PoisonResistWeight) >= targets[i].PoisonResist)
                     {
                         int poisonLength = GetAttackPower(MinMC, MaxMC);
-
+                        if (poisonLength > 15)
+                        {
+                            poisonLength = 15;
+                        }
                         targets[i].ApplyPoison(new Poison { Owner = this, PType = PoisonType.Stun, Duration = poisonLength, TickSpeed = 1000 }, this);
                         Broadcast(new S.ObjectEffect { ObjectID = targets[i].ObjectID, Effect = SpellEffect.Stunned, Time = (uint)poisonLength * 1000 });
                     }

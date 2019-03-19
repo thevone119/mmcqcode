@@ -412,17 +412,23 @@ namespace Server.MirObjects
             {
                 case "MOVE":
                 case "MOVECOPY":
+                case "GROUPMOVECOPY":
                     if (parts.Length < 2) return;
-
                     string tempx = parts.Length > 3 ? parts[2] : "0";
                     string tempy = parts.Length > 3 ? parts[3] : "0";
+                    string tempc = parts.Length > 4 ? parts[4] : "2";//针对组队进入的，限制进入人数,默认2个人
+                    string tempaptype = parts.Length > 5 ? parts[5] : "0";//针对组队进入的，限制进入人数,默认2个人
                     if (parts[0].ToUpper().Equals("MOVE"))
                     {
-                        acts.Add(new NPCActions(ActionType.Move, parts[1], tempx, tempy));
+                        acts.Add(new NPCActions(ActionType.Move, parts[1], tempx, tempy, tempc, tempaptype));
                     }
                     if (parts[0].ToUpper().Equals("MOVECOPY"))
                     {
-                        acts.Add(new NPCActions(ActionType.MoveCopy, parts[1], tempx, tempy));
+                        acts.Add(new NPCActions(ActionType.MoveCopy, parts[1], tempx, tempy, tempc, tempaptype));
+                    }
+                    if ( parts[0].ToUpper().Equals("GROUPMOVECOPY"))
+                    {
+                        acts.Add(new NPCActions(ActionType.GroupMoveCopy, parts[1], tempx, tempy, tempc, tempaptype));
                     }
                     break;
 
@@ -431,7 +437,6 @@ namespace Server.MirObjects
 
                     acts.Add(new NPCActions(ActionType.InstanceMove, parts[1], parts[2], parts[3], parts[4]));
                     break;
-
 
                 case "GIVEGOLD":
                     if (parts.Length < 2) return;
@@ -702,7 +707,10 @@ namespace Server.MirObjects
                         acts.Add(new NPCActions(ActionType.ChangeHair, parts[1]));
                     }
                     break;
-
+                case "QUERYHAIR":
+                    acts.Add(new NPCActions(ActionType.QueryHair));
+                    break;
+                    
                 case "LOCALMESSAGE":
                     var match = regexQuote.Match(line);
                     if (match.Success)
@@ -2531,7 +2539,7 @@ namespace Server.MirObjects
                 uint count;
                 ushort tempuShort;
                 string tempString = string.Empty;
-                int x, y;
+                int x, y,pcount;
                 int tempInt;
                 byte tempByte;
                 long tempLong;
@@ -2563,27 +2571,64 @@ namespace Server.MirObjects
                 switch (act.Type)
                 {
                     case ActionType.Move:
-                    case ActionType.MoveCopy://移动到副本地图,支持组队进入
+                    case ActionType.MoveCopy://移动到副本地图,单人进入
+                    case ActionType.GroupMoveCopy://移动到副本地图,组队进入
+                        byte play_type = 0;
+                        if (!int.TryParse(param[1], out x)) return;
+                        if (!int.TryParse(param[2], out y)) return;
+                        if (!int.TryParse(param[3], out pcount)) return;
+                        if (!byte.TryParse(param[4], out play_type)) return;
                         Map map = null;
                         if(act.Type== ActionType.Move)
                         {
                             map = SMain.Envir.GetMapByNameAndInstance(param[0]);
                         }
-                        if(act.Type == ActionType.MoveCopy)
+                        if(act.Type == ActionType.MoveCopy|| act.Type == ActionType.GroupMoveCopy)
                         {
-                            map = SMain.Envir.GetMapByNameCopy(param[0]);
+                            //这里先判断下进入次数限制
+                            if (!FBMap.checkFBTime(player, play_type))
+                            {
+                                player.ReceiveChat($"每个玩家每天只能参与1次此类地狱闯关，您已超过闯关次数，请明天再来闯关", ChatType.System);
+                                return;
+                            }
+                            map = SMain.Envir.GetMapByNameCopy(param[0], UniqueKeyHelper.NextInt());
+                            if (map.fbmap == null)
+                            {
+                                return;
+                            }
+                            map.fbmap.play_type = play_type;
                         }
                         if (map == null) return;
 
-                        if (!int.TryParse(param[1], out x)) return;
-                        if (!int.TryParse(param[2], out y)) return;
-
                         var coords = new Point(x, y);
 
+                        //传送组队成员(可限制人数)
+                        if (act.Type == ActionType.GroupMoveCopy)
+                        {
+                            if(player.GroupMembers!= null)
+                            {
+                                int _count=1;
+                                foreach(PlayerObject _p in player.GroupMembers)
+                                {
+                                    if(_count>= pcount)
+                                    {
+                                        break;
+                                    }
+                                    if(_p.ObjectID!= player.ObjectID && _p.CurrentMap == player.CurrentMap)
+                                    {
+                                        if (coords.X > 0 && coords.Y > 0) _p.Teleport(map, coords);
+                                        else _p.TeleportRandom(200, 0, map);
+                                        _count++;
+                                    }
+                                }
+                            }
+                        }
+                        //传送自己
                         if (coords.X > 0 && coords.Y > 0) player.Teleport(map, coords);
                         else player.TeleportRandom(200, 0, map);
+
                         break;
- 
+                    
                     case ActionType.InstanceMove:
                         int instanceId;
                         if (!int.TryParse(param[1], out instanceId)) return;
@@ -2899,6 +2944,10 @@ namespace Server.MirObjects
                                 player.Info.Hair = tempByte;
                             }
                         }
+                        break;
+
+                    case ActionType.QueryHair:
+                        player.ReceiveChat($"当前发型编号为{player.Info.Hair + 1}", ChatType.System);
                         break;
 
                     case ActionType.ChangeClass:

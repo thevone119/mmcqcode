@@ -117,7 +117,7 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("Range", Range));
             lp.Add(new SQLiteParameter("MultiplierBase", MultiplierBase));
             lp.Add(new SQLiteParameter("MultiplierBonus", MultiplierBonus));
-           
+
             //执行更新
             //新增
             if (state == 1)
@@ -134,7 +134,17 @@ namespace Server.MirDatabase
                 MirConfigDB.Execute(sql, lp.ToArray());
             }
             DBObjectUtils.updateObjState(this, (int)Spell);
-     
+
+        }
+
+        //创建一个零时的魔法技能，这个是用于副本随机产生各种魔法效果的
+        public UserMagic createNewMagic()
+        {
+            UserMagic mac = new UserMagic();
+            mac.Spell = Spell;
+            mac.Info = this;
+            mac.IsTempSpell = true;
+            return mac;
         }
     }
 
@@ -333,7 +343,7 @@ namespace Server.MirDatabase
         {
             return (int)Math.Round((MPower() / 4F) * (Level + 1) + DefPower());
         }
-        //蓝耗
+        //每级增长多少
         public int MPower()
         {
             if (Info.MPowerBonus > 0)
@@ -343,6 +353,7 @@ namespace Server.MirDatabase
             else
                 return Info.MPowerBase;
         }
+        //基础多少
         public int DefPower()
         {
             if (Info.PowerBonus > 0)

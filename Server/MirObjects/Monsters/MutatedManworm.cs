@@ -6,6 +6,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //³àÑªÀûÈĞ
     public class MutatedManworm : CrazyManworm
     {
         public int AttackRange = 5;

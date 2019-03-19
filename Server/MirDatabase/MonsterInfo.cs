@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Server.MirEnvir;
 using System.Data.SQLite;
 using System.Data.Common;
+using Newtonsoft.Json;
 
 namespace Server.MirDatabase
 {
@@ -55,9 +56,13 @@ namespace Server.MirDatabase
         public byte AttackAi=1;//采用了几种攻击方式，默认1
         public byte AttackRangeAi = 0;//采用了几种范围攻击方式，默认0
 
+        public byte bosstype = 0;//BOSS的分类，0普通小怪，1：精英小怪（例如邪恶钳虫） 2：首领BOSS怪 3：超级BOSS怪
+
+
 
         public MonsterInfo()
         {
+            
         }
 
         /// <summary>
@@ -88,6 +93,7 @@ namespace Server.MirDatabase
                 {
                     obj.dropText = read.GetString(read.GetOrdinal("dropText"));
                 }
+
                 
                 obj.Index = read.GetInt32(read.GetOrdinal("Idx"));
 
@@ -127,6 +133,10 @@ namespace Server.MirDatabase
                 obj.Undead = read.GetBoolean(read.GetOrdinal("Undead"));
                 obj.CanMove = read.GetBoolean(read.GetOrdinal("CanMove"));
 
+                if (!read.IsDBNull(read.GetOrdinal("bosstype")))
+                {
+                    obj.bosstype = read.GetByte(read.GetOrdinal("bosstype"));
+                }
 
                 DBObjectUtils.updateObjState(obj, obj.Index);
                 list.Add(obj);
@@ -321,6 +331,7 @@ namespace Server.MirDatabase
         {
             bool baoyu = false;//宝玉
             bool baoshi = false;//宝石
+            bool shuye = false;//书页残卷
             foreach (DropInfo di in Drops)
             {
                 if (di.dropLine == null)
@@ -334,6 +345,10 @@ namespace Server.MirDatabase
                 if (di.dropLine.IndexOf("宝石") != -1)
                 {
                     baoshi = true;
+                }
+                if (di.dropLine.IndexOf("书页残卷") != -1)
+                {
+                    shuye = true;
                 }
             }
             //大于1000血的都爆宝玉
@@ -371,6 +386,12 @@ namespace Server.MirDatabase
                     DropInfo di = DropInfo.FromLine(this.Name,line);
                     Drops.Add(di);
                 }
+            }
+            if (!shuye && bosstype > 0 && HP>1000)
+            {
+                DropInfo drop5 = DropInfo.FromLine("副本_书页", String.Format("1/10 G_书页残卷"));
+                drop5.Chance = HP * 1.01 / 200000;
+                Drops.Add(drop5);
             }
             
         }
@@ -442,6 +463,19 @@ namespace Server.MirDatabase
             //return string.Format("{0}", Name);
         }
 
+        //创建副本,采用序列化进行克隆
+        //注意，静态属性，私有属性不被克隆
+        public MonsterInfo Clone()
+        {
+            MonsterInfo mInfo = JsonConvert.DeserializeObject<MonsterInfo>(JsonConvert.SerializeObject(this));
+            //物品还是要采用引用的方式，不能用克隆的方式，否则物品会有问题
+            for(int i=0;i< Drops.Count; i++)
+            {
+                mInfo.Drops[i].ItemList = Drops[i].ItemList;
+            }
+            return mInfo;
+        }
+
     }
 
     //掉落物品几率配置
@@ -464,11 +498,12 @@ namespace Server.MirDatabase
 
         //物品列表
         public List<ItemInfo> ItemList = new List<ItemInfo>();
-        private uint PriceCount;//总价格,针对一组爆率里有多个物品的，根据价格决定爆率，价格越低的，出得越多
+        public uint PriceCount;//总价格,针对一组爆率里有多个物品的，根据价格决定爆率，价格越低的，出得越多
         //最少爆多少个
         public int MinCount = 1;
         //最多爆多少个
         public int MaxCount = 1;
+        public bool isPrice = true;//是否根据价格决定爆率
 
         public static DropInfo FromLine(string monname,string s)
         {
@@ -554,11 +589,12 @@ namespace Server.MirDatabase
                         if (!int.TryParse(parts[2], out info.MaxCount) || info.MaxCount <= 0) return null;
                     }
                 }
-                //任务解析
+                //任务解析,是否随机爆解析
                 if (parts.Length > 3)
                 {
                     string dropRequirement = parts[3];
                     if (dropRequirement.ToUpper() == "Q") info.QuestRequired = true;
+                    if (dropRequirement.ToUpper() == "R") info.isPrice = false;
                 }
                 //总价格解析,价格默认在1000-1000万之间，1000万除价格，得到爆率的价格，这样价格越高，占比就会越低
                 foreach(ItemInfo _info in info.ItemList)
@@ -576,6 +612,8 @@ namespace Server.MirDatabase
 
             return info;
         }
+
+
 
         public string toLine()
         {
@@ -601,7 +639,7 @@ namespace Server.MirDatabase
 
         //是否掉落
         //DropRate：这个是外部的爆率，目前有地图爆率和玩家爆率的组合
-        public bool isDrop(float DropRate = 1.0f)
+        public bool isDrop(double DropRate = 1.0d)
         {
             double rate = Chance * DropRate * Settings.DropRate;
             if (RandomUtils.NextDouble() <= rate)
@@ -639,24 +677,27 @@ namespace Server.MirDatabase
             {
                 return ItemList[0];
             }
+            if (!isPrice || PriceCount<10)
+            {
+                return ItemList[RandomUtils.Next(ItemList.Count)];
+            }
             //针对多个物品，根据价格决定爆率
             int macp = RandomUtils.Next((int)PriceCount);
-            uint price1 = 0, price2 = 0;
+            uint price1 = 0;
             foreach (ItemInfo _info in ItemList)
             {
                 if (_info.DropWeight < 1000)
                 {
-                    price2 += 10000000 / 1000;
+                    price1 += 10000000 / 1000;
                 }
                 else
                 {
-                    price2 += 10000000 / _info.DropWeight;
+                    price1 += 10000000 / _info.DropWeight;
                 }
-                if (macp >= price1 && macp < price2)
+                if ( macp < price1)
                 {
                     return _info;
                 }
-                price1 = price2;
             }
             //不会走到这里
             return ItemList[RandomUtils.Next(ItemList.Count)];
