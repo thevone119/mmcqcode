@@ -13032,7 +13032,70 @@ namespace Server.MirObjects
 
                         canUpgrade = false;
                     }
+                    else
+                    {
+                        tempTo.GemCount++;
+                    }
                     break;
+               case 11://混沌石升级系统
+                    if (tempTo.Info.Bind.HasFlag(BindMode.DontUpgrade) || tempTo.Info.Unique != SpecialItemMode.None)
+                    {
+                        Enqueue(p);
+                        return;
+                    }
+                    if (tempTo.RentalInformation != null && tempTo.RentalInformation.BindingFlags.HasFlag(BindMode.DontUpgrade))
+                    {
+                        Enqueue(p);
+                        return;
+                    }
+                    if((tempTo.quality >= 5 && tempTo.Info.Type != ItemType.Weapon) || (tempTo.quality >= 10 && tempTo.Info.Type == ItemType.Weapon))
+                    {
+                        ReceiveChat("物品已达到最大强化", ChatType.Hint);
+                        Enqueue(p);
+                        return;
+                    }
+                    byte type2 = (byte)tempTo.Info.Type;
+                    if (ValidGemForItem(tempFrom, type2))
+                    {
+                        this.ReceiveChat("当前装备无法使用", ChatType.Hint);
+                        Enqueue(p);
+                        return;
+                    }
+                    //升级成功率75
+                    int change = 75;
+                    if (tempTo.Info.Type == ItemType.Weapon)
+                    {
+                        change -= (int)(tempTo.quality * 7);
+                    }
+                    else
+                    {
+                        change -= (int)(tempTo.quality * 15);
+                    }
+                    if (change<5)
+                    {
+                        change = 5;
+                    }
+                    if (change>70)
+                    {
+                        change = 70;
+                    }
+                    bool suss2 = RandomUtils.Next(100) < change;
+                    if (suss2)
+                    {
+                        tempTo.quality += 1;
+                        if (RandomUtils.Next(100) < 70)
+                        {
+                            tempTo.spiritual += 1;
+                        }
+                        canUpgrade = true;
+                    }
+                    else
+                    {
+                        this.ReceiveChat("升级没有效果.", ChatType.Hint);
+                        canUpgrade = false;
+                    }
+                    break;
+
                 default:
                     Enqueue(p);
                     return;
@@ -13064,7 +13127,7 @@ namespace Server.MirObjects
 
             if (canUpgrade && Info.Inventory[indexTo] != null)
             {
-                tempTo.GemCount++;
+               
                 ReceiveChat("物品已升级.", ChatType.Hint);
                 Enqueue(new S.ItemUpgraded { Item = tempTo });
             }
