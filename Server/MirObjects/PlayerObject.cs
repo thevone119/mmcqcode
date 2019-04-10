@@ -197,8 +197,8 @@ namespace Server.MirObjects
                     !CurrentPoison.HasFlag(PoisonType.Paralysis) && !CurrentPoison.HasFlag(PoisonType.Frozen) && Mount.CanAttack && !Fishing;
             }
         }
-
-        public const long TurnDelay = 350, MoveDelay = 600, HarvestDelay = 350, RegenDelay = 10000, PotDelay = 200, HealDelay = 600, DuraDelay = 10000, VampDelay = 500, LoyaltyDelay = 1000, FishingCastDelay = 750, FishingDelay = 200, CreatureTimeLeftDelay = 1000, ItemExpireDelay = 60000, MovementDelay = 2000;
+        //MoveDelay 移动的延时，服务器端减少下延时，避免客户端卡顿问题
+        public const long TurnDelay = 350, MoveDelay = 560, HarvestDelay = 350, RegenDelay = 10000, PotDelay = 200, HealDelay = 600, DuraDelay = 10000, VampDelay = 500, LoyaltyDelay = 1000, FishingCastDelay = 750, FishingDelay = 200, CreatureTimeLeftDelay = 1000, ItemExpireDelay = 60000, MovementDelay = 2000;
         public long ActionTime, RunTime, RegenTime, PotTime, HealTime, AttackTime, StruckTime, TorchTime, DuraTime, DecreaseLoyaltyTime, IncreaseLoyaltyTime, ChatTime, ShoutTime, SpellTime, VampTime, SearchTime, FishingTime, LogTime, FishingFoundTime, CreatureTimeLeftTicker, StackingTime, ItemExpireTime, RestedTime, MovementTime;
 
         public byte ChatTick;
@@ -1880,7 +1880,7 @@ namespace Server.MirObjects
                 {
                     drop5.Chance = 0.4;
                 }
-                minfo.Drops.Add(drop5);
+                //minfo.Drops.Add(drop5);
                 //黄怪不爆书页
 
                 minfo.Name = minfo.Name + "[" + "精英" + "]";
@@ -4186,7 +4186,16 @@ namespace Server.MirObjects
                         GMLogin = true;
                         ReceiveChat("请输入GM密码", ChatType.Hint);
                         return;
-
+                    case "开启怪物攻城活动":
+                        if (IsGM)
+                        {
+                            return;
+                        }
+                        if (CurrentMap.mapSProcess == null)
+                        {
+                            CurrentMap.mapSProcess = new MonWar();
+                        }
+                        return;
                     case "KILL":
                         if (!IsGM) return;
 
@@ -7179,6 +7188,9 @@ namespace Server.MirObjects
                 case Spell.PetEnhancer:
                     PetEnhancer(target, magic, out cast);
                     break;
+                case Spell.HealingCircle:
+                    HealingCircle(magic,target, out cast);
+                    break;
                 case Spell.TrapHexagon:
                     TrapHexagon(magic, target, out cast);
                     break;
@@ -8053,6 +8065,30 @@ namespace Server.MirObjects
             ConsumeItem(item, 1);
             cast = true;
         }
+
+        //阴阳五行阵
+        private void HealingCircle(UserMagic magic, MapObject target, out bool cast)
+        {
+            cast = false;
+            UserItem amulet = this.GetAmulet(5, 0);
+            bool flag = amulet == null;
+            if (!flag)
+            {
+                this.LevelMagic(magic);
+                int damage = magic.GetDamage(base.GetAttackPower((int)this.MinSC, (int)this.MaxSC));
+                DelayedAction item = new DelayedAction(DelayedType.Magic, MapObject.Envir.Time + 500L, new object[]
+                {
+                    this,
+                    magic,
+                    damage,
+                    this.CurrentLocation
+                });
+                base.CurrentMap.ActionList.Add(item);
+                this.ConsumeItem(amulet, 5u);
+                cast = true;
+            }
+        }
+
         private void Reincarnation(UserMagic magic, PlayerObject target, out bool cast)
         {
             cast = true;
