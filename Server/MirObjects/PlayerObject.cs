@@ -29,6 +29,8 @@ namespace Server.MirObjects
 
         public long LastRecallTime, LastRevivalTime, LastTeleportTime, LastProbeTime, MenteeEXP;
         public long LastOnlineTimeCheck;//最后检测时间
+        public long LastItemSkillTime;//最后检测时间
+        
 
 
         public short Looks_Armour = 0, Looks_Weapon = -1, Looks_WeaponEffect = 0;
@@ -791,7 +793,7 @@ namespace Server.MirObjects
                 base.Process();
                 //疲劳系统处理
                 ProcessOnlineTime();
-
+                ProcessItemSkill();
                 RefreshNameColour();
             }
             catch(Exception ex)
@@ -831,6 +833,127 @@ namespace Server.MirObjects
                 Info.onlineDay = DateTime.Now.DayOfYear;
                 Info.onlineTime = 0;
             }
+        }
+
+        /// <summary>
+        /// 武器技能处理
+        /// </summary>
+        private void ProcessItemSkill()
+        {
+            if (Envir.Time < LastItemSkillTime)
+            {
+                return;
+            }
+            if (InSafeZone)
+            {
+                return;
+            }
+            LastItemSkillTime = Envir.Time + 1000;
+
+            //噬血阵（大概3秒吸一次附近怪物的血，恢复自身）
+            //加血量
+            if (hasItemSk(ItemSkill.Comm4) && RandomUtils.Next(100) < 25)
+            {
+                int value = GetAttackPower(MinDC, MaxDC);
+                int value2 = GetAttackPower(MinMC, MaxMC);
+                int value3 = GetAttackPower(MinSC, MaxSC);
+                if(value2> value)
+                {
+                    value = value2;
+                }
+                if (value3 > value)
+                {
+                    value = value3;
+                }
+                value = value/4;
+                int xivalue = 0;
+
+                List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 1);
+                foreach (MapObject ob in list)
+                {
+                    if (ob == null)
+                    {
+                        continue;
+                    }
+                    if (ob.Race != ObjectType.Monster )
+                    {
+                        continue;
+                    }
+                    if (!ob.IsAttackTarget(this))
+                    {
+                        continue;
+                    }
+                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, value, DefenceType.None);
+                    ActionList.Add(action);
+                    xivalue += value/3;
+                }
+                //吸血
+                if (xivalue > 0 && HP<MaxHP && PotHealthAmount< MaxHP)
+                {
+                    PotHealthAmount += (ushort)xivalue;
+                }
+                return;
+            }
+
+            //迷幻，几率迷幻1-3秒
+            if (hasItemSk(ItemSkill.Comm5) && RandomUtils.Next(100) < 25)
+            {
+                List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 1);
+                foreach (MapObject ob in list)
+                {
+                    if (ob == null)
+                    {
+                        continue;
+                    }
+                    if (ob.Race != ObjectType.Monster)
+                    {
+                        continue;
+                    }
+                    if (!ob.IsAttackTarget(this))
+                    {
+                        continue;
+                    }
+                    ((MonsterObject)ob).ShockTime = Envir.Time + RandomUtils.Next(1,4) * 1000;
+                    ob.Target = null;
+                }
+                return;
+            }
+
+            //天雷阵
+            if (hasItemSk(ItemSkill.Comm7) && RandomUtils.Next(100) < 25)
+            {
+                int value = GetAttackPower(MinDC, MaxDC);
+                int value2 = GetAttackPower(MinMC, MaxMC);
+                int value3 = GetAttackPower(MinSC, MaxSC);
+                if (value2 > value)
+                {
+                    value = value2;
+                }
+                if (value3 > value)
+                {
+                    value = value3;
+                }
+                List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 1);
+                foreach (MapObject ob in list)
+                {
+                    if (ob == null)
+                    {
+                        continue;
+                    }
+                    if (ob.Race != ObjectType.Monster)
+                    {
+                        continue;
+                    }
+                    if (!ob.IsAttackTarget(this))
+                    {
+                        continue;
+                    }
+                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, value, DefenceType.MAC);
+                    ActionList.Add(action);
+                }
+                return;
+            }
+
         }
 
 
@@ -976,6 +1099,15 @@ namespace Server.MirObjects
                     manaRegen += (int)(MaxMP * 0.03F) + 1;
                     manaRegen += (int)(manaRegen * ((double)SpellRecovery / Settings.ManaRegenWeight));
                 }
+
+                if (hasItemSk(ItemSkill.Comm1))
+                {
+                    manaRegen = manaRegen * 15 / 10;
+                }
+                if (hasItemSk(ItemSkill.Comm2))
+                {
+                    healthRegen = healthRegen * 15 / 10;
+                }
             }
 
             if (Envir.Time > PotTime)
@@ -1039,6 +1171,9 @@ namespace Server.MirObjects
                     VampAmount = 0;
                 }
             }
+
+            
+
 
             if (healthRegen > 0) ChangeHP(healthRegen);
             if (HP == MaxHP)
