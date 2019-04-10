@@ -2052,8 +2052,89 @@ namespace Server.MirObjects
             {
                 return;
             }
-            int change = 10+ Info.SaItem.quality*10;
-
+            int change = 10+ Info.SaItem.samsaracount * 10;
+            bool hassam = false;
+            for (int i = 0; i < Info.Equipment.Length; i++)
+            {
+                if (Info.Equipment[i] == null || Info.Equipment[i].Info == null || Info.Equipment[i].Info.Type > ItemType.Ring)
+                {
+                    continue;
+                }
+                if (Info.SaItem != null && Info.SaItemType == 0)
+                {
+                    if (Info.SaItem.Info.Index == Info.Equipment[i].Info.Index)
+                    {
+                        hassam = true;
+                        break;
+                    }
+                }
+            }
+            if (!hassam)
+            {
+                change = change * 2;
+            }
+            //爆出轮回装备,1/3的几率爆点
+            if (CanGainItem(Info.SaItem, false) && RandomUtils.NextDouble() <= 1.0/change)
+            {
+                UserItem saitem = Info.SaItem.Clone();
+                Info.SaItem = null;
+                if (saitem.samsaratype == (byte)AwakeType.DC)
+                {
+                    saitem.samsaracount++;
+                    saitem.SA_DC++;
+                    if (RandomUtils.Next(3) == 1)
+                    {
+                        saitem.samsaracount++;
+                        saitem.SA_DC++;
+                    }
+                }
+                if (saitem.samsaratype == (byte)AwakeType.MC)
+                {
+                    saitem.samsaracount++;
+                    saitem.SA_MC++;
+                    if (RandomUtils.Next(3) == 1)
+                    {
+                        saitem.samsaracount++;
+                        saitem.SA_MC++;
+                    }
+                }
+                if (saitem.samsaratype == (byte)AwakeType.SC)
+                {
+                    saitem.samsaracount++;
+                    saitem.SA_SC++;
+                    if (RandomUtils.Next(3) == 1)
+                    {
+                        saitem.samsaracount++;
+                        saitem.SA_SC++;
+                    }
+                }
+                if (saitem.samsaratype == (byte)AwakeType.AC)
+                {
+                    saitem.samsaracount++;
+                    saitem.SA_AC++;
+                    if (RandomUtils.Next(4) == 1)
+                    {
+                        saitem.samsaracount++;
+                        saitem.SA_AC++;
+                    }
+                }
+                if (saitem.samsaratype == (byte)AwakeType.MAC)
+                {
+                    saitem.samsaracount++;
+                    saitem.SA_MAC++;
+                    if (RandomUtils.Next(4) == 1)
+                    {
+                        saitem.samsaracount++;
+                        saitem.SA_MAC++;
+                    }
+                }
+                //直接放背包，背包放不下，则爆出来
+                GainItem(saitem);
+                foreach (var player in Envir.Players)
+                {
+                    player.ReceiveChat($"恭喜[{Name}]在轮回路上，找回自己的装备 {saitem.FriendlyName}，在{CurrentMap.getTitle()}", ChatType.System2);
+                }
+            }
 
         }
         //获得经验
