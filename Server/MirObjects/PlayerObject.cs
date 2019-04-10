@@ -852,8 +852,9 @@ namespace Server.MirObjects
 
             //噬血阵（大概3秒吸一次附近怪物的血，恢复自身）
             //加血量
-            if (hasItemSk(ItemSkill.Comm4) && RandomUtils.Next(100) < 25)
+            if (hasItemSk(ItemSkill.Comm4) && RandomUtils.Next(100) < 20)
             {
+                LastItemSkillTime = Envir.Time + 4000;
                 int value = GetAttackPower(MinDC, MaxDC);
                 int value2 = GetAttackPower(MinMC, MaxMC);
                 int value3 = GetAttackPower(MinSC, MaxSC);
@@ -865,9 +866,13 @@ namespace Server.MirObjects
                 {
                     value = value3;
                 }
-                value = value/4;
+                if (value < MaxHP / 15)
+                {
+                    value = MaxHP / 15;
+                }
+                value = value/3;
                 int xivalue = 0;
-
+                CurrentMap.Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.FlameRound }, CurrentLocation);
                 List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 1);
                 foreach (MapObject ob in list)
                 {
@@ -895,9 +900,11 @@ namespace Server.MirObjects
                 return;
             }
 
-            //迷幻，几率迷幻1-3秒
-            if (hasItemSk(ItemSkill.Comm5) && RandomUtils.Next(100) < 25)
+            //迷幻，几率迷幻3-6秒
+            if (hasItemSk(ItemSkill.Comm5) && RandomUtils.Next(100) < 20)
             {
+                CurrentMap.Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.Focus }, CurrentLocation);
+                LastItemSkillTime = Envir.Time + 4000;
                 List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 1);
                 foreach (MapObject ob in list)
                 {
@@ -913,14 +920,14 @@ namespace Server.MirObjects
                     {
                         continue;
                     }
-                    ((MonsterObject)ob).ShockTime = Envir.Time + RandomUtils.Next(1,4) * 1000;
+                    ((MonsterObject)ob).ShockTime = Envir.Time + RandomUtils.Next(5,10) * 1000;
                     ob.Target = null;
                 }
                 return;
             }
 
             //天雷阵
-            if (hasItemSk(ItemSkill.Comm7) && RandomUtils.Next(100) < 25)
+            if (hasItemSk(ItemSkill.Comm7) && RandomUtils.Next(100) < 20)
             {
                 int value = GetAttackPower(MinDC, MaxDC);
                 int value2 = GetAttackPower(MinMC, MaxMC);
@@ -933,8 +940,10 @@ namespace Server.MirObjects
                 {
                     value = value3;
                 }
-                Broadcast(new S.ObjectEffect { ObjectID = this.ObjectID, Effect = SpellEffect.GreatFoxThunder });
-                List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 1);
+                LastItemSkillTime = Envir.Time + 4000;
+                CurrentMap.Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.GreatFoxThunder }, CurrentLocation);
+                //Broadcast(new S.ObjectEffect { ObjectID = this.ObjectID, Effect = SpellEffect.GreatFoxThunder });
+                List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
                 foreach (MapObject ob in list)
                 {
                     if (ob == null)
@@ -952,6 +961,7 @@ namespace Server.MirObjects
                     DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, value, DefenceType.MAC,false);
                     ActionList.Add(action);
                 }
+
                 return;
             }
 
@@ -4509,6 +4519,26 @@ namespace Server.MirObjects
                         {
                             CurrentMap.mapSProcess = new MonWar();
                         }
+                        return;
+                    case "GIVEITEMSKILL":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        byte _sk1 = 0;
+                        byte.TryParse(parts[1], out _sk1);
+                        SMain.Enqueue("更新武器阵法" + _sk1);
+                        foreach (UserItem titem  in Info.Equipment)
+                        {
+                            if(titem==null || titem.Info.Type!= ItemType.Weapon)
+                            {
+                                continue;
+                            }
+                            titem.sk1 = (ItemSkill)_sk1;
+                            SMain.Enqueue("更新武器阵法" + titem.Name+","+titem.sk1);
+                            Enqueue(new S.RefreshItem { Item = titem });
+                        }
+                       
                         return;
                     case "KILL":
                         if (!IsGM) return;
