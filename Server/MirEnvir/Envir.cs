@@ -1085,10 +1085,15 @@ namespace Server.MirEnvir
                 {
                     CharacterList[ac].fb1_createday = day;
                 }
-                if (day - CharacterList[ac].fb1_createday > 2)
+                if (CharacterList[ac].fb1_score > 0)
                 {
-                    CharacterList[ac].fb1_score = CharacterList[ac].fb1_score - (day - CharacterList[ac].fb1_createday) * 100;
+                    if (day - CharacterList[ac].fb1_createday > 2)
+                    {
+                        CharacterList[ac].fb1_score = CharacterList[ac].fb1_score - 100;
+                        CharacterList[ac].fb1_createday = day - 2;
+                    }
                 }
+                
                 if (CharacterList[ac].fb1_score < 0)
                 {
                     CharacterList[ac].fb1_score = 0;
@@ -2276,7 +2281,7 @@ namespace Server.MirEnvir
             {
                 retm = list[0].Info.CreateInstance();
                 SMain.Enqueue("创建地图副本：" + fb_id+",idx:" + list.Count );
-                retm.fbmap = FBMap.getInstance(fb_id);
+                retm.mapSProcess = FBMap.getInstance(fb_id);
                 return retm;
             }
             //第一个不算副本哈
@@ -2286,15 +2291,15 @@ namespace Server.MirEnvir
                 {
                     retm = list[i];
                     retm.Clear();
-                    SMain.Enqueue("创建地图副本：" + fb_id + ",idx:" + i);
-                    retm.fbmap = FBMap.getInstance(fb_id);
+                    //SMain.Enqueue("创建地图副本：" + fb_id + ",idx:" + i);
+                    retm.mapSProcess = FBMap.getInstance(fb_id);
                     return retm;
                 }
             }
             //
             retm = list[0].Info.CreateInstance();
-            SMain.Enqueue("创建地图副本：" + fb_id + ",idx:" + list.Count);
-            retm.fbmap = FBMap.getInstance(fb_id);
+            //SMain.Enqueue("创建地图副本：" + fb_id + ",idx:" + list.Count);
+            retm.mapSProcess = FBMap.getInstance(fb_id);
             return retm;
         }
 

@@ -58,6 +58,8 @@ namespace Server.MirDatabase
 
         public byte bosstype = 0;//BOSS的分类，0普通小怪，1：精英小怪（例如邪恶钳虫） 2：首领BOSS怪 3：超级BOSS怪
 
+        public int PoisonImmune = 0;//毒免类型
+
 
 
         public MonsterInfo()
@@ -132,7 +134,8 @@ namespace Server.MirDatabase
                 obj.AutoRev = read.GetBoolean(read.GetOrdinal("AutoRev"));
                 obj.Undead = read.GetBoolean(read.GetOrdinal("Undead"));
                 obj.CanMove = read.GetBoolean(read.GetOrdinal("CanMove"));
-
+                obj.PoisonImmune = read.GetInt32(read.GetOrdinal("PoisonImmune"));
+                
                 if (!read.IsDBNull(read.GetOrdinal("bosstype")))
                 {
                     obj.bosstype = read.GetByte(read.GetOrdinal("bosstype"));
@@ -229,7 +232,8 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("AutoRev", AutoRev));
             lp.Add(new SQLiteParameter("Undead", Undead));
             lp.Add(new SQLiteParameter("CanMove", CanMove));
-
+            lp.Add(new SQLiteParameter("PoisonImmune", PoisonImmune));
+            
             //新增
             if (state == 1)
             {

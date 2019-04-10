@@ -2,6 +2,7 @@
 using Server.MirEnvir;
 using S = ServerPackets;
 using System.Drawing;
+using System;
 
 namespace Server.MirObjects.Monsters
 {
@@ -178,9 +179,40 @@ namespace Server.MirObjects.Monsters
             }
 
         }
-
+        //刷新小怪，这里控制下，不要无限刷新？
         private void SpawnBomb()
         {
+            //当前地图怪物超过400，不刷新了
+            if (CurrentMap.MonsterCount > 400)
+            {
+                return;
+            }
+
+            int NearCount = 0;
+            //周围7格的怪物超过100个，也不刷新了
+            for (int d = 0; d <= 7; d++)
+            {
+                for (int y = CurrentLocation.Y - d; y <= CurrentLocation.Y + d; y++)
+                {
+                    if (y < 0) continue;
+                    if (y >= CurrentMap.Height) break;
+
+                    for (int x = CurrentLocation.X - d; x <= CurrentLocation.X + d; x += Math.Abs(y - CurrentLocation.Y) == d ? 1 : d * 2)
+                    {
+                        if (x < 0) continue;
+                        if (x >= CurrentMap.Width) break;
+
+                        //Cell cell = CurrentMap.GetCell(x, y);
+                        if (!CurrentMap.Valid(x, y) || CurrentMap.Objects[x, y] == null) continue;
+                        NearCount+=CurrentMap.Objects[x, y].Count;
+                    }
+                }
+            }
+            if (NearCount > 100)
+            {
+                return;
+            }
+
             int distance = RandomUtils.Next(_bombSpreadMin, _bombSpreadMax);
 
             for (int j = 0; j < CurrentMap.Players.Count; j++)

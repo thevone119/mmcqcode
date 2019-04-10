@@ -117,9 +117,17 @@ namespace Server.MirObjects
 
                     if (!ob.IsAttackTarget(Caster)) return;
                     ob.Attacked(Caster, Value, DefenceType.MAC, false);
+                    //火墙几率压血线
+                    if (Caster!=null && Caster.hasItemSk(ItemSkill.Wizard7))
+                    {
+                        if(ob.Race == ObjectType.Monster)
+                        {
+                            ((MonsterObject)ob).RegenTime = Envir.Time + 10000;
+                        }
+                    }
                     break;
                 case Spell.Healing: //SafeZone
-                    if (ob.Race != ObjectType.Player && (ob.Race != ObjectType.Monster || ob.Master == null || ob.Master.Race != ObjectType.Player)) return;
+                    if (ob.Race != ObjectType.Player && (ob.Race != ObjectType.Monster || ob.Master == null || ob.Master.Race != ObjectType.Player)||ob.CurrentMap.SafeZoneHealingTime > Envir.Time) return;
                     if (ob.Dead || ob.HealAmount != 0 || ob.PercentHealth == 100) return;
 
                     ob.HealAmount += 25;
@@ -130,7 +138,13 @@ namespace Server.MirObjects
                     if (ob.Dead) return;              
 
                     if (!ob.IsAttackTarget(Caster)) return;
-                    ob.Attacked(Caster, Value, DefenceType.MAC, false);
+                    int _Value = Value;
+
+                    if (Caster!=null && Caster.hasItemSk(ItemSkill.Taoist7))
+                    {
+                        _Value = _Value * 12 / 10;
+                    }
+                    ob.Attacked(Caster, _Value, DefenceType.MAC, false);
                     if (!ob.Dead)
                     ob.ApplyPoison(new Poison
                         {
@@ -138,8 +152,24 @@ namespace Server.MirObjects
                             Owner = Caster,
                             PType = PoisonType.Green,
                             TickSpeed = 2000,
-                            Value = Value/20
+                            Value = _Value / 20
                         }, Caster, false, false);
+                    break;
+                case Spell.HealingCircle://五行阵
+                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) return;
+                    if (ob.Dead) return;
+                    //伤害敌军
+                    if (ob.IsAttackTarget(Caster))
+                    {
+                        ob.Attacked(Caster, Value/2, DefenceType.MAC, false);
+                    }
+                    else if (ob.IsFriendlyTarget(Caster))//治疗友军
+                    {
+                        //if (ob.HealAmount != 0 || ob.PercentHealth == 100) return;
+                        if (ob.HealAmount> Value * 2 ||  ob.PercentHealth == 100) return;
+                        ob.HealAmount += (ushort)(Value*2);
+                        Broadcast(new S.ObjectEffect { ObjectID = ob.ObjectID, Effect = SpellEffect.Healing });
+                    }
                     break;
                 case Spell.Blizzard:
                     if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) return;
@@ -162,6 +192,14 @@ namespace Server.MirObjects
                     if (Caster != null && Caster.ActiveBlizzard == false) return;
                     if (!ob.IsAttackTarget(Caster)) return;
                     ob.Attacked(Caster, Value, DefenceType.MAC, false);
+                    //火雨几率压血线
+                    if (Caster != null && Caster.hasItemSk(ItemSkill.Wizard7))
+                    {
+                        if (ob.Race == ObjectType.Monster)
+                        {
+                            ((MonsterObject)ob).RegenTime = Envir.Time + 10000;
+                        }
+                    }
                     break;
                 case Spell.ExplosiveTrap:
                     if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) return;
@@ -169,6 +207,11 @@ namespace Server.MirObjects
                     if (!ob.IsAttackTarget(Caster)) return;
                     if (DetonatedTrap) return;//make sure explosion happens only once
                     DetonateTrapNow();
+                    //烈火阵 
+                    if (Caster != null && Caster.hasItemSk(ItemSkill.Archer1))
+                    {
+                        Value = Value * 13 / 10;
+                    }
                     ob.Attacked(Caster, Value, DefenceType.MAC, false);
                     break;
                 case Spell.MapLava:
@@ -186,7 +229,6 @@ namespace Server.MirObjects
                     if (ob.Dead) return;
                     if(ob.Race == ObjectType.Monster && ob.Master == null) return;
                     //这里要有伤害啊
-                    SMain.Enqueue("闪电伤害" + Value);
                     ob.Struck(Value, DefenceType.MAC);
                     break;
                 case Spell.MapQuake1:
@@ -325,6 +367,7 @@ namespace Server.MirObjects
                 case Spell.PoisonCloud:
                 case Spell.Blizzard:
                 case Spell.MeteorStrike:
+                case Spell.HealingCircle:
                     if (!Show)
                         return null;
 

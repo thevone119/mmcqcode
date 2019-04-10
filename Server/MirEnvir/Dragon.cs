@@ -10,6 +10,7 @@ namespace Server.MirEnvir
     //这个是龙么？
     //真不知道这个是什么，是某个活动么？
     //难道是牧场？种植？
+    //这个是破天魔龙的实现
     public class Dragon
     {
         private int ProcessDelay = 2000;

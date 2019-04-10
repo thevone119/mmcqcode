@@ -11,16 +11,11 @@ namespace Server.MirEnvir
 {
     //副本地图处理
     //轮回地狱副本
-    public class FBMap
+    public class FBMap : MapSpecialProcess
     {
-        private static Envir Envir
-        {
-            get { return SMain.Envir; }
-        }
-
         private static Dictionary<int, FBMap> fgdic = new Dictionary<int, FBMap>();
 
-        private static byte Level_increase = 7;//每层增长的难度5%-10%
+        private static byte Level_increase = 8;//每层增长的难度5%-10%
         private static byte Max_Level = 18;//副本最高层级
 
         //副本小怪1(比奇/沃玛)白怪
@@ -46,7 +41,9 @@ namespace Server.MirEnvir
         private long fb_actime;//副本的处理时间，300毫秒处理一次
         private int fb_step;//副本执行阶段，步骤(针对当前地图)
 
-        public string Title ="轮回地狱";//副本地图名称
+        private string Title ="轮回地狱";//副本地图名称
+
+        public int play_level;//玩家的等级，最高级的玩家
 
         public int fb_playcount;//副本的玩家数
         public int fb_level;//副本的层级
@@ -59,7 +56,7 @@ namespace Server.MirEnvir
         public short fb_killmoncount = 0;//当前副本已杀怪数
         private List<ItemInfo> userItems = new List<ItemInfo>();
         //private int dorpItemCount = 0;//已爆装备数，爆过了就降低下爆率
-        public byte play_type;//玩法 0：单人免费闯关 1：组队免费闯关  2：金币闯关（1次50万）3：元宝闯关（1次3000元宝） 每种类型，每天只能玩一次
+        private byte play_type;//玩法 0：单人免费闯关 1：组队免费闯关  2：金币闯关（1次50万）3：元宝闯关（1次3000元宝） 每种类型，每天只能玩一次
 
         //关卡类型 0:普通关卡 1：持续掉血（绿毒） 2：天灾（雷击）
         public bool has_poison;
@@ -99,7 +96,7 @@ namespace Server.MirEnvir
         }
 
         //副本怪物死亡，怪物死亡会调用这个方法
-        public void monDie(MonsterObject mon)
+        public override void monDie(MonsterObject mon)
         {
             fb_killmoncount++;
         }
@@ -494,6 +491,10 @@ namespace Server.MirEnvir
 
             foreach (PlayerObject p in map.Players)
             {
+                if(p.Level> play_level)
+                {
+                    play_level = p.Level;
+                }
                 PlayerNames += p.Name + " ";
                 double sadorpChange = 0;//轮回装备爆出的几率
                 for(int i=0;i< p.Info.Equipment.Length; i++)
@@ -502,19 +503,19 @@ namespace Server.MirEnvir
                     {
                         continue;
                     }
-                    if (p.Info.SaItem != null)
+                    if (p.Info.SaItem != null &&p.Info.SaItemType==0)
                     {
                         if(p.Info.SaItem.Info.Index== p.Info.Equipment[i].Info.Index)
                         {
-                            sadorpChange = 0.35f;//有相同的装备，则爆率是1/3
+                            sadorpChange = 0.3f;//有相同的装备，则爆率是1/3
                         }
                         if (sadorpChange < 0.1)
                         {
-                            sadorpChange = 0.2f;//没有相同的装备，则爆率是1/5
+                            sadorpChange = 0.15f;//没有相同的装备，则爆率是1/6
                         }
                     }
                 }
-                //爆出轮回装备,1/5的几率爆点
+                //爆出轮回装备,1/3的几率爆点
                 if(RandomUtils.NextDouble() <= sadorpChange * DropRate)
                 {
                     UserItem saitem = p.Info.SaItem.Clone();
@@ -543,7 +544,7 @@ namespace Server.MirEnvir
                     {
                         saitem.samsaracount++;
                         saitem.SA_SC++;
-                        if (RandomUtils.Next(5) == 1)
+                        if (RandomUtils.Next(3) == 1)
                         {
                             saitem.samsaracount++;
                             saitem.SA_SC++;
@@ -553,11 +554,21 @@ namespace Server.MirEnvir
                     {
                         saitem.samsaracount++;
                         saitem.SA_AC++;
+                        if (RandomUtils.Next(4) == 1)
+                        {
+                            saitem.samsaracount++;
+                            saitem.SA_AC++;
+                        }
                     }
                     if (saitem.samsaratype == (byte)AwakeType.MAC)
                     {
                         saitem.samsaracount++;
                         saitem.SA_MAC++;
+                        if (RandomUtils.Next(4) == 1)
+                        {
+                            saitem.samsaracount++;
+                            saitem.SA_MAC++;
+                        }
                     }
                     //直接放背包，背包放不下，则爆出来
                     if (p.CanGainItem(saitem, false))
@@ -580,17 +591,35 @@ namespace Server.MirEnvir
             //这里使用当前的人数计算
             int pcount = map.Players.Count;
             //药水爆率
-            int dropmaxcount = pcount + fb_level / 3;
-            int dropmincount = pcount + fb_level / 6;
+            int dropmaxcount = pcount + fb_level / 4;
+            int dropmincount = pcount + fb_level / 7;
             DropInfo drop1 = DropInfo.FromLine("副本爆率1", String.Format("1/1 G_药剂3 {0}-{1}", pcount * 4+fb_level, pcount * 8 + fb_level ));
             drop1.isPrice = false;
             DropInfo drop2 = DropInfo.FromLine("副本_宝玉", String.Format("1/1 G_宝玉 {0}-{1}", dropmincount, dropmaxcount));
             drop2.isPrice = false;
             DropInfo drop3 = DropInfo.FromLine("副本_符纸", String.Format("1/2 G_轮回符纸 {0}-{1}", dropmincount, dropmaxcount));
             drop3.isPrice = false;
-            DropInfo drop4 = DropInfo.FromLine("副本_身上的装备", String.Format("1/4 力量戒指 {0}-{1}", dropmincount, dropmaxcount));
+            DropInfo drop4 = DropInfo.FromLine("副本_身上的装备", String.Format("1/4 力量戒指 {0}-{1}", 1, 1));
             drop4.ItemList = userItems;
-          
+            if (play_level < 40)
+            {
+                drop4.Chance = 1.0 / 3.0;
+            }
+            else if (play_level < 45)
+            {
+                drop4.Chance = 1.0 / 4.0;
+            }
+            else if (play_level < 50)
+            {
+                drop4.Chance = 1.0 / 5.0;
+            }
+            else 
+            {
+                drop4.Chance = 1.0 / 6.0;
+            }
+
+
+
 
             //必爆的补给品
             if (drop1.isDrop(DropRate))
@@ -605,7 +634,7 @@ namespace Server.MirEnvir
             {
                 //dropItems.AddRange(drop3.DropItems());//符纸放在地狱爆
             }
-            if (drop4.isDrop(DropRate) && userItems.Count> fb_playcount*2)
+            if (drop4.isDrop(DropRate) && userItems.Count> 4)
             {
                 if (RandomUtils.Next(Math.Max(20 - fb_level,2)) == 1)
                 {
@@ -649,12 +678,6 @@ namespace Server.MirEnvir
                 };
                 ob.Drop(Settings.DropRange + 1);
             }
-            
-            //npc.Name = "";
-            //List<MonsterObject> list = new List<MonsterObject>();
-
-
-            //return list;
         }
 
         //传送到下一个关卡
@@ -690,7 +713,7 @@ namespace Server.MirEnvir
                 has_Lightning = false;
             }
             Map nextmap = SMain.Envir.GetMapByNameCopy(mname, fb_id);
-            map.fbmap = null;
+            map.mapSProcess = null;
             List<PlayerObject> list = new List<PlayerObject>();
             foreach (PlayerObject p in map.Players)
             {
@@ -743,7 +766,7 @@ namespace Server.MirEnvir
         }
 
         //各种副本处理
-        public void ProcessFB(Map map)
+        public override void Process(Map map)
         {
             //副本500毫秒处理一次哦
             if (fb_actime > Envir.Time)
@@ -751,8 +774,8 @@ namespace Server.MirEnvir
                 return;
             }
             fb_actime = Envir.Time + 500;
-
-
+            play_type = (byte)param1;
+      
             if (fb_starttime == 0)
             {
                 fb_starttime = Envir.Time;
@@ -1109,6 +1132,11 @@ namespace Server.MirEnvir
             }
         }
 
+        //子类可以实现覆盖
+        public override string getTitle()
+        {
+            return Title;
+        }
     }
 
 

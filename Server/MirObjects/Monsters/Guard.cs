@@ -68,7 +68,15 @@ namespace Server.MirObjects.Monsters
         protected override void Attack()
         {
             if (!Target.IsAttackTarget(this)) return;
-
+            //不攻击副本的怪物
+            if (Target.Race == ObjectType.Monster)
+            {
+                MonsterObject fbobj = (MonsterObject)Target;
+                if (fbobj.IsCopy)
+                {
+                    return;
+                }
+            }
             Point target = Target.Back;
             MirDirection dir = Functions.DirectionFromPoint(target, Target.CurrentLocation);
 

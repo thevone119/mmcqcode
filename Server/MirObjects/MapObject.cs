@@ -605,10 +605,12 @@ namespace Server.MirObjects
         //对附近的发送广播
         //比如随机飞走了
         //比如掉血了
+        //这里目前之显示组队玩家的血量，修改下所有玩家的血量都显示
         public void BroadcastHealthChange()
         {
+ 
             if (Race != ObjectType.Player && Race != ObjectType.Monster) return;
-
+           
             byte time = Math.Min(byte.MaxValue, (byte)Math.Max(5, (RevTime - Envir.Time) / 1000));
             Packet p = new S.ObjectHealth { ObjectID = ObjectID, HP = this.Health,MaxHP=this.MaxHealth ,Expire = time };
 
@@ -617,11 +619,17 @@ namespace Server.MirObjects
                 CurrentMap.Broadcast(p, CurrentLocation);
                 return;
             }
-
+         
             if (Race == ObjectType.Monster && !AutoRev && Master == null) return;
-
+   
             if (Race == ObjectType.Player)
             {
+                if (AutoRev)
+                {
+                    Broadcast(p);
+                    return;
+                }
+
                 if (GroupMembers != null) //Send HP to group
                 {
                     for (int i = 0; i < GroupMembers.Count; i++)

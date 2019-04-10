@@ -9,6 +9,8 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //野兽王
+    //改版了AI
     class WingedTigerLord : MonsterObject
     {
         enum AttackType
@@ -17,10 +19,11 @@ namespace Server.MirObjects.Monsters
             Tornado,
             Stomp
         }
+        //跺脚,龙卷风
+        private bool stomp;
 
-        private bool stomp, tornado;
-
-        private int AttackRange = 5;
+        private int AttackRange = 2;
+        public long FearTime;
 
         protected internal WingedTigerLord(MonsterInfo info) : base(info)
         {
@@ -29,6 +32,35 @@ namespace Server.MirObjects.Monsters
         protected override bool InAttackRange()
         {
             return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, AttackRange);
+        }
+
+
+        protected override void ProcessAI()
+        {
+            if (!Dead && Envir.Time > FearTime)
+            {
+                FearTime = Envir.Time + 2000;
+                if (HP>MaxHP/4)
+                {
+                    if (RandomUtils.Next(7) == 0)
+                        stomp = true;
+                    if (RandomUtils.Next(6) == 0)
+                    {
+                        AttackRange = 10;
+
+                    }
+                }
+                else{
+                    if (RandomUtils.Next(4) == 0)
+                        stomp = true;
+                    if (RandomUtils.Next(2) == 0)
+                    {
+                        AttackRange = 10;
+
+                    }
+                }
+            }
+            base.ProcessAI();
         }
 
         protected override void Attack()
@@ -42,68 +74,62 @@ namespace Server.MirObjects.Monsters
             DelayedAction action;
 
             Direction = Functions.DirectionFromPoint(CurrentLocation, Target.CurrentLocation);
-            bool ranged = CurrentLocation == Target.CurrentLocation || !Functions.InRange(CurrentLocation, Target.CurrentLocation, 1);
-
-            int damage = 0;
-
-            if (ranged)
+            bool ranged = Functions.InRange(CurrentLocation, Target.CurrentLocation, 2);
+            //伤害根据血量升级
+            int damage = GetAttackPower(MinDC, MaxDC);
+            if (HP < MaxHP / 10)
             {
-                if (tornado)
-                {
-                    Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0, TargetID = Target.ObjectID });
-
-                    damage = GetAttackPower(MinDC, MaxDC);
-
-                    List<MapObject> targets = FindAllTargets(1, Target.CurrentLocation);
-
-                    for (int i = 0; i < targets.Count; i++)
-                    {
-                        action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + 1000, targets[i], damage, DefenceType.ACAgility);
-                        ActionList.Add(action);
-                    }
-
-                    ActionTime = Envir.Time + 800;
-                    AttackTime = Envir.Time + AttackSpeed;
-
-                    tornado = false;
-                    return;
-                }
+                damage = damage * 3 / 2;
+            }
+            else if(HP < MaxHP / 4)
+            {
+                damage = damage * 4 / 3;
             }
 
+            //不在范围内
             if (!ranged)
             {
+                
+                Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0, TargetID = Target.ObjectID });
+
+                List<MapObject> targets = FindAllTargets(1, Target.CurrentLocation);
+
+                for (int i = 0; i < targets.Count; i++)
+                {
+                    action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + 1000, targets[i], damage, DefenceType.MAC);
+                    ActionList.Add(action);
+                }
+
+                ActionTime = Envir.Time + 800;
+                AttackTime = Envir.Time + AttackSpeed;
+                AttackRange = 2;
+                return;
+            }
+
+            //在范围内
+            if (ranged)
+            {
+                //跺脚
                 if (stomp)
                 {
                     //Foot stomp
                     Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 2 });
 
-                    MirDirection dir = Functions.PreviousDir(Direction);
-                    Point tar;
-                    //Cell cell;
-
-                    damage = GetAttackPower(MinDC, MaxDC);
-
-                    for (int i = 0; i < 8; i++)
+                    List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
+                    for (int o = 0; o < list.Count; o++)
                     {
-                        tar = Functions.PointMove(CurrentLocation, dir, 1);
-                        dir = Functions.NextDir(dir);
-
-                        if (!CurrentMap.ValidPoint(tar)) continue;
-
-                        //cell = CurrentMap.GetCell(tar);
-
-                        if (CurrentMap.Objects[tar.X, tar.Y] == null) continue;
-
-                        for (int o = 0; o < CurrentMap.Objects[tar.X, tar.Y].Count; o++)
+                        MapObject ob = list[o];
+                        if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
+                        if (!ob.IsAttackTarget(this)) continue;
+                        //宝宝叛变了
+                        if(ob.Race == ObjectType.Monster && ob.Master!=null)
                         {
-                            MapObject ob = CurrentMap.Objects[tar.X, tar.Y][o];
-                            if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
-                            if (!ob.IsAttackTarget(this)) continue;
-
-                            action = new DelayedAction(DelayedType.Damage, Envir.Time + 300, Target, damage, DefenceType.ACAgility, AttackType.Stomp);
-                            ActionList.Add(action);
-                            break;
+                            MonsterObject mon = (MonsterObject)ob;
+                            mon.TameTime = Envir.Time;
                         }
+
+                        action = new DelayedAction(DelayedType.Damage, Envir.Time + 300, ob, damage, DefenceType.ACAgility, AttackType.Stomp);
+                        ActionList.Add(action);
                     }
 
                     ActionTime = Envir.Time + 800;
@@ -119,29 +145,24 @@ namespace Server.MirObjects.Monsters
                         //Slash
                         Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0 });
 
-                        damage = GetAttackPower(MinDC, MaxDC);
+           
                         action = new DelayedAction(DelayedType.Damage, Envir.Time + 300, Target, damage, DefenceType.ACAgility, AttackType.SingleSlash);
                         ActionList.Add(action);
 
-                        damage = GetAttackPower(MinDC, MaxDC);
+
                         action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, Target, damage, DefenceType.ACAgility, AttackType.SingleSlash);
                         ActionList.Add(action);
+                
                         break;
                     case 1:
                         //Two hand slash
                         Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
 
                         damage = GetAttackPower(MinDC, MaxDC);
-                        action = new DelayedAction(DelayedType.Damage, Envir.Time + 300, Target, damage, DefenceType.ACAgility, AttackType.SingleSlash);
+                        action = new DelayedAction(DelayedType.Damage, Envir.Time + 300, Target, damage*3/2, DefenceType.ACAgility, AttackType.SingleSlash);
                         ActionList.Add(action);
                         break;
                 }
-
-                if (RandomUtils.Next(5) == 0)
-                    stomp = true;
-
-                if (RandomUtils.Next(2) == 0)
-                    tornado = true;
             }
 
             ActionTime = Envir.Time + 500;
@@ -157,7 +178,8 @@ namespace Server.MirObjects.Monsters
 
             if (target == null || !target.IsAttackTarget(this) || target.CurrentMap != CurrentMap || target.Node == null) return;
 
-            int poisonTime = GetAttackPower(MinSC, MaxSC);
+            //眩晕的时间长一点
+            int poisonTime = GetAttackPower(MinSC, MaxSC)*3;
 
             if (target.Attacked(this, damage, defence) <= 0) return;
 

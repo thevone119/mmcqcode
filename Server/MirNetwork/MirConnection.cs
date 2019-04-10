@@ -1003,7 +1003,7 @@ namespace Server.MirNetwork
         private void Run(C.Run p)
         {
             if (Stage != GameStage.Game) return;
-
+            
             if (Player.ActionTime > SMain.Envir.Time)
                 _retryList.Enqueue(p);
             else

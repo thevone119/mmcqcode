@@ -85,6 +85,7 @@ namespace Server.MirDatabase
         public bool HasRentedItem;
         public UserItem CurrentRefine = null;//当前升级物品，目前只有武器
         public UserItem SaItem = null;//当前轮回物品，几乎所有装备都支持轮回
+        public byte SaItemType;//轮回类型 0：默认轮回副本轮回 1：魔龙轮回 2：狐狸轮回 3：月氏轮回
         public long CollectTime = 0;
         public List<UserMagic> Magics = new List<UserMagic>();
         public List<PetInfo> Pets = new List<PetInfo>();
@@ -322,6 +323,11 @@ namespace Server.MirDatabase
                         }
                     }
                 }
+                if (!read.IsDBNull(read.GetOrdinal("SaItemType")))
+                {
+                    obj.SaItemType = read.GetByte(read.GetOrdinal("SaItemType"));
+                }
+                
 
                 if (!read.IsDBNull(read.GetOrdinal("killMon2")))
                 {
@@ -495,6 +501,8 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("killMon", JsonConvert.SerializeObject(killMon)));
             lp.Add(new SQLiteParameter("saveKey", JsonConvert.SerializeObject(saveKey)));
             lp.Add(new SQLiteParameter("SaItem", JsonConvert.SerializeObject(SaItem)));
+            lp.Add(new SQLiteParameter("SaItemType", SaItemType));//轮回物品的类型
+            
             lp.Add(new SQLiteParameter("fb1_level", fb1_level));
             lp.Add(new SQLiteParameter("fb1_score", fb1_score));
             lp.Add(new SQLiteParameter("fb1_usetime", fb1_usetime));

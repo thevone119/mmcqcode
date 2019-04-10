@@ -9,17 +9,18 @@ using System.Drawing;
 
 namespace Server.MirObjects.Monsters
 {
-    //四耳圣壶
+    //四耳圣壶 青花圣壶
+    //丢冰弹
     class Jar2 : MonsterObject
     {
-        private byte AttackType = 0;
+        //private byte AttackType = 0;
         protected internal Jar2(MonsterInfo info)
             : base(info)
         {
            
         }
 
-        //2格以内，都是攻击距离
+        //7格以内，都是攻击距离
         protected override bool InAttackRange()
         {
             if (Target.CurrentMap != CurrentMap) return false;
@@ -28,18 +29,8 @@ namespace Server.MirObjects.Monsters
             int x = Math.Abs(Target.CurrentLocation.X - CurrentLocation.X);
             int y = Math.Abs(Target.CurrentLocation.Y - CurrentLocation.Y);
 
-            if (x > 2 || y > 2) return false;
-            if (x <= 1 && y <= 1)
-            {
-                AttackType = 0;
-                return true;
-            }
-            if (x == y || x % 2 == y % 2)
-            {
-                AttackType = 1;
-                return true;
-            }
-            return false;
+            if (x > 7 || y > 7) return false;
+            return true;
         }
 
         protected override void Attack()
@@ -54,26 +45,19 @@ namespace Server.MirObjects.Monsters
             Direction = Functions.DirectionFromPoint(CurrentLocation, Target.CurrentLocation);
 
             //Point target = Functions.PointMove(CurrentLocation, Direction, 2);
+            int delay = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation) * 50 + 750; //50 MS per Step
 
-
-            Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation,Type= AttackType });
+            Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID=Target.ObjectID, Location = CurrentLocation,Type= 0 });
 
             ActionTime = Envir.Time + 300;
             AttackTime = Envir.Time + AttackSpeed;
 
             int damage = GetAttackPower(MinDC, MaxDC);
             if (damage == 0) return;
-            //进身物理攻击，隔位直接破防
-            if (AttackType == 0)
-            {
-                DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, Target, damage, DefenceType.AC);
-                ActionList.Add(action);
-            }
-            else
-            {
-                DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, Target, damage, DefenceType.None);
-                ActionList.Add(action);
-            }
+
+            //
+            DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.MAC);
+            ActionList.Add(action);
         }
 
 

@@ -161,7 +161,7 @@ namespace Server.MirDatabase
                 {
                     continue;
                 }
-                if (itemtype == 100 && (byte)info.Item.Info.Type<=20)
+                if (itemtype == 100 && ((byte)info.Item.Info.Type<=20&& (byte)info.Item.Info.Type > 0))
                 {
                     continue;
                 }

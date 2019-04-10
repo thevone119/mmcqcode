@@ -2592,11 +2592,11 @@ namespace Server.MirObjects
                                 return;
                             }
                             map = SMain.Envir.GetMapByNameCopy(param[0], UniqueKeyHelper.NextInt());
-                            if (map.fbmap == null)
+                            if (map.mapSProcess == null)
                             {
                                 return;
                             }
-                            map.fbmap.play_type = play_type;
+                            map.mapSProcess.param1 = play_type;
                         }
                         if (map == null) return;
 

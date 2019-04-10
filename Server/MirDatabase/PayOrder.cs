@@ -196,7 +196,8 @@ namespace Server.MirEnvir
             }
         }
 
-        //处理所有的订单,每10秒处理一次,是针对超过5分钟，小于10分钟，未支付的订单进行状态的查询
+        //处理所有的订单,每10秒处理一次,是针对超过5分钟，小于1天的，未支付的订单进行状态的查询
+        //每次查询，时间延后1分钟，最多延后1小时
         private static void ProcessAll()
         {
             if (SMain.Envir.Time < processAllTime)
@@ -206,7 +207,7 @@ namespace Server.MirEnvir
             processAllTime = SMain.Envir.Time + 1000*10;
             long ct = UniqueKeyHelper.TotalMilliseconds();
             long mint = 1000 * 60 * 5;
-            long maxt = 1000 * 60 * 10;
+            long maxt = 1000 * 60 * 60 * 24;
             lock (lockObj)
             {
                 foreach (PayOrder p in listall)
@@ -223,6 +224,24 @@ namespace Server.MirEnvir
                 }
             }
         }
+
+        //对账，对所有未支付的进行一次对账
+        //手工发起对账
+        public static void Reconciliation()
+        {
+            lock (lockObj)
+            {
+                foreach (PayOrder p in listall)
+                {
+                    if (p.pay_state != 0)
+                    {
+                        continue;
+                    }
+                    p.queryThread(false);
+                }
+            }
+        }
+
 
         //开启线程创建
         //实现创建订单接口
@@ -302,8 +321,51 @@ namespace Server.MirEnvir
         }
 
         //开启线程查询
-        public void queryThread()
+        public void queryThread(bool checktime=true)
         {
+            long lt = UniqueKeyHelper.TotalMilliseconds();
+            if (checktime)
+            {
+                //如果创建时间小于6分钟的。20秒一次
+                if (lt - create_time < 1000 * 60 * 6)
+                {
+                    if (lt - last_query_time < 1000 * 20)
+                    {
+                        return;
+                    }
+                }//如果创建时间小于10分钟的。1分钟一次
+                else if (lt - create_time < 1000 * 60 * 10)
+                {
+                    if (lt - last_query_time < 1000 * 60)
+                    {
+                        return;
+                    }
+                } //如果创建时间小于1小时的。5分钟一次
+                else if (lt - create_time < 1000 * 60 * 60)
+                {
+                    if (lt - last_query_time < 1000 * 60 * 5)
+                    {
+                        return;
+                    }
+                } //如果创建时间小于1天的的。10分钟一次
+                else if (lt - create_time < 1000 * 60 * 60* 24  )
+                {
+                    if (lt - last_query_time < 1000 * 60 * 10)
+                    {
+                        return;
+                    }
+                }
+                //大于1天的，1个小时一次
+                else
+                {
+                    if (lt - last_query_time < 1000 * 60 * 60)
+                    {
+                        return;
+                    }
+                }
+            }
+            last_query_time = lt;
+
             Thread t = new Thread(() => query());
             t.IsBackground = true;
             t.Start();
@@ -312,14 +374,8 @@ namespace Server.MirEnvir
         //实现查询接口
         private bool query()
         {
+
             bool Success = false;
-            long lt = UniqueKeyHelper.TotalMilliseconds();
-            //20秒内不重复查询
-            if (lt - last_query_time < 1000 * 20)
-            {
-                return Success;
-            }
-            last_query_time = lt;
             PayInput pint = new PayInput();
             pint.uid = uid;
             pint.orderid = orderid + "";
@@ -334,7 +390,7 @@ namespace Server.MirEnvir
                     if (jo["ret_code"].ToString() == "1")
                     {
                         string _pay_state = jo["pay_state"].ToString();
-                        if (_pay_state != null && _pay_state.Length > 0)
+                        if (_pay_state != null && _pay_state.Length > 0 && pay_state!=1)
                         {
                             pay_state = byte.Parse(_pay_state);
                             if (pay_state == 1)
@@ -389,8 +445,8 @@ namespace Server.MirEnvir
         /// <returns></returns>
         public static void loadAll()
         {
-            //只查询24小时内的未充值的订单
-            long qtime = UniqueKeyHelper.TotalMilliseconds() - Settings.Day;
+            //只查询3天内的未充值的订单
+            long qtime = UniqueKeyHelper.TotalMilliseconds() - Settings.Day * 3;
             DbDataReader read = MirRunDB.ExecuteReader("select * from PayOrder where rec_state=0 and create_time>" + qtime);
             while (read.Read())
             {
@@ -421,7 +477,7 @@ namespace Server.MirEnvir
         public static void SaveAll()
         {
             long ct = UniqueKeyHelper.TotalMilliseconds();
-            long mimtime = ct - Settings.Day*2;//2天时间时间的，进行删除
+            long mimtime = ct - Settings.Day*7;//7天时间时间的，进行删除
             lock (lockObj)
             {
                 foreach (PayOrder o in listall)

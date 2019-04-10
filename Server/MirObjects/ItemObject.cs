@@ -91,6 +91,24 @@ namespace Server.MirObjects
             CurrentMap = dropper.CurrentMap;
             CurrentLocation = manualpoint;
         }
+
+        public ItemObject(Map map, UserItem item, Point manualpoint)
+        {
+            ExpireTime = Envir.Time + Settings.ItemTimeOut * Settings.Minute;
+
+            Item = item;
+
+            if (Item.IsAdded)
+                NameColour = Color.Cyan;
+            else
+            {
+                NameColour = Item.Info.getNameColor();
+            }
+
+            CurrentMap = map;
+            CurrentLocation = manualpoint;
+        }
+
         public ItemObject(MapObject dropper, uint gold)
         {
             ExpireTime = Envir.Time + Settings.ItemTimeOut * Settings.Minute;
@@ -109,6 +127,7 @@ namespace Server.MirObjects
             CurrentMap = dropper.CurrentMap;
             CurrentLocation = manuallocation;
         }
+
          
         public override void Process()
         {

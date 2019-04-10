@@ -16,12 +16,15 @@ namespace Server.MirObjects.Monsters
         public int AttackDamage = 0;
         public bool Summoned;
         public long ExplosionTime;
+        public int maxDamage = 500;//最大伤害量，这个加上等级，3级就是8百
+        private bool isStrengthen = false;//
 
         protected internal HumanAssassin(MonsterInfo info)
             : base(info)
         {
             ExplosionTime = Envir.Time + 1000 * 12;
             Summoned = true;
+            isStrengthen = RandomUtils.Next(100) < 50;
         }
 
         protected override void RefreshBase()
@@ -164,6 +167,10 @@ namespace Server.MirObjects.Monsters
 
             if (Master != null && Master is PlayerObject)
             {
+                if (isStrengthen && ((PlayerObject)Master).hasItemSk(ItemSkill.Assassin5))
+                {
+                    maxDamage = maxDamage * 15 / 10;
+                }
                 if (Envir.Time > ExplosionTime) Die();
             }
         }
@@ -247,8 +254,10 @@ namespace Server.MirObjects.Monsters
 
         protected override void Attack()
         {
-            if (AttackDamage >= 500+ PetLevel*100) Die();
-
+            if (AttackDamage >= maxDamage + PetLevel * 100)
+            {
+                Die();
+            }
             ShockTime = 0;
 
             if (!Target.IsAttackTarget(this))

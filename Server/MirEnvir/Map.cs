@@ -26,6 +26,7 @@ namespace Server.MirEnvir
         private static byte HighWall = 2;
         private static byte LowWall = 0;
         private static byte Fishing = 4;
+        public long SafeZoneHealingTime;//安全区恢复治疗的时间，默认是0，就是一直可以治疗
 
 
         public string getTitle()
@@ -34,9 +35,9 @@ namespace Server.MirEnvir
             {
                 return "";
             }
-            if (fbmap != null)
+            if (mapSProcess != null && mapSProcess.getTitle()!=null)
             {
-                return fbmap.Title;
+                return mapSProcess.getTitle();
             }
             return Info.Title;
         }
@@ -87,10 +88,10 @@ namespace Server.MirEnvir
         List<Point> RandomValidPoints = new List<Point>();
 
 
-        //增加几个处理副本的参数
-        public FBMap fbmap;//副本地图的处理
+        //地图的特殊处理
+        public MapSpecialProcess mapSProcess;//地图的特殊处理
 
-     
+
 
         public Map(MapInfo info)
         {
@@ -656,6 +657,23 @@ namespace Server.MirEnvir
             return Point.Empty;
         }
 
+        //随机返回一个可以访问的点
+        public Point RandomValidPoint(int x,int y,int Range)
+        {
+            //随机10次，随机不到，返回原来的点
+            for (int i = 0; i < 10; i++)
+            {
+                int x1 = RandomUtils.Next(x- Range,x+ Range+1);
+                int y1 = RandomUtils.Next(y - Range, y + Range+1);
+                if (Valid(x1, y1))
+                {
+                    return new Point(x1, y1);
+                }
+            }
+
+            return new Point(x, y);
+        }
+
         //在2个点之间找出一个可以访问的点
         //用于随机闪现
         public Point getValidPointByLine(Point p1, Point p2,int maxlen)
@@ -791,7 +809,7 @@ namespace Server.MirEnvir
             Objects = null;
             Objects = new List<MapObject>[Width, Height];
             MonsterCount = 0;
-            fbmap = null;
+            mapSProcess = null;
         }
 
         public void Remove(MapObject mapObject)
@@ -1140,13 +1158,13 @@ namespace Server.MirEnvir
         //各种副本处理
         private void ProcessFB()
         {
-            if (fbmap == null)
+            if (mapSProcess == null)
             {
                 return;
             }
             try
             {
-                fbmap.ProcessFB(this);
+                mapSProcess.Process(this);
             }
             catch(Exception ex)
             {
@@ -1373,7 +1391,11 @@ namespace Server.MirEnvir
                     value = (int)data[2];
                     location = (Point)data[3];
                     BuffType type = magic.Spell == Spell.SoulShield ? BuffType.SoulShield : BuffType.BlessedArmour;
-
+                    int Multiple = 1;
+                    if (player.hasItemSk(ItemSkill.Taoist5))
+                    {
+                        Multiple = 2;
+                    }
                     for (int y = location.Y - 3; y <= location.Y + 3; y++)
                     {
                         if (y < 0) continue;
@@ -1398,7 +1420,7 @@ namespace Server.MirEnvir
                                         //Only targets
                                         if (target.IsFriendlyTarget(player))
                                         {
-                                            target.AddBuff(new Buff { Type = type, Caster = player, ExpireTime = Envir.Time + value * 1000, Values = new int[]{ target.Level / 7 + 4 } });
+                                            target.AddBuff(new Buff { Type = type, Caster = player, ExpireTime = Envir.Time + value * 1000, Values = new int[]{ (target.Level / 7 + 4)* Multiple } });
                                             target.OperateTime = 0;
                                             train = true;
                                         }
@@ -2016,6 +2038,61 @@ namespace Server.MirEnvir
 
                 #endregion
 
+                #region HealingCircle 五行阵
+                case Spell.HealingCircle:
+                    value = (int)data[2];
+                    location = (Point)data[3];
+                    show = true;
+                    //3乘3的范围内
+                    for (int y = location.Y - 3; y <= location.Y + 3; y++)
+                    {
+                        if (y < 0) continue;
+                        if (y >= Height) break;
+
+                        for (int x = location.X - 3; x <= location.X + 3; x++)
+                        {
+                            if (x < 0) continue;
+                            if (x >= Width) break;
+                            if (!Valid(x, y)) continue;
+
+                            bool cast = true;
+                            if (Objects[x, y] != null)
+                            {
+                                for (int o = 0; o < Objects[x, y].Count; o++)
+                                {
+                                    MapObject target = Objects[x, y][o];
+                                    if (target.Race != ObjectType.Spell || ((SpellObject)target).Spell != Spell.HealingCircle) continue;
+
+                                    cast = false;
+                                    break;
+                                }
+                            }
+                            if (!cast) continue;
+                            //3级持续时间14秒，伤害和绿毒一样，治疗效果也和治疗术一样
+                            SpellObject ob = new SpellObject
+                            {
+                                Spell = Spell.HealingCircle,
+                                Value = value ,
+                                ExpireTime = Envir.Time + 6000 + magic.Level*3000,
+                                TickSpeed = 2000,
+                                Caster = player,
+                                CurrentLocation = new Point(x, y),
+                                CastLocation = location,
+                                Show = show,
+                                CurrentMap = this,
+                            };
+
+                            show = false;
+
+                            AddObject(ob);
+                            ob.Spawned();
+                        }
+                    }
+                    train = false;
+                    break;
+
+                #endregion
+
                 #region TrapHexagon
 
                 case Spell.TrapHexagon:
@@ -2273,10 +2350,14 @@ namespace Server.MirEnvir
                                             {
                                                 dvalue = 10;
                                             }
-                                            if (dvalue > 60)
+                                            if (!player.hasItemSk(ItemSkill.Taoist7))
                                             {
-                                                dvalue = 60;
+                                                if (dvalue > 60)
+                                                {
+                                                    dvalue = 60;
+                                                }
                                             }
+
                                             target.Attacked(player, dvalue, DefenceType.Agility, false);
                                             train = true;
                                         }

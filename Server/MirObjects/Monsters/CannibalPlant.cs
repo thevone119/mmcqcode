@@ -33,6 +33,7 @@ namespace Server.MirObjects.Monsters
             Visible = false;
         }
 
+
         protected override void ProcessAI()
         {
             if (!Dead && Envir.Time > VisibleTime)

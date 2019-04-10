@@ -32,7 +32,7 @@ namespace Server.MirObjects.Monsters
             {
                 Attack();
 
-                if (Target.Dead)
+                if (Target == null || Target.Dead)
                     Die();
 
                 return;

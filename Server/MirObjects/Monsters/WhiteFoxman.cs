@@ -3,6 +3,7 @@ using S = ServerPackets;
 
 namespace Server.MirObjects.Monsters
 {
+    //狐狸道士
     public class WhiteFoxman : MonsterObject
     {
         public long FearTime, TeleportTime;

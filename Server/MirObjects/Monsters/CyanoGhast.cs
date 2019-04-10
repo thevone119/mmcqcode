@@ -167,7 +167,7 @@ namespace Server.MirObjects.Monsters
             if (InAttackRange())
             {
                 Attack();
-                if (Target.Dead)
+                if (Target == null || Target.Dead)
                     FindTarget();
 
                 return;

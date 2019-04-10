@@ -80,6 +80,7 @@ namespace Server.MirObjects.Monsters
                 Target = null;
                 return;
             }
+            
 
             int dist = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
 

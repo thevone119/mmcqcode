@@ -223,8 +223,65 @@ namespace Server.MirObjects
                     return new RestlessJar(info);
                 case 103://赤血鬼魂
                     return new CyanoGhast(info);
-
-
+                case 104://阳龙王
+                    return new ChieftainSword(info);
+                case 105://暴雪僵尸
+                    return new FrozenZombie(info);
+                case 106://火焰僵尸
+                    return new BurningZombie(info);
+                case 107://DarkBeast LightBeast 暗黑剑齿虎 光明剑齿虎 2种攻击
+                    return new DarkBeast(info);
+                case 108://WhiteMammoth 猛犸象,普通攻击和蹲地板
+                    return new WhiteMammoth(info);
+                case 109://HardenRhino 铁甲犀牛
+                    return new HardenRhino(info);
+                case 110://Demonwolf 赤炎狼 1近身普攻，3格内喷火 火焰灵猫 共用
+                    return new Demonwolf(info);
+                case 111://BloodBaboon 血狒狒
+                    return new BloodBaboon(info);
+                case 112://DeathCrawler 死灵
+                    return new DeathCrawler(info);
+                case 113://AncientBringer 丹墨
+                    return new AncientBringer(info);
+                case 114://CatWidow 长枪灵猫
+                    return new CatWidow(info);
+                case 115://StainHammerCat 铁锤猫卫
+                    return new StainHammerCat(info);
+                case 116://BlackHammerCat 黑镐猫卫
+                    return new BlackHammerCat(info);
+                case 117://StrayCat 双刃猫卫
+                    return new StrayCat(info);
+                case 118://CatShaman 灵猫法师
+                    return new CatShaman(info);
+                case 119://SeedingsGeneral 灵猫圣兽
+                    return new SeedingsGeneral(info);
+                case 120://SeedingsGeneral 灵猫将军
+                    return new GeneralJinmYo(info);
+                case 122://GasToad 神气蛤蟆
+                    return new GasToad(info);
+                case 123://Mantis 螳螂
+                    return new Mantis(info);
+                case 124://SwampWarrior 神殿树人
+                    return new SwampWarrior(info);
+                case 125://SwampWarrior 神殿刺鸟
+                    return new AssassinBird(info);
+                case 126://RhinoWarrior 犀牛勇士
+                    return new RhinoWarrior(info);
+                case 127://RhinoPriest 犀牛牧师
+                    return new RhinoPriest(info);
+                case 128://SwampSlime 泥战士
+                    return new SwampSlime(info);
+                case 129://RockGuard 石巨人
+                    return new RockGuard(info);
+                case 130://MudWarrior 泥土巨人
+                    return new MudWarrior(info);
+                case 131://SmallPot 小如来
+                    return new SmallPot(info);
+                case 132://TreeQueen 树王
+                    return new TreeQueen(info);
+                case 133://ShellFighter 斗争者
+                    return new ShellFighter(info);
+                    
                 //unfinished
                 case 253:
                     return new FlamingMutant(info);
@@ -237,6 +294,8 @@ namespace Server.MirObjects
                     return new Runaway(info);
                 case 201://custom
                     return new TalkingMonster(info);
+                case 255://custom
+                    return new TestAttackMon(info);
 
                 default:
                     return new MonsterObject(info);
@@ -328,7 +387,7 @@ namespace Server.MirObjects
         { 
             get {
                 //根据怪物的血量，敏捷，防御，攻击等属性计算怪物的最终经验值
-                uint cc = (uint)(Math.Min(Math.Max(0,Info.Agility - 10),20) * 10 + Math.Max(Info.MaxAC-5,0) * 5 + Math.Max(Info.MaxMAC-5,0) * 5 + Math.Max(Info.MaxDC,Info.MaxMC) * 5);
+                uint cc = (uint)(Math.Min(Math.Max(0,Info.Agility - 10),20) * 5 + Math.Max(Info.MaxAC-5,0) * 2 + Math.Max(Info.MaxMAC-5,0) * 2 + Math.Max(Info.MaxDC,Info.MaxMC) * 2);
                 if(cc> Info.HP*2)
                 {
                     cc = Info.HP * 2;
@@ -358,7 +417,10 @@ namespace Server.MirObjects
             }
         }
         //RegenDelay生命恢复时间10秒恢复一次
-        public const int RegenDelay = 10000, EXPOwnerDelay = 5000, SearchDelay = 3000, RoamDelay = 1000, HealDelay = 600, RevivalDelay = 2000;
+        public const int RegenDelay = 10000, EXPOwnerDelay = 5000, RoamDelay = 1000, HealDelay = 600, RevivalDelay = 2000;
+
+        //怪物到处搜索，走动的时间，这个针对怪物攻城后，修改这个时间，让怪物快点搜索
+        public int SearchDelay = 3000;
         public long ActionTime, MoveTime, AttackTime, RegenTime, DeadTime, SearchTime, RoamTime, HealTime;
         public long ShockTime, RageTime, HallucinationTime;
         public bool BindingShotCenter, PoisonStopRegen = true;
@@ -784,9 +846,9 @@ namespace Server.MirObjects
                 }
             }
             //如果是副本怪物，则调用副本处理方法
-            if (IsCopy && CurrentMap.fbmap!=null)
+            if (IsCopy && CurrentMap.mapSProcess != null)
             {
-                CurrentMap.fbmap.monDie(this);
+                CurrentMap.mapSProcess.monDie(this);
             }
          
 
@@ -941,6 +1003,14 @@ namespace Server.MirObjects
                         }
 
                         if (drop.QuestRequired) continue;
+                        //增加物品的来源
+                        if (EXPOwner != null && ditem.StackSize==1)
+                        {
+                            item.src_time = Envir.Now.ToBinary();
+                            item.src_mon = this.Name;
+                            item.src_kill = EXPOwner.Name;
+                            item.src_map = CurrentMap.getTitle();
+                        }
                         if (!DropItem(item)) return;
                     }
                 }
@@ -1131,6 +1201,9 @@ namespace Server.MirObjects
                 case DelayedType.Die:
                     CompleteDeath(action.Params);
                     break;
+                case DelayedType.MapMovement:
+                    CompleteMapMovement(action.Params);
+                    break;
                 case DelayedType.Recall:
                     PetRecall();
                     break;
@@ -1168,6 +1241,34 @@ namespace Server.MirObjects
         protected virtual void CompleteDeath(IList<object> data)
         {
             throw new NotImplementedException();
+        }
+
+        //完成地图的转移
+        private void CompleteMapMovement(params object[] data)
+        {
+            if (this == null) return;
+            Map temp = (Map)data[0];
+            Point destination = (Point)data[1];
+            Map checkmap = (Map)data[2];
+            Point checklocation = (Point)data[3];
+            if (CurrentMap != checkmap || CurrentLocation != checklocation) return;
+
+            bool mapChanged = temp != CurrentMap;
+            
+            CurrentMap.RemoveObject(this);
+            CurrentMap.MonsterCount--;
+            Broadcast(new S.ObjectRemove { ObjectID = ObjectID });
+
+            CurrentMap = temp;
+            CurrentLocation = destination;
+            //
+            CurrentMap.AddObject(this);
+            CurrentMap.MonsterCount++;
+            InTrapRock = false;
+            BroadcastInfo();
+
+            //if (effects) Broadcast(new S.ObjectTeleportIn { ObjectID = ObjectID, Type = effectnumber });
+
         }
 
         protected virtual void ProcessRegen()
@@ -1227,11 +1328,11 @@ namespace Server.MirObjects
                     poison.Time++;
                     poison.TickTime = Envir.Time + poison.TickSpeed;
 
-                    if (poison.Time >= poison.Duration)
+                    if (poison.Time > poison.Duration)
                     {
                         PoisonList.RemoveAt(i);
                         //这里直接返回
-                        //continue;
+                        continue;
                     }
                         
 
@@ -1398,6 +1499,7 @@ namespace Server.MirObjects
             ProcessRoam();
             ProcessTarget();
         }
+        //怪物到处走
         protected virtual void ProcessSearch()
         {
             if (Envir.Time < SearchTime) return;
@@ -1478,7 +1580,7 @@ namespace Server.MirObjects
             if (InAttackRange())
             {
                 Attack();
-                if (Target.Dead)
+                if (Target==null||Target.Dead)
                     FindTarget();
 
                 return;
@@ -1533,6 +1635,8 @@ namespace Server.MirObjects
                                     PlayerObject playerob = (PlayerObject)ob;
                                     if (!ob.IsAttackTarget(this)) continue;
                                     if (playerob.GMGameMaster || ob.Hidden && (!CoolEye || Level < ob.Level) || Envir.Time < HallucinationTime) continue;
+                                    //GM观察模式，不拉仇恨
+                                    if (playerob.IsGM && playerob.Observer) continue;
 
                                     Target = ob;
 
@@ -1584,29 +1688,73 @@ namespace Server.MirObjects
 
             return true;
         }
-
+        //向某个方向移动
         protected virtual void MoveTo(Point location)
         {
             if (CurrentLocation == location) return;
 
             bool inRange = Functions.InRange(location, CurrentLocation, 1);
-
+            //如果只是1格，直接走过去
             if (inRange)
             {
-                if (!CurrentMap.ValidPoint(location)) return;
-                //Cell cell = CurrentMap.GetCell(location);
-                if (CurrentMap.Objects[location.X, location.Y] != null)
-                    for (int i = 0; i < CurrentMap.Objects[location.X, location.Y].Count; i++)
-                    {
-                        MapObject ob = CurrentMap.Objects[location.X, location.Y][i];
-                        if (!ob.Blocking) continue;
-                        return;
-                    }
+                if (!CurrentMap.EmptyPoint(location.X, location.Y)) return;
             }
 
             MirDirection dir = Functions.DirectionFromPoint(CurrentLocation, location);
-
+            //向某个方向走
             if (Walk(dir)) return;
+            //方向走不通，则随机向一个方向走
+            switch (RandomUtils.Next(2)) //No favour
+            {
+                case 0:
+                    for (int i = 0; i < 7; i++)
+                    {
+                        dir = Functions.NextDir(dir);
+
+                        if (Walk(dir))
+                            return;
+                    }
+                    break;
+                default:
+                    for (int i = 0; i < 7; i++)
+                    {
+                        dir = Functions.PreviousDir(dir);
+
+                        if (Walk(dir))
+                            return;
+                    }
+                    break;
+            }
+        }
+
+        //向某个方向移动
+        //如果不能移动，则穿墙飞过去
+        public  void MoveAndFly(Point location)
+        {
+            if (CurrentLocation == location) return;
+
+            bool inRange = Functions.InRange(location, CurrentLocation, 1);
+            //如果只是1格，直接走过去
+            if (inRange)
+            {
+                if (!CurrentMap.EmptyPoint(location.X, location.Y)) return;
+            }
+
+            MirDirection dir = Functions.DirectionFromPoint(CurrentLocation, location);
+            //向某个方向走
+            if (Walk(dir)) return;
+
+            //方向走不通，10分之1几率飞过去，避免卡死在那里
+            if (RandomUtils.Next(5) == 1)
+            {
+                for (int i = 2; i < 10; i++)
+                {
+                    Point mp = Functions.PointMove(CurrentLocation, dir, i);
+                    if (!CurrentMap.EmptyPoint(mp.X, mp.Y)) continue;
+                    Teleport(CurrentMap, mp);
+                    return;
+                }
+            }
 
             switch (RandomUtils.Next(2)) //No favour
             {
@@ -2404,6 +2552,14 @@ namespace Server.MirObjects
             }
 
             if (p.PType == PoisonType.None) return;
+            //毒免疫
+            if(Info.PoisonImmune>0)
+            {
+                if ((Info.PoisonImmune  & (int)p.PType) == (int)p.PType)
+                {
+                    return;
+                }
+            }
 
             for (int i = 0; i < PoisonList.Count; i++)
             {
