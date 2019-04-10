@@ -483,6 +483,10 @@ namespace ServerPackets
         public LightSetting Lights;
         public bool Lightning, Fire;
         public byte MapDarkLight;
+        //地图信息增加安全区,用于客户端判断是否在安全区，在安全区则可以穿人，穿怪
+        //安全区域
+        public List<SafeZoneInfo> SafeZones = new List<SafeZoneInfo>();
+
 
         protected override void ReadPacket(BinaryReader reader)
         {
@@ -496,6 +500,11 @@ namespace ServerPackets
             if ((bools & 0x02) == 0x02) Fire = true;
             MapDarkLight = reader.ReadByte();
             Music = reader.ReadUInt16();
+            int count = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
+            {
+                SafeZones.Add(new SafeZoneInfo(reader));
+            }
         }
 
         protected override void WritePacket(BinaryWriter writer)
@@ -511,6 +520,11 @@ namespace ServerPackets
             writer.Write(bools);
             writer.Write(MapDarkLight);
             writer.Write(Music);
+            writer.Write(SafeZones.Count);
+            for (int i = 0; i < SafeZones.Count; i++)
+            {
+                SafeZones[i].Save(writer);
+            }
         }
     }
 
@@ -703,6 +717,45 @@ namespace ServerPackets
                 IntelligentCreatures[i].Save(writer);
             writer.Write((byte)SummonedCreatureType);
             writer.Write(CreatureSummoned);
+        }
+    }
+
+    //返回用户的最新的背包,刷新用户背包的时候返回最新的背包信息
+    public sealed class UserInventory : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.UserInventory; }
+        }
+
+        public UserItem[] Inventory;
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            if (reader.ReadBoolean())
+            {
+                Inventory = new UserItem[reader.ReadInt32()];
+                for (int i = 0; i < Inventory.Length; i++)
+                {
+                    if (!reader.ReadBoolean()) continue;
+                    Inventory[i] = new UserItem(reader);
+                }
+            }
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(Inventory != null);
+            if (Inventory != null)
+            {
+                writer.Write(Inventory.Length);
+                for (int i = 0; i < Inventory.Length; i++)
+                {
+                    writer.Write(Inventory[i] != null);
+                    if (Inventory[i] == null) continue;
+
+                    Inventory[i].Save(writer);
+                }
+            }
         }
     }
 
@@ -2035,7 +2088,7 @@ namespace ServerPackets
         public bool Dead, Skeleton;
         public PoisonType Poison;
         public bool Hidden, Extra;
-        public byte ExtraByte;
+        public byte ExtraByte;//扩展字段，状态等
         public long ShockTime;
         public bool BindingShotCenter;
 
@@ -2083,6 +2136,89 @@ namespace ServerPackets
         }
 
     }
+
+    //怪物的变化，状态变化，用这个好一点。
+    //这里改变，不改变位置，朝向这些，避免冲突哦
+    public sealed class ObjectMonsterChange : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.ObjectMonsterChange; }
+        }
+
+        public uint ObjectID;
+        public string Name = string.Empty;
+        public Color NameColour;
+        public Monster Image;
+        public byte Effect, AI, Light;
+        public bool Dead, Skeleton;
+        public PoisonType Poison;
+        public bool Hidden, Extra;
+        public byte ExtraByte;//扩展字段，状态等
+        public long ShockTime;
+        public bool BindingShotCenter;
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            ObjectID = reader.ReadUInt32();
+            Name = reader.ReadString();
+            NameColour = Color.FromArgb(reader.ReadInt32());
+            Image = (Monster)reader.ReadUInt16();
+            Effect = reader.ReadByte();
+            AI = reader.ReadByte();
+            Light = reader.ReadByte();
+            Dead = reader.ReadBoolean();
+            Skeleton = reader.ReadBoolean();
+            Poison = (PoisonType)reader.ReadUInt16();
+            Hidden = reader.ReadBoolean();
+            ShockTime = reader.ReadInt64();
+            BindingShotCenter = reader.ReadBoolean();
+            Extra = reader.ReadBoolean();
+            ExtraByte = reader.ReadByte();
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(ObjectID);
+            writer.Write(Name);
+            writer.Write(NameColour.ToArgb());
+            writer.Write((ushort)Image);
+            writer.Write(Effect);
+            writer.Write(AI);
+            writer.Write(Light);
+            writer.Write(Dead);
+            writer.Write(Skeleton);
+            writer.Write((ushort)Poison);
+            writer.Write(Hidden);
+            writer.Write(ShockTime);
+            writer.Write(BindingShotCenter);
+            writer.Write(Extra);
+            writer.Write((byte)ExtraByte);
+        }
+    }
+    
+    //冰雨，火雨攻击时间缩短
+    public sealed class BlizzardStopTime : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.BlizzardStopTime; }
+        }
+
+        public int stopTime;
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            stopTime = reader.ReadInt32();
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(stopTime);
+        }
+    }
+    
+
     //怪物攻击
     public sealed class ObjectAttack : Packet
     {
@@ -2096,7 +2232,7 @@ namespace ServerPackets
         public MirDirection Direction;
         public Spell Spell;
         public byte Level;
-        public byte Type;
+        public byte Type;//0 1 2 3,决定客户端怪物采用的攻击方式 攻击1-4
 
         protected override void ReadPacket(BinaryReader reader)
         {
@@ -2800,6 +2936,118 @@ namespace ServerPackets
         }
     }
 
+    //寄存物品到NPC处
+    public sealed class DepositItemCollect : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.DepositItemCollect; }
+        }
+
+        public int From, To;
+        public bool Success;
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            From = reader.ReadInt32();
+            To = reader.ReadInt32();
+            Success = reader.ReadBoolean();
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(From);
+            writer.Write(To);
+            writer.Write(Success);
+        }
+    }
+
+    //NPC收集物品
+    public sealed class NPCItemCollect : Packet
+    {
+        public override short Index { get { return (short)ServerPacketIds.NPCItemCollect; } }
+
+        public float Rate;
+        public byte type;//0：装备熔炼 1：装备合成
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            Rate = reader.ReadSingle();
+            type = reader.ReadByte();
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(Rate);
+            writer.Write(type);
+        }
+    }
+    //NPC归还收集的物品
+    public sealed class RetrieveItemCollect : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.RetrieveItemCollect; }
+        }
+
+        public int From, To;
+        public bool Success;
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            From = reader.ReadInt32();
+            To = reader.ReadInt32();
+            Success = reader.ReadBoolean();
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(From);
+            writer.Write(To);
+            writer.Write(Success);
+        }
+    }
+    //取消
+    public sealed class ItemCollectCancel : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.ItemCollectCancel; }
+        }
+
+        public bool Unlock;
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            Unlock = reader.ReadBoolean();
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(Unlock);
+        }
+    }
+    
+    //确认升级
+    public sealed class ConfirmItemCollect : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.ConfirmItemCollect; }
+        }
+
+        public bool Success;
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            Success = reader.ReadBoolean();
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(Success);
+        }
+    }
+
+
     public sealed class NPCRefine : Packet
     {
         public override short Index { get { return (short)ServerPacketIds.NPCRefine; } }
@@ -2818,6 +3066,7 @@ namespace ServerPackets
             writer.Write(Refining);
         }
     }
+
 
     public sealed class NPCCheckRefine : Packet
     {
@@ -2847,7 +3096,7 @@ namespace ServerPackets
             writer.Write(Success);
         }
     }
-
+    //打造结婚戒指
     public sealed class NPCReplaceWedRing : Packet
     {
         public override short Index { get { return (short)ServerPacketIds.NPCReplaceWedRing; } }
@@ -3058,7 +3307,7 @@ namespace ServerPackets
             writer.Write((byte)Spell);
         }
     }
-
+    //玩家释放魔法
     public sealed class ObjectMagic : Packet
     {
         public override short Index { get { return (short)ServerPacketIds.ObjectMagic; } }
@@ -3417,6 +3666,7 @@ namespace ServerPackets
             writer.Write(Value);
         }
     }
+    //对象范围攻击
     public sealed class ObjectRangeAttack : Packet
     {
         public override short Index
@@ -3429,7 +3679,7 @@ namespace ServerPackets
         public MirDirection Direction;
         public uint TargetID;
         public Point Target;
-        public byte Type;
+        public byte Type;//0 1 2 客户端怪物采用的范围攻击方式 1 2 3
         public Spell Spell;
 
         protected override void ReadPacket(BinaryReader reader)
@@ -3698,7 +3948,7 @@ namespace ServerPackets
             writer.Write(ObjectID);
         }
     }
-
+    //NPC寄售，金币
     public sealed class NPCConsign : Packet
     {
         public override short Index { get { return (short)ServerPacketIds.NPCConsign; } }
@@ -3710,13 +3960,41 @@ namespace ServerPackets
         {
         }
     }
+    //NPC寄售，元宝
+    public sealed class NPCConsignCredit : Packet
+    {
+        public override short Index { get { return (short)ServerPacketIds.NPCConsignCredit; } }
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+        }
+    }
+    //NPC寄售，金币+元宝
+    public sealed class NPCConsignDoulbe : Packet
+    {
+        public override short Index { get { return (short)ServerPacketIds.NPCConsignDoulbe; } }
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+        }
+    }
+
+
+    //返回市场的内容
     public sealed class NPCMarket : Packet
     {
         public override short Index { get { return (short)ServerPacketIds.NPCMarket; } }
 
         public List<ClientAuction> Listings = new List<ClientAuction>();
-        public int Pages;
-        public bool UserMode;
+        public int cpage;//当前页数
+        public int pageCount;//总页数
+        public bool UserMode; //UserMode：卖：true, 买：false
 
         protected override void ReadPacket(BinaryReader reader)
         {
@@ -3725,7 +4003,8 @@ namespace ServerPackets
             for (int i = 0; i < count; i++)
                 Listings.Add(new ClientAuction(reader));
 
-            Pages = reader.ReadInt32();
+            cpage = reader.ReadInt32();
+            pageCount = reader.ReadInt32();
             UserMode = reader.ReadBoolean();
         }
         protected override void WritePacket(BinaryWriter writer)
@@ -3734,48 +4013,33 @@ namespace ServerPackets
 
             for (int i = 0; i < Listings.Count; i++)
                 Listings[i].Save(writer);
-
-            writer.Write(Pages);
+            writer.Write(cpage);
+            writer.Write(pageCount);
             writer.Write(UserMode);
         }
     }
-    public sealed class NPCMarketPage : Packet
-    {
-        public override short Index { get { return (short)ServerPacketIds.NPCMarketPage; } }
-
-        public List<ClientAuction> Listings = new List<ClientAuction>();
-
-        protected override void ReadPacket(BinaryReader reader)
-        {
-            int count = reader.ReadInt32();
-
-            for (int i = 0; i < count; i++)
-                Listings.Add(new ClientAuction(reader));
-        }
-        protected override void WritePacket(BinaryWriter writer)
-        {
-            writer.Write(Listings.Count);
-
-            for (int i = 0; i < Listings.Count; i++)
-                Listings[i].Save(writer);
-        }
-    }
+   
+    //寄卖物品
     public sealed class ConsignItem : Packet
     {
         public override short Index { get { return (short)ServerPacketIds.ConsignItem; } }
 
         public ulong UniqueID;
         public bool Success;
+        //增加返回信息，给客户端提醒
+        public string msg= "寄卖出错";
 
         protected override void ReadPacket(BinaryReader reader)
         {
             UniqueID = reader.ReadUInt64();
             Success = reader.ReadBoolean();
+            msg = reader.ReadString();
         }
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(UniqueID);
             writer.Write(Success);
+            writer.Write(msg);
         }
     }
     public sealed class MarketFail : Packet
@@ -5477,12 +5741,14 @@ namespace ServerPackets
         public override short Index { get { return (short)ServerPacketIds.Rankings; } }
 
         public byte RankType = 0;
+        public byte RankType2 = 0;
         //public int MyRank = 0;//当前角色的排行，这个在客户端自己计算（服务器端不管这个了）
         public List<Rank_Character_Info> Listings = new List<Rank_Character_Info>();
 
         protected override void ReadPacket(BinaryReader reader)
         {
             RankType = reader.ReadByte();
+            RankType2 = reader.ReadByte();
             //MyRank = reader.ReadInt32();
             int count = reader.ReadInt32();
             for (int i = 0; i < count; i++)
@@ -5493,6 +5759,7 @@ namespace ServerPackets
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(RankType);
+            writer.Write(RankType2);
             //writer.Write(MyRank);
             writer.Write(Listings.Count);
             for (int i = 0; i < Listings.Count; i++)

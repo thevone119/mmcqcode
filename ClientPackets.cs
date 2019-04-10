@@ -388,6 +388,72 @@ namespace ClientPackets
         {
         }
     }
+    //放入物品
+    public sealed class DepositItemCollect : Packet
+    {
+
+        public override short Index { get { return (short)ClientPacketIds.DepositItemCollect; } }
+
+        public int From, To;
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            From = reader.ReadInt32();
+            To = reader.ReadInt32();
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(From);
+            writer.Write(To);
+        }
+    }
+    //取回物品
+    public sealed class RetrieveItemCollect : Packet
+    {
+        public override short Index { get { return (short)ClientPacketIds.RetrieveItemCollect; } }
+
+        public int From, To;
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            From = reader.ReadInt32();
+            To = reader.ReadInt32();
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(From);
+            writer.Write(To);
+        }
+    }
+
+
+    //物品收集取消
+    public sealed class ItemCollectCancel : Packet
+    {
+        public override short Index { get { return (short)ClientPacketIds.ItemCollectCancel; } }
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+        }
+    }
+
+    //确认收集
+    public sealed class ConfirmItemCollect : Packet
+    {
+        public override short Index { get { return (short)ClientPacketIds.ConfirmItemCollect; } }
+
+        public byte type;
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            type = reader.ReadByte();
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(type);
+        }
+    }
 
     public sealed class RefineItem : Packet
     {
@@ -959,6 +1025,26 @@ namespace ClientPackets
             writer.Write(Key);
         }
     }
+
+    //魔法参数，魔法释放的前置
+    //目前用来切换红绿毒
+    public sealed class MagicParameter : Packet
+    {
+        public override short Index { get { return (short)ClientPacketIds.MagicParameter; } }
+
+        public byte Parameter;//1.绿毒，2红毒
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            Parameter = reader.ReadByte();
+        }
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(Parameter);
+        }
+    }
+
+
     //释放魔法？
     public sealed class Magic : Packet
     {
@@ -1271,17 +1357,21 @@ namespace ClientPackets
         public override short Index { get { return (short)ClientPacketIds.ConsignItem; } }
 
         public ulong UniqueID;
-        public uint Price;
+        public uint GoldPrice = 0;//金币价格，如果金币价格是0，则只能元宝购买
+        public uint CreditPrice = 0;//元宝价格
 
         protected override void ReadPacket(BinaryReader reader)
         {
             UniqueID = reader.ReadUInt64();
-            Price = reader.ReadUInt32();
+            GoldPrice = reader.ReadUInt32();
+            CreditPrice = reader.ReadUInt32();
+            
         }
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(UniqueID);
-            writer.Write(Price);
+            writer.Write(GoldPrice);
+            writer.Write(CreditPrice);
         }
     }
     //查询市场
@@ -1290,59 +1380,42 @@ namespace ClientPackets
         public override short Index { get { return (short)ClientPacketIds.MarketSearch; } }
 
         public string Match = string.Empty;
+        public byte itemtype;
+        public int Page;
         protected override void ReadPacket(BinaryReader reader)
         {
             Match = reader.ReadString();
-        }
-        protected override void WritePacket(BinaryWriter writer)
-        {
-            writer.Write(Match);
-        }
-    }
-    //市场刷新
-    public sealed class MarketRefresh : Packet
-    {
-        public override short Index { get { return (short)ClientPacketIds.MarketRefresh; } }
-
-        protected override void ReadPacket(BinaryReader reader)
-        {
-        }
-        protected override void WritePacket(BinaryWriter writer)
-        {
-        }
-    }
-    //市场分页
-    public sealed class MarketPage : Packet
-    {
-        public override short Index { get { return (short)ClientPacketIds.MarketPage; } }
-        public int Page;
-
-        protected override void ReadPacket(BinaryReader reader)
-        {
+            itemtype = reader.ReadByte();
             Page = reader.ReadInt32();
         }
         protected override void WritePacket(BinaryWriter writer)
         {
+            writer.Write(Match);
+            writer.Write(itemtype);
             writer.Write(Page);
         }
     }
+    
     //市场买
     public sealed class MarketBuy : Packet
     {
         public override short Index { get { return (short)ClientPacketIds.MarketBuy; } }
 
         public ulong AuctionID;
+        public byte payType;//支付类型 0：金币 1：元宝
 
         protected override void ReadPacket(BinaryReader reader)
         {
             AuctionID = reader.ReadUInt64();
+            payType = reader.ReadByte();
         }
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(AuctionID);
+            writer.Write(payType);
         }
     }
-    //市场回购？
+    //市场下架？
     public sealed class MarketGetBack : Packet
     {
         public override short Index { get { return (short)ClientPacketIds.MarketGetBack; } }
@@ -2212,16 +2285,19 @@ namespace ClientPackets
     public sealed class GetRanking : Packet
     {
         public override short Index { get { return (short)ClientPacketIds.GetRanking; } }
-        public byte RankIndex;
+        public byte RankIndex;//职业
+        public byte RankType;//榜单类型 0：人 1：地 2：天
 
         protected override void ReadPacket(BinaryReader reader)
         {
             RankIndex = reader.ReadByte();
+            RankType = reader.ReadByte();
         }
 
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(RankIndex);
+            writer.Write(RankType);
         }
     }
     //开门
@@ -2377,6 +2453,18 @@ namespace ClientPackets
     public sealed class ConfirmItemRental : Packet
     {
         public override short Index { get { return (short)ClientPacketIds.ConfirmItemRental; } }
+
+        protected override void ReadPacket(BinaryReader reader)
+        { }
+
+        protected override void WritePacket(BinaryWriter writer)
+        { }
+    }
+
+    //刷新背包
+    public sealed class RefreshInventory : Packet
+    {
+        public override short Index { get { return (short)ClientPacketIds.RefreshInventory; } }
 
         protected override void ReadPacket(BinaryReader reader)
         { }

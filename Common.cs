@@ -20,15 +20,17 @@ public enum PanelType : byte
     Sell,//卖
     Repair,//修理
     SpecialRepair,//特殊修理
-    Consign,//委托
+    Consign,//委托，寄售
     Craft,//制作
     Refine,//提炼
     CheckRefine,//检查精炼
     Disassemble,//拆卸
     Downgrade,//降级
     Reset,//重置
-    CollectRefine,//捕收剂
-    ReplaceWedRing,//替换编织法
+    CollectRefine,//取回武器
+    ReplaceWedRing,//打造结婚戒指
+    ConsignCredit,//委托，寄售元宝
+    ConsignDoulbe,//寄售，委托，支持同时输入金币和元宝
 }
 
 //混合模式,d3d中的混合模式
@@ -89,13 +91,18 @@ public enum OutputMessageType : byte
 }
 
 //物品等级，这个是什么鸟等级，这个主要是影响颜色的
+//白-浅蓝LightSkyBlue 绿limegreen--紫mediumorchid-金gold-粉Violet
+//1普通（白色）2高级（蓝DeepSkyBlue/LightSkyBlue）3稀有（绿limegreen/DarkOrange）4传说（紫mediumorchid） 5神器（金gold） 6史诗（粉Violet/DarkViolet）
 public enum ItemGrade : byte
 {
-    None = 0,
-    Common = 1,//普通
-    Rare = 2,//稀有
-    Legendary = 3,//传奇
-    Mythical = 4,//神话
+    None = 0,//白色0+
+    Common = 1,//普通 白色10+
+    HighLevel=2,//高级20+
+    Rare = 3,//稀有30+
+    Legendary = 4,//传说40+
+    Mythical = 5,//神话50+
+    Ancient = 6,//特殊，可变形的装备,远古
+    Epic = 7,//最后的2件装备
 }
 
 //这个是装备的属性类型
@@ -358,7 +365,7 @@ public enum Monster : ushort
     GingerBreadman = 150,
     HalloweenScythe = 151,
     GhastlyLeecher = 152,
-    CyanoGhast = 153,
+    CyanoGhast = 153,//这个怪物的AI有问题啊
     MutatedManworm = 154,
     CrazyManworm = 155,
     MudPile = 156,
@@ -652,40 +659,40 @@ public enum Monster : ushort
 //所有的动作定义
 public enum MirAction : byte
 {
-    Standing,
-    Walking,
-    Running,
-    Pushed,
-    DashL,
+    Standing,//站立
+    Walking,//行走
+    Running,//跑步，玩家才有
+    Pushed,//被推动,针对人物的后退动作，怪物的话，没有，怪物都是直接移动到那边去的
+    DashL,//短跑
     DashR,
     DashFail,
-    Stance,
-    Stance2,
-    Attack1,
+    Stance,//站立
+    Stance2,//站立2
+    Attack1,//攻击
     Attack2,
     Attack3,
     Attack4,
     Attack5,
-    AttackRange1,
+    AttackRange1,//范围攻击
     AttackRange2,
     AttackRange3,
     Special,
-    Struck,
-    Harvest,
-    Spell,
-    Die,
-    Dead,
-    Skeleton,
-    Show,
-    Hide,
-    Stoned,
-    Appear,
-    Revive,
-    SitDown,
-    Mine,
-    Sneek,
-    DashAttack,
-    Lunge,
+    Struck,//被攻击
+    Harvest,//收获，这个是针对玩家的
+    Spell,//施法
+    Die,//正死亡
+    Dead,//已死亡
+    Skeleton,//骨架
+    Show,//显示,如石化的祖玛怪物的激活，如神兽的激活（变大）等
+    Hide,//隐身
+    Stoned,//石化,比如祖玛卫士等石化效果
+    Appear,//显现，出现，主要针对召唤骷髅，召唤神兽，需要显示出来的.
+    Revive,//复活，这个大部分的都是和Die（正死亡）的动作是一样的
+    SitDown,//坐下
+    Mine,//挖矿
+    Sneek,//蛇形走位，针对刺客
+    DashAttack,//跑动攻击，针对刺客
+    Lunge,//弓步
 
     WalkingBow,
     RunningBow,
@@ -780,7 +787,7 @@ public enum ObjectType : byte
     Spell = 4,//咒语
     Monster = 5,//怪物
     Deco = 6,//这个是NCP相关的？
-    Creature = 7//生物
+    Creature = 7//生物,这个应该是非战斗宠物
 }
 //聊天的类型，字体类型
 public enum ChatType : byte
@@ -796,7 +803,7 @@ public enum ChatType : byte
     Guild = 8,//行会
     Trainer = 9,
     LevelUp = 10,
-    System2 = 11,
+    System2 = 11,//红色底纹
     Relationship = 12,
     Mentor = 13,
     Shout2 = 14,
@@ -829,13 +836,13 @@ public enum ItemType : byte
     Gem = 18,//软玉，石头材料？
     Mount = 19,//坐骑
     Book = 20,//书
-    Script = 21,//脚本
+    Script = 21,//手稿，脚本，特殊卷轴等
     Reins = 22,//缰绳
     Bells = 23,//数据库中对应4个铃铛，这个是给宠物使用的吧
     Saddle = 24,//鞍座
     Ribbon = 25,//蝴蝶结的饰品
-    Mask = 26,//面具（数据库中对应的面具应该是给宠物使用的面具吧）
-    Food = 27,//食物(目前数库中只有鹿肉)
+    Mask = 26,//面具（数据库中对应的面具应该是给宠物使用的面具吧）,目前这个面积好像是没用的
+    Food = 27,//食物(生肉，精肉)，给坐骑吃
     Hook = 28,//钩子，钓鱼用的钩子
     Float = 29,//浮标
     Bait = 30,//诱饵
@@ -869,7 +876,8 @@ public enum MirGridType : byte
     Refine = 16,//精炼
     Renting = 17,//租赁
     GuestRenting = 18,
-    Craft = 19//工艺，制作
+    Craft = 19,//工艺，制作
+    ItemCollect = 20//收集物品
 }
 //装备物品
 public enum EquipmentSlot : byte
@@ -879,15 +887,15 @@ public enum EquipmentSlot : byte
     Helmet = 2,//头盔
     Torch = 3,//火把
     Necklace = 4,//项链
-    BraceletL = 5,
+    BraceletL = 5,//手镯
     BraceletR = 6,
-    RingL = 7,
+    RingL = 7,//戒指
     RingR = 8,
-    Amulet = 9,
-    Belt = 10,
-    Boots = 11,
-    Stone = 12,
-    Mount = 13
+    Amulet = 9,//毒符
+    Belt = 10,//腰带
+    Boots = 11,//鞋子
+    Stone = 12,//宝石
+    Mount = 13//坐骑
 }
 //安装，组装物品
 public enum MountSlot : byte
@@ -935,13 +943,13 @@ public enum PoisonType : ushort
     None = 0,
     Green = 1,
     Red = 2,
-    Slow = 4,
-    Frozen = 8,
-    Stun = 16,
-    Paralysis = 32,
-    DelayedExplosion = 64,
-    Bleeding = 128,
-    LRParalysis = 256
+    Slow = 4,//减速
+    Frozen = 8,//冰冻，不能动了
+    Stun = 16,//打昏
+    Paralysis = 32,//麻痹
+    DelayedExplosion = 64,//延期爆炸
+    Bleeding = 128,//流血
+    LRParalysis = 256//解毒？
 }
 //物品的绑定类型，搞那么多干毛，所有物品都一样就行了啊。靠了
 [Flags]
@@ -960,7 +968,7 @@ public enum BindMode : short
     BreakOnDeath = 256,//0x0100 死亡销毁
     BindOnEquip = 512,//0x0200 绑定装备
     NoSRepair = 1024,//0x0400 不能特殊修理
-    NoWeddingRing = 2048,//0x0800 不是婚戒指
+    NoWeddingRing = 2048,//0x0800 不是婚戒指,结婚不能带
     UnableToRent = 4096,//不能出租
     UnableToDisassemble = 8192//不能分解
 }
@@ -970,18 +978,18 @@ public enum BindMode : short
 public enum SpecialItemMode : short
 {
     None = 0,
-    Paralize = 0x0001,//并行？记忆套么？
+    Paralize = 0x0001,//麻痹
     Teleport = 0x0002,//传送，传送戒指么
-    Clearring = 0x0004,
+    Clearring = 0x0004,//隐身戒指
     Protection = 0x0008,//护身么？
     Revival = 0x0010,//复活？
-    Muscle = 0x0020,
+    Muscle = 0x0020,//超负载戒指
     Flame = 0x0040,//火焰戒指？
     Healing = 0x0080,//治疗戒指？
     Probe = 0x0100,//探测
     Skill = 0x0200,//技巧（修炼技能加速）
-    NoDuraLoss = 0x0400,//持久不掉落
-    Blink = 0x800,//闪烁？
+    NoDuraLoss = 0x0400,//持久不掉落 坚硬戒指
+    Blink = 0x800,//这个是针对技能的，目前还没有装备
 }
 
 //职业限制其实都可以不用管哦,当然，技能是要分职业的，其他的都没有必要分了，
@@ -989,13 +997,15 @@ public enum SpecialItemMode : short
 [Obfuscation(Feature = "renaming", Exclude = true)]
 public enum RequiredClass : byte
 {
-    Warrior = 1,
-    Wizard = 2,
-    Taoist = 4,
-    Assassin = 8,
-    Archer = 16,
-    WarWizTao = Warrior | Wizard | Taoist,
-    None = WarWizTao | Assassin | Archer
+    All=0,
+    Warrior = 1,//战
+    Wizard = 2,//法
+    Taoist = 4,//道
+    Assassin = 8,//刺
+    Archer = 16,//弓
+    Monk=32,//和尚
+    WarWizTao = Warrior | Wizard | Taoist,//战法道 7
+    None = WarWizTao | Assassin | Archer| Monk,//全职业 63
 }
 
 //性别限制，也可以不用管，喜欢穿女的就穿女的嘛，有个毛问题
@@ -1030,36 +1040,39 @@ public enum RequiredType : byte
 public enum ItemSet : byte
 {
     None = 0,
-    Spirit = 1,
-    Recall = 2,
-    RedOrchid = 3,
-    RedFlower = 4,
-    Smash = 5,
-    HwanDevil = 6,
-    Purity = 7,
-    FiveString = 8,
-    Mundane = 9,
-    NokChi = 10,
-    TaoProtect = 11,
-    Mir = 12,
-    Bone = 13,
-    Bug = 14,
-    WhiteGold = 15,
-    WhiteGoldH = 16,
-    RedJade = 17,
-    RedJadeH = 18,
-    Nephrite = 19,
-    NephriteH = 20,
-    Whisker1 = 21,
-    Whisker2 = 22,
-    Whisker3 = 23,
-    Whisker4 = 24,
-    Whisker5 = 25,
-    Hyeolryong = 26,
-    Monitor = 27,
-    Oppressive = 28,
-    Paeok = 29,
-    Sulgwan = 30
+    Spirit = 1,//祈祷套
+    Recall = 2,//记忆套，可以召唤
+    RedOrchid = 3,//虹膜套
+    RedFlower = 4,//魔血套
+    Smash = 5,//破碎套
+    HwanDevil = 6,//幻魔套
+    Purity = 7,//灵玉套
+    FiveString = 8,//五玄套
+    Mundane = 9,//平凡套
+    NokChi = 10,//诺卡套
+    TaoProtect = 11,//守护套
+    Mir = 12,//天龙套
+    Bone = 13,//龙骨套
+    Bug = 14,//邪恶套
+    WhiteGold = 15,//雷霆套
+    WhiteGoldH = 16,//真雷霆套
+    RedJade = 17,//烈焰套
+    RedJadeH = 18,//真烈焰套
+    Nephrite = 19,//光芒套
+    NephriteH = 20,//真光芒套
+    Whisker1 = 21,//勇气套
+    Whisker2 = 22,//勇气套
+    Whisker3 = 23,//勇气套
+    Whisker4 = 24,//勇气套
+    Whisker5 = 25,//勇气套
+    Hyeolryong = 26,//血龙套
+    Monitor = 27,//掠夺者套(5件套改成3件套)
+    Oppressive = 28,//狂暴套(5件套改成3件套)
+    Paeok = 29,//贝玉套(5件套改成3件套)
+    Sulgwan = 30,//黑暗套(5件套改成3件套)
+
+    //以下是自行添加得
+    GaleWind =51,//狂风套
 }
 //魔法技能?魔法效果？
 [Obfuscation(Feature = "renaming", Exclude = true)]
@@ -1068,140 +1081,147 @@ public enum Spell : byte
     None = 0,
 
     //Warrior
-    Fencing = 1,
-    Slaying = 2,
+    Fencing = 1,//基本剑法
+    Slaying = 2,//攻杀剑法
     Thrusting = 3,//刺杀
     HalfMoon = 4,//半月
-    ShoulderDash = 5,
-    TwinDrakeBlade = 6,
-    Entrapment = 7,
-    FlamingSword = 8,//烈火
-    LionRoar = 9,
-    CrossHalfMoon = 10,
-    BladeAvalanche = 11,
-    ProtectionField = 12,
-    Rage = 13,
-    CounterAttack = 14,
-    SlashingBurst = 15,
-    Fury = 16,
-    ImmortalSkin = 17,
+    ShoulderDash = 5,//野蛮冲撞
+    TwinDrakeBlade = 6,//雷霆剑法 双龙斩
+    Entrapment = 7,//擒龙手
+    FlamingSword = 8,//烈火剑法
+    LionRoar = 9,//狮子吼
+    CrossHalfMoon = 10,//狂风斩
+    BladeAvalanche = 11,//空破斩
+    ProtectionField = 12,//护身气幕
+    Rage = 13,//剑气爆
+    CounterAttack = 14,//天务
+    SlashingBurst = 15,//逐日剑法
+    Fury = 16,//血龙剑法
+    ImmortalSkin = 17,//金刚不坏
 
     //Wizard
-    FireBall = 31,
-    Repulsion = 32,
-    ElectricShock = 33,
-    GreatFireBall = 34,
-    HellFire = 35,
-    ThunderBolt = 36,
-    Teleport = 37,
-    FireBang = 38,
-    FireWall = 39,//这个是火墙？
-    Lightning = 40,
-    FrostCrunch = 41,
-    ThunderStorm = 42,
+    FireBall = 31,//火球术
+    Repulsion = 32,//抗拒火环
+    ElectricShock = 33,//诱惑之光
+    GreatFireBall = 34,//大火球
+    HellFire = 35,//地狱火
+    ThunderBolt = 36,//雷电术
+    Teleport = 37,//瞬息移动
+    FireBang = 38,//爆裂火焰
+    FireWall = 39,//这个是火墙？火墙要去除暴击，或者暴击率降低50%以上
+    Lightning = 40,//疾光电影
+    FrostCrunch = 41,//寒冰掌
+    ThunderStorm = 42,//地狱雷光(不死系怪物伤害高，普通怪物伤害很低)
     MagicShield = 43,//魔法盾
-    TurnUndead = 44,
-    Vampirism = 45,
-    IceStorm = 46,
-    FlameDisruptor = 47,
-    Mirroring = 48,
-    FlameField = 49,
+    TurnUndead = 44,//圣言术（只对不死系怪物有效）
+    Vampirism = 45,//噬血术
+    IceStorm = 46,//冰咆哮
+    FlameDisruptor = 47,//灭天火
+    Mirroring = 48,//分身术
+    FlameField = 49,//火龙气焰
     Blizzard = 50,//这个是什么技能，像下雨
-    MagicBooster = 51,
-    MeteorStrike = 52,
-    IceThrust = 53,
-    FastMove = 54,
+    MagicBooster = 51,//深延术
+    MeteorStrike = 52,//流星火雨,释放时间过长，5段伤害，改为4段
+    IceThrust = 53,//冰焰术
+    FastMove = 54,//移形换位
     StormEscape = 55,
 
     //Taoist
-    Healing = 61,
-    SpiritSword = 62,
-    Poisoning = 63,
-    SoulFireBall = 64,
-    SummonSkeleton = 65,
-    Hiding = 67,
-    MassHiding = 68,
-    SoulShield = 69,
-    Revelation = 70,
-    BlessedArmour = 71,
-    EnergyRepulsor = 72,
+    Healing = 61,//治愈术
+    SpiritSword = 62,//精神力战法
+    Poisoning = 63,//施毒术
+    SoulFireBall = 64,//火符
+    SummonSkeleton = 65,//召唤骷髅
+    Hiding = 67,//隐身术
+    MassHiding = 68,//集体隐身术
+    SoulShield = 69,//幽灵盾
+    Revelation = 70,//心灵启示
+    BlessedArmour = 71,//神圣战甲术
+    EnergyRepulsor = 72,//气功波
     TrapHexagon = 73,//困魔咒吧？
-    Purification = 74,
-    MassHealing = 75,
-    Hallucination = 76,
-    UltimateEnhancer = 77,
-    SummonShinsu = 78,
-    Reincarnation = 79,
-    SummonHolyDeva = 80,
-    Curse = 81,
-    Plague = 82,
+    Purification = 74,//净化术
+    MassHealing = 75,//群体治愈术
+    Hallucination = 76,//迷魂术
+    UltimateEnhancer = 77,//无极真气
+    SummonShinsu = 78,//召唤神兽
+    Reincarnation = 79,//回生术
+    SummonHolyDeva = 80,//召唤月灵
+    Curse = 81,//诅咒术
+    Plague = 82,//瘟疫，调整下伤害
     PoisonCloud = 83,//群毒，毒云
-    EnergyShield = 84,
-    PetEnhancer = 85,
-    HealingCircle = 86,
+    EnergyShield = 84,//阴阳法环
+    PetEnhancer = 85,//血龙水
+    HealingCircle = 86,//五行阵？
 
     //Assassin
-    FatalSword = 91,
-    DoubleSlash = 92,
-    Haste = 93,
-    FlashDash = 94,
-    LightBody = 95,
-    HeavenlySword = 96,
-    FireBurst = 97,
-    Trap = 98,
-    PoisonSword = 99,
-    MoonLight = 100,
-    MPEater = 101,
-    SwiftFeet = 102,
-    DarkBody = 103,
-    Hemorrhage = 104,
-    CrescentSlash = 105,
-    MoonMist = 106,
+    FatalSword = 91,//基本刺术
+    DoubleSlash = 92,//风剑术
+    Haste = 93,//体迅风
+    FlashDash = 94,//拔刀术
+    LightBody = 95,//风身术
+    HeavenlySword = 96,//炎龙波
+    FireBurst = 97,//旋风击
+    Trap = 98,//灵魂陷阱
+    PoisonSword = 99,//猛毒剑气
+    MoonLight = 100,//月影术
+    MPEater = 101,//真气调息
+    SwiftFeet = 102,//轻身步
+    DarkBody = 103,//烈火身
+    Hemorrhage = 104,//血风击
+    CrescentSlash = 105,//火镰狂舞
+    MoonMist = 106,//这个还没实现，月色迷雾，应该是使得场景变得迷幻的技能
 
     //Archer
-    Focus = 121,
-    StraightShot = 122,
-    DoubleShot = 123,
-    ExplosiveTrap = 124,
-    DelayedExplosion = 125,
-    Meditation = 126,
-    BackStep = 127,
-    ElementalShot = 128,
-    Concentration = 129,
+    Focus = 121,//基本箭法
+    StraightShot = 122,//落日箭法,魔法
+    DoubleShot = 123,//连珠箭法 改为物理，魔法适配的攻击，防御算物理
+    ExplosiveTrap = 124,//烈火陷阱
+    DelayedExplosion = 125,//爆裂箭法
+    Meditation = 126,//气功术
+    BackStep = 127,//风弹步
+    ElementalShot = 128,//蓄力一击
+    Concentration= 129,//气流术
     Stonetrap = 130,
     ElementalBarrier = 131,
-    SummonVampire = 132,
-    VampireShot = 133,
-    SummonToad = 134,
-    PoisonShot = 135,
-    CrippleShot = 136,
-    SummonSnakes = 137,
-    NapalmShot = 138,
-    OneWithNature = 139,
-    BindingShot = 140,
-    MentalState = 141,
+    SummonVampire = 132,//蛛魔阱
+    VampireShot = 133,//噬血箭法
+    SummonToad = 134,//痹魔阱
+    PoisonShot = 135,//剧毒箭法
+    CrippleShot = 136,//邪魔箭法
+    SummonSnakes = 137,//蛇柱阱
+    NapalmShot = 138,//火龙箭法
+    OneWithNature = 139,//血龙闪
+    BindingShot = 140,//天罗地网
+    MentalState = 141,//弓箭精通
 
-    //Custom
+    //Custom，自定义
     Blink = 151,
     Portal = 152,
     BattleCry = 153,
-    
-    //Map Events,这几个是什么，好像没放在魔法技能表中,是地图的事件么？
-    DigOutZombie = 200,
-    Rubble = 201,
-    MapLightning = 202,
-    MapLava = 203,
-    MapQuake1 = 204,
-    MapQuake2 = 205
-}
 
+
+    //定点移动，类似闪现
+    FixedMove=161,
+
+
+
+    //Map Events,这几个是什么，好像没放在魔法技能表中,是地图的事件么？
+    DigOutZombie = 200,//这个是僵尸爬出来，在地图上产生的洞
+    Rubble = 201,//挖矿，土翻转出来
+    MapLightning = 202,//地图上的闪电
+    MapLava = 203,//地图上的熔岩
+    MapQuake1 = 204,//地突
+    MapQuake2 = 205//地突
+}
+//释放各种技能特效，针对玩家，怪物
+//部分通用技能，部分怪物带的技能，都在这里
 public enum SpellEffect : byte
 {
     None,
     FatalSword,
     Teleport,
     Healing,
-    RedMoonEvil,
+    RedMoonEvil,//赤月恶魔的地钉
     TwinDrakeBlade,
     MagicShieldUp,
     MagicShieldDown,
@@ -1224,7 +1244,8 @@ public enum SpellEffect : byte
     TurtleKing,
     Behemoth,
     Stunned,
-    IcePillar
+    IcePillar,
+    TreeQueen,//树的女王的树钉
 }
 
 public enum BuffType : byte
@@ -1235,7 +1256,7 @@ public enum BuffType : byte
     //magics
     TemporalFlux,//瞬移？
     Hiding,//隐藏
-    Haste,//匆忙
+    Haste,//匆忙,体 迅 风，刺客技能
     SwiftFeet,//轻盈，增加移动速度
     Fury,//愤怒,增加攻击速度
     SoulShield,//灵魂盾牌
@@ -1254,7 +1275,7 @@ public enum BuffType : byte
     MentalState,
     EnergyShield,
     MagicBooster,
-    PetEnhancer,
+    PetEnhancer,//血龙水
     ImmortalSkin,
     MagicShield,//魔法盾
 
@@ -1262,16 +1283,16 @@ public enum BuffType : byte
     //special
     GameMaster = 100,//游戏玩家
     General,//一般
-    Exp,
+    Exp,//经验加成
     Drop,//掉落
     Gold,//金币？
     BagWeight,//负重？
-    Transform,//改变
-    RelationshipEXP,
+    Transform,//改变,时装
+    RelationshipEXP,//结婚经验
     Mentee,
     Mentor,//
     Guild,//行会
-    Prison,
+    Prison,//监狱，
     Rested,
 
     //统计
@@ -1290,12 +1311,12 @@ public enum BuffType : byte
 
 public enum DefenceType : byte
 {
-    ACAgility,
-    AC,
-    MACAgility,
-    MAC,
-    Agility,
-    Repulsion,
+    ACAgility,//防御，敏捷
+    AC,//防御
+    MACAgility,//魔御，敏捷
+    MAC,//魔法防御
+    Agility,//敏捷
+    Repulsion,//反伤
     None
 }
 
@@ -1436,7 +1457,6 @@ public enum ServerPacketIds : short
     ObjectDashFail,
     NPCConsign,
     NPCMarket,
-    NPCMarketPage,
     ConsignItem,
     MarketFail,
     MarketSuccess,
@@ -1546,7 +1566,17 @@ public enum ServerPacketIds : short
 
     RechargeLink,
     RechargeResult,
-    UserGold
+    UserGold,
+    UserInventory,
+    NPCItemCollect,
+    RetrieveItemCollect,
+    DepositItemCollect,
+    ItemCollectCancel,
+    ConfirmItemCollect,
+    NPCConsignCredit,
+    NPCConsignDoulbe,
+    ObjectMonsterChange,
+    BlizzardStopTime,
 
 }
 
@@ -1611,8 +1641,7 @@ public enum ClientPacketIds : short
     SpellToggle,
     ConsignItem,
     MarketSearch,
-    MarketRefresh,
-    MarketPage,
+
     MarketBuy,
     MarketGetBack,
     RequestUserName,
@@ -1692,9 +1721,15 @@ public enum ClientPacketIds : short
     ItemRentalLockFee,
     ItemRentalLockItem,
     ConfirmItemRental,
-    RechargeCredit,
-    RefreshUserGold,
-    RechargeEnd
+    RechargeCredit,//充值元宝
+    RefreshUserGold,//刷新用户账户
+    RechargeEnd,//支付完成
+    RefreshInventory,//刷新背包
+    DepositItemCollect,//物品收集，放入物品
+    RetrieveItemCollect,//物品收集，取回物品
+    ItemCollectCancel,//物品收集，取消
+    ConfirmItemCollect,//确认收集物品
+    MagicParameter,//魔法参数，魔法释放的前置
 }
 
 public enum ConquestType : byte
@@ -1729,7 +1764,7 @@ public class InIReader
         try
         {
             if (File.Exists(_fileName))
-                _contents.AddRange(File.ReadAllLines(_fileName));
+                _contents.AddRange(File.ReadAllLines(_fileName, EncodingType.GetType(_fileName)));
         }
         catch
         {
@@ -1738,7 +1773,7 @@ public class InIReader
     #endregion
 
     #region Functions
-    private string FindValue(string section, string key)
+    public string FindValue(string section, string key)
     {
         for (int a = 0; a < _contents.Count; a++)
             if (String.CompareOrdinal(_contents[a], "[" + section + "]") == 0)
@@ -2172,15 +2207,22 @@ public static class Globals
 
         LogDelay = 5000,//这个影响到游戏退出的时间
 
-        DataRange = 16;//Was 24
+        DataRange = 16;//Was 24,数据处理的范围，人物16格内
 
-    public static float Commission = 0.05F;
-
+    //这个是寄卖物品的费率，成功收取的佣金3%的佣金
+    public static float Commission = 0.03F;
+    //搜素物品的最小时间间隔，小于这个间隔，不处理
     public const uint SearchDelay = 500,
-                      ConsignmentLength = 7,
-                      ConsignmentCost = 5000,
-                      MinConsignment = 5000,
-                      MaxConsignment = 50000000;
+                      ConsignmentLength = 7,//寄卖物品的期限7天
+                      ConsignmentCost = 1000,//寄卖物品的费用，每次寄卖，都要收取的费用
+                      MinConsignment = 1000,//寄卖的最小金额
+                      MaxConsignment = 50000000,//寄卖物品的最大金额
+                      MaxConsignmentCount = 20;//最多寄卖数量
+
+    //充值获得元宝数
+    public const uint Recharge10 = 11000, Recharge20 = 23000, Recharge50 = 60000, Recharge100 = 130000;
+
+
 
 }
 
@@ -2281,7 +2323,7 @@ public static class Functions
         }
         else // more than 1 day
         {
-            answer = accurate ? string.Format("{0}时 {1:D2}时 {2:D2}分 {3:D2}秒", (int)t.Days, (int)t.Hours, t.Minutes, t.Seconds) : string.Format("{0}天 {1}时 {2:D2}分", (int)t.TotalDays, (int)t.Hours, t.Minutes);
+            answer = accurate ? string.Format("{0}天 {1:D2}时 {2:D2}分 {3:D2}秒", (int)t.Days, (int)t.Hours, t.Minutes, t.Seconds) : string.Format("{0}天 {1}时 {2:D2}分", (int)t.TotalDays, (int)t.Hours, t.Minutes);
         }
 
         return answer;
@@ -2485,11 +2527,11 @@ public static class Functions
         }
         return p;
     }
-
+    
+    //2点间最大距离，可以当做2点间的距离
     public static int MaxDistance(Point p1, Point p2)
     {
         return Math.Max(Math.Abs(p1.X - p2.X), Math.Abs(p1.Y - p2.Y));
-
     }
 
     public static MirDirection ReverseDirection(MirDirection dir)
@@ -2516,13 +2558,14 @@ public static class Functions
                 return dir;
         }
     }
+    //
     public static ItemInfo GetRealItem(ItemInfo Origin, ushort Level, MirClass job, List<ItemInfo> ItemList)
     {
-        if (Origin.ClassBased && Origin.LevelBased)
+        if (Origin.ClassBased>0 && Origin.LevelBased>0)
             return GetClassAndLevelBasedItem(Origin, job, Level, ItemList);
-        if (Origin.ClassBased)
+        if (Origin.ClassBased>0)
             return GetClassBasedItem(Origin, job, ItemList);
-        if (Origin.LevelBased)
+        if (Origin.LevelBased>0)
             return GetLevelBasedItem(Origin, Level, ItemList);
         return Origin;
     }
@@ -2532,9 +2575,11 @@ public static class Functions
         for (int i = 0; i < ItemList.Count; i++)
         {
             ItemInfo info = ItemList[i];
-            if (info.Name.StartsWith(Origin.Name))
-                if ((info.RequiredType == RequiredType.Level) && (info.RequiredAmount <= level) && (output.RequiredAmount < info.RequiredAmount) && (Origin.RequiredGender == info.RequiredGender))
+            if (ItemInfo.IsLevelBased(Origin,info, level))
+            {
+                if (output.RequiredAmount < info.RequiredAmount)
                     output = info;
+            }
         }
         return output;
     }
@@ -2543,9 +2588,10 @@ public static class Functions
         for (int i = 0; i < ItemList.Count; i++)
         {
             ItemInfo info = ItemList[i];
-            if (info.Name.StartsWith(Origin.Name))
-                if (((byte)info.RequiredClass == (1 << (byte)job)) && (Origin.RequiredGender == info.RequiredGender))
-                    return info;
+            if (ItemInfo.IsClassBased(Origin,info, job))
+            {
+                return info;
+            }
         }
         return Origin;
     }
@@ -2556,10 +2602,11 @@ public static class Functions
         for (int i = 0; i < ItemList.Count; i++)
         {
             ItemInfo info = ItemList[i];
-            if (info.Name.StartsWith(Origin.Name))
-                if ((byte)info.RequiredClass == (1 << (byte)job))
-                    if ((info.RequiredType == RequiredType.Level) && (info.RequiredAmount <= level) && (output.RequiredAmount <= info.RequiredAmount) && (Origin.RequiredGender == info.RequiredGender))
-                        output = info;
+            if (ItemInfo.IsClassBased(Origin,info, job) && ItemInfo.IsLevelBased(Origin,info, level))
+            {
+                if (output.RequiredAmount < info.RequiredAmount)
+                    output = info;
+            }
         }
         return output;
     }
@@ -2693,7 +2740,7 @@ public class GameShopItem
     public int GIndex;//商品ID
     [JsonIgnore]
     public ItemInfo Info;//物品实体
-    public uint GoldPrice = 0;//金币价格
+    public uint GoldPrice = 0;//金币价格，如果金币价格是0，则只能元宝购买
     public uint CreditPrice = 0;//元宝价格
     public uint Count = 1;//这个是商品保护物品的数量，不是购买数量哦,本身包含的物品数量
     public string Class = "";//职业
@@ -2785,7 +2832,7 @@ public class GameShopItem
     public static List<GameShopItem> loadAll()
     {
         List<GameShopItem> list = new List<GameShopItem>();
-        DbDataReader read = MirConfigDB.ExecuteReader("select * from GameShopItem");
+        DbDataReader read = MirConfigDB.ExecuteReader("select * from GameShopItem where Deal=0");
 
         while (read.Read())
         {
@@ -3107,6 +3154,7 @@ public class ClientMagic
     public ushort Experience;
 
     public bool IsTempSpell;
+    //释放时间，延期
     public long CastTime, Delay;
 
     public ClientMagic()
@@ -3162,14 +3210,24 @@ public class ClientMagic
     }
    
 }
-
+//寄卖物品
 public class ClientAuction
 {
     public ulong AuctionID;
     public UserItem Item;
-    public string Seller = string.Empty;
-    public uint Price;
+    public string Seller = string.Empty;//卖家
+    public uint GoldPrice = 0;//金币价格，如果金币价格是0，则只能元宝购买
+    //public uint Price;
+    //这里要加个元宝价格
+    public uint CreditPrice = 0;//元宝价格
+   
     public DateTime ConsignmentDate;
+
+    //添加以下2个字段
+    //过期？已卖？
+    public bool Expired, Sold;
+
+
 
     public ClientAuction()
     {
@@ -3180,19 +3238,27 @@ public class ClientAuction
         AuctionID = reader.ReadUInt64();
         Item = new UserItem(reader);
         Seller = reader.ReadString();
-        Price = reader.ReadUInt32();
+
+        GoldPrice = reader.ReadUInt32();
+        CreditPrice = reader.ReadUInt32();
         ConsignmentDate = DateTime.FromBinary(reader.ReadInt64());
+        Expired = reader.ReadBoolean();
+        Sold = reader.ReadBoolean();
     }
     public void Save(BinaryWriter writer)
     {
         writer.Write(AuctionID);
         Item.Save(writer);
         writer.Write(Seller);
-        writer.Write(Price);
+        writer.Write(GoldPrice);
+        writer.Write(CreditPrice);
         writer.Write(ConsignmentDate.ToBinary());
+        writer.Write(Expired);
+        writer.Write(Sold);
     }
 }
 
+//客户端的任务信息
 public class ClientQuestInfo
 {
     public int Index;
@@ -3737,7 +3803,7 @@ public class ClientIntelligentCreature
     }
 }
 
-
+//数据包，这里做一个加密
 public abstract class Packet
 {
     public static bool IsServer;
@@ -3781,6 +3847,7 @@ public abstract class Packet
         return p;
     }
 
+    //获取数据包，加密
     public IEnumerable<byte> GetPacketBytes()
     {
         if (Index < 0) return new byte[0];
@@ -3803,6 +3870,7 @@ public abstract class Packet
                 stream.Read(data, 0, data.Length);
             }
         }
+        //这里增加数据包的加密处理（根据Index进行加密）
 
         return data;
     }
@@ -3932,10 +4000,6 @@ public abstract class Packet
                 return new C.ConsignItem();
             case (short)ClientPacketIds.MarketSearch:
                 return new C.MarketSearch();
-            case (short)ClientPacketIds.MarketRefresh:
-                return new C.MarketRefresh();
-            case (short)ClientPacketIds.MarketPage:
-                return new C.MarketPage();
             case (short)ClientPacketIds.MarketBuy:
                 return new C.MarketBuy();
             case (short)ClientPacketIds.MarketGetBack:
@@ -4086,7 +4150,18 @@ public abstract class Packet
                 return new C.RechargeCredit();
             case (short)ClientPacketIds.RechargeEnd:
                 return new C.RechargeEnd();
-
+            case (short)ClientPacketIds.RefreshInventory:
+                return new C.RefreshInventory();
+            case (short)ClientPacketIds.DepositItemCollect:
+                return new C.DepositItemCollect();
+            case (short)ClientPacketIds.RetrieveItemCollect:
+                return new C.RetrieveItemCollect();
+            case (short)ClientPacketIds.ItemCollectCancel:
+                return new C.ItemCollectCancel();
+            case (short)ClientPacketIds.ConfirmItemCollect:
+                return new C.ConfirmItemCollect();
+            case (short)ClientPacketIds.MagicParameter:
+                return new C.MagicParameter();
             default:
                 return null;
         }
@@ -4360,10 +4435,17 @@ public abstract class Packet
                 return new S.ObjectDashFail();
             case (short)ServerPacketIds.NPCConsign:
                 return new S.NPCConsign();
+            case (short)ServerPacketIds.NPCConsignCredit:
+                return new S.NPCConsignCredit();
+            case (short)ServerPacketIds.NPCConsignDoulbe:
+                return new S.NPCConsignDoulbe();
             case (short)ServerPacketIds.NPCMarket:
                 return new S.NPCMarket();
-            case (short)ServerPacketIds.NPCMarketPage:
-                return new S.NPCMarketPage();
+            case (short)ServerPacketIds.ObjectMonsterChange:
+                return new S.ObjectMonsterChange();
+            case (short)ServerPacketIds.BlizzardStopTime:
+                return new S.BlizzardStopTime();
+
             case (short)ServerPacketIds.ConsignItem:
                 return new S.ConsignItem();
             case (short)ServerPacketIds.MarketFail:
@@ -4574,11 +4656,25 @@ public abstract class Packet
                 return new S.RechargeResult();
             case (short)ServerPacketIds.UserGold:
                 return new S.UserGold();
+            case (short)ServerPacketIds.UserInventory:
+                return new S.UserInventory();
+            case (short)ServerPacketIds.NPCItemCollect:
+                return new S.NPCItemCollect();
+            case (short)ServerPacketIds.RetrieveItemCollect:
+                return new S.RetrieveItemCollect();
+            case (short)ServerPacketIds.DepositItemCollect:
+                return new S.DepositItemCollect();
+            case (short)ServerPacketIds.ItemCollectCancel:
+                return new S.ItemCollectCancel();
+            case (short)ServerPacketIds.ConfirmItemCollect:
+                return new S.ConfirmItemCollect();
+                
             default:
                 return null;
         }
     }
 }
+
 //基础属性，各职业的成长属性
 public class BaseStats
 {
@@ -4606,10 +4702,10 @@ public class BaseStats
                 MaxMc = 0;
                 MinSc = 0;
                 MaxSc = 0;
-                StartAgility = 15;
-                StartAccuracy = 5;
-                StartCriticalRate = 0;
-                StartCriticalDamage = 0;
+                StartAgility = 15;//敏捷
+                StartAccuracy = 5;//精确
+                StartCriticalRate = 5;
+                StartCriticalDamage = 2;
                 CritialRateGain = 0;
                 CriticalDamageGain = 0;
                 break;
@@ -4630,10 +4726,10 @@ public class BaseStats
                 MaxMc = 7;
                 MinSc = 0;
                 MaxSc = 0;
-                StartAgility = 15;
+                StartAgility = 15;//敏捷
                 StartAccuracy = 5;
-                StartCriticalRate = 0;
-                StartCriticalDamage = 0;
+                StartCriticalRate = 5;
+                StartCriticalDamage = 4;
                 CritialRateGain = 0;
                 CriticalDamageGain = 0;
                 break;
@@ -4654,10 +4750,10 @@ public class BaseStats
                 MaxMc = 0;
                 MinSc = 7;
                 MaxSc = 7;
-                StartAgility = 18;
+                StartAgility = 18;//敏捷
                 StartAccuracy = 5;
-                StartCriticalRate = 0;
-                StartCriticalDamage = 0;
+                StartCriticalRate = 5;
+                StartCriticalDamage = 4;
                 CritialRateGain = 0;
                 CriticalDamageGain = 0;
                 break;
@@ -4678,10 +4774,10 @@ public class BaseStats
                 MaxMc = 0;
                 MinSc = 0;
                 MaxSc = 0;
-                StartAgility = 20;
-                StartAccuracy = 5;
-                StartCriticalRate = 0;
-                StartCriticalDamage = 0;
+                StartAgility = 20;//敏捷
+                StartAccuracy = 6;//原来是5，调整为6
+                StartCriticalRate = 5;
+                StartCriticalDamage = 4;
                 CritialRateGain = 0;
                 CriticalDamageGain = 0;
                 break;
@@ -4702,10 +4798,10 @@ public class BaseStats
                 MaxMc = 8;
                 MinSc = 0;
                 MaxSc = 0;
-                StartAgility = 15;
-                StartAccuracy = 8;
-                StartCriticalRate = 0;
-                StartCriticalDamage = 0;
+                StartAgility = 15;//敏捷
+                StartAccuracy = 11;//原来是8，调整为11
+                StartCriticalRate = 5;
+                StartCriticalDamage = 4;
                 CritialRateGain = 0;
                 CriticalDamageGain = 0;
                 break;
@@ -4764,6 +4860,7 @@ public class BaseStats
     }
 }
 //装备随机加的属性配置
+//MaxDcChance:最大几率，1/X,一般是, MaxDcStatChance, MaxDcMaxStat
 public class RandomItemStat
 {
     public byte MaxDuraChance, MaxDuraStatChance, MaxDuraMaxStat;
@@ -5028,7 +5125,7 @@ public class ItemSets
 {
     public ItemSet Set;
     public List<ItemType> Type;
-    //数量
+    //这个是套装最少需要的数量
     private byte Amount
     {
         get
@@ -5043,6 +5140,7 @@ public class ItemSets
                 case ItemSet.Whisker3:
                 case ItemSet.Whisker4:
                 case ItemSet.Whisker5:
+                case ItemSet.GaleWind:
                     return 2;
                 case ItemSet.RedOrchid:
                 case ItemSet.RedFlower:
@@ -5052,6 +5150,10 @@ public class ItemSets
                 case ItemSet.FiveString:
                 case ItemSet.Bone:
                 case ItemSet.Bug:
+                case ItemSet.Monitor:
+                case ItemSet.Oppressive:
+                case ItemSet.Paeok:
+                case ItemSet.Sulgwan:
                     return 3;
                 case ItemSet.Recall:
                     return 4;
@@ -5063,13 +5165,9 @@ public class ItemSets
                 case ItemSet.Nephrite:
                 case ItemSet.NephriteH:
                 case ItemSet.Hyeolryong:
-                case ItemSet.Monitor:
-                case ItemSet.Oppressive:
-                case ItemSet.Paeok:
-                case ItemSet.Sulgwan:
                     return 5;
                 default:
-                    return 0;
+                    return 2;
             }
         }
     }
@@ -5078,7 +5176,7 @@ public class ItemSets
     {
         get
         {
-            return Count == Amount;
+            return Count >= Amount;
         }
     }
 }
@@ -5093,50 +5191,61 @@ public class ItemSets
 public class MineSet
 {
     public string Name = string.Empty;
-    public byte SpotRegenRate = 5;
-    public byte MaxStones = 80;
-    public byte HitRate = 25;
-    public byte DropRate = 10;
-    public byte TotalSlots = 100;
+    public byte SpotRegenRate = 5;//矿石再生时间默认5分钟
+    public byte MaxStones = 160;//最大产生矿的数量，也就是每5分钟最多产生0-160块矿石，挖完了，就等下一个5分钟了.
+    public byte HitRate= 25;//这个是挖到土的几率
+    public byte DropRate = 10;//这个是掉的几率
+
     public List<MineDrop> Drops = new List<MineDrop>();
-    private bool DropsSet = false;
+
 
     public MineSet(byte MineType = 0)
     {
         switch (MineType)
         {
             case 1:
-                TotalSlots = 120;
-                Drops.Add(new MineDrop(){ItemName = "GoldOre", MinSlot = 1, MaxSlot = 2, MinDura = 3, MaxDura = 16, BonusChance = 20, MaxBonusDura = 10});
-                Drops.Add(new MineDrop() { ItemName = "SilverOre", MinSlot = 3, MaxSlot = 20, MinDura = 3, MaxDura = 16, BonusChance = 20, MaxBonusDura = 10 });
-                Drops.Add(new MineDrop() { ItemName = "CopperOre", MinSlot = 21, MaxSlot = 45, MinDura = 3, MaxDura = 16, BonusChance = 20, MaxBonusDura = 10 });
-                Drops.Add(new MineDrop() { ItemName = "BlackIronOre", MinSlot = 46, MaxSlot = 56, MinDura = 3, MaxDura = 16, BonusChance = 20, MaxBonusDura = 10 });
+
+                Drops.Add(new MineDrop(){ItemName = "GoldOre", MinDura = 3, MaxDura = 16,});
+                Drops.Add(new MineDrop() { ItemName = "SilverOre", MinDura = 3, MaxDura = 16,  });
+                Drops.Add(new MineDrop() { ItemName = "CopperOre",  MinDura = 3, MaxDura = 16,  });
+                Drops.Add(new MineDrop() { ItemName = "BlackIronOre", MinDura = 3, MaxDura = 16,});
                 break;
             case 2:
-                TotalSlots = 100;
-                Drops.Add(new MineDrop(){ItemName = "PlatinumOre", MinSlot = 1, MaxSlot = 2, MinDura = 3, MaxDura = 16, BonusChance = 20, MaxBonusDura = 10});
-                Drops.Add(new MineDrop() { ItemName = "RubyOre", MinSlot = 3, MaxSlot = 20, MinDura = 3, MaxDura = 16, BonusChance = 20, MaxBonusDura = 10 });
-                Drops.Add(new MineDrop() { ItemName = "NephriteOre", MinSlot = 21, MaxSlot = 45, MinDura = 3, MaxDura = 16, BonusChance = 20, MaxBonusDura = 10 });
-                Drops.Add(new MineDrop() { ItemName = "AmethystOre", MinSlot = 46, MaxSlot = 56, MinDura = 3, MaxDura = 16, BonusChance = 20, MaxBonusDura = 10 });
+
+                Drops.Add(new MineDrop(){ItemName = "PlatinumOre",  MinDura = 3, MaxDura = 16});
+                Drops.Add(new MineDrop() { ItemName = "RubyOre",  MinDura = 3, MaxDura = 16,});
+                Drops.Add(new MineDrop() { ItemName = "NephriteOre",  MinDura = 3, MaxDura = 16  });
+                Drops.Add(new MineDrop() { ItemName = "AmethystOre",  MinDura = 3, MaxDura = 16 });
                 break;
         }
     }
 
-    public void SetDrops(List<ItemInfo> items)
+    //爆出其中一种矿
+    public MineDrop DropMine()
     {
-        if (DropsSet) return;
+        int change = 0;
+        for(int i=0;i< Drops.Count; i++)
+        {
+            change += Drops[i].DropRate;
+        }
+        if (change == 0)
+        {
+            return null;
+        }
+        int _change = RandomUtils.Next(change);
+        change = 0;
         for (int i = 0; i < Drops.Count; i++)
         {
-            for (int j = 0; j < items.Count; j++)
+            change += Drops[i].DropRate;
+            if (_change < change)
             {
-                ItemInfo info = items[j];
-                if (String.Compare(info.Name.Replace(" ", ""), Drops[i].ItemName, StringComparison.OrdinalIgnoreCase) != 0) continue;
-                Drops[i].Item = info;
-                break;
+                return Drops[i];
             }
         }
-        DropsSet = true;
+        return null;
     }
+
+
 }
 
 public class MineSpot
@@ -5145,17 +5254,23 @@ public class MineSpot
     public long LastRegenTick = 0;
     public MineSet Mine;
 }
-
+//挖矿的爆率
 public class MineDrop
 {
     public string ItemName;
-    public ItemInfo Item;
-    public byte MinSlot = 0;
-    public byte MaxSlot = 0;
+    private ItemInfo _Item;
     public byte MinDura = 1;
-    public byte MaxDura = 1;
-    public byte BonusChance = 0;
-    public byte MaxBonusDura = 1;
+    public byte MaxDura = 10;
+    public byte DropRate = 10;
+
+    public ItemInfo getItem()
+    {
+        if (_Item == null)
+        {
+            _Item = ItemInfo.getItem(ItemName);
+        }
+        return _Item;
+    }
 }
 //矿区,挖矿区域？
 public class MineZone
@@ -5173,6 +5288,16 @@ public class MineZone
         Location = new Point(reader.ReadInt32(), reader.ReadInt32());
         Size = reader.ReadUInt16();
         Mine = reader.ReadByte();
+    }
+
+    //是否在矿区内
+    public bool inMineZone(int x,int y)
+    {
+        if (Math.Abs(x - Location.X) <= Size && Math.Abs(y - Location.Y)<= Size)
+        {
+            return true;
+        }
+        return false;
     }
 
     public void Save(BinaryWriter writer)
@@ -5200,6 +5325,7 @@ public class ItemVolume
 public class Rank
 {
     public List<GuildMember> Members = new List<GuildMember>();
+
     public string Name = "";
     public int Index = 0;
     public RankOptions Options = (RankOptions)0;
@@ -5251,10 +5377,11 @@ public class GuildMember
 {
     public string name = "";
     public ulong Id;
+    [JsonIgnore]
     public object Player;
     public DateTime LastLogin;
     public bool hasvoted;
-    public bool Online;
+    public bool Online;//成员是否在线，这个有问题，显示的是全部在线
 
     public GuildMember()
     {}
@@ -5453,92 +5580,92 @@ public class GuildBuffInfo
         //text = name + "\n";
         if (BuffAc > 0)
         {
-            text += LanguageUtils.Format("Increases AC by: 0-{0}.", BuffAc);
+            text += LanguageUtils.Format("防御提升: 0-{0}.", BuffAc);
             if (text != "") text += "\n";
         }
         if (BuffMac > 0)
         {
-            text += LanguageUtils.Format("Increases MAC by: 0-{0}.", BuffMac);
+            text += LanguageUtils.Format("魔御提升: 0-{0}.", BuffMac);
             if (text != "") text += "\n";
         }
         if (BuffDc > 0)
         {
-            text += LanguageUtils.Format("Increases DC by: 0-{0}.", BuffDc);
+            text += LanguageUtils.Format("攻击提升: 0-{0}.", BuffDc);
             if (text != "") text += "\n";
         }
         if (BuffMc > 0)
         {
-            text += LanguageUtils.Format("Increases MC by: 0-{0}.", BuffMc);
+            text += LanguageUtils.Format("魔法提升: 0-{0}.", BuffMc);
             if (text != "") text += "\n";
         }
         if (BuffSc > 0)
         {
-            text += LanguageUtils.Format("Increases SC by: 0-{0}.", BuffSc);
+            text += LanguageUtils.Format("道术提升: 0-{0}.", BuffSc);
             if (text != "") text += "\n";
         }
         if (BuffMaxHp > 0)
         {
-            text += LanguageUtils.Format("Increases Hp by: {0}.", BuffMaxHp);
+            text += LanguageUtils.Format("HP提升: {0}.", BuffMaxHp);
             if (text != "") text += "\n";
         }
         if (BuffMaxMp > 0)
         {
-            text += LanguageUtils.Format("Increases MP by: {0}.", BuffMaxMp);
+            text += LanguageUtils.Format("MP提升: {0}.", BuffMaxMp);
             if (text != "") text += "\n";
         }
         if (BuffHpRegen > 0)
         {
-            text += LanguageUtils.Format("Increases Health regen by: {0}.", BuffHpRegen);
+            text += LanguageUtils.Format("生命恢复提升: {0}.", BuffHpRegen);
             if (text != "") text += "\n";
         }
         if (BuffMPRegen > 0)
         {
-            text += LanguageUtils.Format("Increases Mana regen by: {0}.", BuffMPRegen);
+            text += LanguageUtils.Format("法力恢复提升: {0}.", BuffMPRegen);
             if (text != "") text += "\n";
         }
         if (BuffMineRate > 0)
         {
-            text += LanguageUtils.Format("Increases Mining success by: {0}%.", BuffMineRate * 5);
+            text += LanguageUtils.Format("挖矿成功率提升: {0}%.", BuffMineRate * 5);
             if (text != "") text += "\n";
         }
         if (BuffGemRate > 0)
         {
-            text += LanguageUtils.Format("Increases Gem success by: {0}%.", BuffGemRate * 5);
+            text += LanguageUtils.Format("宝玉成功率提升: {0}%.", BuffGemRate * 5);
             if (text != "") text += "\n";
         }
         if (BuffFishRate > 0)
         {
-            text += LanguageUtils.Format("Increases Fishing success by: {0}%.", BuffFishRate * 5);
+            text += LanguageUtils.Format("钓鱼成功率提升: {0}%.", BuffFishRate * 5);
             if (text != "") text += "\n";
         }
         if (BuffExpRate > 0)
         {
-            text += LanguageUtils.Format("Increases Experience by: {0}%.", BuffExpRate);
+            text += LanguageUtils.Format("经验提升: {0}%.", BuffExpRate);
             if (text != "") text += "\n";
         }
         if (BuffCraftRate > 0)
         {
-            text += LanguageUtils.Format("Increases Crafting success by: {0}%.", BuffCraftRate * 5);
+            text += LanguageUtils.Format("工艺制作提升: {0}%.", BuffCraftRate * 5);
             if (text != "") text += "\n";
         }
         if (BuffSkillRate > 0)
         {
-            text += LanguageUtils.Format("Increases Skill training by: {0}.", BuffSkillRate);
+            text += LanguageUtils.Format("技能修炼提升: {0}.", BuffSkillRate);
             if (text != "") text += "\n";
         }
         if (BuffAttack > 0)
         {
-            text += LanguageUtils.Format("Increases Damage by: {0}.", BuffAttack);
+            text += LanguageUtils.Format("伤害提升: {0}.", BuffAttack);
             if (text != "") text += "\n";
         }
         if (BuffDropRate > 0)
         {
-            text += LanguageUtils.Format("Droprate increased by: {0}%.", BuffDropRate);
+            text += LanguageUtils.Format("爆率提升: {0}%.", BuffDropRate);
             if (text != "") text += "\n";
         }
         if (BuffGoldRate > 0)
         {
-            text += LanguageUtils.Format("Goldrate increased by: 0-{0}.", BuffGoldRate);
+            text += LanguageUtils.Format("金币获取提升: 0-{0}.", BuffGoldRate);
             if (text != "") text += "\n";
         }
 
@@ -5623,9 +5750,10 @@ public class GuildBuffOld
 public class Rank_Character_Info
 {
     public ulong PlayerId;
+    public ulong CharacterId;//这个是角色ID
     public string Name;
     public MirClass Class;
-    public int level;
+    public int level;//人榜：等级，地榜：评分，天榜：评分
     //public int rank;
     //经验
     public long Experience;//clients shouldnt care about this only server
@@ -5725,6 +5853,172 @@ public class ClientRecipeInfo
     }
 }
 
+//增加一个安全区，用于客户端在安全区进行穿人
+//安全区域
+public class SafeZoneInfo
+{
+    //安全区位置
+    public Point Location;
+    //大小
+    public ushort Size;
+    //是否开始点，新生点（服务器才使用）
+    public bool StartPoint;
+    //地图引用（服务器才使用）
+    public int MapIndex;
+
+    public SafeZoneInfo()
+    {
+
+    }
+
+    public SafeZoneInfo(BinaryReader reader)
+    {
+        Location = new Point(reader.ReadInt32(), reader.ReadInt32());
+        Size = reader.ReadUInt16();
+    }
+
+    public void Save(BinaryWriter writer)
+    {
+        writer.Write(Location.X);
+        writer.Write(Location.Y);
+        writer.Write(Size);
+    }
+
+    public override string ToString()
+    {
+        return string.Format("Map: {0}- {1}", Functions.PointToString(Location), StartPoint);
+    }
+}
+
+//装备自带技能
+[Flags]
+[Obfuscation(Feature = "renaming", Exclude = true)]
+public enum ItemSkill : byte
+{
+    None = 0,
+    Warrior1 = 11,//战
+    Warrior2 = 12,//战
+    Warrior3 = 13,//战
+    Warrior4 = 14,//战
+    Warrior5 = 15,//战
+    Warrior6 = 16,//战
+    Warrior7 = 17,//战
+    Wizard1 = 21,//法
+    Wizard2 = 22,//法
+    Wizard3 = 23,//法
+    Wizard4 = 24,//法
+    Wizard5 = 25,//法
+    Wizard6 = 26,//法
+    Wizard7 = 27,//法
+    Taoist1 = 31,//道
+    Taoist2 = 32,//道
+    Taoist3 = 33,//道
+    Taoist4 = 34,//道
+    Taoist5 = 35,//道
+    Taoist6 = 36,//道
+    Taoist7 = 37,//道
+    Assassin1 = 41,//刺
+    Assassin2 = 42,//刺
+    Assassin3 = 43,//刺
+    Assassin4 = 44,//刺
+    Assassin5 = 45,//刺
+    Assassin6 = 46,//刺
+    Assassin7 = 47,//刺
+    Archer1 = 51,//弓
+    Archer2 = 52,//弓
+    Archer3 = 53,//弓
+    Archer4 = 54,//弓
+    Archer5 = 55,//弓
+    Archer6 = 56,//弓
+    Archer7 = 57,//弓
+    Comm1 = 1,//通用
+    Comm2 = 2,//通用
+    Comm3 = 3,//通用
+    Comm4 = 4,//通用
+    Comm5 = 5,//通用
+    Comm6 = 6,//通用
+    Comm7 = 7,//通用
+}
+
+//装备自带技能
+public class ItemSkillBean
+{
+    public ItemSkill skid;//技能ID
+    public string skname;//技能名称
+    public string skmemo;//技能描述
+    public RequiredClass reqcls;//职业
+    public byte change;//几率
+
+    public static List<ItemSkillBean> list = new List<ItemSkillBean>();
+
+    public ItemSkillBean(ItemSkill skid, string skname, string skmemo, RequiredClass reqcls, byte change)
+    {
+        this.skid = skid;
+        this.skname = skname;
+        this.skmemo = skmemo;
+        this.reqcls = reqcls;
+        this.change = change;
+    }
+
+    public static void init()
+    {
+        if(list==null|| list.Count == 0)
+        {
+            list.Add(new ItemSkillBean(ItemSkill.Warrior1, "破山阵", "普通攻击几率破防", RequiredClass.Warrior,30));
+            list.Add(new ItemSkillBean(ItemSkill.Warrior2, "半月阵", "提升半月弯刀,狂风斩的伤害", RequiredClass.Warrior,30));
+            list.Add(new ItemSkillBean(ItemSkill.Warrior4, "雷霆阵", "雷霆攻击几率增加伤害", RequiredClass.Warrior,15));
+            list.Add(new ItemSkillBean(ItemSkill.Warrior5, "金刚阵", "护身气幕防御，魔域提升", RequiredClass.Warrior,15));
+            list.Add(new ItemSkillBean(ItemSkill.Warrior7, "天神阵", "几率免疫攻击，日闪几率增加伤害", RequiredClass.Warrior,5));
+
+            list.Add(new ItemSkillBean(ItemSkill.Wizard1, "迷惑阵", "强化诱惑之光，诱惑宝宝成功率提升", RequiredClass.Wizard,30));
+            list.Add(new ItemSkillBean(ItemSkill.Wizard2, "天罚阵", "雷电术可同时攻击3个目标", RequiredClass.Wizard, 30));
+            list.Add(new ItemSkillBean(ItemSkill.Wizard4, "统治阵", "诱惑宝宝不叛变，下线不死亡", RequiredClass.Wizard,15));
+            list.Add(new ItemSkillBean(ItemSkill.Wizard5, "分身阵", "强化分身，分身攻击等于本体攻击的", RequiredClass.Wizard,15));
+            list.Add(new ItemSkillBean(ItemSkill.Wizard7, "法神阵", "强化火雨/火墙技能", RequiredClass.Wizard,5));
+
+            list.Add(new ItemSkillBean(ItemSkill.Taoist1, "符咒阵", "感悟火符真谛使得火符威力增加", RequiredClass.Taoist,30));
+            list.Add(new ItemSkillBean(ItemSkill.Taoist2, "骷髅阵", "强化骷髅，召唤出强化骷髅为你做战", RequiredClass.Taoist,30));
+            list.Add(new ItemSkillBean(ItemSkill.Taoist4, "圣兽阵", "强化神兽，召唤出强化神兽为你做战", RequiredClass.Taoist,15));
+            list.Add(new ItemSkillBean(ItemSkill.Taoist5, "厚土阵", "魔，防技能魔防提升", RequiredClass.Taoist,15));
+            list.Add(new ItemSkillBean(ItemSkill.Taoist7, "道尊阵", "施毒术伤害增加，毒云伤害，瘟疫伤害无上限", RequiredClass.Taoist,5));
+
+            list.Add(new ItemSkillBean(ItemSkill.Assassin1, "月隐阵", "几率增加隐身时间", RequiredClass.Assassin, 30));
+            list.Add(new ItemSkillBean(ItemSkill.Assassin2, "鬼灵阵", "鬼灵步CD减少", RequiredClass.Assassin, 30));
+            list.Add(new ItemSkillBean(ItemSkill.Assassin4, "真气阵", "真气调息-吸蓝效率提升", RequiredClass.Assassin, 15));
+            list.Add(new ItemSkillBean(ItemSkill.Assassin5, "幻像阵", "烈火身，几率增加烈火身伤害量", RequiredClass.Assassin, 15));
+            list.Add(new ItemSkillBean(ItemSkill.Assassin7, "刺皇阵", "血风触发几率提升，火镰狂舞几率增加伤害", RequiredClass.Assassin, 5));
+
+            list.Add(new ItemSkillBean(ItemSkill.Archer1, "气流阵", "气流术恢复气速度增加", RequiredClass.Archer, 30));
+            list.Add(new ItemSkillBean(ItemSkill.Archer2, "爆裂阵", "爆裂箭伤害提升", RequiredClass.Archer, 30));
+            list.Add(new ItemSkillBean(ItemSkill.Archer4, "痹魔阵", "召唤蛤蟆攻防提升", RequiredClass.Archer, 15));
+            list.Add(new ItemSkillBean(ItemSkill.Archer5, "烈火阵", "烈火陷阱伤害提升", RequiredClass.Archer, 15));
+            list.Add(new ItemSkillBean(ItemSkill.Archer7, "箭神阵", "连珠箭法/火龙箭法/白龙箭法几率增加伤害", RequiredClass.Archer, 5));
+
+            list.Add(new ItemSkillBean(ItemSkill.Comm1, "聚灵阵", "回蓝效率提升", RequiredClass.None, 30));
+            list.Add(new ItemSkillBean(ItemSkill.Comm2, "龙血阵", "回血效率提升", RequiredClass.None, 30));
+            list.Add(new ItemSkillBean(ItemSkill.Comm4, "噬血阵", "几率吸收周围怪物的血量，回复自身", RequiredClass.None, 15));
+            list.Add(new ItemSkillBean(ItemSkill.Comm5, "迷幻阵", "几率使得周围怪物进入迷幻状态", RequiredClass.None, 15));
+            list.Add(new ItemSkillBean(ItemSkill.Comm7, "天雷阵", "几率触发雷阵，对身边怪物进行雷阵攻击", RequiredClass.None, 5));
+        }
+    }
+
+    public static ItemSkillBean get(ItemSkill skid)
+    {
+        init();
+        foreach(ItemSkillBean k in list)
+        {
+            if (k.skid == skid)
+            {
+                return k;
+            }
+        }
+        return null;
+    }
+
+
+}
+
+
 
 
 //针对各种定义的名字进行转换处理
@@ -5748,6 +6042,8 @@ public class NameChange
                 return "战法道";
             case RequiredClass.None:
                 return "无";
+            case RequiredClass.All:
+                return "无";
         }
         return "无";
     }
@@ -5759,16 +6055,131 @@ public class NameChange
         {
             case ItemGrade.Common:
                 return "普通";
+            case ItemGrade.HighLevel:
+                return "高级";
             case ItemGrade.Rare:
                 return "稀有";
             case ItemGrade.Legendary:
-                return "传奇";
+                return "传说";
             case ItemGrade.Mythical:
                 return "神话";
+            case ItemGrade.Ancient:
+                return "远古";
+            case ItemGrade.Epic:
+                return "史诗";
             case ItemGrade.None:
                 return "无";
         }
         return "无";
+    }
+    ////1普通（白色）2高级（蓝DeepSkyBlue/LightSkyBlue）3稀有（绿limegreen/DarkOrange）4传说（紫MediumOrchid） 5神器（金gold） 6史诗（粉Violet/DarkViolet）
+    public static Color getItemGradeNameColor(ItemGrade clas)
+    {
+        switch (clas)
+        {
+            case ItemGrade.None://白色
+                return Color.White;
+            case ItemGrade.Common://白色
+                return Color.White;
+            case ItemGrade.HighLevel:
+                return Color.LightSkyBlue;//蓝色
+            case ItemGrade.Rare:
+                return Color.DeepSkyBlue;//蓝色
+            case ItemGrade.Legendary:
+                return Color.DarkOrange;//紫
+            case ItemGrade.Mythical:
+                return Color.Gold;//金
+            case ItemGrade.Ancient:
+                return Color.LimeGreen;//绿
+            case ItemGrade.Epic:
+                return Color.Violet;//粉
+            default:
+                return Color.White;
+        }
+        //return Color.White;
+    }
+
+    public static string getItemType(ItemType clas)
+    {
+        //List<object> clist = new List<object>();
+        switch (clas)
+        {
+            case ItemType.Nothing:
+                return "";
+            case ItemType.Weapon:
+                return "武器";
+            case ItemType.Armour:
+                return "盔甲";
+            case ItemType.Helmet:
+                return "头盔";
+            case ItemType.Necklace:
+                return "项链";
+            case ItemType.Bracelet:
+                return "手镯";
+            case ItemType.Ring:
+                return "戒指";
+            case ItemType.Amulet:
+                return "毒符";
+            case ItemType.Belt:
+                return "腰带";
+            case ItemType.Boots:
+                return "靴子";
+            case ItemType.Stone:
+                return "宝石";
+            case ItemType.Torch:
+                return "火把";
+            case ItemType.Potion:
+                return "药剂";
+            case ItemType.Ore:
+                return "矿石";
+            case ItemType.Meat:
+                return "肉";
+            case ItemType.CraftingMaterial:
+                return "合成材料";
+            case ItemType.Scroll:
+                return "卷轴";
+            case ItemType.Gem:
+                return "玉石";
+            case ItemType.Mount:
+                return "坐骑";
+            case ItemType.Book:
+                return "书";
+            case ItemType.Script:
+                return "手稿";
+            case ItemType.Reins:
+                return "缰绳";
+            case ItemType.Bells:
+                return "铃铛";
+            case ItemType.Saddle:
+                return "马鞍";
+            case ItemType.Ribbon:
+                return "缎带";
+            case ItemType.Mask:
+                return "面具";
+            case ItemType.Food:
+                return "食物";
+            case ItemType.Hook:
+                return "鱼钩";
+            case ItemType.Float:
+                return "鱼漂";
+            case ItemType.Bait:
+                return "鱼饵";
+            case ItemType.Finder:
+                return "探测器";
+            case ItemType.Reel:
+                return "绕线器";
+            case ItemType.Fish:
+                return "鱼";
+            case ItemType.Quest:
+                return "任务物品";
+            case ItemType.Awakening:
+                return "觉醒物品";
+            case ItemType.Pets:
+                return "宠物";
+            case ItemType.Transform:
+                return "时装";
+        }
+        return "";
     }
 
     public static string getMirClass(MirClass clas)

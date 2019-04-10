@@ -32,22 +32,24 @@ public class ItemInfo
     public static List<ItemInfo> _listAll = new List<ItemInfo>();
 
     public int Index;
-    public string Name = string.Empty;
+    //加个分组名称，便于对装备进行分组，对爆率进行分组处理
+    public string Name = string.Empty,Name_en= string.Empty, GroupName = string.Empty, ItemSetName = string.Empty;
     public ItemType Type;
     public ItemGrade Grade;
     public RequiredType RequiredType = RequiredType.Level;
     public RequiredClass RequiredClass = RequiredClass.None;
     public RequiredGender RequiredGender = RequiredGender.None;
-    public ItemSet Set;
+    public ItemSet Set;//套装
 
+    //掉落权重，权重越高，掉落的几率越低
+    public uint DropWeight = 100;//
 
-
-    public short Shape;//形状
+    public short Shape;//外观（这个做很多逻辑的，一般物品使用的话，基本用类型+这个参数做）
     //重量，发光，需要的数量（可能需要等级，可能需要攻击，可能需要魔法,具体看RequiredType的定义了）
     public byte Weight, Light, RequiredAmount;
     //图片，基础持久
     public ushort Image, Durability;
-    //价格，可堆叠数,默认是1，就是不可堆叠的
+    //价格(分2个价格，一个价格是真实的价格，影响爆率的，另外一个是卖掉的价格，封顶5万)，可堆叠数,默认是1，就是不可堆叠的
     public uint Price, StackSize = 1;
     //基础属性,Agility：敏捷,Accuracy精确
     public byte MinAC, MaxAC, MinMAC, MaxMAC, MinDC, MaxDC, MinMC, MaxMC, MinSC, MaxSC, Accuracy, Agility;
@@ -59,30 +61,32 @@ public class ItemInfo
     public byte BagWeight, HandWeight, WearWeight;
 
     public bool StartItem;//是否开始赠送的装备，其实开始赠送不应该放这里
-    public byte Effect;//效果
+    public byte Effect;//效果（用来做逻辑的，比如彩票，用来做中奖几率）
 
     public byte Strong;//强度，降持久的时候，每次降的持久会和这个数比较，一般都是0，如果是1-3
-    //MagicResist:魔法躲避？PoisonResist：中毒躲避？HealthRecovery恢复，SpellRecovery技能恢复，PoisonRecovery：中毒恢复，HPrate：HP增加百分比，MPrate：Mp增加百分百
+    //MagicResist:魔法躲避？PoisonResist：中毒躲避？HealthRecovery恢复，SpellRecoveryMP恢复，PoisonRecovery：中毒恢复，HPrate：HP增加百分比，MPrate：Mp增加百分百
     public byte MagicResist, PoisonResist, HealthRecovery, SpellRecovery, PoisonRecovery, HPrate, MPrate;
 
     //暴击几率，暴击伤害
     public byte CriticalRate, CriticalDamage;
 
-    public byte bools;//这一个决定下面6个参数 NeedIdentify,ShowGroupPickup,ClassBased,LevelBased.CanMine,GlobalDropNotify
+//public byte bools;//这一个决定下面6个参数 NeedIdentify,ShowGroupPickup,ClassBased,LevelBased.CanMine,GlobalDropNotify
     public bool NeedIdentify, ShowGroupPickup, GlobalDropNotify;
-    public bool ClassBased;
-    public bool LevelBased;
+    public byte ClassBased;//根据职业来确定最终的物品
+    public byte LevelBased;//根据等级来确定最终的物品，就是等级越高，对应切换到更好的物品，相当于武器跟着人升级一样.
     public bool CanMine;
     //是否可以助跑，所有鞋子都可以助跑
     public bool CanFastRun;
     //是否可以觉醒(感觉没用)
     public bool CanAwakening;
-    //最大防御几率，最大魔防御几率，神圣，冰冻，毒术攻击，HP消耗几率
+    //最大防御几率，最大魔防御几率，神圣，冰冻，毒术攻击，吸血
     public byte MaxAcRate, MaxMacRate, Holy, Freezing, PoisonAttack, HpDrainRate;
+
+
 
     //各种绑定属性，不能丢弃，死亡不掉落，背包不掉落，下线销毁，不能交易，不能出售，不能存储，不能升级，不能修理，不能特殊修理等
     public BindMode Bind = BindMode.none;
-    //这个是什么？也是发光么？
+    //反伤
     public byte Reflect;
     //特殊属性
     public SpecialItemMode Unique = SpecialItemMode.None;
@@ -90,7 +94,7 @@ public class ItemInfo
     public byte RandomStatsId;
     public RandomItemStat RandomStats;
     //装备说明，提示
-    public string ToolTip = string.Empty;
+    public string ToolTip ="-";
 
 
     public bool IsConsumable
@@ -180,15 +184,14 @@ public class ItemInfo
             MPrate = reader.ReadByte();
             CriticalRate = reader.ReadByte();
             CriticalDamage = reader.ReadByte();
-            bools = reader.ReadByte();
-            NeedIdentify = (bools & 0x01) == 0x01;
-            ShowGroupPickup = (bools & 0x02) == 0x02;
-            ClassBased = (bools & 0x04) == 0x04;
-            LevelBased = (bools & 0x08) == 0x08;
-            CanMine = (bools & 0x10) == 0x10;
-
-            if (version >= 77)
-                GlobalDropNotify = (bools & 0x20) == 0x20;
+            //这里改下
+            NeedIdentify = reader.ReadBoolean();
+            ShowGroupPickup = reader.ReadBoolean();
+            GlobalDropNotify = reader.ReadBoolean();
+            ClassBased = reader.ReadByte();
+            LevelBased = reader.ReadByte();
+            CanMine = reader.ReadBoolean();
+           
 
             MaxAcRate = reader.ReadByte();
             MaxMacRate = reader.ReadByte();
@@ -265,13 +268,57 @@ public class ItemInfo
         {
             loadAll();
         }
+        if (name == null)
+        {
+            return null;
+        }
+        name = name.Replace(" ", "");
         for (int i = 0; i < _listAll.Count; i++)
         {
             ItemInfo info = _listAll[i];
-            if (String.Compare(info.Name.Replace(" ", ""), name, StringComparison.OrdinalIgnoreCase) != 0) continue;
-            return info;
+            if (info.Name.Equals(name)) {
+                return info;
+            }
+            if (String.Compare(info.Name_en, name, StringComparison.OrdinalIgnoreCase) == 0)
+            {
+                //return info;
+            }
         }
         return null;
+    }
+
+    //通过内观查询物品列表
+    public static List<ItemInfo> queryByImage(ushort Image)
+    {
+        List<ItemInfo> list = new List<ItemInfo>();
+        foreach (ItemInfo info in _listAll)
+        {
+            if (info.Image == Image )
+            {
+                list.Add(info);
+            }
+        }
+        return list;
+    }
+
+    //通过分组名称查找物品
+    //也支持通过套装名称查找
+    public static List<ItemInfo> queryByGroupName(string groupName)
+    {
+        List<ItemInfo> list = new List<ItemInfo>();
+        if (groupName == null)
+        {
+            return list;
+        }
+        groupName = groupName.Replace(" ", "");
+        foreach(ItemInfo info in _listAll)
+        {
+            if (info.GroupName == groupName || info.ItemSetName==groupName)
+            {
+                list.Add(info);
+            }
+        }
+        return list;
     }
 
     /// <summary>
@@ -284,7 +331,7 @@ public class ItemInfo
         {
             return _listAll;
         }
-        DbDataReader read = MirConfigDB.ExecuteReader("select * from ItemInfo");
+        DbDataReader read = MirConfigDB.ExecuteReader("select * from ItemInfo where isdel=0");
 
         while (read.Read())
         {
@@ -294,17 +341,37 @@ public class ItemInfo
                 continue;
             }
             obj.Name = read.GetString(read.GetOrdinal("Name"));
+            if (!read.IsDBNull(read.GetOrdinal("GroupName")))
+            {
+                obj.GroupName = read.GetString(read.GetOrdinal("GroupName"));
+            }
+            if (!read.IsDBNull(read.GetOrdinal("ItemSetName")))
+            {
+                obj.ItemSetName = read.GetString(read.GetOrdinal("ItemSetName"));
+            }
+            if (!read.IsDBNull(read.GetOrdinal("Name_en")))
+            {
+                obj.Name_en = read.GetString(read.GetOrdinal("Name_en"));
+            }
+
             if (obj.Name == null)
             {
                 continue;
             }
+            obj.Name = obj.Name.Replace(" ", "");
+            obj.Name_en = obj.Name_en.Replace(" ", "");
+           
             obj.Index = read.GetInt32(read.GetOrdinal("Idx"));
-
+            
 
             obj.Type = (ItemType)read.GetByte(read.GetOrdinal("Type"));
             obj.Grade = (ItemGrade)read.GetByte(read.GetOrdinal("Grade"));
             obj.RequiredType = (RequiredType)read.GetByte(read.GetOrdinal("RequiredType"));
             obj.RequiredClass = (RequiredClass)read.GetByte(read.GetOrdinal("RequiredClass"));
+            if(obj.RequiredClass== RequiredClass.All)
+            {
+                obj.RequiredClass = RequiredClass.None;
+            }
             obj.RequiredGender = (RequiredGender)read.GetByte(read.GetOrdinal("RequiredGender"));
             obj.Set = (ItemSet)read.GetByte(read.GetOrdinal("ItemSet"));
             obj.Shape = (short)read.GetInt32(read.GetOrdinal("Shape"));
@@ -316,7 +383,9 @@ public class ItemInfo
             obj.Durability = (ushort)read.GetInt32(read.GetOrdinal("Durability"));
             obj.StackSize = (uint)read.GetInt32(read.GetOrdinal("StackSize"));
             obj.Price = (uint)read.GetInt32(read.GetOrdinal("Price"));
-       
+
+            obj.DropWeight = (uint)read.GetInt32(read.GetOrdinal("DropWeight"));
+
             obj.MinAC = read.GetByte(read.GetOrdinal("MinAC"));
             obj.MaxAC = read.GetByte(read.GetOrdinal("MaxAC"));
 
@@ -354,24 +423,33 @@ public class ItemInfo
             obj.MPrate = read.GetByte(read.GetOrdinal("MPrate"));
             obj.CriticalRate = read.GetByte(read.GetOrdinal("CriticalRate"));
             obj.CriticalDamage = read.GetByte(read.GetOrdinal("CriticalDamage"));
-            obj.bools = read.GetByte(read.GetOrdinal("bools"));
+
+            obj.NeedIdentify = read.GetBoolean(read.GetOrdinal("NeedIdentify"));
+            obj.ShowGroupPickup = read.GetBoolean(read.GetOrdinal("ShowGroupPickup"));
+            obj.ClassBased = read.GetByte(read.GetOrdinal("ClassBased"));
+            obj.LevelBased = read.GetByte(read.GetOrdinal("LevelBased"));
+            obj.CanMine = read.GetBoolean(read.GetOrdinal("CanMine"));
+            obj.GlobalDropNotify = read.GetBoolean(read.GetOrdinal("GlobalDropNotify"));
+
             obj.MaxAcRate = read.GetByte(read.GetOrdinal("MaxAcRate"));
             obj.MaxMacRate = read.GetByte(read.GetOrdinal("MaxMacRate"));
             obj.Holy = read.GetByte(read.GetOrdinal("Holy"));
             obj.Freezing = read.GetByte(read.GetOrdinal("Freezing"));
             obj.PoisonAttack = read.GetByte(read.GetOrdinal("PoisonAttack"));
-            obj.Bind = (BindMode)read.GetByte(read.GetOrdinal("Bind"));
+            obj.Bind = (BindMode)read.GetInt16(read.GetOrdinal("Bind"));
             obj.Reflect = read.GetByte(read.GetOrdinal("Reflect"));
             obj.HpDrainRate = read.GetByte(read.GetOrdinal("HpDrainRate"));
-            obj.Unique = (SpecialItemMode)read.GetByte(read.GetOrdinal("SpecialItemMode"));
+            obj.Unique = (SpecialItemMode)read.GetInt16(read.GetOrdinal("SpecialItemMode"));
             obj.RandomStatsId = read.GetByte(read.GetOrdinal("RandomStatsId"));
             obj.CanFastRun = read.GetBoolean(read.GetOrdinal("CanFastRun"));
             obj.CanAwakening = read.GetBoolean(read.GetOrdinal("CanAwakening"));
             obj.ToolTip = read.GetString(read.GetOrdinal("ToolTip"));
 
             DBObjectUtils.updateObjState(obj, obj.Index);
+            
             _listAll.Add(obj);
         }
+       
         return _listAll;
     }
 
@@ -432,7 +510,14 @@ public class ItemInfo
         writer.Write(MPrate);
         writer.Write(CriticalRate);
         writer.Write(CriticalDamage);
-        writer.Write(bools);
+        //这里改下
+        writer.Write(NeedIdentify);
+        writer.Write(ShowGroupPickup);
+        writer.Write(GlobalDropNotify);
+        writer.Write(ClassBased);
+        writer.Write(LevelBased);
+        writer.Write(CanMine);
+        //writer.Write(bools);
         writer.Write(MaxAcRate);
         writer.Write(MaxMacRate);
         writer.Write(Holy);
@@ -449,7 +534,7 @@ public class ItemInfo
         if (ToolTip != null)
             writer.Write(ToolTip);
 
-        SaveDB();
+        //SaveDB();
     }
 
     //保存到数据库
@@ -462,6 +547,7 @@ public class ItemInfo
         }
         List<SQLiteParameter> lp = new List<SQLiteParameter>();
         lp.Add(new SQLiteParameter("Name", Name));
+        lp.Add(new SQLiteParameter("GroupName", GroupName));
         lp.Add(new SQLiteParameter("Type", Type));
         lp.Add(new SQLiteParameter("Grade", Grade));
         lp.Add(new SQLiteParameter("RequiredType", RequiredType));
@@ -507,7 +593,7 @@ public class ItemInfo
         lp.Add(new SQLiteParameter("MPrate", MPrate));
         lp.Add(new SQLiteParameter("CriticalRate", CriticalRate));
         lp.Add(new SQLiteParameter("CriticalDamage", CriticalDamage));
-        lp.Add(new SQLiteParameter("bools", bools));
+        //lp.Add(new SQLiteParameter("bools", bools));
         lp.Add(new SQLiteParameter("MaxAcRate", MaxAcRate));
         lp.Add(new SQLiteParameter("MaxMacRate", MaxMacRate));
         lp.Add(new SQLiteParameter("Holy", Holy));
@@ -521,7 +607,13 @@ public class ItemInfo
         lp.Add(new SQLiteParameter("CanFastRun", CanFastRun));
         lp.Add(new SQLiteParameter("CanAwakening", CanAwakening));
         lp.Add(new SQLiteParameter("ToolTip", ToolTip));
-
+        //
+        lp.Add(new SQLiteParameter("NeedIdentify", NeedIdentify));
+        lp.Add(new SQLiteParameter("ShowGroupPickup", ShowGroupPickup));
+        lp.Add(new SQLiteParameter("GlobalDropNotify", GlobalDropNotify));
+        lp.Add(new SQLiteParameter("ClassBased", ClassBased));
+        lp.Add(new SQLiteParameter("LevelBased", LevelBased));
+        lp.Add(new SQLiteParameter("CanMine", CanMine));
         //新增
         if (state == 1)
         {
@@ -611,8 +703,8 @@ public class ItemInfo
         if (!byte.TryParse(data[50], out info.Holy)) return null;
         if (!byte.TryParse(data[51], out info.Freezing)) return null;
         if (!byte.TryParse(data[52], out info.PoisonAttack)) return null;
-        if (!bool.TryParse(data[53], out info.ClassBased)) return null;
-        if (!bool.TryParse(data[54], out info.LevelBased)) return null;
+        //if (!bool.TryParse(data[53], out info.ClassBased)) return null;
+        //if (!bool.TryParse(data[54], out info.LevelBased)) return null;
         if (!Enum.TryParse(data[55], out info.Bind)) return null;
         if (!byte.TryParse(data[56], out info.Reflect)) return null;
         if (!byte.TryParse(data[57], out info.HpDrainRate)) return null;
@@ -707,6 +799,55 @@ public class ItemInfo
         return item;
     }
 
+    //2个物品比较是否符合ClassBased
+    public static bool IsClassBased(ItemInfo Origin, ItemInfo target, MirClass job)
+    {
+        if (Origin.Type != target.Type || Origin.RequiredGender != target.RequiredGender || Origin.Index == target.Index)
+        {
+            return false;
+        }
+
+        bool mac = false;
+        if (Origin.ClassBased > 1)
+        {
+            if (target.ClassBased == Origin.ClassBased) mac = true;
+        }
+        else
+        {
+            if (target.Name.StartsWith(Origin.Name)) mac = true;
+        }
+        if (mac)
+        {
+
+            if (((byte)target.RequiredClass == (1 << (byte)job)))
+                return true;
+        }
+        return false;
+    }
+
+    //2个物品比较是否符合LevelBased
+    public static bool IsLevelBased(ItemInfo Origin, ItemInfo target, ushort level)
+    {
+        if (Origin.Type != target.Type || Origin.RequiredGender != target.RequiredGender || Origin.Index == target.Index)
+        {
+            return false;
+        }
+        bool mac = false;
+        if (Origin.LevelBased > 1)
+        {
+            if (target.LevelBased == Origin.LevelBased) mac = true;
+        }
+        else
+        {
+            if (target.Name.StartsWith(Origin.Name)) mac = true;
+        }
+        if (mac)
+        {
+            if ((target.RequiredType == RequiredType.Level) && (target.RequiredAmount <= level))
+                return true;
+        }
+        return false;
+    }
 
     /// <summary>
     ///不同等级名称的颜色,这个就放物品里比较好吧？坑死咩。
@@ -715,25 +856,11 @@ public class ItemInfo
     /// <returns></returns>
     public Color getNameColor(bool drops = false)
     {
-        switch (Grade)
+        if(Grade==ItemGrade.Common && drops)
         {
-            case ItemGrade.None://白色
-                return Color.White;
-            case ItemGrade.Common://白色
-                if (drops)
-                {
-                    return Color.White;
-                }
-                return Color.Yellow;
-            case ItemGrade.Rare:
-                return Color.DeepSkyBlue;//蓝色
-            case ItemGrade.Legendary:
-                return Color.DarkOrange;//橙色
-            case ItemGrade.Mythical:
-                return Color.DarkViolet;//紫色
-            default:
-                return Color.White;
+            return Color.White;
         }
+        return NameChange.getItemGradeNameColor(Grade);
     }
 }
 
@@ -753,20 +880,36 @@ public class UserItem
     //持久是每个装备都不一样的属性，当前持久，和最大持久放在具体的装备上
     public ushort CurrentDura, MaxDura;
     //当前数量，最大数量，这个是打包的
+    //GemCount,砸宝石的次数
     public uint Count = 1, GemCount = 0;
     //这里是增加的属性
     public byte AC, MAC, DC, MC, SC, Accuracy, Agility, HP, MP, Strong, MagicResist, PoisonResist, HealthRecovery, ManaRecovery, PoisonRecovery, CriticalRate, CriticalDamage, Freezing, PoisonAttack;
     public sbyte AttackSpeed, Luck;
 
+    //装备增加几个属性，quality品质（最多加5），spiritual灵性（最多加5），轮回samsaracount（最多5）,samsaratype轮回类型，和AwakeType一致
+    public byte quality, spiritual, samsaracount, samsaratype;
+    public byte SA_AC, SA_MAC, SA_DC, SA_MC, SA_SC;//轮回属性，防御，魔防，攻击，魔法，道术
+
+    //增加几个字段，用于物品来源
+    public long src_time = 0;//时间
+    public string src_kill = "";//击杀
+    public string src_map = "";//地图
+    public string src_mon = "";//怪物
+
+    //增加4个武器自带技能(其实只用到3个吧)
+    public ItemSkill sk1, sk2, sk3, sk4;
+
+
     public RefinedValue RefinedValue = RefinedValue.None;
     public byte RefineAdded = 0;
+    public byte RefineTime = 0;//升级的次数
 
     public bool DuraChanged;
     public long SoulBoundId = -1;
     public bool Identified = false;
     public bool Cursed = false;
 
-    public long WeddingRing = -1;
+    public long WeddingRing = -1;//结婚戒指
 
     public UserItem[] Slots = new UserItem[5];
 
@@ -777,13 +920,35 @@ public class UserItem
 
     public Awake Awake = new Awake();
 
-    //这个代表物品是极品，加了属性的
+    //增加物品的特殊属性，说明,针对时空卷等
+    public string spInfo = string.Empty;//特殊说明，添加的字段,这个传输到客户端
+    public string spRecord = string.Empty;//这个不传输到客户端哦 ，特殊记录，针对一些特殊物品进行特殊处理，特殊处理的数据记录在这里
+
+    //这个代表物品是极品，加了属性的,这个涉及到是否重新发送到客户端
     public bool IsAdded
     {
         get
         {
             return AC != 0 || MAC != 0 || DC != 0 || MC != 0 || SC != 0 || Accuracy != 0 || Agility != 0 || HP != 0 || MP != 0 || AttackSpeed != 0 || Luck != 0 || Strong != 0 || MagicResist != 0 || PoisonResist != 0 ||
                 HealthRecovery != 0 || ManaRecovery != 0 || PoisonRecovery != 0 || CriticalRate != 0 || CriticalDamage != 0 || Freezing != 0 || PoisonAttack != 0;
+        }
+    }
+    //增加属性的值
+    public int AddedVue
+    {
+        get
+        {
+            return AC + MAC + DC + MC + SC + Accuracy+ Agility +HP + MP + AttackSpeed + Luck + Strong + MagicResist +PoisonResist +
+                HealthRecovery + ManaRecovery + PoisonRecovery + CriticalRate + CriticalDamage + Freezing + PoisonAttack ;
+        }
+    }
+    //增加属性的值(宝石增加的属性值)
+    public int AddedGamVue
+    {
+        get
+        {
+            return AC + MAC + DC + MC + SC + Accuracy + Agility + AttackSpeed + Luck + Strong + MagicResist + PoisonResist +
+                 PoisonRecovery + CriticalRate + CriticalDamage + Freezing + PoisonAttack;
         }
     }
 
@@ -816,6 +981,7 @@ public class UserItem
 
         SetSlotSize();
     }
+
     public UserItem(BinaryReader reader, int version = int.MaxValue, int Customversion = int.MaxValue)
     {
         UniqueID = reader.ReadUInt64();
@@ -873,6 +1039,7 @@ public class UserItem
         GemCount = reader.ReadUInt32();
 
         if (version <= 40) return;
+        spInfo = reader.ReadString();
 
         Awake = new Awake(reader);
 
@@ -893,6 +1060,30 @@ public class UserItem
 
         if (reader.ReadBoolean())
             RentalInformation = new RentalInformation(reader, version, Customversion);
+
+        //增加3个属性
+        quality = reader.ReadByte();
+        spiritual = reader.ReadByte();
+        samsaracount = reader.ReadByte();
+        SA_AC = reader.ReadByte();
+        SA_MAC = reader.ReadByte();
+        SA_DC = reader.ReadByte();
+        SA_MC = reader.ReadByte();
+        SA_SC = reader.ReadByte();
+
+        //物品来源
+        src_time = reader.ReadInt64();
+        if (src_time != 0)
+        {
+            src_kill = reader.ReadString();
+            src_map = reader.ReadString();
+            src_mon = reader.ReadString();
+        }
+        //4个武器自带技能
+        sk1 = (ItemSkill)reader.ReadByte();
+        sk2 = (ItemSkill)reader.ReadByte();
+        sk3 = (ItemSkill)reader.ReadByte();
+        sk4 = (ItemSkill)reader.ReadByte();
     }
 
     /// <summary>
@@ -900,7 +1091,7 @@ public class UserItem
     /// 作废，不单独加载
     /// </summary>
     /// <returns></returns>
-    public static List<UserItem> loadAll()
+    public static List<UserItem> loadAll2()
     {
         List<UserItem> list = new List<UserItem>();
         DbDataReader read = MirRunDB.ExecuteReader("select * from UserItem");
@@ -1036,8 +1227,10 @@ public class UserItem
         }
 
         writer.Write(GemCount);
+        //增加2个字段哦
+        writer.Write(spInfo);
 
-
+        
         Awake.Save(writer);
 
         writer.Write((byte)RefinedValue);
@@ -1051,6 +1244,29 @@ public class UserItem
         writer.Write(RentalInformation != null);
         RentalInformation?.Save(writer);
 
+        //增加几个属性
+        writer.Write(quality);
+        writer.Write(spiritual);
+        writer.Write(samsaracount);
+        writer.Write(SA_AC);
+        writer.Write(SA_MAC);
+        writer.Write(SA_DC);
+        writer.Write(SA_MC);
+        writer.Write(SA_SC);
+
+        //物品来源
+        writer.Write(src_time);
+        if (src_time != 0)
+        {
+            writer.Write(src_kill);
+            writer.Write(src_map);
+            writer.Write(src_mon);
+        }
+        //4个武器自带技能
+        writer.Write((byte)sk1);
+        writer.Write((byte)sk2);
+        writer.Write((byte)sk3);
+        writer.Write((byte)sk4);
     }
 
     //作废，不单独保存
@@ -1130,6 +1346,7 @@ public class UserItem
         DBObjectUtils.updateObjState(this, UniqueID);
     }
 
+    //物品的真实价格，通过这里计算
     public uint Price()
     {
         if (Info == null) return 0;
@@ -1153,10 +1370,24 @@ public class UserItem
 
 
         p = (uint)(p * ((AC + MAC + DC + MC + SC + Accuracy + Agility + HP + MP + AttackSpeed + Luck + Strong + MagicResist + PoisonResist + HealthRecovery + ManaRecovery + PoisonRecovery + CriticalRate + CriticalDamage + Freezing + PoisonAttack) * 0.1F + 1F));
-
+        if(p> Info.Price * 2)
+        {
+            p = Info.Price * 2;
+        }
 
         return p * Count;
     }
+    //物品销售的价格，5万封顶
+    public uint SellPrice()
+    {
+        uint _p = Price();
+        if (_p > 50000)
+        {
+            _p = 50000;
+        }
+        return _p;
+    }
+    //修理的价格
     public uint RepairPrice()
     {
         if (Info == null || Info.Durability == 0)
@@ -1166,25 +1397,22 @@ public class UserItem
 
         if (Info.Durability > 0)
         {
-            p = (uint)Math.Floor(MaxDura * ((Info.Price / 2F) / Info.Durability) + Info.Price / 2F);
+            p = (uint)((MaxDura-CurrentDura) * ((Info.Price / 2F) / MaxDura));
             p = (uint)(p * ((AC + MAC + DC + MC + SC + Accuracy + Agility + HP + MP + AttackSpeed + Luck + Strong + MagicResist + PoisonResist + HealthRecovery + ManaRecovery + PoisonRecovery + CriticalRate + CriticalDamage + Freezing + PoisonAttack) * 0.1F + 1F));
-
         }
 
-        var cost = p * Count - Price();
+        var cost = p * Count;
 
         if (RentalInformation == null)
             return cost;
-
+        if (cost > 50000)
+        {
+            cost = 50000;
+        }
         return cost * 2;
     }
 
-    public uint Quality()
-    {
-        uint q = (uint)(AC + MAC + DC + MC + SC + Accuracy + Agility + HP + MP + AttackSpeed + Luck + Strong + MagicResist + PoisonResist + HealthRecovery + ManaRecovery + PoisonRecovery + CriticalRate + CriticalDamage + Freezing + PoisonAttack + Awake.getAwakeLevel() + 1);
-
-        return q;
-    }
+   
 
     public uint AwakeningPrice()
     {
@@ -1290,53 +1518,16 @@ public class UserItem
         }
     }
     //物品的副本
+    //这里好多问题哦
     public UserItem Clone()
     {
-        UserItem item = new UserItem(Info)
-        {
-            UniqueID = UniqueID,
-            CurrentDura = CurrentDura,
-            MaxDura = MaxDura,
-            Count = Count,
+        //采用JSON的方式进行全克隆
+        UserItem item = JsonConvert.DeserializeObject<UserItem>(JsonConvert.SerializeObject(this));
 
-            AC = AC,
-            MAC = MAC,
-            DC = DC,
-            MC = MC,
-            SC = SC,
-            Accuracy = Accuracy,
-            Agility = Agility,
-            HP = HP,
-            MP = MP,
-
-            AttackSpeed = AttackSpeed,
-            Luck = Luck,
-
-            DuraChanged = DuraChanged,
-            SoulBoundId = SoulBoundId,
-            Identified = Identified,
-            Cursed = Cursed,
-            Strong = Strong,
-            MagicResist = MagicResist,
-            PoisonResist = PoisonResist,
-            HealthRecovery = HealthRecovery,
-            ManaRecovery = ManaRecovery,
-            PoisonRecovery = PoisonRecovery,
-            CriticalRate = CriticalRate,
-            CriticalDamage = CriticalDamage,
-            Freezing = Freezing,
-            PoisonAttack = PoisonAttack,
-
-            Slots = Slots,
-            Awake = Awake,
-
-            RefinedValue = RefinedValue,
-            RefineAdded = RefineAdded,
-
-            ExpireInfo = ExpireInfo,
-            RentalInformation = RentalInformation
-        };
-
+        item.SoulBoundId = -1;
+        item.ItemIndex = Info.Index;
+        item.Info = Info;
+        item.SetSlotSize();
         return item;
     }
 
@@ -1437,6 +1628,66 @@ public class UserItem
     }
 }
 
+/// <summary>
+/// 二手物品
+/// </summary>
+public class SecondUserItem
+{
+    private static LinkedList<UserItem> list = new LinkedList<UserItem>();
+
+    //添加二手物品
+    public static void add(UserItem item)
+    {
+        //不是极品的不要
+        if (item.Info == null)
+        {
+            return;
+        }
+        if (item.Info.RequiredAmount < 20 && !item.IsAdded)
+        {
+            return;
+        }
+        list.AddFirst(item);
+        //最多只保留100个.
+        if (list.Count > 100)
+        {
+            list.RemoveLast();
+        }
+    }
+
+    public static List<UserItem> listAll()
+    {
+        List<UserItem> retlist = new List<UserItem>();
+        foreach (UserItem item in list)
+        {
+            retlist.Add(item);
+        }
+        return retlist;
+    }
+
+    public static UserItem getItem(ulong UniqueID)
+    {
+        foreach(UserItem item in list)
+        {
+            if(item.UniqueID == UniqueID)
+            {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public static void removeItem(UserItem item)
+    {
+        list.Remove(item);
+    }
+
+
+
+
+}
+
+//物品的期限
 public class ExpireInfo
 {
     public DateTime ExpiryDate;

@@ -52,6 +52,8 @@
             this.SourceLinkLabel = new System.Windows.Forms.LinkLabel();
             this.AllowCleanCheckBox = new System.Windows.Forms.CheckBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.but_cfile = new System.Windows.Forms.Button();
+            this.but_clean = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // ClientTextBox
@@ -120,7 +122,8 @@
             // 
             // ProcessButton
             // 
-            this.ProcessButton.Location = new System.Drawing.Point(99, 128);
+            this.ProcessButton.Enabled = false;
+            this.ProcessButton.Location = new System.Drawing.Point(28, 129);
             this.ProcessButton.Name = "ProcessButton";
             this.ProcessButton.Size = new System.Drawing.Size(75, 21);
             this.ProcessButton.TabIndex = 9;
@@ -216,7 +219,8 @@
             // 
             // ListButton
             // 
-            this.ListButton.Location = new System.Drawing.Point(278, 128);
+            this.ListButton.Enabled = false;
+            this.ListButton.Location = new System.Drawing.Point(329, 129);
             this.ListButton.Name = "ListButton";
             this.ListButton.Size = new System.Drawing.Size(75, 21);
             this.ListButton.TabIndex = 20;
@@ -250,11 +254,34 @@
             this.timer1.Interval = 500;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // but_cfile
+            // 
+            this.but_cfile.Location = new System.Drawing.Point(120, 129);
+            this.but_cfile.Name = "but_cfile";
+            this.but_cfile.Size = new System.Drawing.Size(99, 21);
+            this.but_cfile.TabIndex = 23;
+            this.but_cfile.Text = "创建上传文件";
+            this.but_cfile.UseVisualStyleBackColor = true;
+            this.but_cfile.Click += new System.EventHandler(this.but_cfile_Click);
+            // 
+            // but_clean
+            // 
+            this.but_clean.Enabled = false;
+            this.but_clean.Location = new System.Drawing.Point(225, 129);
+            this.but_clean.Name = "but_clean";
+            this.but_clean.Size = new System.Drawing.Size(97, 21);
+            this.but_clean.TabIndex = 24;
+            this.but_clean.Text = "清除服务器文件";
+            this.but_clean.UseVisualStyleBackColor = true;
+            this.but_clean.Click += new System.EventHandler(this.but_clean_Click);
+            // 
             // AMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(520, 268);
+            this.Controls.Add(this.but_clean);
+            this.Controls.Add(this.but_cfile);
             this.Controls.Add(this.AllowCleanCheckBox);
             this.Controls.Add(this.SourceLinkLabel);
             this.Controls.Add(this.ListButton);
@@ -311,6 +338,8 @@
         private System.Windows.Forms.LinkLabel SourceLinkLabel;
         private System.Windows.Forms.CheckBox AllowCleanCheckBox;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Button but_cfile;
+        private System.Windows.Forms.Button but_clean;
     }
 }
 

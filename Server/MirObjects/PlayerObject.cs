@@ -1690,6 +1690,8 @@ namespace Server.MirObjects
             {
                 return;
             }
+            //杀怪轮回
+            SaItem(mon);
             string mname = mon.Name;
             int monidx = 0;
             int killMax = 500;//最大杀怪数，大于这个数，触发BOSS
@@ -2003,6 +2005,57 @@ namespace Server.MirObjects
             }
         }
 
+        //杀怪轮回处理
+        public void SaItem(MonsterObject mon)
+        {
+            if(Info.SaItem==null|| Info.SaItemType == 0)
+            {
+                return;
+            }
+            string mname = mon.Name;
+            bool mach = false;//是否匹配杀怪
+            switch (Info.SaItemType)
+            {
+                case 1://魔龙
+                    if (mname.StartsWith("魔龙") || mname.StartsWith("火龙") || mname.Equals("破凰魔神") || mname.Equals("破天魔龙") )
+                    {
+                        mach = true;
+                    }
+                    break;
+
+                case 2://狐狸
+                    if (mname.StartsWith("狐狸") || mname.StartsWith("悲月"))
+                    {
+                        mach = true;
+                    }
+                    break;
+                case 3://月氏
+                    if (mname.StartsWith("月氏") || mname.Equals("鸟人像") || mname.Equals("石魔兽") )
+                    {
+                        mach = true;
+                    }
+                    break;
+                case 4://洪洞
+                    if (mname.StartsWith("赤血") || mname.Equals("异型多脚怪") || mname.Equals("黑暗多脚怪") || mname.Equals("怨恶"))
+                    {
+                        mach = true;
+                    }
+                    break;
+                case 5://石槽
+                    if ("三眼神壶|青花圣壶|灵猫斗士|火焰灵猫|长枪灵猫|铁锤猫卫|黑镐猫卫|双刃猫卫|灵猫法师|灵猫圣兽|壶中天|灵猫将军|".IndexOf(mname)!=-1)
+                    {
+                        mach = true;
+                    }
+                    break;
+            }
+            if (!mach)
+            {
+                return;
+            }
+            int change = 10+ Info.SaItem.quality*10;
+
+
+        }
         //获得经验
         public override void WinExp(uint amount, uint targetLevel = 0)
         {
@@ -19494,9 +19547,9 @@ namespace Server.MirObjects
 
                 //检查费用(封顶10万)
                 uint cost = (uint)((temps[0].Price()) * 2);
-                if (cost > 100000)
+                if (cost > 200000)
                 {
-                    cost = 100000;
+                    cost = 200000;
                 }
                 if (cost > Account.Gold)
                 {
@@ -19583,7 +19636,39 @@ namespace Server.MirObjects
                 //获得装备
                 temps[0].samsaratype = (byte)temps[1].Info.Shape;
                 Info.SaItem = temps[0];
-                ReceiveChat("您的装备已投入无尽的轮回中，如果您有机会再获得它，它将突破自我..", ChatType.System);
+                //轮回类型分类
+                if (RandomUtils.Next(100) < 50)
+                {
+                    Info.SaItemType = 0;
+                }
+                else
+                {
+                    Info.SaItemType = (byte)RandomUtils.Next(1, 6);
+                }
+                switch (Info.SaItemType)
+                {
+                    case 0:
+                        ReceiveChat("您的装备已投入[轮回地狱]中，如果您有机会再获得它，它将突破自我..", ChatType.System);
+                        break;
+
+                    case 1:
+                        ReceiveChat("您的装备已投入 [魔龙] 中进行轮回，如果您有机会再获得它，它将突破自我..", ChatType.System);
+                        break;
+
+                    case 2:
+                        ReceiveChat("您的装备已投入 [狐狸] 中进行轮回，如果您有机会再获得它，它将突破自我..", ChatType.System);
+                        break;
+                    case 3:
+                        ReceiveChat("您的装备已投入 [月氏] 中进行轮回，如果您有机会再获得它，它将突破自我..", ChatType.System);
+                        break;
+                    case 4:
+                        ReceiveChat("您的装备已投入 [洪洞] 中进行轮回，如果您有机会再获得它，它将突破自我..", ChatType.System);
+                        break;
+                    case 5:
+                        ReceiveChat("您的装备已投入 [石槽] 中进行轮回，如果您有机会再获得它，它将突破自我..", ChatType.System);
+                        break;
+                }
+
                 //GainItem(temps[max]);
             }
             //装备回收

@@ -17,6 +17,47 @@ using System.Collections.Specialized;
 
 
 /// <summary>
+/// 日志处理类，正式发布后，关闭日志输出
+/// </summary>
+public class MirLog
+{
+    //日志级别，目前分为3级别，0:debug,1:info,2:error 
+    private static readonly short msglevel = 0;
+
+    public static void info(string msg)
+    {
+        if (msglevel > 1)
+        {
+            return;
+        }
+        System.Console.WriteLine(msg);
+        
+        //File.AppendAllText( @".\mir2info.txt",msg);
+    }
+
+    public static void debug(string msg)
+    {
+        if (msglevel > 0)
+        {
+            return;
+        }
+        System.Console.WriteLine(msg);
+        //File.AppendAllText(@".\mir2debug.txt", msg);
+    }
+
+    public static void error(string msg)
+    {
+        if (msglevel > 2)
+        {
+            return;
+        }
+        System.Console.WriteLine(msg);
+        //File.AppendAllText(@".\mir2error.txt", msg);
+    }
+}
+
+
+/// <summary>
 /// 唯一值工具类
 /// 构建一个多个服务器，多个线程并都不太可能重复的值(4位的随机ID+毫秒时间+递增数)
 /// 固定部分（年月日时分秒+4位随机数+递增数（0-））
@@ -267,11 +308,57 @@ public class MD5Utils
             {
                 continue;
             }
-            sb.Append(v.ToString());
+            //如果是集合，则需要遍历集合
+            if(v is IEnumerable)
+            {
+                IEnumerable iv = (IEnumerable)v;
+                IEnumerator it = iv.GetEnumerator();
+                while (it!=null && it.MoveNext())
+                {
+                    if (it != null&&it.Current != null)
+                    {
+                        sb.Append(it.Current.ToString());
+                    }
+                }
+            }else
+            {
+                sb.Append(v.ToString());
+            }
         }
         return MD5Encode(sb.ToString());
     }
 }
+
+//反射实现工具类
+public class ReflectionUtils
+{
+    public static string ObjectToString(Object o)
+    {
+        StringBuilder sb = new StringBuilder();
+        FieldInfo[] fields = o.GetType().GetFields();
+        for (int i = 0; i < fields.Length; i++)
+        {
+            if (fields[i].IsStatic)
+            {
+                continue;
+            }
+            if (fields[i].IsDefined(typeof(JsonIgnoreAttribute), true)) continue;
+            object v = fields[i].GetValue(o);
+            if (v == null)
+            {
+                continue;
+            }
+            sb.Append(","+fields[i].Name+"=");
+
+            //如果是集合，则需要遍历集合
+            sb.Append(v.ToString());
+        }
+        return sb.ToString();
+    }
+
+}
+
+
 /// <summary>
 /// 数据库对象工具，用于判断某个数据库对象是否发生改变
 /// 记录数据库对象的状态
@@ -321,14 +408,15 @@ public class DBObjectUtils
     {
         lock (lockobj)
         {
-            if (dbMAXid.ContainsKey(o.GetType().Name))
+            string maxkey = o.GetType().Name;
+            if (dbMAXid.ContainsKey(maxkey))
             {
-                dbMAXid[o.GetType().Name] = dbMAXid[o.GetType().Name] + 1;
-                return dbMAXid[o.GetType().Name];
+                dbMAXid[maxkey] = dbMAXid[maxkey] + 1;
+                return dbMAXid[maxkey];
             }
             else
             {
-                dbMAXid.Add(o.GetType().Name, 1);
+                dbMAXid.Add(maxkey, 1);
                 return 1;
             }
         }
@@ -337,10 +425,11 @@ public class DBObjectUtils
     //取当前最大ID
     public static ulong getObjCurrMaxId(Object o)
     {
-        if (dbMAXid.ContainsKey(o.GetType().Name))
+        string maxkey = o.GetType().Name;
+        if (dbMAXid.ContainsKey(maxkey))
         {
-            dbMAXid[o.GetType().Name] = dbMAXid[o.GetType().Name] + 1;
-            return dbMAXid[o.GetType().Name];
+            dbMAXid[maxkey] = dbMAXid[maxkey] + 1;
+            return dbMAXid[maxkey];
         }
         return 0;
     }
@@ -349,19 +438,23 @@ public class DBObjectUtils
     public static void updateObjState(Object o, object id)
     {
         ulong cid = ulong.Parse(id.ToString());
-        //更新ID
-        if (dbMAXid.ContainsKey(o.GetType().Name))
+        if (cid == 0)
         {
-            ulong lastid = dbMAXid[o.GetType().Name];
-            
+            return;
+        }
+        string maxkey = o.GetType().Name;
+        //更新ID
+        if (dbMAXid.ContainsKey(maxkey))
+        {
+            ulong lastid = dbMAXid[maxkey];
             if (cid > lastid)
             {
-                dbMAXid[o.GetType().Name] = lastid;
+                dbMAXid[maxkey] = cid;
             }
         }
         else
         {
-            dbMAXid[o.GetType().Name] = cid;
+            dbMAXid[maxkey] = cid;
         }
         //更新MD5
         string key = o.GetType().Name + id;
@@ -691,19 +784,37 @@ public class MirConfigDB
     private static int currSqe = -1;
     private static int nextSqe = -1;
     private static object locksqe = new object();
+
+    private static long lastModifyTime = 0;
+
+    private static bool UpdateConfigDB = false;//是否更新
     //初始化加载
     static MirConfigDB()
     {
         if (sqlHelper == null)
         {
             sqlHelper = new SQLiteHelper(connectionString);
+            lastModifyTime = File.GetLastWriteTime(AppDomain.CurrentDomain.BaseDirectory + @"mir_config.db;").ToBinary();
         }
     }
-
-
+    //数据库文件是否被修改过
+    public static bool isModify2()
+    {
+        long lt = File.GetLastWriteTime(AppDomain.CurrentDomain.BaseDirectory + @"mir_config.db;").ToBinary(); 
+        if(lt!= lastModifyTime)
+        {
+            lastModifyTime = lt;
+            return true;
+        }
+        return false;
+    }
 
     public static int Execute(string command, params SQLiteParameter[] parameter)
     {
+        if (!UpdateConfigDB)
+        {
+            return 0;
+        }
         return sqlHelper.Execute(command, parameter);
     }
 
@@ -724,7 +835,7 @@ public class MirConfigDB
         return sqlHelper.QuerytDataSet(command, tablename);
     }
 
-    public static DbDataReader ExecuteReader(string command, SQLiteParameter[] paras = null)
+    public static DbDataReader ExecuteReader(string command, params SQLiteParameter[] paras)
     {
         return sqlHelper.ExecuteReader(command, paras);
     }
@@ -1133,47 +1244,118 @@ public class AutoRoute
 }
 
 /// <summary>
+/// 获取文件的编码格式
+/// </summary>
+public class EncodingType
+{
+    /// <summary>
+    /// 给定文件的路径，读取文件的二进制数据，判断文件的编码类型
+    /// </summary>
+    /// <param name="FILE_NAME">文件路径</param>
+    /// <returns>文件的编码类型</returns>
+    public static System.Text.Encoding GetType(string FILE_NAME)
+    {
+        FileStream fs = new FileStream(FILE_NAME, FileMode.Open, FileAccess.Read);
+        Encoding r = GetType(fs);
+        fs.Close();
+        return r;
+    }
+
+    /// <summary>
+    /// 通过给定的文件流，判断文件的编码类型
+    /// </summary>
+    /// <param name="fs">文件流</param>
+    /// <returns>文件的编码类型</returns>
+    public static System.Text.Encoding GetType(FileStream fs)
+    {
+        byte[] Unicode = new byte[] { 0xFF, 0xFE, 0x41 };
+        byte[] UnicodeBIG = new byte[] { 0xFE, 0xFF, 0x00 };
+        byte[] UTF8 = new byte[] { 0xEF, 0xBB, 0xBF }; //带BOM
+        Encoding reVal = Encoding.Default;
+
+        BinaryReader r = new BinaryReader(fs, System.Text.Encoding.Default);
+        int i;
+        int.TryParse(fs.Length.ToString(), out i);
+        byte[] ss = r.ReadBytes(i);
+        if (IsUTF8Bytes(ss) || (ss[0] == 0xEF && ss[1] == 0xBB && ss[2] == 0xBF))
+        {
+            reVal = Encoding.UTF8;
+        }
+        else if (ss[0] == 0xFE && ss[1] == 0xFF && ss[2] == 0x00)
+        {
+            reVal = Encoding.BigEndianUnicode;
+        }
+        else if (ss[0] == 0xFF && ss[1] == 0xFE && ss[2] == 0x41)
+        {
+            reVal = Encoding.Unicode;
+        }
+        r.Close();
+        return reVal;
+    }
+
+    /// <summary>
+    /// 判断是否是不带 BOM 的 UTF8 格式
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    private static bool IsUTF8Bytes(byte[] data)
+    {
+        int charByteCounter = 1; //计算当前正分析的字符应还有的字节数
+        byte curByte; //当前分析的字节.
+        for (int i = 0; i < data.Length; i++)
+        {
+            curByte = data[i];
+            if (charByteCounter == 1)
+            {
+                if (curByte >= 0x80)
+                {
+                    //判断当前
+                    while (((curByte <<= 1) & 0x80) != 0)
+                    {
+                        charByteCounter++;
+                    }
+                    //标记位首位若为非0 则至少以2个1开始 如:110XXXXX...........1111110X 
+                    if (charByteCounter == 1 || charByteCounter > 6)
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                //若是UTF-8 此时第一位必须为1
+                if ((curByte & 0xC0) != 0x80)
+                {
+                    return false;
+                }
+                charByteCounter--;
+            }
+        }
+        if (charByteCounter > 1)
+        {
+            throw new Exception("非预期的byte格式");
+        }
+        return true;
+    }
+
+}
+
+
+
+/// <summary>
 /// 文件的key，map加载器
 /// </summary>
 public class FileKVMap
 {
     private  Dictionary<string, string> d = new Dictionary<string, string>();
+    private string filepath;
+    private long LastAccessTime;
 
 
     public FileKVMap(string filepath)
     {
-
-        FileInfo fi = new FileInfo(filepath);
-        if (fi.Exists)
-        {
-
-            using (FileStream fs = new FileStream(filepath, FileMode.Open, FileAccess.Read)){ 
-                using (StreamReader m_streamReader = new StreamReader(fs, System.Text.Encoding.UTF8))
-                {
-                    string strLine = null;
-                    while ((strLine = m_streamReader.ReadLine()) != null)
-                    {
-                        if (strLine == null || strLine.Trim().Length < 3)
-                        {
-                            continue;
-                        }
-                        string[] sv = strLine.Trim().Split('=');
-                        if (sv == null || sv.Length != 2)
-                        {
-                            continue;
-                        }
-                        if (d.ContainsKey(sv[0]))
-                        {
-                            d[sv[0]] = sv[1];
-                        }
-                        else
-                        {
-                            d.Add(sv[0], sv[1]);
-                        }
-                    }
-                }
-            }
-        }
+        this.filepath = filepath;
+        load();
     }
 
     public string getValue(string key)
@@ -1185,7 +1367,45 @@ public class FileKVMap
         return null;
     }
 
+    //装载数据
+    private void load()
+    {
+        FileInfo fi = new FileInfo(filepath);
+        if (fi.Exists)
+        {
+            LastAccessTime = fi.LastWriteTime.Ticks;
+            string[] lines = File.ReadAllLines(filepath, EncodingType.GetType(filepath));
+            foreach(string strLine in lines)
+            {
+                if (strLine == null || strLine.Trim().Length < 3 || strLine.StartsWith("#"))
+                {
+                    continue;
+                }
+                string[] sv = strLine.Trim().Split('=');
+                if (sv == null || sv.Length != 2)
+                {
+                    continue;
+                }
+                if (d.ContainsKey(sv[0]))
+                {
+                    d[sv[0]] = sv[1];
+                }
+                else
+                {
+                    d.Add(sv[0], sv[1]);
+                }
+            }
+        }
+    }
 
+    public void reLoad()
+    {
+        FileInfo fi = new FileInfo(filepath);
+        if (fi.Exists && LastAccessTime!=fi.LastAccessTime.Ticks)
+        {
+            load();
+        }
+    }
 }
 
 /// <summary>
@@ -1217,6 +1437,105 @@ public class LanguageUtils
             return v;
         }
         return string.Format(v, args);
+    }
+}
+
+
+/// <summary>
+/// CMD命令的转义处理
+/// 服务器端进行的转义
+/// </summary>
+public class CMDTransform
+{
+
+    private static FileKVMap fmap = new FileKVMap(@".\Configs\cmdTransform.ini");
+
+    //CMD命令的转义处理，针对客户端输入的中文命令
+    public static string Transform(string cmd)
+    {
+        string v = fmap.getValue(cmd);
+        if (v != null)
+        {
+            return v.ToUpper();
+        }
+        return cmd.ToUpper();
+    }
+
+    public static void reLoad()
+    {
+        fmap.reLoad();
+    }
+}
+
+/// <summary>
+/// 获取系统的版本
+/// </summary>
+public class OSystem
+{
+    private const string Windows2000 = "5.0";
+    private const string WindowsXP = "5.1";
+    private const string Windows2003 = "5.2";
+    private const string Windows2008 = "6.0";
+    private const string Windows7 = "6.1";
+    private const string Windows8OrWindows81 = "6.2";
+    private const string Windows10 = "10.0";
+
+    private string OSystemName;
+    private static string version;
+
+    public void setOSystemName(string oSystemName)
+    {
+        this.OSystemName = oSystemName;
+    }
+
+    //获取系统版本号
+    public static string GetOSystem()
+    {
+        if (version == null)
+        {
+            version = System.Environment.OSVersion.Version.Major + "." + System.Environment.OSVersion.Version.Minor;
+        }
+        return version;
+    }
+    //是否XP系统
+    public static bool isXP()
+    {
+        string v = GetOSystem();
+        if (v != null || v.IndexOf(".") == -1 && v.StartsWith("5."))
+        {
+            return true;
+        }
+        return false;
+    }
+
+
+    public OSystem()
+    {
+        version = System.Environment.OSVersion.Version.Major + "." + System.Environment.OSVersion.Version.Minor;
+        switch (version)
+        {
+            case Windows2000:
+                setOSystemName("Windows2000");
+                break;
+            case WindowsXP:
+                setOSystemName("WindowsXP");
+                break;
+            case Windows2003:
+                setOSystemName("Windows2003");
+                break;
+            case Windows2008:
+                setOSystemName("Windows2008");
+                break;
+            case Windows7:
+                setOSystemName("Windows7");
+                break;
+            case Windows8OrWindows81:
+                setOSystemName("Windows8.OrWindows8.1");
+                break;
+            case Windows10:
+                setOSystemName("Windows10");
+                break;
+        }
     }
 }
 

@@ -13,7 +13,7 @@ namespace AutoPatcherAdmin
     {
         public const string PatchFileName = @"PList.gz";
         //排除列表
-        public string[] ExcludeList = new string[] { "Thumbs.db" };
+        public string[] ExcludeList = new string[] { "Thumbs.db", "PList.gz", "KeyBinds.ini", "Mir2Config.ini","_cfg","error.txt" };
 
         public List<FileInformation> OldList, NewList;
         public Queue<FileInformation> UploadList;
@@ -137,7 +137,7 @@ namespace AutoPatcherAdmin
         {
             for (int i = 0; i < NewList.Count; i++)
             {
-                if (fileName.EndsWith(NewList[i].FileName) && !InExcludeList(NewList[i].FileName))
+                if (fileName.EndsWith(NewList[i].FileName, StringComparison.CurrentCultureIgnoreCase) && !InExcludeList(NewList[i].FileName))
                     return true;
             }
 
@@ -185,19 +185,46 @@ namespace AutoPatcherAdmin
                 return stream.ToArray();
             }
         }
+
+        //所有的列表
+        public byte[] CreateAllNew()
+        {
+            List<FileInformation> curr = new List<FileInformation>();
+            for (int i = 0; i < NewList.Count; i++)
+            {
+                curr.Add(NewList[i]);
+            }
+
+            using (MemoryStream stream = new MemoryStream())
+            using (BinaryWriter writer = new BinaryWriter(stream))
+            {
+                writer.Write(curr.Count);
+                for (int i = 0; i < curr.Count; i++)
+                {
+                    curr[i].Save(writer);
+                }
+                return stream.ToArray();
+            }
+        }
+
         public void CheckFiles()
         {
             string[] files = Directory.GetFiles(Settings.Client, "*.*" ,SearchOption.AllDirectories);
-
             for (int i = 0; i < files.Length; i++)
-                NewList.Add(GetFileInformation(files[i]));
+            {
+                FileInformation fi = GetFileInformation(files[i]);
+                if (!InExcludeList(fi.FileName))
+                {
+                    NewList.Add(fi);
+                }
+            }
         }
 
         public bool InExcludeList(string fileName)
         {
             foreach (var item in ExcludeList)
             {
-                if (fileName.EndsWith(item)) return true;
+                if (fileName.EndsWith(item, StringComparison.CurrentCultureIgnoreCase)) return true;
             }
 
             return false;
@@ -208,7 +235,7 @@ namespace AutoPatcherAdmin
             for (int i = 0; i < OldList.Count; i++)
             {
                 FileInformation old = OldList[i];
-                if (old.FileName != info.FileName) continue;
+                if (!old.FileName.Equals(info.FileName,StringComparison.CurrentCultureIgnoreCase)) continue;
 
                 if (old.Length != info.Length) return true;
                 if (old.Creation != info.Creation) return true;
@@ -222,16 +249,18 @@ namespace AutoPatcherAdmin
         {
             FileInfo info = new FileInfo(fileName);
 
+            String FileName = fileName.Remove(0, Settings.Client.Length);
+            if (FileName.StartsWith("/") || FileName.StartsWith("\\"))
+            {
+                FileName = FileName.Substring(1);
+            }
             FileInformation file =  new FileInformation
                 {
-                    FileName = fileName.Remove(0, Settings.Client.Length),
+                    FileName = FileName,
                     Length = (int) info.Length,
+                    Compressed = (int)info.Length,
                     Creation = info.LastWriteTime
                 };
-
-            if (file.FileName == "AutoPatcher.exe")
-                file.FileName = "AutoPatcher.gz";
-
             return file;
         }
 
@@ -339,8 +368,11 @@ namespace AutoPatcherAdmin
             string fileName = info.FileName.Replace(@"\", "/");
             FileInfo fileInf = new FileInfo(Settings.Client+ fileName);
   
-            if (fileName != "AutoPatcher.gz" && fileName != "PList.gz")
+            if (!fileName.ToLower().EndsWith(".gz"))
+            {
                 fileName += ".gz";
+            }
+               
             System.Console.WriteLine("上传文件3：" + fileName+",len:"+fileInf.Length);
             info.Compressed = (int)fileInf.Length;
             string uri = Settings.Host + fileName;
@@ -528,6 +560,85 @@ namespace AutoPatcherAdmin
         {
             stop = true;
         }
+        //把需要上传的文件，全部创建到D:/MIRCLIENT_update目录
+        private void but_cfile_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string dicname = @"D:/mirclient_update";
+              
+                if (!Directory.Exists(dicname))
+                {
+                    Directory.CreateDirectory(dicname);
+                }
+                //先清空
+                DeleteFolder1(dicname);
+
+                but_cfile.Enabled = false;
+                Settings.Client = ClientTextBox.Text;
+                Settings.Host = HostTextBox.Text;
+                Settings.Host = Settings.Host.Replace(@"\", "/");
+                if (!Settings.Host.EndsWith("/"))
+                {
+                    Settings.Host = Settings.Host + "/";
+                }
+                Settings.Login = LoginTextBox.Text;
+                Settings.Password = PasswordTextBox.Text;
+                Settings.AllowCleanUp = AllowCleanCheckBox.Checked;
+
+                OldList = new List<FileInformation>();
+                NewList = new List<FileInformation>();
+                UploadList = new Queue<FileInformation>();
+
+                byte[] data = Download(PatchFileName);
+
+                if (data != null)
+                {
+                    using (MemoryStream stream = new MemoryStream(data))
+                    using (BinaryReader reader = new BinaryReader(stream))
+                        ParseOld(reader);
+                }
+
+                ActionLabel.Text = "Checking Files...";
+                Refresh();
+
+                CheckFiles();
+
+                for (int i = 0; i < NewList.Count; i++)
+                {
+                    FileInformation info = NewList[i];
+
+                    if (InExcludeList(info.FileName)) continue;
+                    if (NeedUpdate(info))
+                    {
+                        string fileName = info.FileName.Replace(@"\", "/");
+
+                        FileInfo fileInf = new FileInfo(Settings.Client + fileName);
+                        if (!fileName.ToLower().EndsWith(".gz"))
+                        {
+                            fileName += ".gz";
+                        }
+                        FileInfo cpfile = new FileInfo(dicname + "/" + fileName);
+                        if (!cpfile.Directory.Exists)
+                        {
+                            cpfile.Directory.Create();
+                        }
+                        fileInf.CopyTo(dicname + "/" +fileName);
+                    }
+                }
+                FileStream fs = new FileStream(dicname+ "/PList.gz", FileMode.Create);
+                byte[] array = CreateAllNew();
+                fs.Write(array, 0, array.Length);
+                fs.Close();
+                but_cfile.Enabled = true;
+                ActionLabel.Text = "创建完成";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                ActionLabel.Text = "Error...";
+            }
+        }
 
         //定时执行
         //刷新界面进度
@@ -609,6 +720,54 @@ namespace AutoPatcherAdmin
             
         }
 
+        private void but_clean_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ProcessButton.Enabled = false;
+                Settings.Client = ClientTextBox.Text;
+                Settings.Host = HostTextBox.Text;
+                Settings.Host = Settings.Host.Replace(@"\", "/");
+                if (!Settings.Host.EndsWith("/"))
+                {
+                    Settings.Host = Settings.Host + "/";
+                }
+                Settings.Login = LoginTextBox.Text;
+                Settings.Password = PasswordTextBox.Text;
+                Settings.AllowCleanUp = AllowCleanCheckBox.Checked;
+
+                OldList = new List<FileInformation>();
+                NewList = new List<FileInformation>();
+                UploadList = new Queue<FileInformation>();
+
+                byte[] data = Download(PatchFileName);
+
+                if (data != null)
+                {
+                    using (MemoryStream stream = new MemoryStream(data))
+                    using (BinaryReader reader = new BinaryReader(stream))
+                        ParseOld(reader);
+                }
+                else
+                {
+                    ActionLabel.Text = "列表下载失败";
+                    return;
+                }
+
+                ActionLabel.Text = "Checking Files...";
+                Refresh();
+
+                CheckFiles();
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                ActionLabel.Text = "Error...";
+            }
+        }
+
         private void SourceLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             SourceLinkLabel.LinkVisited = true;
@@ -620,11 +779,53 @@ namespace AutoPatcherAdmin
 
         }
 
+        /// <summary>
+        /// 清空指定的文件夹，但不删除文件夹
+        /// </summary>
+        /// <param name="dir"></param>
+        private static void DeleteFolder(string dir)
+        {
+            string[] files = Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories);
+            foreach (string f in files)
+            {
+                FileInfo fi = new FileInfo(f);
+                if (fi.Attributes.ToString().IndexOf("ReadOnly") != -1)
+                {
+                    fi.Attributes = FileAttributes.Normal;
+                }
+                fi.Delete();
+            }
+        }
+        /// <summary>
+        /// 删除文件夹及其内容
+        /// </summary>
+        /// <param name="dir"></param>
+        public static void DeleteFolder1(string dir)
+        {
+            string[] files = Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories);
+            foreach (string f in files)
+            {
+                FileInfo fi = new FileInfo(f);
+                if (fi.Attributes.ToString().IndexOf("ReadOnly") != -1)
+                {
+                    fi.Attributes = FileAttributes.Normal;
+                }
+                fi.Delete();
+            }
+            Directory.GetDirectories(dir, "*", SearchOption.AllDirectories);
+
+            foreach (string d in Directory.GetDirectories(dir, "*", SearchOption.AllDirectories))
+            {
+                //Directory.Delete(d);
+            }
+        }
+
     }
 
     public class FileInformation
     {
-        //文件名，相对路径，例如\Sound\wolf_ride01.wav  \Client.exe \Data\ChrSel.Lib
+        //文件名，相对路径，例如Sound\wolf_ride01.wav  Client.exe Data\ChrSel.Lib
+        //文件名不包含前面的“/”
         public string FileName; //Relative.
         public int Length, Compressed;
         public DateTime Creation;
@@ -637,13 +838,21 @@ namespace AutoPatcherAdmin
         public FileInformation(BinaryReader reader)
         {
             FileName = reader.ReadString();
-            System.Console.WriteLine("FileName：" + FileName);
+            if (FileName.StartsWith("/") || FileName.StartsWith("\\"))
+            {
+                FileName = FileName.Substring(1);
+            }
+            //System.Console.WriteLine("FileName：" + FileName);
             Length = reader.ReadInt32();
             Compressed = reader.ReadInt32();
             Creation = DateTime.FromBinary(reader.ReadInt64());
         }
         public void Save(BinaryWriter writer)
         {
+            if (FileName.StartsWith("/") || FileName.StartsWith("\\"))
+            {
+                FileName = FileName.Substring(1);
+            }
             writer.Write(FileName);
             writer.Write(Length);
             writer.Write(Compressed);

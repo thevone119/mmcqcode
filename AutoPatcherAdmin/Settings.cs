@@ -16,6 +16,10 @@
         public static void Load()
         {
             Client = Reader.ReadString("AutoPatcher", "Client", Client);
+            if (!Client.EndsWith("\\") && !Client.EndsWith("/"))
+            {
+                Client = Client + "\\";
+            }
             Host = Reader.ReadString("AutoPatcher", "Host", Host);
             Login = Reader.ReadString("AutoPatcher", "Login", Login);
             Password = Reader.ReadString("AutoPatcher", "Password", Password);
