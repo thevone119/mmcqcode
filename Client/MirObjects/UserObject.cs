@@ -158,10 +158,13 @@ namespace Client.MirObjects
         public void RefreshStats()
         {
             RefreshLevelStats();
+
             RefreshBagWeight();
             RefreshEquipmentStats();
+ 
             RefreshItemSetStats();
             RefreshMirSetStats();
+
             RefreshSkills();
             RefreshBuffs();
             RefreshMountStats();
@@ -176,7 +179,7 @@ namespace Client.MirObjects
             if (AttackSpeed < 550) AttackSpeed = 550;
 
             //PercentHealth = (byte)(HP / (float)MaxHP * 100);
-
+            
             GameScene.Scene.Redraw();
         }
         private void RefreshLevelStats()
@@ -407,7 +410,7 @@ namespace Client.MirObjects
             MaxMP = (ushort)Math.Min(ushort.MaxValue, (((double)MPrate / 100) + 1) * MaxMP);
             MaxAC = (ushort)Math.Min(ushort.MaxValue, (((double)Acrate / 100) + 1) * MaxAC);
             MaxMAC = (ushort)Math.Min(ushort.MaxValue, (((double)Macrate / 100) + 1) * MaxMAC);
-
+     
             if (HasMuscleRing)
             {
                 MaxBagWeight = (ushort)(MaxBagWeight * 2);
@@ -520,7 +523,7 @@ namespace Client.MirObjects
                         Holy = (byte)Math.Min(byte.MaxValue, Holy + 1);
                         Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + 1);
                         break;
-                    case ItemSet.Whisker1:
+                    case ItemSet.Whisker1://勇气套，攻击加2
                         MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 1);
                         MaxBagWeight = (ushort)Math.Min(ushort.MaxValue, MaxBagWeight + 25);
                         break;
@@ -540,20 +543,47 @@ namespace Client.MirObjects
                         MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 1);
                         MaxBagWeight = (ushort)Math.Min(ushort.MaxValue, MaxBagWeight + 17);
                         break;
-                    case ItemSet.Hyeolryong:
+                    case ItemSet.Hyeolryong://龙血套（5件套），全属性加2，血量加70
                         MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxSC + 2);
-                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 15);
+                        MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 2);
+                        MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxSC + 2);
+                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 70);
                         MaxMP = (ushort)Math.Min(ushort.MaxValue, MaxMP + 20);
                         Holy = (byte)Math.Min(byte.MaxValue, Holy + 1);
                         Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + 1);
                         break;
-                    case ItemSet.Monitor:
+                    case ItemSet.Monitor://掠夺者套 5件套，全属性加2
                         MagicResist = (byte)Math.Min(byte.MaxValue, MagicResist + 1);
                         PoisonResist = (byte)Math.Min(byte.MaxValue, PoisonResist + 1);
+                        MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxSC + 2);
+                        MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 2);
+                        MaxMC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 2);
                         break;
-                    case ItemSet.Oppressive:
+                    case ItemSet.Oppressive://狂暴套 5件套,暴击加1，敏捷加1，攻速加1
                         MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 1);
+                        MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 1);
                         Agility = (byte)Math.Min(byte.MaxValue, Agility + 1);
+                        ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
+                        CriticalRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 1);
+                        break;
+                    case ItemSet.Paeok://贝玉套 5件套,暴击加1，准确加1，攻速加1
+                        MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 2);
+                        MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 2);
+                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 50);
+                        Accuracy = (byte)Math.Min(byte.MaxValue, Agility + 1);
+                        ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
+                        break;
+                    case ItemSet.Sulgwan://黑暗套 5件套,暴击加1，准确加1，攻速加1
+                        MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 2);
+                        MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 2);
+                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 60);
+                        Agility = (byte)Math.Min(byte.MaxValue, Agility + 1);
+                        ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
+                        HpDrainRate = (byte)Math.Min(byte.MaxValue, HpDrainRate + 2);
+                        break;
+                        
+                    case ItemSet.GaleWind://狂风套，加2点攻速
+                        ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 2);
                         break;
                 }
             }
@@ -808,7 +838,8 @@ namespace Client.MirObjects
                 if (temp == null) continue;
 
                 ItemInfo RealItem = Functions.GetRealItem(temp.Info, Level, Class, GameScene.ItemInfoList);
-
+                //这里改下,增加绑定到最新的物品
+                temp.Info = RealItem;
                 CurrentWearWeight = (ushort)Math.Min(ushort.MaxValue, CurrentWearWeight + temp.Weight);
 
                 if (temp.CurrentDura == 0 && temp.Info.Durability > 0) continue;

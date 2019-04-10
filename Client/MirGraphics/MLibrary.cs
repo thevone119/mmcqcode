@@ -131,7 +131,9 @@ namespace Client.MirGraphics
 
             //Other
             for (int i = 0; i < Monsters.Length; i++)
+            {
                 Monsters[i] = new MLibrary(Settings.MonsterPath + i.ToString("000"));
+            }
 
             for (int i = 0; i < Gates.Length; i++)
                 Gates[i] = new MLibrary(Settings.GatePath + i.ToString("00"));
@@ -555,6 +557,15 @@ namespace Client.MirGraphics
             }
 
             return true;
+        }
+
+        public MImage getImage(int index)
+        {
+            if (CheckImage(index))
+            {
+                return _images[index];
+            }
+            return null;
         }
 
         public Point GetOffSet(int index)

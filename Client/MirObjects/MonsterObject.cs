@@ -80,7 +80,7 @@ namespace Client.MirObjects
         public Point TargetPoint;
 
         public bool Stoned;
-        public byte Stage;
+        public byte Stage;//扩展字段放在这里哈
         public int BaseSound;
 
         public long ShockTime;
@@ -246,6 +246,29 @@ namespace Client.MirObjects
                         break;
                 }
             }
+        }
+
+        //这个是服务器返回的怪物更新信息，比如怪物的状态更新，狂暴等更新
+        public void Change(S.ObjectMonsterChange info)
+        {
+            Name = info.Name;
+            NameColour = info.NameColour;
+            BaseImage = info.Image;
+
+            OldNameColor = NameColour;
+
+            Effect = info.Effect;
+            AI = info.AI;
+            Light = info.Light;
+
+            Dead = info.Dead;
+            Poison = info.Poison;
+            Skeleton = info.Skeleton;
+            Hidden = info.Hidden;
+            ShockTime = CMain.Time + info.ShockTime;
+            BindingShotCenter = info.BindingShotCenter;
+
+            Stage = info.ExtraByte;
         }
 
         //固化所有怪物的帧数
@@ -678,7 +701,6 @@ namespace Client.MirObjects
                 case Monster.LightBeast:
                     Frames = FrameSet.Monsters[86];
                     break;
-                case Monster.WhiteMammoth:
                 case Monster.HardenRhino:
                     Frames = FrameSet.Monsters[87];
                     break;
@@ -997,11 +1019,10 @@ namespace Client.MirObjects
                     Frames = FrameSet.Monsters[187];
                     break;
                 case Monster.UndeadWolf:
-                case Monster.Demonwolf:
                     Frames = FrameSet.Monsters[188];
                     break;
                 case Monster.BurningZombie:
-                case Monster.FrozenZombie:
+                case Monster.FrozenZombie://
                     Frames = FrameSet.Monsters[189];
                     break;
                 case Monster.MudZombie:
@@ -1010,7 +1031,6 @@ namespace Client.MirObjects
                 case Monster.BloodBaboon:
                     Frames = FrameSet.Monsters[191];
                     break;
-                case Monster.FightingCat:
                 case Monster.PoisonHugger:
                     Frames = FrameSet.Monsters[192];
                     break;
@@ -1307,6 +1327,17 @@ namespace Client.MirObjects
 
                 FrameInterval = Frame.Interval;
                 EffectFrameInterval = Frame.EffectInterval;
+
+                //放在Frame中的特效在这里加入
+                if (Frame.EffectCount > 0 && BodyLibrary != null)
+                {
+                    Effects.Add(new Effect(BodyLibrary, Frame.EffectStart + (Frame.EffectOffSet * (byte)Direction), Frame.EffectCount, Frame.EffectCount * Frame.EffectInterval, this, CMain.Time + Frame.EffectStartTime));
+                }
+                //这个是第2组特效
+                if (Frame.ECount2 > 0 && BodyLibrary != null)
+                {
+                    Effects.Add(new Effect(BodyLibrary, Frame.EStart2 + (Frame.EOffSet2 * (byte)Direction), Frame.ECount2, Frame.ECount2 * Frame.EInterval2, this, CMain.Time + Frame.ETime2));
+                }
             }
             else
             {
@@ -1468,16 +1499,15 @@ namespace Client.MirObjects
                             case Monster.FlamingMutant:///////////////////////////stupple 
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.FlamingMutant], 304 + (int)Direction * 6, 6, Frame.Count * Frame.Interval, this));
                                 break;
-                            case Monster.Demonwolf:
-                                Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Demonwolf], 312 + (int)Direction * 3, 3, Frame.Count * Frame.Interval, this));
-                                break;
+         
                             case Monster.DarkBeast:
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.DarkBeast], 296 + (int)Direction * 4, 4, Frame.Count * Frame.Interval, this));
                                 break;
-                            
-                            case Monster.AncientBringer:
-                                Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.AncientBringer], 512 + (int)Direction * 6, 6, Frame.Count * Frame.Interval, this));
+                            case Monster.AncientBringer://丹墨攻击1，身前的地板砸效果
+                                MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.AncientBringer], 560, 8, 400, Functions.PointMove(CurrentLocation, Direction, 1), CMain.Time + 500));
                                 break;
+
+
                             case Monster.DemonGuard:
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.DemonGuard], 288 + (int)Direction * 2, 2, Frame.Count * Frame.Interval, this));
                                 break;
@@ -1487,11 +1517,9 @@ namespace Client.MirObjects
                             case Monster.Manticore:
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Manticore], 505 + (int)Direction * 3, 3, Frame.Count * Frame.Interval, this));
                                 break;
-                            case Monster.StainHammerCat:
-                                Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.StainHammerCat], 240 + (int)Direction * 5, 5, Frame.Count * Frame.Interval, this));
-                                break;
+                          
                             case Monster.BlackHammerCat:
-                                Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.BlackHammerCat], 648 + (int)Direction * 11, 11, Frame.Count * Frame.Interval, this));
+                                //Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.BlackHammerCat], 648 + (int)Direction * 11, 11, Frame.Count * Frame.Interval, this));
                                 break;
                             case Monster.SeedingsGeneral:
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.SeedingsGeneral], 536 + (int)Direction * 4, 4, Frame.Count * Frame.Interval, this));
@@ -1509,7 +1537,7 @@ namespace Client.MirObjects
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.GreatFoxSpirit], 355, 20, Frame.Count * Frame.Interval, this));
                                 break;
                             case Monster.Jar1:
-                                Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Jar1], 130 + (int)Direction * 3, 3, Frame.Count * Frame.Interval, this));
+                                //Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Jar1], 130 + (int)Direction * 3, 3, Frame.Count * Frame.Interval, this));
                                 break;
                             case Monster.Jar2:
                                 //Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Jar2], 392 + (int)Direction * 6, 6, Frame.Count * Frame.Interval, this));
@@ -1588,6 +1616,9 @@ namespace Client.MirObjects
                                 break;
                             case Monster.RestlessJar:
                              
+                                break;
+                            case Monster.AncientBringer://丹墨攻击2，狮子叫
+                                //MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.AncientBringer], 740, 14, 1400, Functions.PointMove(CurrentLocation, Direction, 3), CMain.Time + 1000));
                                 break;
                         }
 
@@ -1966,6 +1997,7 @@ namespace Client.MirObjects
                                 case Monster.CannibalPlant:
                                 case Monster.EvilCentipede:
                                 case Monster.DigOutZombie:
+                                case Monster.DeathCrawler:
                                     Remove();
                                     return;
                                 case Monster.ZumaStatue:
@@ -2136,6 +2168,8 @@ namespace Client.MirObjects
                                         }
                                     }
                                     break;
+  
+
                                 case 10:
                                     {
                                         switch(BaseImage)
@@ -2212,6 +2246,24 @@ namespace Client.MirObjects
                     }
                     break;
                 case MirAction.Attack4:
+                    if (CMain.Time >= NextMotion)
+                    {
+                        GameScene.Scene.MapControl.TextureValid = false;
+
+                        if (SkipFrames) UpdateFrame();
+
+                        if (UpdateFrame() >= Frame.Count)
+                        {
+                            FrameIndex = Frame.Count - 1;
+                            SetAction();
+                        }
+                        else
+                        {
+                            NextMotion += FrameInterval;
+                        }
+                    }
+                    break;
+                case MirAction.Attack5:
                     if (CMain.Time >= NextMotion)
                     {
                         GameScene.Scene.MapControl.TextureValid = false;
@@ -2307,6 +2359,103 @@ namespace Client.MirObjects
                                                     ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.RestlessJar], 391 + (int)direction * 10, 10, 700, ob));
                                                 }
                                                 break;
+                                            case Monster.ChieftainSword://龙阳王，砸地板
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    MirDirection direction = Functions.DirectionFromPoint(CurrentLocation, ob.CurrentLocation);
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.ChieftainSword], 1175, 12, 2400, ob));
+                                                }
+                                                break;
+                                            case Monster.GeneralJinmYo://灵猫将军，雷电
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.GeneralJinmYo], 512, 10, 2000, ob));
+                                                }
+                                                break;
+                                            case Monster.BurningZombie://火焰僵尸，火球？
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    MirDirection direction = Functions.DirectionFromPoint(CurrentLocation, ob.CurrentLocation);
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.BurningZombie], 362, 10, 2000, ob));
+                                                }
+                                                break;
+                                            case Monster.SwampWarrior://神殿树人，毒蘑菇？
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.SwampWarrior], 392, 9, 1800, ob));
+                                                }
+                                                break;
+
+
+                                            case Monster.AssassinBird://神殿刺鸟，禁锢？
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.AssassinBird], 392, 8, 1600, ob));
+                                                }
+                                                break;
+                                            case Monster.TreeQueen://树的女王，禁锢？
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.TreeQueen], 57, 9, 1800, ob));
+                                                }
+                                                break;
+                                                
+                                            case Monster.SeedingsGeneral://灵猫圣兽，拍地板
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    MirDirection direction = Functions.DirectionFromPoint(CurrentLocation, ob.CurrentLocation);
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.SeedingsGeneral], 1264, 9, 1000, ob));
+                                                }
+                                                break;
+                                            case Monster.Jar2://青花圣壶 丢冰弹
+                                                missile = CreateProjectile(410, Libraries.Magic2, true, 4, 30, 6);
+
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        //440 + (int)Direction * 10
+                                                       // missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Jar2], 624, 8, 1000, missile.Target) { Blend = false });
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.OmaMage://奥玛法师 丢冰弹
+                                                missile = CreateProjectile(392, Libraries.Monsters[(ushort)Monster.OmaMage], true, 8, 20, 0);
+
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.OmaMage], 520, 9, 900, missile.Target));
+                                                    };
+                                                }
+                                                break;
+
+                                            case Monster.ShellFighter://斗争者，全屏毒？
+                                                Point source = new Point(User.CurrentLocation.X , User.CurrentLocation.Y );
+
+                                                MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.ShellFighter], 776, 30, 3000, source));
+                                                break;
+                                            case Monster.OmaCannibal://奥玛食人族
+                                                missile = CreateProjectile(360, Libraries.Monsters[(ushort)Monster.OmaCannibal], true, 6, 20, 0);
+
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.OmaCannibal], 456, 7, 700, missile.Target));
+                                                    };
+                                                }
+                                                break;
+
                                             case Monster.Dark:
                                                 if (MapControl.GetObject(TargetID) != null)
                                                     CreateProjectile(224, Libraries.Monsters[(ushort)Monster.Dark], false, 3, 30, 0);
@@ -2410,6 +2559,17 @@ namespace Client.MirObjects
                                                     SoundManager.PlaySound(BaseSound + 6);
                                                 }
                                                 break;
+                                            case Monster.CatShaman:
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.CatShaman], 728, 12, 500, ob) { Blend = true });
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.CatShaman], 740, 14, 500, ob) { Blend = true });
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.CatShaman], 754, 7, 500, ob) { Blend = true });
+                                                    SoundManager.PlaySound(BaseSound + 6);
+                                                }
+                                                break;
+
                                             case Monster.WhiteFoxman:
                                                 missile = CreateProjectile(1160, Libraries.Magic, true, 3, 30, 7);
 
@@ -2422,6 +2582,23 @@ namespace Client.MirObjects
                                                         SoundManager.PlaySound(BaseSound + 6);
                                                     };
                                                 }
+                                                break;
+                                            case Monster.AncientBringer:
+                                                List<MapObject> listp =  MapControl.GetPlayers(CurrentLocation, 7);
+                                                foreach(MapObject p in listp)
+                                                {
+                                                    int duration = Functions.MaxDistance(CurrentLocation, p.CurrentLocation) * 50;
+                                                    Missile _missile = new Missile(Libraries.Monsters[(ushort)Monster.AncientBringer], 688, duration / 30, duration, this, p.CurrentLocation, false)
+                                                    {
+                                                        Target = p,
+                                                        Interval = 30,
+                                                        FrameCount = 4,
+                                                        Blend = true,
+                                                        Skip = 0
+                                                    };
+                                                    Effects.Add(_missile);
+                                                }
+                                                
                                                 break;
                                             case Monster.TrapRock:
                                                 ob = MapControl.GetObject(TargetID);
@@ -2609,6 +2786,35 @@ namespace Client.MirObjects
                                                     ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.RestlessJar], 391+ (int)direction *10, 10, 600, ob));
                                                 }
                                                 break;
+                                            case Monster.ChieftainSword://龙阳王，砸地板
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    MirDirection direction = Functions.DirectionFromPoint(CurrentLocation, ob.CurrentLocation);
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.ChieftainSword], 992, 10, 2000, ob));
+                                                }
+                                                break;
+                                            case Monster.GeneralJinmYo://灵猫将军，雷电
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.GeneralJinmYo], 522, 7, 1000, ob));
+                                                }
+                                                break;
+                                            case Monster.TreeQueen://树的女王，火雨？
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.TreeQueen], 44, 13, 1300, ob));
+                                                }
+                                                break;
+                                            case Monster.ShellFighter:
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.ShellFighter], 744, 11, 1100, ob));
+                                                }
+                                                break;
                                             case Monster.WhiteFoxman:
                                                 missile = CreateProjectile(1160, Libraries.Magic, true, 3, 30, 7);
 
@@ -2618,6 +2824,19 @@ namespace Client.MirObjects
                                                     {
                                                         if (missile.Target.CurrentAction == MirAction.Dead) return;
                                                         missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.WhiteFoxman], 362, 20, 2400, missile.Target));
+                                                        SoundManager.PlaySound(BaseSound + 7);
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.SeedingsGeneral://灵猫圣兽
+                                                missile = CreateProjectile(1273, Libraries.Monsters[(ushort)Monster.SeedingsGeneral], true, 4, 30, 0);
+
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.SeedingsGeneral], 1337, 8, 1000, missile.Target));
                                                         SoundManager.PlaySound(BaseSound + 7);
                                                     };
                                                 }
@@ -2655,6 +2874,26 @@ namespace Client.MirObjects
                         }
                         else
                         {
+                            switch (FrameIndex)
+                            {
+                                case 4:
+                                    {
+                                        MapObject ob = null;
+                                        Missile missile;
+                                        switch (BaseImage)
+                                        {
+                                            case Monster.ChieftainSword://龙阳王，砸地板
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    MirDirection direction = Functions.DirectionFromPoint(CurrentLocation, ob.CurrentLocation);
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.ChieftainSword], 1066, 10, 2000, ob));
+                                                }
+                                                break;
+                                        }
+                                        break;
+                                    }
+                            }
                             NextMotion += FrameInterval;
                         }
                     }
@@ -2775,7 +3014,7 @@ namespace Client.MirObjects
         private Missile CreateProjectile(int baseIndex, MLibrary library, bool blend, int count, int interval, int skip, bool direction16 = true)
         {
             MapObject ob = MapControl.GetObject(TargetID);
-
+            
             if (ob != null) TargetPoint = ob.CurrentLocation;
 
             int duration = Functions.MaxDistance(CurrentLocation, TargetPoint) * 50;
@@ -3423,14 +3662,7 @@ namespace Client.MirObjects
                             break;
                     }
                     break;
-                case Monster.GasToad:
-                    switch (CurrentAction)
-                    {
-                        case MirAction.Attack2:
-                            if (FrameIndex >= 3) Libraries.Monsters[(ushort)Monster.GasToad].DrawBlend((360 + FrameIndex - 2 + (int)Direction * 4) - 3, DrawLocation, Color.White, true);
-                            break;
-                    }
-                    break;
+
 
                 case Monster.HellSlasher:
                     switch (CurrentAction)
@@ -3834,6 +4066,23 @@ namespace Client.MirObjects
                     {
                         Libraries.Monsters[(ushort)Monster.Jar2].DrawBlend(544 + (FrameIndex + (int)Direction * 10), DrawLocation, Color.White, true);
                     }
+
+                    break;
+
+                case Monster.GeneralJinmYo:
+                    //猫妖将军，狂暴
+                    if (Stage == 1)
+                    {
+                        Libraries.Monsters[(ushort)Monster.GeneralJinmYo].DrawBlend(529 , DrawLocation, Color.White, true);
+                    }
+                    break;
+                case Monster.CatShaman:
+                    if (CurrentAction != MirAction.Dead)
+                    {
+                        Libraries.Monsters[(ushort)Monster.CatShaman].DrawBlend(360 + (FrameIndex + (int)Direction * 8), DrawLocation, Color.White, true);
+                        Libraries.Monsters[(ushort)Monster.CatShaman].DrawBlend(424 + (FrameIndex + (int)Direction * 6), DrawLocation, Color.White, true);
+                    }
+              
 
                     break;
             }

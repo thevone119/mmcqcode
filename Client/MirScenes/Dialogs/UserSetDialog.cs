@@ -342,6 +342,7 @@ namespace Client.MirScenes.Dialogs
                 MaxLength = 2,
                 CanLoseFocus = true,
             };
+            
             top += 23;
             HPLower2Text = new MirTextBox
             {
@@ -601,6 +602,7 @@ namespace Client.MirScenes.Dialogs
                     TabVisible2(false);
                     TabVisible3(true);
                     TabVisible4(false);
+
                     break;
                 case 4:
                     TabVisible1(false);
@@ -738,6 +740,7 @@ namespace Client.MirScenes.Dialogs
         {
             if (!Visible) return;
             //关闭保存
+            changeData();
             GameScene.UserSet.Save();
             Visible = false;
         }

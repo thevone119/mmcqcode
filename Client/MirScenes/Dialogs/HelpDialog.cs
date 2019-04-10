@@ -238,7 +238,8 @@ namespace Client.MirScenes.Dialogs
             Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Bigmap), "显示大地图，大地图中右键点击可自动寻路"));
 
 
-            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Options), "系统选项"));
+            Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Options), "系统选项，内挂辅助"));
+            Shortcuts.Add(new ShortcutInfo("O", "系统设置，技能模式，声音等"));
             Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Help), "帮助窗口"));
             Shortcuts.Add(new ShortcutInfo(CMain.InputKeys.GetKey(KeybindOptions.Mount), "骑马"));
 

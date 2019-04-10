@@ -46,6 +46,13 @@ namespace Client.MirObjects
 
             switch (Spell)
             {
+                case Spell.HealingCircle://增加一个阴阳五行
+                    BodyLibrary = Libraries.Magic3;
+                    DrawFrame = 630;
+                    FrameInterval = 100;
+                    FrameCount = 10;
+                    Blend = true;
+                    break;
                 case Spell.TrapHexagon://困魔
                     BodyLibrary = Libraries.Magic;
                     DrawFrame = 1390;
@@ -85,7 +92,7 @@ namespace Client.MirObjects
                     Blend = true;
                     Repeat = false;
                     break;
-                case Spell.MeteorStrike://这个陨石
+                case Spell.MeteorStrike://火雨
                     MapControl.Effects.Add(new Effect(Libraries.Magic2, 1600, 10, 800, CurrentLocation) { Repeat = true, RepeatUntil = CMain.Time + 3000 });
                     CurrentLocation.Y = Math.Max(0, CurrentLocation.Y - 20);
                     BodyLibrary = Libraries.Magic2;

@@ -248,7 +248,7 @@ namespace Launcher
             if ((old.FileName.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase)))
             {
                 //针对客户端程序，多加一个时间判断，如果是新的文件则不处理
-                if (info != null && info.Creation < old.Creation)
+                if (info != null && (info.Creation < old.Creation && old.Length != info.Length))
                 {
                     DownloadList.Enqueue(old);
                     _totalBytes += old.Length;

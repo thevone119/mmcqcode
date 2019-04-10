@@ -1306,7 +1306,7 @@ namespace Client.MirScenes
                 {
                     return BeltDialog.Grid[i];
                 }
-                if (BeltDialog.Grid[i].Item.Info.Name.StartsWith(itemname))
+                if (BeltDialog.Grid[i].Item.Info.Name.Contains(itemname))
                 {
                     likeCell.Add(BeltDialog.Grid[i]);
                 }
@@ -1321,7 +1321,7 @@ namespace Client.MirScenes
                 {
                     return InventoryDialog.Grid[i];
                 }
-                if (InventoryDialog.Grid[i].Item.Info.Name.StartsWith(itemname))
+                if (InventoryDialog.Grid[i].Item.Info.Name.Contains(itemname))
                 {
                     likeCell.Add(InventoryDialog.Grid[i]);
                 }
@@ -1500,6 +1500,13 @@ namespace Client.MirScenes
                 case (short)ServerPacketIds.ObjectMonster:
                     ObjectMonster((S.ObjectMonster)p);
                     break;
+                case (short)ServerPacketIds.ObjectMonsterChange:
+                    ObjectMonsterChange((S.ObjectMonsterChange)p);
+                    break;
+                case (short)ServerPacketIds.BlizzardStopTime:
+                    BlizzardStopTime((S.BlizzardStopTime)p);
+                    break;
+
                 case (short)ServerPacketIds.ObjectAttack:
                     ObjectAttack((S.ObjectAttack)p);
                     break;
@@ -3067,6 +3074,30 @@ namespace Client.MirScenes
             mob = new MonsterObject(p.ObjectID);
             mob.Load(p);
         }
+
+        //怪物变更
+        private void ObjectMonsterChange(S.ObjectMonsterChange p)
+        {
+            MonsterObject mob;
+            for (int i = MapControl.Objects.Count - 1; i >= 0; i--)
+            {
+                MapObject ob = MapControl.Objects[i];
+                if (ob.ObjectID == p.ObjectID)
+                {
+                    mob = (MonsterObject)ob;
+                    mob.Change(p);
+                    return;
+                }
+            }
+        }
+
+        //冰雨，火雨时间缩短
+        private void BlizzardStopTime(S.BlizzardStopTime p)
+        {
+            User.BlizzardStopTime = p.stopTime+CMain.Time;
+        }
+
+
         private void ObjectAttack(S.ObjectAttack p)
         {
             if (p.ObjectID == User.ObjectID) return;
@@ -3103,6 +3134,11 @@ namespace Client.MirScenes
                         case 3:
                             {
                                 action = new QueuedAction { Action = MirAction.Attack4, Direction = p.Direction, Location = p.Location, Params = new List<object>() };
+                                break;
+                            }
+                        case 4:
+                            {
+                                action = new QueuedAction { Action = MirAction.Attack5, Direction = p.Direction, Location = p.Location, Params = new List<object>() };
                                 break;
                             }
                     }
@@ -3972,7 +4008,19 @@ namespace Client.MirScenes
             item.PoisonResist = p.Item.PoisonResist;
             item.RefinedValue = p.Item.RefinedValue;
             item.RefineAdded = p.Item.RefineAdded;
-            
+            item.quality = p.Item.quality;
+            item.spiritual = p.Item.spiritual;
+            item.samsaracount = p.Item.samsaracount;
+            //物品来源
+            item.src_time = p.Item.src_time;
+            item.src_map = p.Item.src_map;
+            item.src_mon = p.Item.src_mon;
+            item.src_kill = p.Item.src_kill;
+
+            item.sk1 = p.Item.sk1;
+            item.sk2 = p.Item.sk2;
+            item.sk3 = p.Item.sk3;
+            item.sk4 = p.Item.sk4;
 
             GameScene.Scene.InventoryDialog.DisplayItemGridEffect(item.UniqueID, 0);
 
@@ -4055,6 +4103,7 @@ namespace Client.MirScenes
 
         private void ObjectMagic(S.ObjectMagic p)
         {
+
             if (p.SelfBroadcast == false && p.ObjectID == User.ObjectID) return;
 
             for (int i = MapControl.Objects.Count - 1; i >= 0; i--)
@@ -4068,7 +4117,6 @@ namespace Client.MirScenes
                 action.Params.Add(p.Target);
                 action.Params.Add(p.Cast);
                 action.Params.Add(p.Level);
-
 
                 ob.ActionFeed.Add(action);
                 return;
@@ -4102,6 +4150,9 @@ namespace Client.MirScenes
                         break;
                     case SpellEffect.RedMoonEvil:
                         ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.RedMoonEvil], 32, 6, 400, ob) { Blend = false });
+                        break;
+                    case SpellEffect.TreeQueen:
+                        ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.TreeQueen], 120, 15, 800, ob) { Blend = false });
                         break;
                     case SpellEffect.TwinDrakeBlade:
                         ob.Effects.Add(new Effect(Libraries.Magic2, 380, 6, 800, ob));
@@ -6166,6 +6217,28 @@ namespace Client.MirScenes
             {
                 count++;
                 text = string.Format("增加 {0}耐久", minValue / 1000);
+                MirLabel DuraLabel = new MirLabel
+                {
+                    AutoSize = true,
+                    ForeColour = Color.White,
+                    Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                    OutLine = true,
+                    Parent = ItemLabel,
+                    Text = text
+                };
+
+                ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, DuraLabel.DisplayRectangle.Right + 4),
+                    Math.Max(ItemLabel.Size.Height, DuraLabel.DisplayRectangle.Bottom));
+            }
+
+            #endregion
+
+            #region 混沌神石
+
+            if (realItem.Shape==11 && realItem.Type == ItemType.Gem)
+            {
+                count++;
+                text = string.Format("增加 {0} 品质", 1);
                 MirLabel DuraLabel = new MirLabel
                 {
                     AutoSize = true,
@@ -8470,6 +8543,296 @@ namespace Client.MirScenes
             return null;
         }
 
+
+        //物品的自带技能，阵法
+        private MirControl ItemSkillLabel(UserItem item)
+        {
+            HoverItem = item;
+            ItemLabel.Size = new Size(ItemLabel.Size.Width, ItemLabel.Size.Height + 4);
+
+            int count = 0;
+
+            #region skill
+            if (item.sk1 > 0)
+            {
+                count++;
+                ItemSkillBean skb1 = ItemSkillBean.get(item.sk1);
+                MirLabel IDLabel = new MirLabel
+                {
+                    AutoSize = true,
+                    ForeColour = Color.White,
+                    Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                    OutLine = true,
+                    Parent = ItemLabel,
+                    Text = "[封印阵法]"
+                };
+
+                ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, IDLabel.DisplayRectangle.Right + 4),
+                    Math.Max(ItemLabel.Size.Height, IDLabel.DisplayRectangle.Bottom));
+
+
+                MirLabel sk1 = new MirLabel
+                {
+                    AutoSize = true,
+                    ForeColour = Color.Violet,
+                    Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                    OutLine = true,
+                    Parent = ItemLabel,
+                    Text = "" + skb1.skname
+                };
+
+                ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, sk1.DisplayRectangle.Right + 4),
+                    Math.Max(ItemLabel.Size.Height, sk1.DisplayRectangle.Bottom));
+
+                MirLabel sk1m = new MirLabel
+                {
+                    AutoSize = true,
+                    ForeColour = Color.DarkKhaki,
+                    Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                    OutLine = true,
+                    Parent = ItemLabel,
+                    Text = "" + skb1.skmemo
+                };
+
+                ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, sk1m.DisplayRectangle.Right + 4),
+                    Math.Max(ItemLabel.Size.Height, sk1m.DisplayRectangle.Bottom));
+
+                if (item.sk2 > 0)
+                {
+
+                    ItemSkillBean skb2 = ItemSkillBean.get(item.sk2);
+                    MirLabel sk2 = new MirLabel
+                    {
+                        AutoSize = true,
+                        ForeColour = Color.Violet,
+                        Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                        OutLine = true,
+                        Parent = ItemLabel,
+                        Text = "" + skb2.skname
+                    };
+
+                    ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, sk2.DisplayRectangle.Right + 4),
+                        Math.Max(ItemLabel.Size.Height, sk2.DisplayRectangle.Bottom));
+
+                    MirLabel sk2m = new MirLabel
+                    {
+                        AutoSize = true,
+                        ForeColour = Color.DarkKhaki,
+                        Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                        OutLine = true,
+                        Parent = ItemLabel,
+                        Text = "" + skb2.skmemo
+                    };
+
+                    ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, sk2m.DisplayRectangle.Right + 4),
+                        Math.Max(ItemLabel.Size.Height, sk2m.DisplayRectangle.Bottom));
+                }
+
+                if (item.sk3 > 0)
+                {
+                    ItemSkillBean skb3 = ItemSkillBean.get(item.sk3);
+
+                    MirLabel sk3 = new MirLabel
+                    {
+                        AutoSize = true,
+                        ForeColour = Color.Violet,
+                        Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                        OutLine = true,
+                        Parent = ItemLabel,
+                        Text = "" + skb3.skname
+                    };
+
+                    ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, sk3.DisplayRectangle.Right + 4),
+                        Math.Max(ItemLabel.Size.Height, sk3.DisplayRectangle.Bottom));
+
+                    MirLabel sk3m = new MirLabel
+                    {
+                        AutoSize = true,
+                        ForeColour = Color.DarkKhaki,
+                        Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                        OutLine = true,
+                        Parent = ItemLabel,
+                        Text = "" + skb3.skmemo
+                    };
+
+                    ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, sk3m.DisplayRectangle.Right + 4),
+                        Math.Max(ItemLabel.Size.Height, sk3m.DisplayRectangle.Bottom));
+                }
+
+
+                if (item.sk4 > 0)
+                {
+                    ItemSkillBean skb4 = ItemSkillBean.get(item.sk4);
+
+                    MirLabel sk4 = new MirLabel
+                    {
+                        AutoSize = true,
+                        ForeColour = Color.Violet,
+                        Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                        OutLine = true,
+                        Parent = ItemLabel,
+                        Text = "" + skb4.skname
+                    };
+
+                    ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, sk4.DisplayRectangle.Right + 4),
+                        Math.Max(ItemLabel.Size.Height, sk4.DisplayRectangle.Bottom));
+
+                    MirLabel sk4m = new MirLabel
+                    {
+                        AutoSize = true,
+                        ForeColour = Color.DarkKhaki,
+                        Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                        OutLine = true,
+                        Parent = ItemLabel,
+                        Text = "" + skb4.skmemo
+                    };
+
+                    ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, sk4m.DisplayRectangle.Right + 4),
+                        Math.Max(ItemLabel.Size.Height, sk4m.DisplayRectangle.Bottom));
+                }
+
+            }
+
+
+            #endregion
+
+            if (count > 0)
+            {
+                ItemLabel.Size = new Size(ItemLabel.Size.Width, ItemLabel.Size.Height + 4);
+
+                #region OUTLINE
+                MirControl outLine = new MirControl
+                {
+                    BackColour = Color.FromArgb(255, 50, 50, 50),
+                    Border = true,
+                    BorderColour = Color.Gray,
+                    NotControl = true,
+                    Parent = ItemLabel,
+                    Opacity = 0.4F,
+                    Location = new Point(0, 0)
+                };
+                outLine.Size = ItemLabel.Size;
+                #endregion
+
+                return outLine;
+            }
+            else
+            {
+                ItemLabel.Size = new Size(ItemLabel.Size.Width, ItemLabel.Size.Height - 4);
+            }
+            return null;
+        }
+
+        //物品的来源
+        private MirControl ItemSrcLabel(UserItem item)
+        {
+            HoverItem = item;
+            ItemLabel.Size = new Size(ItemLabel.Size.Width, ItemLabel.Size.Height + 4);
+
+            int count = 0;
+
+            #region SRC
+            if (item.src_time!=0)
+            {
+                count++;
+
+                MirLabel IDLabel = new MirLabel
+                {
+                    AutoSize = true,
+                    ForeColour = Color.White,
+                    Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                    OutLine = true,
+                    Parent = ItemLabel,
+                    Text = "[物品来源]"
+                };
+
+                ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, IDLabel.DisplayRectangle.Right + 4),
+                    Math.Max(ItemLabel.Size.Height, IDLabel.DisplayRectangle.Bottom));
+
+
+                MirLabel mapLabel = new MirLabel
+                {
+                    AutoSize = true,
+                    ForeColour = Color.Yellow,
+                    Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                    OutLine = true,
+                    Parent = ItemLabel,
+                    Text = "地图 : "+ item.src_map
+                };
+
+                ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, mapLabel.DisplayRectangle.Right + 4),
+                    Math.Max(ItemLabel.Size.Height, mapLabel.DisplayRectangle.Bottom));
+
+                MirLabel monLabel = new MirLabel
+                {
+                    AutoSize = true,
+                    ForeColour = Color.Yellow,
+                    Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                    OutLine = true,
+                    Parent = ItemLabel,
+                    Text = "怪物 : " + item.src_mon
+                };
+
+                ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, monLabel.DisplayRectangle.Right + 4),
+                    Math.Max(ItemLabel.Size.Height, monLabel.DisplayRectangle.Bottom));
+
+                MirLabel killLabel = new MirLabel
+                {
+                    AutoSize = true,
+                    ForeColour = Color.Yellow,
+                    Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                    OutLine = true,
+                    Parent = ItemLabel,
+                    Text = "击杀 : " + item.src_kill
+                };
+
+                ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, killLabel.DisplayRectangle.Right + 4),
+                    Math.Max(ItemLabel.Size.Height, killLabel.DisplayRectangle.Bottom));
+
+                MirLabel timeLabel = new MirLabel
+                {
+                    AutoSize = true,
+                    ForeColour = Color.Yellow,
+                    Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                    OutLine = true,
+                    Parent = ItemLabel,
+                    Text = "时间 : " + DateTime.FromBinary(item.src_time).ToString("yyyy-MM-dd HH:mm:ss")
+                };
+
+                ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, timeLabel.DisplayRectangle.Right + 4),
+                    Math.Max(ItemLabel.Size.Height, timeLabel.DisplayRectangle.Bottom));
+            }
+            
+
+            #endregion
+
+            if (count > 0)
+            {
+                ItemLabel.Size = new Size(ItemLabel.Size.Width, ItemLabel.Size.Height + 4);
+
+                #region OUTLINE
+                MirControl outLine = new MirControl
+                {
+                    BackColour = Color.FromArgb(255, 50, 50, 50),
+                    Border = true,
+                    BorderColour = Color.Gray,
+                    NotControl = true,
+                    Parent = ItemLabel,
+                    Opacity = 0.4F,
+                    Location = new Point(0, 0)
+                };
+                outLine.Size = ItemLabel.Size;
+                #endregion
+
+                return outLine;
+            }
+            else
+            {
+                ItemLabel.Size = new Size(ItemLabel.Size.Width, ItemLabel.Size.Height - 4);
+            }
+            return null;
+        }
+
         //这个真的是物品的说明，就是鼠标移到物品上的说明
         //这个只检测等级和职业么，而且等级和职业不应该在这里检测吧？应该放到物品类里实现吧。
         public void CreateItemLabel(UserItem item, bool Inspect = false)
@@ -8503,7 +8866,7 @@ namespace Client.MirScenes
             };
 
             //Name Info Label
-            MirControl[] outlines = new MirControl[9];
+            MirControl[] outlines = new MirControl[11];
             outlines[0] = NameInfoLabel(item, Inspect);
             //Attribute Info1 Label - Attack Info
             outlines[1] = AttackInfoLabel(item, Inspect);
@@ -8519,8 +8882,12 @@ namespace Client.MirScenes
             outlines[6] = BindInfoLabel(item, Inspect);
             //Overlap Info Label
             outlines[7] = OverlapInfoLabel(item, Inspect);
+            //物品阵法
+            outlines[8] = ItemSkillLabel(item);
+            //物品来源
+            outlines[9] = ItemSrcLabel(item);
             //Story Label
-            outlines[8] = StoryInfoLabel(item, Inspect);
+            outlines[10] = StoryInfoLabel(item, Inspect);
 
             foreach (var outline in outlines)
             {
@@ -9169,6 +9536,26 @@ namespace Client.MirScenes
                 return ob;
             }
             return null;
+        }
+
+        public static List<MapObject> GetPlayers(Point p,uint distance)
+        {
+            List<MapObject> retlist = new List<MapObject>();
+            for (int i = 0; i < Objects.Count; i++)
+            {
+                MapObject ob = Objects[i];
+                if (ob.Race != ObjectType.Player)
+                {
+                    continue;
+                }
+                
+                if (Functions.MaxDistance(p, ob.CurrentLocation)> distance)
+                {
+                    continue;
+                }
+                retlist.Add(ob);
+            }
+            return retlist;
         }
 
         public override void Draw()
