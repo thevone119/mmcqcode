@@ -351,6 +351,30 @@ namespace Server.MirObjects
         //AttackBonus：攻击加成，SkillNeckBoost：技能提升，技巧项链
         public byte AttackBonus, MineRate, GemRate, FishRate, CraftRate, SkillNeckBoost;
 
+        //增加4个武器自带技能(其实只用到3个吧)
+        public ItemSkill sk1, sk2, sk3, sk4;
+
+        //是否具有某个技能
+        public bool hasItemSk(ItemSkill sk)
+        {
+            if(sk1== sk)
+            {
+                return true;
+            }
+            if (sk2 == sk)
+            {
+                return true;
+            }
+            if (sk3 == sk)
+            {
+                return true;
+            }
+            if (sk4 == sk)
+            {
+                return true;
+            }
+            return false;
+        }
         //初始化玩家
         public PlayerObject(CharacterInfo info, MirConnection connection)
         {
@@ -2699,7 +2723,7 @@ namespace Server.MirObjects
 
                 monster.SetHP(info.HP);
 
-                if (!Settings.PetSave)
+                if (!Settings.PetSave && !hasItemSk(ItemSkill.Wizard4))
                 {
                     if (info.Time < 1 || (Envir.Time > info.Time + (Settings.PetTimeOut * Settings.Minute))) monster.Die();
                 }
@@ -3293,7 +3317,10 @@ namespace Server.MirObjects
             {
                 FastRun = true;//可以免助跑
             }
-
+            sk1 = 0;
+            sk2 = 0;
+            sk3 = 0;
+            sk4 = 0;
             var skillsToAdd = new List<string>();
             var skillsToRemove = new List<string> { Settings.HealRing, Settings.FireRing, Settings.BlinkSkill };
             short Macrate = 0, Acrate = 0, HPrate = 0, MPrate = 0;
@@ -3404,6 +3431,23 @@ namespace Server.MirObjects
                     MountType = RealItem.Shape;
                     //RealItem.Effect;
                 }
+                if (temp.sk1 != 0)
+                {
+                    sk1 = temp.sk1;
+                }
+                if (temp.sk2 != 0)
+                {
+                    sk2 = temp.sk2;
+                }
+                if (temp.sk3 != 0)
+                {
+                    sk3 = temp.sk3;
+                }
+                if (temp.sk4 != 0)
+                {
+                    sk4 = temp.sk4;
+                }
+
 
                 if (RealItem.Set == ItemSet.None) continue;
 
@@ -6833,6 +6877,11 @@ namespace Server.MirObjects
                         magic = GetMagic(Spell.Slaying);
                         damageFinal = magic.GetDamage(damageBase);
                         //SMain.Enqueue("攻杀剑法："+ damageFinal+","+ damageBase);
+                        if(hasItemSk(ItemSkill.Warrior1) && RandomUtils.Next(100) < 50)
+                        {
+                            defence = DefenceType.Agility;
+                        }
+                        
                         LevelMagic(magic);
                         break;
                     case Spell.DoubleSlash:
@@ -6860,6 +6909,10 @@ namespace Server.MirObjects
                     case Spell.TwinDrakeBlade://双龙，几率麻痹
                         magic = GetMagic(Spell.TwinDrakeBlade);
                         damageFinal = magic.GetDamage(damageBase);
+                        if (hasItemSk(ItemSkill.Warrior4) && RandomUtils.Next(100) < 50)
+                        {
+                            damageFinal = damageFinal * 13 / 10;
+                        }
                         TwinDrakeBlade = false;
                         action = new DelayedAction(DelayedType.Damage, Envir.Time + 400, ob, damageFinal, DefenceType.Agility, false);
                         ActionList.Add(action);
@@ -6921,6 +6974,10 @@ namespace Server.MirObjects
 
                 magic = GetMagic(spell);
                 damageFinal = magic.GetDamage(damageBase);
+                if (hasItemSk(ItemSkill.Warrior2) )
+                {
+                    damageFinal = damageFinal*12/10;
+                }
                 for (int i = 0; i < 4; i++)
                 {
                     target = Functions.PointMove(CurrentLocation, dir, 1);
@@ -6950,6 +7007,10 @@ namespace Server.MirObjects
             {
                 magic = GetMagic(spell);
                 damageFinal = magic.GetDamage(damageBase);
+                if (hasItemSk(ItemSkill.Warrior2))
+                {
+                    damageFinal = damageFinal * 115 / 100;
+                }
                 for (int i = 0; i < 8; i++)
                 {
                     target = Functions.PointMove(CurrentLocation, dir, 1);
@@ -7737,7 +7798,11 @@ namespace Server.MirObjects
                 rate = 2;
             }
             rate *= 2;
-            
+
+            if(hasItemSk(ItemSkill.Wizard1) || hasItemSk(ItemSkill.Wizard4))
+            {
+                rate = rate / 2;
+            }
 
             if (RandomUtils.Next(rate) != 0) return;
             //else if (RandomUtils.Next(20) == 0) target.Die();
@@ -7806,9 +7871,32 @@ namespace Server.MirObjects
 
             if (target.Undead) damage = (int)(damage * 1.5F);
 
-            DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, magic, damage, target);
-
-            ActionList.Add(action);
+            if (hasItemSk(ItemSkill.Wizard2))
+            {
+                List < MapObject > list= this.CurrentMap.getMapObjects(target.CurrentLocation.X, target.CurrentLocation.Y,1);
+                foreach(MapObject ob in list)
+                {
+                    if (ob == null)
+                    {
+                        continue;
+                    }
+                    if (ob.Race!=ObjectType.Monster && ob.Race != ObjectType.Player)
+                    {
+                        continue;
+                    }
+                    if (!ob.IsAttackTarget(this))
+                    {
+                        continue;
+                    }
+                    DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, magic, damage, ob);
+                    ActionList.Add(action);
+                }
+            }
+            else
+            {
+                DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, magic, damage, target);
+                ActionList.Add(action);
+            }
         }
         private void Vampirism(MapObject target, UserMagic magic)
         {
@@ -7900,7 +7988,14 @@ namespace Server.MirObjects
 
             MonsterInfo info = Envir.GetMonsterInfo(Settings.CloneName);
             if (info == null) return;
-
+            if (hasItemSk(ItemSkill.Wizard5))
+            {
+                info = info.Clone();
+                info.MaxAC = (ushort)(info.MaxAC * 2);
+                info.MaxMAC = (ushort)(info.MaxMAC * 2);
+                info.MaxDC = (ushort)(info.MaxDC * 2);
+                info.MaxMC = (ushort)(info.MaxMC * 2);
+            }
 
             LevelMagic(magic);
 
@@ -7920,6 +8015,12 @@ namespace Server.MirObjects
 
             int damage = magic.GetDamage(GetAttackPower(MinMC, MaxMC));
 
+            //冰雨几率不卡顿
+            if (hasItemSk(ItemSkill.Wizard7) && RandomUtils.Next(100) < 20)
+            {
+                Enqueue(new S.BlizzardStopTime() { stopTime = 500 });
+            }
+
             DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, this, magic, damage, location);
 
             ActiveBlizzard = true;
@@ -7931,6 +8032,11 @@ namespace Server.MirObjects
             cast = false;
 
             int damage = magic.GetDamage(GetAttackPower(MinMC, MaxMC));
+            //火雨几率不卡顿
+            if (hasItemSk(ItemSkill.Wizard7) && RandomUtils.Next(100) < 20)
+            {
+                Enqueue(new S.BlizzardStopTime() { stopTime=500 });
+            }
 
             DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, this, magic, damage, location);
 
@@ -8518,7 +8624,10 @@ namespace Server.MirObjects
 
             int duration = 45 + (15 * magic.Level);
             int value = (int)Math.Round(MaxAC * (0.2 + (0.03 * magic.Level)));
-
+            if (hasItemSk(ItemSkill.Warrior5))
+            {
+                value = value + 10;
+            }
             AddBuff(new Buff { Type = BuffType.ProtectionField, Caster = this, ExpireTime = Envir.Time + duration * 1000, Values = new int[] { value } });
             OperateTime = 0;
             LevelMagic(magic);
@@ -8747,7 +8856,10 @@ namespace Server.MirObjects
             // damage
             int damageBase = GetAttackPower(MinDC, MaxDC);
             int damageFinal = magic.GetDamage(damageBase);
-
+            if (hasItemSk(ItemSkill.Warrior7) && RandomUtils.Next(100) < 30)
+            {
+                damageFinal = damageFinal * 13 / 10;
+            }
             // objects = this, magic, damage, currentlocation, direction, attackRange
             //加快释放时间，与距离
             //DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, this, magic, damageFinal, CurrentLocation, Direction, 1);
@@ -10872,7 +10984,12 @@ namespace Server.MirObjects
 
         public override int Attacked(PlayerObject attacker, int damage, DefenceType type = DefenceType.ACAgility, bool damageWeapon = true)
         {
-            int armour = 0;
+            if (hasItemSk(ItemSkill.Warrior7) && RandomUtils.Next(100) < 20)
+            {
+                BroadcastDamageIndicator(DamageType.Miss);
+                return 0;
+            }
+                int armour = 0;
 
                 for (int i = 0; i < Buffs.Count; i++)
                 {
@@ -11052,6 +11169,12 @@ namespace Server.MirObjects
         }
         public override int Attacked(MonsterObject attacker, int damage, DefenceType type = DefenceType.ACAgility)
         {
+            if (hasItemSk(ItemSkill.Warrior7) && RandomUtils.Next(100) < 20)
+            {
+                BroadcastDamageIndicator(DamageType.Miss);
+                return 0;
+            }
+
             int armour = 0;
 
                 for (int i = 0; i < Buffs.Count; i++)
@@ -11184,6 +11307,11 @@ namespace Server.MirObjects
         }
         public override int Struck(int damage, DefenceType type = DefenceType.ACAgility)
         {
+            if (hasItemSk(ItemSkill.Warrior7) && RandomUtils.Next(100) < 20)
+            {
+                return 0;
+            }
+
             int armour = 0;
             if (Hidden)
             {

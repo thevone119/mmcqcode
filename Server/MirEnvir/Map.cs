@@ -1864,7 +1864,7 @@ namespace Server.MirEnvir
 
                 #region SlashingBurst
 
-                case Spell.SlashingBurst:
+                case Spell.SlashingBurst://日闪
                     value = (int)data[2];
                     location = (Point)data[3];
                     dir = (MirDirection)data[4];
