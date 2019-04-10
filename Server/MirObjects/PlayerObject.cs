@@ -883,7 +883,7 @@ namespace Server.MirObjects
                     {
                         continue;
                     }
-                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, value, DefenceType.None);
+                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, value, DefenceType.None,false);
                     ActionList.Add(action);
                     xivalue += value/3;
                 }
@@ -933,6 +933,7 @@ namespace Server.MirObjects
                 {
                     value = value3;
                 }
+                Broadcast(new S.ObjectEffect { ObjectID = this.ObjectID, Effect = SpellEffect.GreatFoxThunder });
                 List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 1);
                 foreach (MapObject ob in list)
                 {
@@ -948,7 +949,7 @@ namespace Server.MirObjects
                     {
                         continue;
                     }
-                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, value, DefenceType.MAC);
+                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, value, DefenceType.MAC,false);
                     ActionList.Add(action);
                 }
                 return;
@@ -9702,7 +9703,7 @@ namespace Server.MirObjects
                     {
                         continue;
                     }
-                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, GetAttackPower(MinDC,MaxDC), DefenceType.Agility);
+                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, GetAttackPower(MinDC,MaxDC), DefenceType.Agility,false);
                     ActionList.Add(action);
                 }
             }
