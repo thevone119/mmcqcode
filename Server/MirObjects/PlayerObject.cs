@@ -6821,6 +6821,10 @@ namespace Server.MirObjects
                         CurrentMap.Broadcast(p, ob.CurrentLocation);
 
                         int addMp = 5 * (magic.Level + Accuracy / 4);
+                        if (hasItemSk(ItemSkill.Assassin4))
+                        {
+                            addMp = addMp * 15 / 10;
+                        }
 
                         if (ob.Race == ObjectType.Player)
                         {
@@ -6841,6 +6845,10 @@ namespace Server.MirObjects
                 if (magic != null)
                 {
                     HemorrhageAttackCount += RandomUtils.Next(1, 1 + magic.Level * 2);
+                    if (hasItemSk(ItemSkill.Assassin7))
+                    {
+                        HemorrhageAttackCount += 1;
+                    }
                     if (Hemorrhage)
                     {
                         damageFinal = magic.GetDamage(damageBase);
@@ -8116,6 +8124,10 @@ namespace Server.MirObjects
             if (target == null || !target.IsAttackTarget(this) || !CanFly(target.CurrentLocation)) return false;
 
             int damage = magic.GetDamage(GetAttackPower(MinSC, MaxSC));
+            if (hasItemSk(ItemSkill.Taoist1) )
+            {
+                damage = damage*15/10;
+            }
 
             int delay = Functions.MaxDistance(CurrentLocation, target.CurrentLocation) * 50 + 500; //50 MS per Step
 
@@ -8147,7 +8159,15 @@ namespace Server.MirObjects
             MonsterInfo info = Envir.GetMonsterInfo(Settings.SkeletonName);
             if (info == null) return;
 
-
+            if (hasItemSk(ItemSkill.Taoist2))
+            {
+                info = info.Clone();
+                info.MaxMAC = (ushort)(info.MaxMAC * 2);
+                info.MaxAC = (ushort)(info.MaxAC * 2);
+                info.MaxDC = (ushort)(info.MaxDC * 2);
+                info.MaxMC = (ushort)(info.MaxMC * 2);
+                info.MaxSC = (ushort)(info.MaxSC * 2);
+            }
             LevelMagic(magic);
             ConsumeItem(item, 1);
 
@@ -8191,6 +8211,15 @@ namespace Server.MirObjects
             MonsterInfo info = Envir.GetMonsterInfo(Settings.ShinsuName);
             if (info == null) return;
 
+            if (hasItemSk(ItemSkill.Taoist4))
+            {
+                info = info.Clone();
+                info.MaxMAC = (ushort)(info.MaxMAC * 2);
+                info.MaxAC = (ushort)(info.MaxAC * 2);
+                info.MaxDC = (ushort)(info.MaxDC * 2);
+                info.MaxMC = (ushort)(info.MaxMC * 2);
+                info.MaxSC = (ushort)(info.MaxSC * 2);
+            }
 
             LevelMagic(magic);
             ConsumeItem(item, 5);
@@ -8274,6 +8303,7 @@ namespace Server.MirObjects
 
             int delay = Functions.MaxDistance(CurrentLocation, location) * 50 + 500; //50 MS per Step
             int damage = magic.GetDamage(GetAttackPower(MinSC, MaxSC));
+            
 
             DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + delay, this, magic, damage, location, (byte)RandomUtils.Next(PoisonAttack));
 
@@ -8960,7 +8990,12 @@ namespace Server.MirObjects
             for (int i = 0; i < Buffs.Count; i++)
                 if (Buffs[i].Type == BuffType.MoonLight) return;
 
-            AddBuff(new Buff { Type = BuffType.MoonLight, Caster = this, ExpireTime = Envir.Time + (GetAttackPower(MinAC, MaxAC) + (magic.Level + 1) * 5) * 500, Visible = true });
+            int etime = (GetAttackPower(MinAC, MaxAC) + (magic.Level + 1) * 5) * 500;
+            if (hasItemSk(ItemSkill.Assassin1))
+            {
+                etime = etime * 15 / 10;
+            }
+            AddBuff(new Buff { Type = BuffType.MoonLight, Caster = this, ExpireTime = Envir.Time + etime, Visible = true });
             LevelMagic(magic);
         }
         private void Trap(UserMagic magic, MapObject target, out bool cast)
@@ -9052,6 +9087,7 @@ namespace Server.MirObjects
             monster.Target = target;
             Pets.Add(monster);
 
+
             monster.Spawn(CurrentMap, CurrentLocation);
 
             for (int i = 0; i < Buffs.Count; i++)
@@ -9066,7 +9102,10 @@ namespace Server.MirObjects
             if (RandomUtils.Next(0, 100) <= Accuracy)
                 damageBase += damageBase;//crit should do something like double dmg, not double max dc dmg!
             int damageFinal = magic.GetDamage(damageBase);
-
+            if (hasItemSk(ItemSkill.Assassin7) && RandomUtils.Next(100) < 30)
+            {
+                damageFinal = damageFinal*13/10;
+            }
             MirDirection backDir = Functions.ReverseDirection(Direction);
             MirDirection preBackDir = Functions.PreviousDir(backDir);
             MirDirection nextBackDir = Functions.NextDir(backDir);
@@ -9264,8 +9303,13 @@ namespace Server.MirObjects
             ActionList.Add(action);
 
             action = new DelayedAction(DelayedType.Magic, Envir.Time + delay + 50, magic, damage, target);
-
             ActionList.Add(action);
+            //几率追击一次伤害
+            if (hasItemSk(ItemSkill.Archer7) &&  RandomUtils.Next(100) < 40)
+            {
+                action = new DelayedAction(DelayedType.Magic, Envir.Time + delay + 100, magic, damage, target);
+                ActionList.Add(action);
+            }
 
             return true;
         }
@@ -9329,6 +9373,11 @@ namespace Server.MirObjects
             if (target == null || !target.IsAttackTarget(this) || !CanFly(target.CurrentLocation)) return false;
 
             int power = magic.GetDamage(GetAttackPower(MinMC, MaxMC));
+            if (hasItemSk(ItemSkill.Archer2))
+            {
+                power = power * 13 / 10;
+            }
+
             int delay = Functions.MaxDistance(CurrentLocation, target.CurrentLocation) * 50 + 500; //50 MS per Step
 
             DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + delay, magic, power, target);
@@ -9431,6 +9480,10 @@ namespace Server.MirObjects
             int damage = magic.GetDamage(GetAttackPower(MinMC, MaxMC));
             damage = ApplyArcherState(damage);
 
+            if (hasItemSk(ItemSkill.Archer7) && RandomUtils.Next(100) < 50)
+            {
+                damage = damage * 13 / 10;
+            }
             int delay = distance * 50 + 500; //50 MS per Step
 
             DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + delay, this, magic, damage, target.CurrentLocation);
@@ -9454,6 +9507,10 @@ namespace Server.MirObjects
         {
             int damage = magic.GetDamage(GetAttackPower(MinMC, MaxMC));
 
+            if (hasItemSk(ItemSkill.Archer7) && RandomUtils.Next(100) < 30)
+            {
+                damage = damage * 13 / 10;
+            }
             DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, this, magic, damage, CurrentLocation);
             CurrentMap.ActionList.Add(action);
         }
@@ -9492,6 +9549,29 @@ namespace Server.MirObjects
             int maxlen = magic.Level * 2 + 5;
 
             Point movepoint = CurrentMap.getValidPointByLine(CurrentLocation, location, maxlen);
+            //增加一次性伤害
+            if (hasItemSk(ItemSkill.Assassin2))
+            {
+                List<MapObject> list = this.CurrentMap.getMapObjects(movepoint.X, movepoint.Y, 1);
+                foreach (MapObject ob in list)
+                {
+                    if (ob == null)
+                    {
+                        continue;
+                    }
+                    if (ob.Race != ObjectType.Monster && ob.Race != ObjectType.Player)
+                    {
+                        continue;
+                    }
+                    if (!ob.IsAttackTarget(this))
+                    {
+                        continue;
+                    }
+                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, GetAttackPower(MinDC,MaxDC), DefenceType.Agility);
+                    ActionList.Add(action);
+                }
+            }
+
             Teleport(CurrentMap, movepoint);
             cast = true;
             //要加这句，升级技能
@@ -9658,14 +9738,22 @@ namespace Server.MirObjects
                     switch (item.Info.Shape)
                     {
                         case 1://这里调下绿毒的伤害？降低点绿毒的伤害
+                            int _value = value / 15 + magic.Level + 1 + RandomUtils.Next(PoisonAttack);
+                            int _Duration = (value * 2) + ((magic.Level + 1) * 7);
+                            if (hasItemSk(ItemSkill.Taoist7))
+                            {
+                                _value = _value * 13 / 10;
+                                _Duration = _Duration * 9 / 10;
+                            }
+
                             target.ApplyPoison(new Poison
                             {
-                                Duration = (value * 2) + ((magic.Level + 1) * 7),
+                                Duration = _Duration,
                                 Owner = this,
                                 PType = PoisonType.Green,
                                 TickSpeed = 2000,
                                 //Value = value / 15 + magic.Level + 1 + RandomUtils.Next(PoisonAttack)
-                                Value = value / 15 + magic.Level + 1 + RandomUtils.Next(PoisonAttack)
+                                Value = _value
                             }, this);
                             break;
                         case 2:
@@ -10132,6 +10220,10 @@ namespace Server.MirObjects
                     }
                     if (magic.Spell == Spell.CrippleShot)
                     {
+                        if (hasItemSk(ItemSkill.Archer5))
+                        {
+                            value = value * 13 / 10;
+                        }
                         if (hasVampBuff || hasPoisonBuff)
                         {
                             place = target.CurrentLocation;
@@ -10247,6 +10339,16 @@ namespace Server.MirObjects
 
                     MonsterInfo info = Envir.GetMonsterInfo((SummonType == 1 ? Settings.VampireName : (SummonType == 2 ? Settings.ToadName : Settings.SnakeTotemName)));
                     if (info == null) return;
+
+                    if(SummonType==2 && hasItemSk(ItemSkill.Archer4))
+                    {
+                        info = info.Clone();
+                        info.MaxAC = (ushort)(info.MaxAC * 2);
+                        info.MaxMAC = (ushort)(info.MaxMAC * 2);
+                        info.MaxDC = (ushort)(info.MaxDC * 2);
+                        info.MaxMC = (ushort)(info.MaxMC * 2);
+                        info.MaxSC = (ushort)(info.MaxSC * 2);
+                    }
 
                     LevelMagic(magic);
                     //ConsumeItem(item, 5);
