@@ -289,5 +289,13 @@ namespace Server.MirDatabase
         {
             return string.Format("{0}:   {1}", FileName, Functions.PointToString(Location));
         }
+
+        //复制，克隆一个对象
+        public NPCInfo Clone()
+        {
+            //采用JSON的方式进行全克隆
+            NPCInfo npc = JsonConvert.DeserializeObject<NPCInfo>(JsonConvert.SerializeObject(this));
+            return npc;
+        }
     }
 }

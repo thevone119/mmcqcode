@@ -128,7 +128,7 @@ namespace Server.MirEnvir
             fb_mapsize = 0;
             fb_moncount = 0;
             fb_killmoncount = 0;
-            SMain.Enqueue("副本刷怪：MaxAC："+ MaxAC+ ",MaxDC:"+ MaxDC);
+            //SMain.Enqueue("副本刷怪：MaxAC："+ MaxAC+ ",MaxDC:"+ MaxDC);
             int mcount1 = 6;
             int mcount2 = 1;//1组
             //int mcount3 = 1;
@@ -468,6 +468,29 @@ namespace Server.MirEnvir
         //爆东西,刷新NPC
         private void DropFBMon(Map map)
         {
+            //
+            if (userItems.Count < 4)
+            {
+                if (play_level < 40)
+                {
+                    userItems.AddRange(ItemInfo.queryByGroupName("祖玛首饰"));
+                }else if (play_level < 45)
+                {
+                    userItems.AddRange(ItemInfo.queryByGroupName("赤月首饰"));
+                }
+                else if (play_level < 50)
+                {
+                    userItems.AddRange(ItemInfo.queryByGroupName("狐狸首饰"));
+                }
+                else if (play_level < 55)
+                {
+                    userItems.AddRange(ItemInfo.queryByGroupName("魔神首饰"));
+                }
+                else
+                {
+                    userItems.AddRange(ItemInfo.queryByGroupName("首饰50"));
+                }
+            }
             hasnpc = false;
             string PlayerNames = "";
             //1.刷新一个零时的NPC(目前零时补给NPC还有些问题哟)
@@ -476,15 +499,18 @@ namespace Server.MirEnvir
             //地图越大，越容易出现补给NPC
             if (RandomUtils.Next(2) == 0)
             {
-                NPCInfo npc = Envir.GetNPCInfoByName("零时补给");
-                NPCObject npco = new NPCObject(npc, false);
+                NPCInfo npc = Envir.GetNPCInfoByName("零时补给").Clone();
+                npc.Location = point;
+                NPCObject npco = new NPCObject(npc,false) { CurrentMap = map };
                 npco.SpawnNew(map, point);
+         
                 hasnpc = true;
+                //SMain.Enqueue("刷新NPC");
             }
             double DropRate = 1;
             DropRate = DropRate * (1 + map.Players[0].ItemDropRateOffset / 100.0f + Level_increase * fb_level*2 / 100.0f);
             //DropRate = DropRate + fb_mapsize * 0.05;
-            SMain.Enqueue("当前地狱层数："+ fb_level+",爆率倍数:"+ DropRate+",玩家经验倍率："+ map.Players[0].ItemDropRateOffset);
+           // SMain.Enqueue("当前地狱层数："+ fb_level+",爆率倍数:"+ DropRate+",玩家经验倍率："+ map.Players[0].ItemDropRateOffset);
             //2.爆东西
             List<ItemInfo> dropItems = new List<ItemInfo>();
             List<UserItem> dropSAItems = new List<UserItem>();//这个是玩家轮回的装备
@@ -580,7 +606,7 @@ namespace Server.MirEnvir
                         dropSAItems.Add(saitem);
                     }
                     
-                    SMain.Enqueue($"恭喜[{p.Name}]闯入轮回，找回自己的装备 {saitem.FriendlyName}，在{Title}");
+                    //SMain.Enqueue($"恭喜[{p.Name}]闯入轮回，找回自己的装备 {saitem.FriendlyName}，在{Title}");
                     //如果物品需要通知，则发送通知
                     foreach (var player in Envir.Players)
                     {
@@ -634,7 +660,7 @@ namespace Server.MirEnvir
             {
                 //dropItems.AddRange(drop3.DropItems());//符纸放在地狱爆
             }
-            if (drop4.isDrop(DropRate) && userItems.Count> 4)
+            if (drop4.isDrop(DropRate) && userItems.Count> 3)
             {
                 if (RandomUtils.Next(Math.Max(20 - fb_level,2)) == 1)
                 {
@@ -735,6 +761,10 @@ namespace Server.MirEnvir
         //groupytpe:1：单人闯关次数 1：组队闯关次数
         public static bool checkFBTime(PlayerObject p,byte play_type, bool update=false)
         {
+            if (p.IsGM)
+            {
+                return true;
+            }
             if (p == null && p.Info==null)
             {
                 return false;

@@ -127,8 +127,10 @@ namespace Server.MirObjects
                     Spawned();
                 }
             }
-
-            LoadInfo();
+            if (_spawned)
+            {
+                LoadInfo();
+            }
             //LoadGoods();
         }
 
@@ -146,18 +148,20 @@ namespace Server.MirObjects
             {
                 CurrentLocation = location;
             }
-            CurrentMap.AddObject(this);
+            LoadInfo();
             Spawned();
+            CurrentMap.AddObject(this);
             return true;
         }
 
         //加载配置
         public void LoadInfo(bool clear = false)
         {
-            if (Envir.Time < lastLoadTime)
+            if (Envir.Time < lastLoadTime && clear==false)
             {
                 return;
             }
+  
             //10秒到20秒，随机时间
             lastLoadTime = Envir.Time + RandomUtils.Next(10000, 20000);
 
@@ -826,7 +830,6 @@ namespace Server.MirObjects
         public void Call(PlayerObject player, string key)
         {
             key = key.ToUpper();
-
             if (!player.NPCDelayed)
             {
                 if (key != MainKey) // && ObjectID != player.DefaultNPC.ObjectID
@@ -855,7 +858,7 @@ namespace Server.MirObjects
             {
                 player.NPCDelayed = false;
             }
-
+          
             if (key.StartsWith("[@@") && player.NPCInputStr == string.Empty)
             {
                 //send off packet to request input
@@ -881,11 +884,9 @@ namespace Server.MirObjects
 
                     ProcessSegment(player, page, segment);
                 }
-
+              
                 Response(player, page);
             }
-
-
             player.NPCInputStr = string.Empty;
         }
 
@@ -1000,6 +1001,13 @@ namespace Server.MirObjects
                         player.Info.SaItem = null;
                         player.GainItem(item);
                         player.ReceiveChat("已把轮回中的装备返回给你.", ChatType.System);
+                        //每日轮回次数限制(重启清空这个次数限制)
+                        string satimekey = "SA_ITEM_TIME_" + Envir.Now.DayOfYear;
+                        int satime = player.Info.getTempValue(satimekey);
+                        if (satime > 0)
+                        {
+                            player.Info.putTempValue(satimekey, satime - 1);
+                        }
                     }
                     else
                     {
@@ -1926,6 +1934,7 @@ namespace Server.MirObjects
         AddGuildNameList,
         DelGuildNameList,
         ClearGuildNameList,
+        RefreshWeaponSkill,//刷武器技能，阵法
     }
     public enum CheckType
     {

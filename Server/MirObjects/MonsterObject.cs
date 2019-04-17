@@ -1314,6 +1314,7 @@ namespace Server.MirObjects
 
             for (int i = PoisonList.Count - 1; i >= 0; i--)
             {
+                //加多一个判断，避免数组越界啊，这里有点坑的
                 if (Dead || PoisonList.Count==0) return;
 
                 Poison poison = PoisonList[i];
@@ -1494,17 +1495,19 @@ namespace Server.MirObjects
                 if (Master.PMode == PetMode.MoveOnly || Master.PMode == PetMode.None)
                     Target = null;
             }
-
+            //搜索目标，3秒搜索一次
             ProcessSearch();
+            //到处漫游
             ProcessRoam();
+            //处理攻击目标，如果有的话
             ProcessTarget();
         }
-        //怪物到处走
+        //怪物到处搜索
         protected virtual void ProcessSearch()
         {
             if (Envir.Time < SearchTime) return;
             if (Master != null && (Master.PMode == PetMode.MoveOnly || Master.PMode == PetMode.None)) return;
-            
+
             SearchTime = Envir.Time + SearchDelay;
 
             if (CurrentMap.Inactive(5)) return;
@@ -1546,13 +1549,15 @@ namespace Server.MirObjects
             if (Target == null || RandomUtils.Next(3) == 0)
                 FindTarget();
         }
+
+        //怪物到处走动，漫游
         protected virtual void ProcessRoam()
         {
             if (Target != null || Envir.Time < RoamTime) return;
 
             if (ProcessRoute()) return;
 
-            if (CurrentMap.Inactive(30)) return;
+            if (CurrentMap.Inactive(5)) return;
 
             if (Master != null)
             {
@@ -1601,7 +1606,7 @@ namespace Server.MirObjects
             return Target.CurrentLocation != CurrentLocation && Functions.InRange(CurrentLocation, Target.CurrentLocation, 1);
         }
         //这个是怪物的仇恨？
-        //这个循环很坑啊
+        //这个循环很坑啊,这里比较耗时的，看下是否优化，如何优化哦
         protected virtual void FindTarget()
         {
             //if (CurrentMap.Players.Count < 1) return;

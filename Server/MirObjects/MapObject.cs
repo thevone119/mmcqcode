@@ -523,7 +523,7 @@ namespace Server.MirObjects
                 Buffs[i].ExpireTime = Envir.Time;
             }
         }
-
+        //检测当前位置有没有其他的玩家，怪物，如果有，就走动一下哦
         public bool CheckStacked()
         {
             //Cell cell = CurrentMap.GetCell(CurrentLocation);

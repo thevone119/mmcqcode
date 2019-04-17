@@ -4206,6 +4206,19 @@ namespace Client.MirScenes
                         ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.GreatFoxSpirit], 375 + (CMain.Random.Next(3) * 20), 20, 1400, ob));
                         SoundManager.PlaySound(((ushort)Monster.GreatFoxSpirit * 10) + 5);
                         break;
+
+                    case SpellEffect.GreatFoxThunder://悲月雷电特效
+                        ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.GreatFoxSpirit], 355 , 20, 2000, ob));
+                        SoundManager.PlaySound(((ushort)Monster.GreatFoxSpirit * 10) + 1);
+                        break;
+                    case SpellEffect.Focus://基础箭法的集中特效
+                        ob.Effects.Add(new Effect(Libraries.Magic3, 2730, 10, 1000, ob));
+                        SoundManager.PlaySound(20000 + 121 * 10 + 5);
+                        break;
+                    case SpellEffect.FlameRound://基础箭法的集中特效
+                        ob.Effects.Add(new Effect(Libraries.Magic3, 4370, 10, 1000, ob));
+                        SoundManager.PlaySound(20000 + 121 * 10 + 5);
+                        break;
                     case SpellEffect.Entrapment:
                         ob.Effects.Add(new Effect(Libraries.Magic2, 1010, 10, 1500, ob));
                         ob.Effects.Add(new Effect(Libraries.Magic2, 1020, 8, 1200, ob));

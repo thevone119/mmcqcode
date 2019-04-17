@@ -775,6 +775,7 @@ namespace Server.MirEnvir
         {
             try
             {
+                List<NPCObject> rmObject = new List<NPCObject>();
                 for (int w = 0; w < Width; w++)
                 {
                     for (int h = 0; h < Height; h++)
@@ -794,11 +795,18 @@ namespace Server.MirEnvir
                             }
                             if (o.Race == ObjectType.Merchant)
                             {
-
-
+                                //o.Hidden();
+                                ((NPCObject)o).Visible = false;
+                                //Remove(o);
+                                rmObject.Add(((NPCObject)o));
                             }
                         }
                     }
+                }
+                foreach(NPCObject n in rmObject)
+                {
+                    RemoveObject(n);
+                    SMain.Enqueue("删除NPC");
                 }
             }
             catch(Exception ex)
@@ -806,6 +814,7 @@ namespace Server.MirEnvir
                 SMain.Enqueue("副本清理数据出错");
                 SMain.Enqueue(ex);
             }
+            
             Objects = null;
             Objects = new List<MapObject>[Width, Height];
             MonsterCount = 0;

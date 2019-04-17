@@ -83,6 +83,7 @@ namespace Client
         //public static string IPAddress = "127.0.0.1";//61.177.74.230
         //public static int Port = 7000;
         public const int TimeOut = 5000;
+        public const int MaxClient = 2;//最大的客户端限制
 
         //Sound
         public static int SoundOverLap = 3;

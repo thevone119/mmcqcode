@@ -62,9 +62,10 @@ namespace Server
 
         public static ushort Port = 7000,
                              TimeOut = 10000,//10秒超时？
-                             MaxUser = 500,
+                             MaxUser = 500,//最大用户数
                              RelogDelay = 50,
-                             MaxIP = 500;
+                             MaxUserByIP = 3,//无效
+                             MaxIP = 3;//同一个IP，最大的连接数
 
 
         //Permission

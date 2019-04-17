@@ -42,6 +42,51 @@ namespace Client
 
                 if (RuntimePolicyHelper.LegacyV2RuntimeEnabledSuccessfully == true) { }
 
+                //客户端多开限制，只运行开2个客户端
+                int currClient = 0;
+                string[] dsmach = { "Config", "Data", "DirectX", "Map", "Sound" };
+                Process[] ps = Process.GetProcesses();
+                foreach(Process p in ps)
+                {
+                    try
+                    {
+                        if (p.MainModule.FileName == null)
+                        {
+                            continue;
+                        }
+                        MirLog.info(p.MainModule.FileName);
+                        FileInfo f = new FileInfo(p.MainModule.FileName);
+                        DirectoryInfo[] ds = f.Directory.GetDirectories();
+                        int dsmachcount = 0;
+                        foreach (DirectoryInfo di in ds)
+                        {
+                            foreach (string dm in dsmach)
+                            {
+                                if (di.Name.ToLower().Equals(dm.ToLower()))
+                                {
+                                    dsmachcount++;
+                                }
+                            }
+                        }
+                        if (dsmachcount >= 5)
+                        {
+                            currClient++;
+                        }
+                    }
+                    catch(Exception e)
+                    {
+                        MirLog.error(e.Message);
+                    }
+                }
+                if (currClient >= 3)
+                {
+                    MirLog.info("最多只运行同时打开2个客户端");
+                    MessageBox.Show("最多只运行同时打开2个客户端", "提示", MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
+                    Application.Exit();
+                    return;
+                }
+                
+
                 Packet.IsServer = false;
                 Settings.Load();
 

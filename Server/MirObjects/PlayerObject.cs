@@ -24,12 +24,11 @@ namespace Server.MirObjects
         public bool IsGM, GMLogin, GMNeverDie, GMGameMaster, EnableGroupRecall, EnableGuildInvite, AllowMarriage, AllowLoverRecall, AllowMentor, HasMapShout, HasServerShout;
 
 
-
         public bool HasUpdatedBaseStats = true;
 
         public long LastRecallTime, LastRevivalTime, LastTeleportTime, LastProbeTime, MenteeEXP;
         public long LastOnlineTimeCheck;//最后检测时间
-        public long LastItemSkillTime;//最后检测时间
+        public long LastItemSkillTime, LastSkillComm4,LastSkillComm5, LastSkillComm7;//最后检测时间
         
 
 
@@ -201,7 +200,7 @@ namespace Server.MirObjects
         }
         //MoveDelay 移动的延时，服务器端减少下延时，避免客户端卡顿问题
         public const long TurnDelay = 350, MoveDelay = 560, HarvestDelay = 350, RegenDelay = 10000, PotDelay = 200, HealDelay = 600, DuraDelay = 10000, VampDelay = 500, LoyaltyDelay = 1000, FishingCastDelay = 750, FishingDelay = 200, CreatureTimeLeftDelay = 1000, ItemExpireDelay = 60000, MovementDelay = 2000;
-        public long ActionTime, RunTime, RegenTime, PotTime, HealTime, AttackTime, StruckTime, TorchTime, DuraTime, DecreaseLoyaltyTime, IncreaseLoyaltyTime, ChatTime, ShoutTime, SpellTime, VampTime, SearchTime, FishingTime, LogTime, FishingFoundTime, CreatureTimeLeftTicker, StackingTime, ItemExpireTime, RestedTime, MovementTime;
+        public long ActionTime, RunTime, RegenTime, RegenItemSkillTime, PotTime, HealTime, AttackTime, StruckTime, TorchTime, DuraTime, DecreaseLoyaltyTime, IncreaseLoyaltyTime, ChatTime, ShoutTime, SpellTime, VampTime, SearchTime, FishingTime, LogTime, FishingFoundTime, CreatureTimeLeftTicker, StackingTime, ItemExpireTime, RestedTime, MovementTime;
 
         public byte ChatTick;
 
@@ -852,9 +851,9 @@ namespace Server.MirObjects
 
             //噬血阵（大概3秒吸一次附近怪物的血，恢复自身）
             //加血量
-            if (hasItemSk(ItemSkill.Comm4) && RandomUtils.Next(100) < 20)
+            if (Envir.Time > LastSkillComm4 && hasItemSk(ItemSkill.Comm4) && RandomUtils.Next(100) < 20)
             {
-                LastItemSkillTime = Envir.Time + 4000;
+                LastSkillComm4 = Envir.Time + 3000;
                 int value = GetAttackPower(MinDC, MaxDC);
                 int value2 = GetAttackPower(MinMC, MaxMC);
                 int value3 = GetAttackPower(MinSC, MaxSC);
@@ -890,21 +889,22 @@ namespace Server.MirObjects
                     }
                     DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, value, DefenceType.None,false);
                     ActionList.Add(action);
-                    xivalue += value/3;
+                    xivalue += value/2;
                 }
+     
                 //吸血
-                if (xivalue > 0 && HP<MaxHP && PotHealthAmount< MaxHP)
+                if (xivalue > 0 && HP<MaxHP && PotHealthAmount < MaxHP)
                 {
                     PotHealthAmount += (ushort)xivalue;
                 }
                 return;
             }
 
-            //迷幻，几率迷幻3-6秒
-            if (hasItemSk(ItemSkill.Comm5) && RandomUtils.Next(100) < 20)
+            //迷幻，几率迷幻5-10秒
+            if (Envir.Time > LastSkillComm5 && hasItemSk(ItemSkill.Comm5) && RandomUtils.Next(100) < 20)
             {
                 CurrentMap.Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.Focus }, CurrentLocation);
-                LastItemSkillTime = Envir.Time + 4000;
+                LastSkillComm5 = Envir.Time + 4000;
                 List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 1);
                 foreach (MapObject ob in list)
                 {
@@ -921,13 +921,14 @@ namespace Server.MirObjects
                         continue;
                     }
                     ((MonsterObject)ob).ShockTime = Envir.Time + RandomUtils.Next(5,10) * 1000;
+                    ((MonsterObject)ob).SearchTime = ((MonsterObject)ob).ShockTime;
                     ob.Target = null;
                 }
                 return;
             }
 
             //天雷阵
-            if (hasItemSk(ItemSkill.Comm7) && RandomUtils.Next(100) < 20)
+            if (Envir.Time > LastSkillComm7 && hasItemSk(ItemSkill.Comm7) && RandomUtils.Next(100) < 20)
             {
                 int value = GetAttackPower(MinDC, MaxDC);
                 int value2 = GetAttackPower(MinMC, MaxMC);
@@ -940,7 +941,8 @@ namespace Server.MirObjects
                 {
                     value = value3;
                 }
-                LastItemSkillTime = Envir.Time + 4000;
+                value += Level * 2;
+                LastSkillComm7 = Envir.Time + 3000;
                 CurrentMap.Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.GreatFoxThunder }, CurrentLocation);
                 //Broadcast(new S.ObjectEffect { ObjectID = this.ObjectID, Effect = SpellEffect.GreatFoxThunder });
                 List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
@@ -1094,11 +1096,10 @@ namespace Server.MirObjects
 
             int healthRegen = 0, manaRegen = 0;
 
+            //自动回血的
             if (CanRegen)
             {
                 RegenTime = Envir.Time + RegenDelay;
-
-
                 if (HP < MaxHP)
                 {
                     healthRegen += (int)(MaxHP * 0.03F) + 1;
@@ -1110,17 +1111,33 @@ namespace Server.MirObjects
                     manaRegen += (int)(MaxMP * 0.03F) + 1;
                     manaRegen += (int)(manaRegen * ((double)SpellRecovery / Settings.ManaRegenWeight));
                 }
-
-                if (hasItemSk(ItemSkill.Comm1))
-                {
-                    manaRegen = manaRegen * 15 / 10;
-                }
-                if (hasItemSk(ItemSkill.Comm2))
-                {
-                    healthRegen = healthRegen * 15 / 10;
-                }
             }
 
+            //回血阵，回蓝阵，每5秒恢复
+            if (Envir.Time > RegenItemSkillTime)
+            {
+                RegenItemSkillTime = Envir.Time + 5000;
+                int skHealth = 0;
+                int skMana = 0;
+
+                if (hasItemSk(ItemSkill.Comm1) && MP < MaxMP)
+                {
+                    skMana += (int)(MaxMP * 0.04F) + 1;
+                    skMana += (int)(skMana * ((double)SpellRecovery / Settings.ManaRegenWeight));
+                }
+
+                if (hasItemSk(ItemSkill.Comm2) && HP < MaxHP)
+                {
+                    skHealth += (int)(MaxHP * 0.04F) + 1;
+                    skHealth += (int)(skHealth * ((double)HealthRecovery / Settings.HealthRegenWeight));
+                }
+
+                healthRegen += skHealth;
+                manaRegen += skMana;
+            }
+                
+
+            //喝血加的
             if (Envir.Time > PotTime)
             {
                 //PotTime = Envir.Time + Math.Max(50,Math.Min(PotDelay, 600 - (Level * 10)));
@@ -1167,6 +1184,7 @@ namespace Server.MirObjects
                 }
             }
 
+            //噬血术加的血
             if (Envir.Time > VampTime)
             {
                 VampTime = Envir.Time + VampDelay;
@@ -1183,9 +1201,6 @@ namespace Server.MirObjects
                 }
             }
 
-            
-
-
             if (healthRegen > 0) ChangeHP(healthRegen);
             if (HP == MaxHP)
             {
@@ -1196,6 +1211,7 @@ namespace Server.MirObjects
             if (manaRegen > 0) ChangeMP(manaRegen);
             if (MP == MaxMP) PotManaAmount = 0;
         }
+        //这里有BUG，会出现数组越界
         private void ProcessPoison()
         {
             PoisonType type = PoisonType.None;
@@ -1204,7 +1220,8 @@ namespace Server.MirObjects
 
             for (int i = PoisonList.Count - 1; i >= 0; i--)
             {
-                if (Dead) return;
+                //加多一个判断，避免数组越界啊，这里有点坑的
+                if (Dead || PoisonList.Count == 0) return;
 
                 Poison poison = PoisonList[i];
 
@@ -4511,7 +4528,7 @@ namespace Server.MirObjects
                         ReceiveChat("请输入GM密码", ChatType.Hint);
                         return;
                     case "开启怪物攻城活动":
-                        if (IsGM)
+                        if (!IsGM)
                         {
                             return;
                         }
@@ -4520,6 +4537,28 @@ namespace Server.MirObjects
                             CurrentMap.mapSProcess = new MonWar();
                         }
                         return;
+                    case "创建测试NPC":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        NPCInfo _npc = Envir.GetNPCInfoByName("零时补给").Clone();
+                        NPCInfo npc = new NPCInfo();
+                        npc.Image = _npc.Image;
+                        npc.Location = Front;
+                        npc.FileName = _npc.FileName;
+                        npc.Location = Front;
+                        npc.Name = "零时补给";
+                        NPCObject npco = new NPCObject(npc, true) { CurrentMap = CurrentMap };
+                        uint oid = npco.ObjectID;
+                        //npco.LoadInfo(true);
+                        CurrentMap.AddObject(npco);
+                        npco.Spawned();
+                        npco.Call(this, "buy");
+                        //Enqueue(new S.NPCUpdate { NPCID = npco.ObjectID });
+
+                        //npco.SpawnNew(CurrentMap, Front);
+                        return;
                     case "GIVEITEMSKILL":
                         if (!IsGM)
                         {
@@ -4527,7 +4566,6 @@ namespace Server.MirObjects
                         }
                         byte _sk1 = 0;
                         byte.TryParse(parts[1], out _sk1);
-                        SMain.Enqueue("更新武器阵法" + _sk1);
                         foreach (UserItem titem  in Info.Equipment)
                         {
                             if(titem==null || titem.Info.Type!= ItemType.Weapon)
@@ -4535,7 +4573,6 @@ namespace Server.MirObjects
                                 continue;
                             }
                             titem.sk1 = (ItemSkill)_sk1;
-                            SMain.Enqueue("更新武器阵法" + titem.Name+","+titem.sk1);
                             Enqueue(new S.RefreshItem { Item = titem });
                         }
                        
@@ -8047,6 +8084,7 @@ namespace Server.MirObjects
 
             if (hasItemSk(ItemSkill.Wizard2))
             {
+                byte count = 0;
                 List < MapObject > list= this.CurrentMap.getMapObjects(target.CurrentLocation.X, target.CurrentLocation.Y,1);
                 foreach(MapObject ob in list)
                 {
@@ -8064,6 +8102,11 @@ namespace Server.MirObjects
                     }
                     DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, magic, damage, ob);
                     ActionList.Add(action);
+                    count++;
+                    if (count > 3)
+                    {
+                        break;
+                    }
                 }
             }
             else
@@ -8387,6 +8430,7 @@ namespace Server.MirObjects
                 info.MaxSC = (ushort)(info.MaxSC * 2);
             }
 
+
             LevelMagic(magic);
             ConsumeItem(item, 5);
 
@@ -8397,7 +8441,7 @@ namespace Server.MirObjects
             monster.MaxPetLevel = (byte)(1 + magic.Level * 2);
             monster.Direction = Direction;
             monster.ActionTime = Envir.Time + 1000;
-
+   
             //Pets.Add(monster);
 
             DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, this, magic, monster, Front);
@@ -8822,7 +8866,7 @@ namespace Server.MirObjects
             int value = (int)Math.Round(MaxAC * (0.2 + (0.03 * magic.Level)));
             if (hasItemSk(ItemSkill.Warrior5))
             {
-                value = value + 10;
+                value = value + 15;
             }
             AddBuff(new Buff { Type = BuffType.ProtectionField, Caster = this, ExpireTime = Envir.Time + duration * 1000, Values = new int[] { value } });
             OperateTime = 0;
@@ -9052,7 +9096,7 @@ namespace Server.MirObjects
             // damage
             int damageBase = GetAttackPower(MinDC, MaxDC);
             int damageFinal = magic.GetDamage(damageBase);
-            if (hasItemSk(ItemSkill.Warrior7) && RandomUtils.Next(100) < 30)
+            if (hasItemSk(ItemSkill.Warrior7) && RandomUtils.Next(100) < 35)
             {
                 damageFinal = damageFinal * 13 / 10;
             }
@@ -9268,7 +9312,7 @@ namespace Server.MirObjects
             if (RandomUtils.Next(0, 100) <= Accuracy)
                 damageBase += damageBase;//crit should do something like double dmg, not double max dc dmg!
             int damageFinal = magic.GetDamage(damageBase);
-            if (hasItemSk(ItemSkill.Assassin7) && RandomUtils.Next(100) < 30)
+            if (hasItemSk(ItemSkill.Assassin7) && RandomUtils.Next(100) < 40)
             {
                 damageFinal = damageFinal*13/10;
             }
@@ -9471,7 +9515,7 @@ namespace Server.MirObjects
             action = new DelayedAction(DelayedType.Magic, Envir.Time + delay + 50, magic, damage, target);
             ActionList.Add(action);
             //几率追击一次伤害
-            if (hasItemSk(ItemSkill.Archer7) &&  RandomUtils.Next(100) < 40)
+            if (hasItemSk(ItemSkill.Archer7) &&  RandomUtils.Next(100) < 50)
             {
                 action = new DelayedAction(DelayedType.Magic, Envir.Time + delay + 100, magic, damage, target);
                 ActionList.Add(action);
@@ -9648,7 +9692,7 @@ namespace Server.MirObjects
 
             if (hasItemSk(ItemSkill.Archer7) && RandomUtils.Next(100) < 50)
             {
-                damage = damage * 13 / 10;
+                damage = damage * 14 / 10;
             }
             int delay = distance * 50 + 500; //50 MS per Step
 
@@ -9673,7 +9717,7 @@ namespace Server.MirObjects
         {
             int damage = magic.GetDamage(GetAttackPower(MinMC, MaxMC));
 
-            if (hasItemSk(ItemSkill.Archer7) && RandomUtils.Next(100) < 30)
+            if (hasItemSk(ItemSkill.Archer7) && RandomUtils.Next(100) < 35)
             {
                 damage = damage * 13 / 10;
             }
@@ -11252,7 +11296,7 @@ namespace Server.MirObjects
 
         public override int Attacked(PlayerObject attacker, int damage, DefenceType type = DefenceType.ACAgility, bool damageWeapon = true)
         {
-            if (hasItemSk(ItemSkill.Warrior7) && RandomUtils.Next(100) < 20)
+            if (hasItemSk(ItemSkill.Warrior7) && RandomUtils.Next(100) < 25)
             {
                 BroadcastDamageIndicator(DamageType.Miss);
                 return 0;
@@ -13450,8 +13494,14 @@ namespace Server.MirObjects
                     {
                         successchance = 70;
                     }
+                    byte quality = tempTo.quality;
+                    if(tempTo.Info.Type!= ItemType.Weapon)
+                    {
+                        quality = (byte)(quality * 2);
+                    }
+
                     //check if combine will succeed
-                    bool succeeded = RandomUtils.Next(100) < successchance + tempTo.quality*2;
+                    bool succeeded = RandomUtils.Next(100) < successchance + quality;
                     //随机失败，品质好的失败几率小一点
                     if (succeeded && RandomUtils.Next(5 + tempTo.quality) == 1)
                     {
@@ -13585,7 +13635,7 @@ namespace Server.MirObjects
                         return;
                     }
                     byte type2 = (byte)tempTo.Info.Type;
-                    if (ValidGemForItem(tempFrom, type2))
+                    if (!ValidGemForItem(tempFrom, type2))
                     {
                         this.ReceiveChat("当前装备无法使用", ChatType.Hint);
                         Enqueue(p);
@@ -15803,6 +15853,7 @@ namespace Server.MirObjects
             {
                 NPCObject ob = CurrentMap.NPCs[i];
                 if (ob.ObjectID != objectID) continue;
+
                 if (!Functions.InRange(ob.CurrentLocation, CurrentLocation, Globals.DataRange)) return;
                 ob.CheckVisible(this);
 
@@ -20099,6 +20150,16 @@ namespace Server.MirObjects
                     ReceiveChat("请放入轮回符纸，轮回符纸可以护送您的装备进入轮回中..", ChatType.System);
                     return;
                 }
+                //每日轮回次数限制(重启清空这个次数限制)
+                string satimekey = "SA_ITEM_TIME_" + Envir.Now.DayOfYear;
+                int satime = Info.getTempValue(satimekey);
+                if (satime >= 3)
+                {
+                    ReceiveChat("每日最多进行3次轮回...", ChatType.System);
+                    return;
+                }
+                Info.putTempValue(satimekey, satime + 1);
+                
 
                 //删除装备
                 for (int t = 0; t < Info.ItemCollect.Length; t++)

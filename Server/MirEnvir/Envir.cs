@@ -2298,7 +2298,7 @@ namespace Server.MirEnvir
             }
             //
             retm = list[0].Info.CreateInstance();
-            //SMain.Enqueue("创建地图副本：" + fb_id + ",idx:" + list.Count);
+            SMain.Enqueue("创建地图副本：" + fb_id + ",idx:" + list.Count);
             retm.mapSProcess = FBMap.getInstance(fb_id);
             return retm;
         }

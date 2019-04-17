@@ -924,6 +924,29 @@ public class UserItem
     public string spInfo = string.Empty;//特殊说明，添加的字段,这个传输到客户端
     public string spRecord = string.Empty;//这个不传输到客户端哦 ，特殊记录，针对一些特殊物品进行特殊处理，特殊处理的数据记录在这里
 
+
+    //是否具有某个技能
+    public bool hasItemSk(ItemSkill sk)
+    {
+        if (sk1 == sk)
+        {
+            return true;
+        }
+        if (sk2 == sk)
+        {
+            return true;
+        }
+        if (sk3 == sk)
+        {
+            return true;
+        }
+        if (sk4 == sk)
+        {
+            return true;
+        }
+        return false;
+    }
+
     //这个代表物品是极品，加了属性的,这个涉及到是否重新发送到客户端
     public bool IsAdded
     {
