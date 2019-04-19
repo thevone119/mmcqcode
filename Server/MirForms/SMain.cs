@@ -135,11 +135,11 @@ namespace Server
             {
                 MessageBox.Show(ex.ToString());
             }
-            //增加数据备份功能,5分钟备份一次
+            //增加数据备份功能,10分钟备份一次
             try
             {
                 lastBackUpTime++;
-                if(lastBackUpTime > 60*5)
+                if(lastBackUpTime > 60*10)
                 {
                     lastBackUpTime = 0;
                     //File.Copy(AppDomain.CurrentDomain.BaseDirectory + @"mir_config.db", AppDomain.CurrentDomain.BaseDirectory + @"BackUp/mir_config.db_" + DateTime.Now.ToString("yyyyMMddHH"));
@@ -152,8 +152,18 @@ namespace Server
                         fileName = fileNames[i];
                         try
                         {
+                            //超过7天的全删除
                             if (File.GetLastWriteTime(fileName) < DateTime.Now.AddDays(-7))
+                            {
                                 File.Delete(fileNames[i]);
+                                continue;
+                            }
+                            //超过1天的。只保留1份即可哦
+                            if (File.GetLastWriteTime(fileName) < DateTime.Now.AddDays(-1) && File.GetLastWriteTime(fileName).Hour!=2)
+                            {
+                                File.Delete(fileNames[i]);
+                                continue;
+                            }
                         }
                         catch (Exception ex2)
                         {
