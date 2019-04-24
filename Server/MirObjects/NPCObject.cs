@@ -43,6 +43,7 @@ namespace Server.MirObjects
             ItemCollectKey1 = "[@ITEMCOLLECT1]",//物品收集(装备合成，宝石合成,2合1，3合1等）
             ItemCollectKey2 = "[@ITEMCOLLECT2]",//物品收集(装备轮回，放入轮回中)
             ItemCollectKey3 = "[@ITEMCOLLECT3]",//物品收集(装备回收)
+            ItemCollectKey4 = "[@ITEMCOLLECT4]",//物品收集(装备分解)
             CancelSaItem = "[@CANCELSAITEM]",//装备取消轮回
             getRewards0 = "[@GETREWARDS0]",//获得奖励0(轮回奖励,根据排行获得相应的攻击属性加成)
             getRewards1 = "[@GETREWARDS1]",//获得奖励1
@@ -988,6 +989,16 @@ namespace Server.MirObjects
                         }
                     }
                     player.Enqueue(new S.NPCItemCollect() { Rate = (Settings.RefineCost), type = 3 });
+                    break;
+                case ItemCollectKey4:
+                    for (int i = 0; i < player.Info.ItemCollect.Length; i++)
+                    {
+                        if (player.Info.ItemCollect[i] != null)
+                        {
+                            player.ItemCollectCancel();
+                        }
+                    }
+                    player.Enqueue(new S.NPCItemCollect() { Rate = (Settings.RefineCost), type = 4 });
                     break;
                 case CancelSaItem:
                     if (player.Info.SaItem == null)

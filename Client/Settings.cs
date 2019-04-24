@@ -87,7 +87,7 @@ namespace Client
 
         //Sound
         public static int SoundOverLap = 3;
-        private static byte _volume = 100;
+        private static byte _volume = 80;
         public static byte Volume
         {
             get { return _volume; }
@@ -104,7 +104,7 @@ namespace Client
             }
         }
 
-        private static byte _musicVolume = 100;
+        private static byte _musicVolume = 50;
         public static byte MusicVolume
         {
             get { return _musicVolume; }

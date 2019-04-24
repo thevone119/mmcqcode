@@ -354,6 +354,7 @@ namespace Server.MirObjects
 
         //增加4个武器自带技能(其实只用到3个吧)
         public ItemSkill sk1, sk2, sk3, sk4;
+        public ushort skCount;
 
         //是否具有某个技能
         public bool hasItemSk(ItemSkill sk)
@@ -870,6 +871,7 @@ namespace Server.MirObjects
                     value = MaxHP / 15;
                 }
                 value = value/3;
+                value += skCount / 3;
                 int xivalue = 0;
                 CurrentMap.Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.FlameRound }, CurrentLocation);
                 List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 1);
@@ -942,6 +944,7 @@ namespace Server.MirObjects
                     value = value3;
                 }
                 value += Level * 2;
+                value += skCount;
                 LastSkillComm7 = Envir.Time + 3000;
                 CurrentMap.Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.GreatFoxThunder }, CurrentLocation);
                 //Broadcast(new S.ObjectEffect { ObjectID = this.ObjectID, Effect = SpellEffect.GreatFoxThunder });
@@ -3484,6 +3487,7 @@ namespace Server.MirObjects
             sk2 = 0;
             sk3 = 0;
             sk4 = 0;
+            skCount = 0;
             var skillsToAdd = new List<string>();
             var skillsToRemove = new List<string> { Settings.HealRing, Settings.FireRing, Settings.BlinkSkill };
             short Macrate = 0, Acrate = 0, HPrate = 0, MPrate = 0;
@@ -3597,6 +3601,7 @@ namespace Server.MirObjects
                 if (temp.sk1 != 0)
                 {
                     sk1 = temp.sk1;
+                    skCount = temp.skCount;
                 }
                 if (temp.sk2 != 0)
                 {
@@ -11094,9 +11099,7 @@ namespace Server.MirObjects
 
             for (int i = 0; i < attempts; i++)
             {
-                Point location = new Point(BindLocation.X + RandomUtils.Next(-100, 100),
-                                           BindLocation.Y + RandomUtils.Next(-100, 100));
-
+                Point location = temp.RandomValidPoint();
                 if (Teleport(temp, location)) return true;
             }
 
@@ -12520,28 +12523,32 @@ namespace Server.MirObjects
                     UserItem temp;
                     switch (item.Info.Shape)
                     {
-                        case 0: //DE
+                        case 0: //DE 地牢
                             if (!TeleportEscape(20))
                             {
                                 Enqueue(p);
                                 return;
                             }
                             break;
-                        case 1: //TT
+                        case 1: //TT 回城
                             if (!Teleport(Envir.GetMap(BindMapIndex), BindLocation))
                             {
-                                Enqueue(p);
-                                return;
+                                //如果回城有问题，就当做地牢吧
+                                if (!TeleportEscape(20))
+                                {
+                                    Enqueue(p);
+                                    return;
+                                }
                             }
                             break;
-                        case 2: //RT
+                        case 2: //RT 随机
                             if (!TeleportRandom(200, item.Info.Durability))
                             {
                                 Enqueue(p);
                                 return;
                             }
                             break;
-                        case 3: //BenedictionOil
+                        case 3: //BenedictionOil 祝福油
                             if (!TryLuckWeapon())
                             {
                                 Enqueue(p);
@@ -19894,7 +19901,7 @@ namespace Server.MirObjects
             S.ConfirmItemCollect p = new S.ConfirmItemCollect { Success = false };
             if (Dead) return;
             //SMain.Enqueue("装备收集的后续处理");
-            //0:装备熔炼，1：装备合成 2：装备轮回 3：装备回收
+            //0:装备熔炼，1：装备合成 2：装备轮回 3：装备回收 4.
             if (type == 0)
             {
                 //装备熔炼,武器最大加10，饰品最大加5
@@ -20290,6 +20297,52 @@ namespace Server.MirObjects
                     //移除装备
                     Info.ItemCollect[t] = null;
                     Enqueue(new S.DeleteItem { UniqueID = temp.UniqueID, Count = temp.Count });
+                }
+            }
+
+            //装备分解
+            if (type == 4)
+            {
+                string erroritem = "";
+                for (int t = 0; t < Info.ItemCollect.Length; t++)
+                {
+                    UserItem temp = Info.ItemCollect[t];
+                    if (temp == null) continue;
+                    if (temp.Info.MaxMaterial < 1)
+                    {
+                        erroritem += temp.Name + ",";
+                        continue;
+                    }
+                }
+                if (erroritem.Length > 2)
+                {
+                    ReceiveChat("以下装备不符合分解要求，请取回...", ChatType.System);
+                    ReceiveChat(erroritem, ChatType.System);
+                    return;
+                }
+                p.Success = true;
+                Enqueue(p);
+                int st_count = 0;//获得的原石数量
+                for (int t = 0; t < Info.ItemCollect.Length; t++)
+                {
+                    UserItem temp = Info.ItemCollect[t];
+                    if (temp == null||temp.Info==null) continue;
+                    st_count+=RandomUtils.Next(temp.Info.MinMaterial, temp.Info.MaxMaterial + 1);
+                    //移除装备
+                    Info.ItemCollect[t] = null;
+                    Enqueue(new S.DeleteItem { UniqueID = temp.UniqueID, Count = temp.Count });
+                }
+                if (st_count > 0)
+                {
+                    ReceiveChat($"分解装备成功，你获得{st_count}个混沌原石", ChatType.System);
+                    for(int i=0;i< st_count; i++)
+                    {
+                        GainItem(ItemInfo.getItem("混沌原石").CreateFreshItem());
+                    }
+                }
+                else
+                {
+                    ReceiveChat("分解装备失败，你什么也没获得", ChatType.System);
                 }
             }
         }

@@ -6033,8 +6033,10 @@ public class ItemSkillBean
         {
             change = 5;
         }
+        //每2层增加1点成功率
+        change += item.skCount / 2;
         //失败几率
-        if(RandomUtils.Next(90)>= change && rtype==0)
+        if (RandomUtils.Next(90)>= change && rtype==0)
         {
             return false;
         }
@@ -6168,6 +6170,8 @@ public class ItemSkillBean
        
         if (listr2.Count > 0)
         {
+            //封印层数增加
+            item.skCount++;
             if (rtype == 0)
             {
                 for (int i = 0; i < listr2.Count; i++)

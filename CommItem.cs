@@ -96,6 +96,9 @@ public class ItemInfo
     //装备说明，提示
     public string ToolTip ="-";
 
+    //装备的分解获得石头的数量，这个只保留在服务器，不发送到客户端,最小材料数，最大材料数
+    public byte MinMaterial, MaxMaterial;
+
 
     public bool IsConsumable
     {
@@ -444,6 +447,8 @@ public class ItemInfo
             obj.CanFastRun = read.GetBoolean(read.GetOrdinal("CanFastRun"));
             obj.CanAwakening = read.GetBoolean(read.GetOrdinal("CanAwakening"));
             obj.ToolTip = read.GetString(read.GetOrdinal("ToolTip"));
+            obj.MinMaterial = read.GetByte(read.GetOrdinal("MinMaterial"));
+            obj.MaxMaterial = read.GetByte(read.GetOrdinal("MaxMaterial"));
 
             DBObjectUtils.updateObjState(obj, obj.Index);
             
@@ -614,6 +619,9 @@ public class ItemInfo
         lp.Add(new SQLiteParameter("ClassBased", ClassBased));
         lp.Add(new SQLiteParameter("LevelBased", LevelBased));
         lp.Add(new SQLiteParameter("CanMine", CanMine));
+
+        lp.Add(new SQLiteParameter("MinMaterial", MinMaterial));
+        lp.Add(new SQLiteParameter("MaxMaterial", MaxMaterial));
         //新增
         if (state == 1)
         {
@@ -898,6 +906,7 @@ public class UserItem
 
     //增加4个武器自带技能(其实只用到3个吧)
     public ItemSkill sk1, sk2, sk3, sk4;
+    public ushort skCount;//阵法的层数
 
 
     public RefinedValue RefinedValue = RefinedValue.None;
@@ -1107,6 +1116,7 @@ public class UserItem
         sk2 = (ItemSkill)reader.ReadByte();
         sk3 = (ItemSkill)reader.ReadByte();
         sk4 = (ItemSkill)reader.ReadByte();
+        skCount = reader.ReadUInt16();
     }
 
     /// <summary>
@@ -1290,6 +1300,7 @@ public class UserItem
         writer.Write((byte)sk2);
         writer.Write((byte)sk3);
         writer.Write((byte)sk4);
+        writer.Write(skCount);
     }
 
     //作废，不单独保存

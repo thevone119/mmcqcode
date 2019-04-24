@@ -4021,6 +4021,7 @@ namespace Client.MirScenes
             item.sk2 = p.Item.sk2;
             item.sk3 = p.Item.sk3;
             item.sk4 = p.Item.sk4;
+            item.skCount = p.Item.skCount;
 
             GameScene.Scene.InventoryDialog.DisplayItemGridEffect(item.UniqueID, 0);
 
@@ -8577,7 +8578,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = "[封印阵法]"
+                    Text = "[封印阵法] - 第"+ item.skCount+"层封印"
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, IDLabel.DisplayRectangle.Right + 4),

@@ -2246,6 +2246,9 @@ namespace Client.MirScenes.Dialogs
                 case 3:
                     NameLabel.Text = "装备回收";
                     break;
+                case 4:
+                    NameLabel.Text = "装备分解";
+                    break;
             }
             Visible = true;
         }

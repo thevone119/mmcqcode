@@ -3758,6 +3758,8 @@ namespace Client.MirScenes.Dialogs
         public MirImageControl SoundBar, MusicSoundBar;
         public MirImageControl VolumeBar, MusicVolumeBar;
 
+        private int currMusicVol;
+
         public MirButton CloseButton;
 
 
@@ -3978,8 +3980,9 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 NotControl = true,
             };
-
         }
+
+    
 
         //这个是干嘛？自动组合键？例如免shuit?
         private void ToggleSkillButtons(bool Ctrl)
@@ -4054,20 +4057,20 @@ namespace Client.MirScenes.Dialogs
 
         public void MusicSoundBar_MouseUp(object sender, MouseEventArgs e)
         {
+            ChangeMusicVolume();
+        }
+
+        private void ChangeMusicVolume()
+        {
             if (SoundManager.MusicVol <= -2900)
                 SoundManager.MusicVol = -3000;
             if (SoundManager.MusicVol >= -100)
                 SoundManager.MusicVol = 0;
-
-
             //SoundManager.Device.Dispose();
             //SoundManager.Create();
             //SoundManager.PlayMusic(SoundList.Music, true);
-
             if (SoundManager.Music == null) return;
-
             SoundManager.Music.SetVolume(SoundManager.MusicVol);
-
         }
 
         private void MusicSoundBar_MouseMove(object sender, MouseEventArgs e)
@@ -4159,11 +4162,16 @@ namespace Client.MirScenes.Dialogs
 
         public void Show()
         {
+            currMusicVol = SoundManager.MusicVol;
             Visible = true;
         }
 
         public void Hide()
         {
+            if(currMusicVol!= SoundManager.MusicVol)
+            {
+                ChangeMusicVolume();
+            }
             Visible = false;
         }
 
