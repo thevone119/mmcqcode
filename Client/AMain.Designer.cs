@@ -62,6 +62,7 @@ namespace Launcher
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.treeView1 = new System.Windows.Forms.TreeView();
+            this.label3 = new System.Windows.Forms.Label();
             this.Movement_panel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Config_pb)).BeginInit();
@@ -113,6 +114,7 @@ namespace Launcher
             // 
             this.Movement_panel.BackColor = System.Drawing.Color.Transparent;
             this.Movement_panel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.Movement_panel.Controls.Add(this.label3);
             this.Movement_panel.Controls.Add(this.pictureBox1);
             this.Movement_panel.Controls.Add(this.Config_pb);
             this.Movement_panel.Controls.Add(this.Close_pb);
@@ -326,6 +328,16 @@ namespace Launcher
             this.treeView1.Size = new System.Drawing.Size(224, 402);
             this.treeView1.TabIndex = 34;
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.label3.Location = new System.Drawing.Point(95, 12);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(197, 12);
+            this.label3.TabIndex = 34;
+            this.label3.Text = "安装使用问题请进Q群670847004咨询";
+            // 
             // AMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -363,6 +375,7 @@ namespace Launcher
             this.Load += new System.EventHandler(this.AMain_Load);
             this.Click += new System.EventHandler(this.AMain_Click);
             this.Movement_panel.ResumeLayout(false);
+            this.Movement_panel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Config_pb)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Close_pb)).EndInit();
@@ -396,6 +409,7 @@ namespace Launcher
         private Label label1;
         private Label label2;
         private TreeView treeView1;
+        private Label label3;
     }
 }
 

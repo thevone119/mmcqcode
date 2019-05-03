@@ -717,6 +717,28 @@ namespace Server.MirObjects
                         acts.Add(new NPCActions(ActionType.RefreshWeaponSkill, parts[1]));
                     }
                     break;
+                case "CALLNEWPLAYERMOB"://召唤新人宝宝，
+                    if (parts.Length < 2)
+                    {
+                        acts.Add(new NPCActions(ActionType.CallNewPlayerMob));
+                    }
+                    else
+                    {
+                        acts.Add(new NPCActions(ActionType.CallNewPlayerMob, parts[1]));
+                    }
+                    break;
+                    
+                case "WARSIGNUP":
+                    if (parts.Length < 2)
+                    {
+                        acts.Add(new NPCActions(ActionType.WarSignUp));
+                    }
+                    else
+                    {
+                        acts.Add(new NPCActions(ActionType.WarSignUp, parts[1]));
+                    }
+                    break;
+
                     
                 case "QUERYHAIR":
                     acts.Add(new NPCActions(ActionType.QueryHair));
@@ -2819,15 +2841,15 @@ namespace Server.MirObjects
 
                         for (int j = 0; j < petcount; j++)
                         {
-                            MonsterObject monster = MonsterObject.GetMonster(monInfo);
-                            if (monster == null) return;
-                            monster.PetLevel = petlevel;
-                            monster.Master = player;
-                            monster.MaxPetLevel = 7;
-                            monster.Direction = player.Direction;
-                            monster.ActionTime = SMain.Envir.Time + 1000;
-                            monster.Spawn(player.CurrentMap, player.CurrentLocation);
-                            player.Pets.Add(monster);
+                            MonsterObject monster2 = MonsterObject.GetMonster(monInfo);
+                            if (monster2 == null) return;
+                            monster2.PetLevel = petlevel;
+                            monster2.Master = player;
+                            monster2.MaxPetLevel = 7;
+                            monster2.Direction = player.Direction;
+                            monster2.ActionTime = SMain.Envir.Time + 1000;
+                            monster2.Spawn(player.CurrentMap, player.CurrentLocation);
+                            player.Pets.Add(monster2);
                         }
                         break;
 
@@ -2965,6 +2987,60 @@ namespace Server.MirObjects
                         player.Enqueue(new S.RefreshItem { Item = player.Info.Equipment[(int)EquipmentSlot.Weapon] });
                         player.RefreshStats();
 
+                        break;
+                    case ActionType.WarSignUp://战役报名
+                        //战役类型 1：匹配1  2：匹配2  3：军团3  4：军团4
+                        byte warType = 0;
+                        if (!Settings.openGroupWar)
+                        {
+                            player.ReceiveChat($"当前系统未开放战役", ChatType.Hint);
+                            return;
+                        }
+                        //报名时间
+                        DateTime now = DateTime.Now;
+                        if (now.Hour != 20)
+                        {
+                            player.ReceiveChat($"当前时间不接受报名，请在晚上20点-20点09分前来报名", ChatType.Hint);
+                            return;
+                        }
+                        if (now.Minute > 8)
+                        {
+                            player.ReceiveChat($"当前时间不接受报名，请在晚上20点-20点09分前来报名", ChatType.Hint);
+                            return;
+                        }
+                        if (param.Count >= 1)
+                        {
+                            byte.TryParse(param[0], out rtype);
+                        }
+                        //检查身上金钱是否足够。这里就不检查了，进去的时候再检查
+                        player.ReceiveChat(GroupWar.signUp(player, warType), ChatType.Hint);
+                        break;
+                    case ActionType.CallNewPlayerMob://召唤新人宝宝
+                        //战役类型 1：匹配1  2：匹配2  3：军团3  4：军团4
+                        string mobname="新人宝宝";
+                        if (param.Count >= 1)
+                        {
+                            mobname = param[0];
+                        }
+                        if (player.Pets.Count > 0)
+                        {
+                            return;
+                        }
+                        MonsterInfo mInfo2 = SMain.Envir.GetMonsterInfo(mobname);
+                        if (mInfo2 == null)
+                        {
+                            return;
+                        }
+                        MonsterObject monster = MonsterObject.GetMonster(mInfo2);
+                        if (monster == null) return;
+                        monster.PetLevel = 1;
+                        monster.Master = player;
+                        monster.MaxPetLevel = 7;
+                        monster.Direction = player.Direction;
+                        monster.ActionTime = SMain.Envir.Time + 1000;
+                        monster.Spawn(player.CurrentMap, player.Front);
+                        player.Pets.Add(monster);
+                
                         break;
                     case ActionType.ChangeHair:
 
@@ -3121,11 +3197,11 @@ namespace Server.MirObjects
 
                         for (int j = 0; j < tempByte; j++)
                         {
-                            MonsterObject monster = MonsterObject.GetMonster(monInfo);
-                            if (monster == null) return;
-                            monster.Direction = 0;
-                            monster.ActionTime = SMain.Envir.Time + 1000;
-                            monster.Spawn(map, new Point(Param2, Param3));
+                            MonsterObject monster3 = MonsterObject.GetMonster(monInfo);
+                            if (monster3 == null) return;
+                            monster3.Direction = 0;
+                            monster3.ActionTime = SMain.Envir.Time + 1000;
+                            monster3.Spawn(map, new Point(Param2, Param3));
                         }
                         break;
 

@@ -35,6 +35,11 @@ namespace Client.MirSounds
 
         public void Play()
         {
+            //这里经常有问题，关闭声音的话，直接返回吧
+            if (Settings.Volume<5)
+            {
+                return;
+            }
             if (_mStream == null|| _mStream.Length<10) return;
 
             _mStream.Seek(0, SeekOrigin.Begin);

@@ -17,16 +17,11 @@ namespace Client
 
         public static bool Restart;
 
+
+
         [STAThread]
         private static void Main(string[] args)
         {
-            if (args.Length > 0)
-            {
-                foreach (var arg in args)
-                {
-                    if (arg.ToLower() == "-tc") Settings.UseTestConfig = true;
-                }
-            }
             
             #if DEBUG
             //Settings.UseTestConfig = true;
@@ -42,7 +37,7 @@ namespace Client
 
                 if (RuntimePolicyHelper.LegacyV2RuntimeEnabledSuccessfully == true) { }
 
-                //客户端多开限制，只运行开2个客户端
+                //客户端多开限制，只运行开3个客户端
                 int currClient = 0;
                 string[] dsmach = { "Config", "Data", "DirectX", "Map", "Sound" };
                 Process[] ps = Process.GetProcesses();
@@ -78,10 +73,10 @@ namespace Client
                         MirLog.error(e.Message);
                     }
                 }
-                if (currClient >= 3)
+                if (currClient >= 4)
                 {
-                    MirLog.info("最多只运行同时打开2个客户端");
-                    MessageBox.Show("最多只运行同时打开2个客户端", "提示", MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
+                    MirLog.info("最多只运行同时打开3个客户端");
+                    MessageBox.Show("最多只运行同时打开3个客户端", "提示", MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
                     Application.Exit();
                     return;
                 }

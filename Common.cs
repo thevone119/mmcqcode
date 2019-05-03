@@ -1175,14 +1175,14 @@ public enum Spell : byte
     Focus = 121,//基本箭法
     StraightShot = 122,//落日箭法,魔法
     DoubleShot = 123,//连珠箭法 改为物理，魔法适配的攻击，防御算物理
-    ExplosiveTrap = 124,//烈火陷阱
+    ExplosiveTrap = 124,//烈火陷阱（这里有问题）
     DelayedExplosion = 125,//爆裂箭法
     Meditation = 126,//气功术
     BackStep = 127,//风弹步
     ElementalShot = 128,//蓄力一击
     Concentration= 129,//气流术
-    Stonetrap = 130,
-    ElementalBarrier = 131,
+    Stonetrap = 130,//这个应该是地柱钉
+    ElementalBarrier = 131,//金刚术
     SummonVampire = 132,//蛛魔阱
     VampireShot = 133,//噬血箭法
     SummonToad = 134,//痹魔阱
@@ -1274,7 +1274,7 @@ public enum BuffType : byte
     MoonLight,
     DarkBody,
     Concentration,
-    VampireShot,
+    VampireShot,//噬血状态，噬血箭法
     PoisonShot,
     CounterAttack,
     MentalState,
@@ -5927,7 +5927,7 @@ public enum ItemSkill : byte
     //Assassin3 = 43,//刺
     Assassin4 = 44,//刺
     Assassin5 = 45,//刺
-    //Assassin6 = 46,//刺
+    Assassin6 = 46,//刺
     Assassin7 = 47,//刺
     Archer1 = 51,//弓
     Archer2 = 52,//弓
@@ -5972,38 +5972,39 @@ public class ItemSkillBean
     {
         if(list==null|| list.Count == 0)
         {
-            list.Add(new ItemSkillBean(ItemSkill.Warrior1, "破山阵", "攻杀几率破防", RequiredClass.Warrior,30, ItemGrade.None));
-            list.Add(new ItemSkillBean(ItemSkill.Warrior2, "半月阵", "提升半月弯刀,狂风斩的伤害", RequiredClass.Warrior, 30, ItemGrade.None));
+            list.Add(new ItemSkillBean(ItemSkill.Warrior1, "破山阵", "攻杀几率破防", RequiredClass.Warrior,35, ItemGrade.None));
+            list.Add(new ItemSkillBean(ItemSkill.Warrior2, "半月阵", "提升半月弯刀,狂风斩的伤害", RequiredClass.Warrior, 35, ItemGrade.None));
             list.Add(new ItemSkillBean(ItemSkill.Warrior4, "雷霆阵", "雷霆剑法几率增加伤害", RequiredClass.Warrior,15, ItemGrade.Rare));
             list.Add(new ItemSkillBean(ItemSkill.Warrior5, "金刚阵", "护身气幕防御", RequiredClass.Warrior,15, ItemGrade.Rare));
             list.Add(new ItemSkillBean(ItemSkill.Warrior7, "天神阵", "几率免疫攻击，日闪几率增加伤害", RequiredClass.Warrior,5, ItemGrade.Mythical));
 
-            list.Add(new ItemSkillBean(ItemSkill.Wizard1, "迷惑阵", "强化诱惑之光，诱惑宝宝成功率提升", RequiredClass.Wizard, 30, ItemGrade.None));
-            list.Add(new ItemSkillBean(ItemSkill.Wizard2, "天罚阵", "雷电术可同时攻击3个目标", RequiredClass.Wizard, 30, ItemGrade.None));
+            list.Add(new ItemSkillBean(ItemSkill.Wizard1, "迷惑阵", "强化诱惑之光，诱惑宝宝成功率提升", RequiredClass.Wizard, 35, ItemGrade.None));
+            list.Add(new ItemSkillBean(ItemSkill.Wizard2, "天罚阵", "雷电术可同时攻击3个目标", RequiredClass.Wizard, 35, ItemGrade.None));
             list.Add(new ItemSkillBean(ItemSkill.Wizard4, "统治阵", "强化诱惑之光，提升成功率,上线宝宝不死亡", RequiredClass.Wizard,15, ItemGrade.Rare));
             list.Add(new ItemSkillBean(ItemSkill.Wizard5, "分身阵", "强化分身，分身攻击力等于本体攻击力", RequiredClass.Wizard,15, ItemGrade.Rare));
             list.Add(new ItemSkillBean(ItemSkill.Wizard7, "法神阵", "强化火墙/火雨/冰雨技能,火墙压制怪物回血", RequiredClass.Wizard,5, ItemGrade.Mythical));
 
-            list.Add(new ItemSkillBean(ItemSkill.Taoist1, "符咒阵", "感悟火符真谛使得火符威力增加", RequiredClass.Taoist, 30, ItemGrade.None));
-            list.Add(new ItemSkillBean(ItemSkill.Taoist2, "骷髅阵", "强化骷髅，召唤出强化骷髅为你做战", RequiredClass.Taoist, 30, ItemGrade.None));
+            list.Add(new ItemSkillBean(ItemSkill.Taoist1, "符咒阵", "感悟火符真谛使得火符威力增加", RequiredClass.Taoist, 35, ItemGrade.None));
+            list.Add(new ItemSkillBean(ItemSkill.Taoist2, "骷髅阵", "强化骷髅，召唤出强化骷髅为你做战", RequiredClass.Taoist, 35, ItemGrade.None));
             list.Add(new ItemSkillBean(ItemSkill.Taoist4, "圣兽阵", "强化神兽，召唤出强化神兽为你做战", RequiredClass.Taoist,15, ItemGrade.Rare));
             list.Add(new ItemSkillBean(ItemSkill.Taoist5, "厚土阵", "魔，防技能魔防提升", RequiredClass.Taoist,15, ItemGrade.Rare));
             list.Add(new ItemSkillBean(ItemSkill.Taoist7, "道尊阵", "施毒术/毒云伤害增加，瘟疫伤害无上限", RequiredClass.Taoist,5, ItemGrade.Mythical));
 
-            list.Add(new ItemSkillBean(ItemSkill.Assassin1, "月隐阵", "增加月隐术隐身时间", RequiredClass.Assassin, 30, ItemGrade.None));
-            list.Add(new ItemSkillBean(ItemSkill.Assassin2, "鬼灵阵", "鬼灵步在瞬移过程中对附近目标造成伤害", RequiredClass.Assassin, 30, ItemGrade.None));
+            list.Add(new ItemSkillBean(ItemSkill.Assassin1, "月隐阵", "增加月隐术隐身时间", RequiredClass.Assassin, 35, ItemGrade.None));
+            list.Add(new ItemSkillBean(ItemSkill.Assassin2, "鬼灵阵", "鬼灵步在瞬移过程中对附近目标造成伤害", RequiredClass.Assassin, 35, ItemGrade.None));
             list.Add(new ItemSkillBean(ItemSkill.Assassin4, "真气阵", "真气调息-吸蓝效率提升", RequiredClass.Assassin, 15, ItemGrade.Rare));
             list.Add(new ItemSkillBean(ItemSkill.Assassin5, "幻像阵", "烈火身，几率增加烈火身伤害量", RequiredClass.Assassin, 15, ItemGrade.Rare));
+            list.Add(new ItemSkillBean(ItemSkill.Assassin6, "狂风阵", "增加攻速，同时攻速上限提升", RequiredClass.Assassin, 15, ItemGrade.Rare));
             list.Add(new ItemSkillBean(ItemSkill.Assassin7, "刺皇阵", "血风触发几率提升，火镰狂舞几率增加伤害", RequiredClass.Assassin, 5, ItemGrade.Mythical));
 
-            list.Add(new ItemSkillBean(ItemSkill.Archer1, "烈火阵", "烈火陷阱伤害提升", RequiredClass.Archer, 30, ItemGrade.None));
-            list.Add(new ItemSkillBean(ItemSkill.Archer2, "爆裂阵", "爆裂箭伤害提升", RequiredClass.Archer, 30, ItemGrade.None));
+            list.Add(new ItemSkillBean(ItemSkill.Archer1, "烈火阵", "烈火陷阱伤害提升", RequiredClass.Archer, 35, ItemGrade.None));
+            list.Add(new ItemSkillBean(ItemSkill.Archer2, "爆裂阵", "爆裂箭伤害提升", RequiredClass.Archer, 35, ItemGrade.None));
             list.Add(new ItemSkillBean(ItemSkill.Archer4, "痹魔阵", "召唤蛤蟆攻防提升", RequiredClass.Archer, 15, ItemGrade.Rare));
             list.Add(new ItemSkillBean(ItemSkill.Archer5, "邪魔阵", "邪魔箭伤害提升", RequiredClass.Archer, 15, ItemGrade.Rare));
             list.Add(new ItemSkillBean(ItemSkill.Archer7, "箭神阵", "连珠箭法/火龙箭法/白龙箭法几率增加伤害", RequiredClass.Archer, 5, ItemGrade.Mythical));
 
-            list.Add(new ItemSkillBean(ItemSkill.Comm1, "聚灵阵", "回蓝效率提升", RequiredClass.All, 30, ItemGrade.None));
-            list.Add(new ItemSkillBean(ItemSkill.Comm2, "龙血阵", "回血效率提升", RequiredClass.All, 30, ItemGrade.None));
+            list.Add(new ItemSkillBean(ItemSkill.Comm1, "聚灵阵", "回蓝效率提升", RequiredClass.All, 35, ItemGrade.None));
+            list.Add(new ItemSkillBean(ItemSkill.Comm2, "龙血阵", "回血效率提升", RequiredClass.All, 35, ItemGrade.None));
             list.Add(new ItemSkillBean(ItemSkill.Comm4, "噬血阵", "几率吸收周围怪物的血量，回复自身", RequiredClass.All, 15, ItemGrade.Rare));
             list.Add(new ItemSkillBean(ItemSkill.Comm5, "迷幻阵", "几率使得周围怪物进入迷幻状态", RequiredClass.All, 15, ItemGrade.Rare));
             list.Add(new ItemSkillBean(ItemSkill.Comm7, "天雷阵", "几率触发雷阵，对身边怪物进行雷阵攻击", RequiredClass.All, 4, ItemGrade.Mythical));

@@ -1946,6 +1946,8 @@ namespace Server.MirObjects
         DelGuildNameList,
         ClearGuildNameList,
         RefreshWeaponSkill,//刷武器技能，阵法
+        WarSignUp,//战役报名
+        CallNewPlayerMob,//召唤新人宝宝
     }
     public enum CheckType
     {

@@ -65,7 +65,7 @@ namespace Server
                              MaxUser = 500,//最大用户数
                              RelogDelay = 50,
                              MaxUserByIP = 3,//无效
-                             MaxIP = 3;//同一个IP，最大的连接数
+                             MaxIP = 10;//同一个IP，最大的连接数
 
 
         //Permission
@@ -91,7 +91,9 @@ namespace Server
 
         //等级限制，等级补差。
         public static bool openFatigue = false;//是否开启防疲劳系统
-        public static bool openLevelExpSup = true;//是否开启等级经验补偿
+        public static bool openLevelExpSup = false;//是否开启等级经验补偿
+
+        public static bool openGroupWar = true;//是否开启战役
 
 
 
@@ -105,9 +107,10 @@ namespace Server
         public static List<long> OrbsDefList = new List<long>();
         public static List<long> OrbsDmgList = new List<long>();
 
-        //全局的爆率，经验倍率，刷怪倍数
+        //全局的爆率，经验倍率，刷怪倍数,技能熟练度的倍数
         //地图上也增加相应的配置
         public static float DropRate = 1F, ExpRate = 1F, MonsterRate=1.0F;
+        public static ushort SkillRate=1;//技能熟练度的倍数
 
         public static int ItemTimeOut = 5,
                           PlayerDiedItemTimeOut = 5,//玩家死亡掉落物品增加多少时间,可以给玩家重新捡回物品，这个有个毛的用啊。统一5分钟算了。靠
@@ -340,6 +343,9 @@ namespace Server
             GatherOrbsPerLevel = Reader.ReadBoolean("Optional", "GatherOrbsPerLevel", GatherOrbsPerLevel);
             ExpMobLevelDifference = Reader.ReadBoolean("Optional", "ExpMobLevelDifference", ExpMobLevelDifference);
             GameMasterEffect = Reader.ReadBoolean("Optional", "GameMasterEffect", GameMasterEffect);
+            openLevelExpSup = Reader.ReadBoolean("Optional", "openLevelExpSup", openLevelExpSup);
+            openGroupWar = Reader.ReadBoolean("Optional", "openGroupWar", openGroupWar);
+            
 
             //Database
             SaveDelay = Reader.ReadInt32("Database", "SaveDelay", SaveDelay);
@@ -348,6 +354,7 @@ namespace Server
             //Game
             DropRate = Reader.ReadSingle("Game", "DropRate", DropRate);
             ExpRate = Reader.ReadSingle("Game", "ExpRate", ExpRate);
+            SkillRate = Reader.ReadUInt16("Game", "SkillRate", SkillRate);
             MonsterRate = Reader.ReadSingle("Game", "MonsterRate", MonsterRate);
             
             ItemTimeOut = Reader.ReadInt32("Game", "ItemTimeOut", ItemTimeOut);

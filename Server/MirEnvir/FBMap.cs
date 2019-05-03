@@ -56,7 +56,8 @@ namespace Server.MirEnvir
         public short fb_killmoncount = 0;//当前副本已杀怪数
         private List<ItemInfo> userItems = new List<ItemInfo>();
         //private int dorpItemCount = 0;//已爆装备数，爆过了就降低下爆率
-        private byte play_type;//玩法 0：单人免费闯关 1：组队免费闯关  2：金币闯关（1次50万）3：元宝闯关（1次3000元宝） 每种类型，每天只能玩一次
+        private byte play_type;//玩法 0：单人闯关 1：组队闯关   2:单人元宝  3：组队元宝
+
 
         //关卡类型 0:普通关卡 1：持续掉血（绿毒） 2：天灾（雷击）
         public bool has_poison;
@@ -643,7 +644,11 @@ namespace Server.MirEnvir
             {
                 drop4.Chance = 1.0 / 6.0;
             }
-
+            //
+            if (play_type==2|| play_type == 3)
+            {
+                drop4.Chance = drop4.Chance * 1.2;
+            }
 
 
 
@@ -656,9 +661,10 @@ namespace Server.MirEnvir
             {
                 dropItems.AddRange(drop2.DropItems());
             }
-            if (drop3.isDrop(DropRate))
+            //符纸的话，如果已经开了第一关外，这里就不爆了
+            if (drop3.isDrop(DropRate)& Envir.GetMapByNameAndInstance("HELL00") == null)
             {
-                //dropItems.AddRange(drop3.DropItems());//符纸放在地狱爆
+                dropItems.AddRange(drop3.DropItems());//符纸放在地狱爆
             }
             if (drop4.isDrop(DropRate) && userItems.Count> 3)
             {
@@ -817,7 +823,7 @@ namespace Server.MirEnvir
             {
                 return;
             }
-            if (play_type == 2 && fb_playcount == 1)
+            if ((play_type == 1|| play_type==3) && fb_playcount == 1)
             {
                 fb_playcount = 2;
             }
@@ -1021,7 +1027,28 @@ namespace Server.MirEnvir
                     }
                     else
                     {
-                        p.LoseGold(50000);
+                        if(play_type==0|| play_type == 1)
+                        {
+                            if (p.Account.Gold > 50000)
+                            {
+                                p.LoseGold(50000);
+                            }
+                            else
+                            {
+                                leaveList.Add(p);
+                            }
+                        }
+                        else
+                        {
+                            if (p.Account.Credit > 3000)
+                            {
+                                p.LoseCredit(3000);
+                            }
+                            else
+                            {
+                                leaveList.Add(p);
+                            }
+                        }
                     }
                 }
                 foreach (PlayerObject p in leaveList)

@@ -2242,48 +2242,28 @@ namespace Server.MirEnvir
                 case Spell.ExplosiveTrap:
                     value = (int)data[2];
                     front = (Point)data[3];
-                    int trapID = (int)data[4];
 
                     if (ValidPoint(front))
                     {
+                
                         //cell = GetCell(front);
-
                         bool cast = true;
-                        if (Objects[front.X, front.Y] != null)
-                            for (int o = 0; o < Objects[front.X, front.Y].Count; o++)
-                            {
-                                MapObject target = Objects[front.X, front.Y][o];
-                                if (target.Race != ObjectType.Spell || (((SpellObject)target).Spell != Spell.FireWall && ((SpellObject)target).Spell != Spell.ExplosiveTrap)) continue;
-
-                                cast = false;
-                                break;
-                            }
-
                         if (cast)
                         {
                             player.LevelMagic(magic);
-                            System.Drawing.Point[] Traps = new Point[3];
-                            Traps[0] = front;
-                            Traps[1] = Functions.Left(front, player.Direction);
-                            Traps[2] = Functions.Right(front, player.Direction);
-                            for (int i = 0; i <= 2; i++)
+                            SpellObject ob = new SpellObject
                             {
-                                SpellObject ob = new SpellObject
-                                {
-                                    Spell = Spell.ExplosiveTrap,
-                                    Value = value,
-                                    ExpireTime = Envir.Time + (10 + value / 2) * 1000,
-                                    TickSpeed = 500,
-                                    Caster = player,
-                                    CurrentLocation = Traps[i],
-                                    CurrentMap = this,
-                                    ExplosiveTrapID = trapID,
-                                    ExplosiveTrapCount = i
-                                };
-                                AddObject(ob);
-                                ob.Spawned();
-                                player.ArcherTrapObjectsArray[trapID, i] = ob;
-                            }
+                                Spell = Spell.ExplosiveTrap,
+                                Value = value,
+                                ExpireTime = Envir.Time + (10 + value / 2) * 1000,
+                                TickSpeed = 500,
+                                Caster = player,
+                                CurrentLocation = front,
+                                CurrentMap = this,
+                            };
+                            AddObject(ob);
+                            ob.Spawned();
+                            player.ArcherTrapObject = ob;
                         }
                     }
                     break;

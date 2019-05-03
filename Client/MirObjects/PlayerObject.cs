@@ -935,6 +935,11 @@ namespace Client.MirObjects
                 //NextMagic = null;
                 return;
             }
+            if (User == this && CMain.Time < GameScene.AttackTime)// && 攻速限制哦
+            {
+                //NextMagic = null;
+                //return;
+            }
 
 
             if (ActionFeed.Count == 0)
@@ -1344,6 +1349,7 @@ namespace Client.MirObjects
 
                 if (this == User)
                 {
+    
                     switch (CurrentAction)
                     {
                         case MirAction.DashFail:
@@ -1472,9 +1478,10 @@ namespace Client.MirObjects
 
                             if (magic != null) SpellLevel = magic.Level;
 
-
+             
                             GameScene.AttackTime = CMain.Time + User.AttackSpeed;
                             MapControl.NextAction = CMain.Time + 2500;
+                            MirLog.info("AttackTime:" + GameScene.AttackTime+ "User.AttackSpeed:"+ User.AttackSpeed);
                             break;
                         case MirAction.Attack2:
                             //Network.Enqueue(new C.Attack2 { Direction = Direction });
@@ -1577,7 +1584,13 @@ namespace Client.MirObjects
                             Spell = (Spell)action.Params[0];
                             SpellLevel = (byte)action.Params[1];
                         }
-
+                        //要提升攻速，要改这里，要增加帧动画的速度.否则帧动画是600毫秒放完的，这样即使攻速再快，也没用，帧动画没放完，下次攻击无法生效的
+                        //
+                        if (User.AttackSpeed < 600)
+                        {
+                            FrameInterval = User.AttackSpeed / Frame.Count; //
+                            EffectFrameInterval = User.AttackSpeed / Frame.EffectCount;
+                        }
                         switch (Spell)
                         {
                             case Spell.Slaying:
@@ -1623,8 +1636,8 @@ namespace Client.MirObjects
                         switch (Spell)
                         {
                             case Spell.DoubleSlash:
-                                FrameInterval = FrameInterval * 7 / 10; //50% Animation Speed
-                                EffectFrameInterval = EffectFrameInterval * 7 / 10;
+                                FrameInterval = FrameInterval * 6 / 10; //50% Animation Speed
+                                EffectFrameInterval = EffectFrameInterval * 6 / 10;
                                 SoundManager.PlaySound(20000 + (ushort)Spell * 10 + 1);
                                 break;
                             case Spell.TwinDrakeBlade:

@@ -22,7 +22,7 @@ namespace Server.MirObjects.Monsters
         //跺脚,龙卷风
         private bool stomp;
 
-        private int AttackRange = 2;
+        private byte AttackRange = 2;
         public long FearTime;
 
         protected internal WingedTigerLord(MonsterInfo info) : base(info)
@@ -31,7 +31,12 @@ namespace Server.MirObjects.Monsters
 
         protected override bool InAttackRange()
         {
-            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, AttackRange);
+            byte _AttackRange = AttackRange;
+            if (RandomUtils.Next(10) < 4)
+            {
+                _AttackRange = 1;
+            }
+            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, _AttackRange);
         }
 
 

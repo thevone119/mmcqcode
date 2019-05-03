@@ -182,15 +182,15 @@ namespace Server.MirObjects.Monsters
         //刷新小怪，这里控制下，不要无限刷新？
         private void SpawnBomb()
         {
-            //当前地图怪物超过400，不刷新了
-            if (CurrentMap.MonsterCount > 400)
+            //当前地图怪物超过1500，不刷新了
+            if (CurrentMap.MonsterCount > 1500)
             {
                 return;
             }
 
             int NearCount = 0;
-            //周围7格的怪物超过100个，也不刷新了
-            for (int d = 0; d <= 7; d++)
+            //周围5格的怪物超过200个，也不刷新了
+            for (int d = 0; d <= 5; d++)
             {
                 for (int y = CurrentLocation.Y - d; y <= CurrentLocation.Y + d; y++)
                 {
@@ -208,7 +208,7 @@ namespace Server.MirObjects.Monsters
                     }
                 }
             }
-            if (NearCount > 100)
+            if (NearCount > 200)
             {
                 return;
             }

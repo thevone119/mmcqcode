@@ -35,11 +35,7 @@ namespace Server.MirObjects.Monsters
             {
                 RevivalCount++;
                 //复活的把爆率减一倍
-                this.Info = this.Info.Clone();
-                foreach (DropInfo drop in Info.Drops)
-                {
-                    drop.Chance = drop.Chance*0.5;
-                }
+       
                 uint newhp = MaxHP * (100 - (25 * RevivalCount)) / 100;
                 Revive(newhp, false);
             }

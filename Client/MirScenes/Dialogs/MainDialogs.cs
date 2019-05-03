@@ -3759,6 +3759,7 @@ namespace Client.MirScenes.Dialogs
         public MirImageControl VolumeBar, MusicVolumeBar;
 
         private int currMusicVol;
+        private long lastMusicTime;
 
         public MirButton CloseButton;
 
@@ -4017,8 +4018,9 @@ namespace Client.MirScenes.Dialogs
 
         private void SoundBar_BeforeDraw(object sender, EventArgs e)
         {
-            if (SoundBar.Library == null) return;
 
+            if (SoundBar.Library == null) return;
+            
             double percent = Settings.Volume / 100D;
             if (percent > 1) percent = 1;
             if (percent > 0)
@@ -4039,6 +4041,7 @@ namespace Client.MirScenes.Dialogs
         {
             if (MusicSoundBar.Library == null) return;
 
+            
             double percent = Settings.MusicVolume / 100D;
             if (percent > 1) percent = 1;
             if (percent > 0)
@@ -4053,6 +4056,13 @@ namespace Client.MirScenes.Dialogs
             }
             else
                 MusicVolumeBar.Location = new Point(159, 244);
+
+            if (currMusicVol != SoundManager.MusicVol && CMain.Time>lastMusicTime)
+            {
+                lastMusicTime = CMain.Time+1000;
+                currMusicVol = SoundManager.MusicVol;
+                ChangeMusicVolume();
+            }
         }
 
         public void MusicSoundBar_MouseUp(object sender, MouseEventArgs e)

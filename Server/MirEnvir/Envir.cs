@@ -2392,7 +2392,7 @@ namespace Server.MirEnvir
             for (int i = 0; i < MonsterInfoList.Count; i++)
             {
                 MonsterInfo info = MonsterInfoList[i];
-                if (info.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase)) continue;
+                if (!info.Name.StartsWith(name, StringComparison.OrdinalIgnoreCase)) continue;
                 return info;
             }
             return null;

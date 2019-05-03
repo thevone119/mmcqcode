@@ -121,6 +121,8 @@
     <Compile Include="MirDatabase\ConquestInfo.cs" />
     <Compile Include="MirDatabase\RecipeInfo.cs" />
     <Compile Include="MirEnvir\MapSpecialProcess.cs" />
+    <Compile Include="MirEnvir\GroupWar.cs" />
+    <Compile Include="MirEnvir\PlayerWar.cs" />
     <Compile Include="MirEnvir\MonWar.cs" />
     <Compile Include="MirEnvir\FBMap.cs" />
     <Compile Include="MirEnvir\Reporting.cs" />
@@ -284,6 +286,7 @@
     <Compile Include="MirObjects\KillMonAward.cs" />
     <Compile Include="MirObjects\MapObject.cs" />
     <Compile Include="MirObjects\MonsterObject.cs" />
+    <Compile Include="MirObjects\Monsters\FlameTiger.cs" />
     <Compile Include="MirObjects\Monsters\ShellFighter.cs" />
     <Compile Include="MirObjects\Monsters\TreeQueen.cs" />
     <Compile Include="MirObjects\Monsters\SmallPot.cs" />

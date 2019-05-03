@@ -29,7 +29,13 @@ namespace Server.MirObjects.Monsters
 
         protected override bool InAttackRange()
         {
-            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, AttackRange);
+            byte _AttackRange = AttackRange;
+            if (RandomUtils.Next(10) < 3)
+            {
+                _AttackRange = 1;
+            }
+
+            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, _AttackRange);
         }
 
         protected override void ProcessAI()

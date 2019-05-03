@@ -73,6 +73,33 @@ namespace Client.MirObjects
         public MirDirection NextMagicDirection;
         public QueuedAction QueuedAction;
 
+
+        //增加4个武器自带技能(其实只用到3个吧)
+        public ItemSkill sk1, sk2, sk3, sk4;
+        public ushort skCount;
+
+        //是否具有某个技能
+        public bool hasItemSk(ItemSkill sk)
+        {
+            if (sk1 == sk)
+            {
+                return true;
+            }
+            if (sk2 == sk)
+            {
+                return true;
+            }
+            if (sk3 == sk)
+            {
+                return true;
+            }
+            if (sk4 == sk)
+            {
+                return true;
+            }
+            return false;
+        }
+
         public UserObject(uint objectID) : base(objectID)
         {
 
@@ -176,10 +203,18 @@ namespace Client.MirObjects
             
             if (this == User && Light < 3) Light = 3;
             AttackSpeed = 1400 - ((ASpeed * 60) + Math.Min(370, (Level * 14)));
-            if (AttackSpeed < 550) AttackSpeed = 550;
+            //这里提升一点攻速
+            if (hasItemSk(ItemSkill.Assassin6))
+            {
+                if (AttackSpeed < 330) AttackSpeed = 330;
+            }
+            else
+            {
+                if (AttackSpeed < 550) AttackSpeed = 550;
+            }
 
             //PercentHealth = (byte)(HP / (float)MaxHP * 100);
-            
+
             GameScene.Scene.Redraw();
         }
         private void RefreshLevelStats()
@@ -277,6 +312,12 @@ namespace Client.MirObjects
             CurrentWearWeight = 0;
             CurrentHandWeight = 0;
 
+            sk1 = 0;
+            sk2 = 0;
+            sk3 = 0;
+            sk4 = 0;
+            skCount = 0;
+
             HasTeleportRing = false;
             HasProtectionRing = false;
             HasMuscleRing = false;
@@ -350,7 +391,28 @@ namespace Client.MirObjects
                 HpDrainRate = (byte)Math.Max(100, Math.Min(byte.MaxValue, HpDrainRate + RealItem.HpDrainRate));
 
 
-                
+                if (temp.sk1 != 0)
+                {
+                    sk1 = temp.sk1;
+                    skCount = temp.skCount;
+                }
+                if (temp.sk2 != 0)
+                {
+                    sk2 = temp.sk2;
+                }
+                if (temp.sk3 != 0)
+                {
+                    sk3 = temp.sk3;
+                }
+                if (temp.sk4 != 0)
+                {
+                    sk4 = temp.sk4;
+                }
+                if (temp.hasItemSk(ItemSkill.Assassin6))
+                {
+                    ASpeed += 2;
+                }
+
                 if (RealItem.Light > Light) Light = RealItem.Light;
                 if (RealItem.Unique != SpecialItemMode.None)
                 {
@@ -404,6 +466,8 @@ namespace Client.MirObjects
                     if (!MirSet.Contains((EquipmentSlot)i))
                         MirSet.Add((EquipmentSlot)i);
                 }
+
+
             }
 
             MaxHP = (ushort)Math.Min(ushort.MaxValue, (((double)HPrate / 100) + 1) * MaxHP);

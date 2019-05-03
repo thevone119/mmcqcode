@@ -39,8 +39,6 @@ namespace Server.MirObjects
         public bool Show, Decoration;
 
         //ExplosiveTrap
-        public int ExplosiveTrapID;
-        public int ExplosiveTrapCount;
         public bool DetonatedTrap;
 
         //Portal
@@ -89,8 +87,8 @@ namespace Server.MirObjects
                 Despawn();
                 return;
             }
-
-            if (Spell == Spell.ExplosiveTrap && FindObject(Caster.ObjectID, 20) == null && Caster != null)
+            //烈火陷阱，离开10格范围，自动失效
+            if (Spell == Spell.ExplosiveTrap && FindObject(Caster.ObjectID, 10) == null && Caster != null)
             {
                 CurrentMap.RemoveObject(this);
                 Despawn();
@@ -201,18 +199,18 @@ namespace Server.MirObjects
                         }
                     }
                     break;
-                case Spell.ExplosiveTrap:
+                case Spell.ExplosiveTrap://
                     if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) return;
                     if (ob.Dead) return;
                     if (!ob.IsAttackTarget(Caster)) return;
                     if (DetonatedTrap) return;//make sure explosion happens only once
-                    DetonateTrapNow();
+                    //DetonateTrapNow();
                     //烈火阵 
-                    if (Caster != null && Caster.hasItemSk(ItemSkill.Archer1))
+                    if (Caster != null)
                     {
-                        Value = Value * 13 / 10;
+                        Caster.ExplosiveTrapDetonated();
                     }
-                    ob.Attacked(Caster, Value, DefenceType.MAC, false);
+                   
                     break;
                 case Spell.MapLava:
                     if (ob is PlayerObject)
@@ -265,6 +263,7 @@ namespace Server.MirObjects
             }
         }
 
+        //引爆烈火阵，在1秒以后
         public void DetonateTrapNow()
         {
             DetonatedTrap = true;
@@ -425,9 +424,9 @@ namespace Server.MirObjects
                 Caster.ActiveReincarnation = false;
                 Caster.Enqueue(new S.CancelReincarnation { });
             }
-
+            //玩家那边消除烈火阵
             if (Spell == Spell.ExplosiveTrap && Caster != null)
-                Caster.ExplosiveTrapDetonated(ExplosiveTrapID, ExplosiveTrapCount);
+                Caster.ArcherTrapObject=null;
 
             if (Spell == Spell.Portal && Caster != null)
             {

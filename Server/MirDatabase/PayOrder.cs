@@ -164,6 +164,8 @@ namespace Server.MirEnvir
                                 if (addCredit > 0)
                                 {
                                     SMain.Envir.AccountList[i].Credit += addCredit;
+                                    SMain.EnqueueDebugging(SMain.Envir.AccountList[i].AccountID +" 充值元宝：" + addCredit);
+                                    SMain.EnqueueDebugging(SMain.Envir.AccountList[i].UserName + " 充值元宝：" + addCredit);
                                     p.rec_state = 1;
                                 }
                                 else
@@ -171,7 +173,6 @@ namespace Server.MirEnvir
                                     SMain.Enqueue("充值发生错误，未知元宝，金额对应关系");
                                     continue;
                                 }
-
                             }
                         }
 

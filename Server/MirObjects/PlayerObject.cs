@@ -243,7 +243,9 @@ namespace Server.MirObjects
 
         private int _stepCounter, _runCounter, _fishCounter, _restedCounter;
 
-        public MapObject[,] ArcherTrapObjectsArray = new MapObject[4, 3];
+        //弓手当前的烈火阵，只有一个哦
+        public MapObject ArcherTrapObject = null;
+
         public SpellObject[] PortalObjectsArray = new SpellObject[2];
 
         public NPCObject DefaultNPC
@@ -638,17 +640,12 @@ namespace Server.MirObjects
                     ElementalBarrierTime = 0;
                     CurrentMap.Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.ElementalBarrierDown }, CurrentLocation);
                 }
-
-                for (int i = 0; i <= 3; i++)//Self destruct when out of range (in this case 15 squares)
+                //离开那个范围，自动引爆烈火阵
+                for (int i = 0; i <= 2; i++)//Self destruct when out of range (in this case 15 squares)
                 {
-                    if (ArcherTrapObjectsArray[i, 0] == null) continue;
-                    if (FindObject(ArcherTrapObjectsArray[i, 0].ObjectID, 15) != null) continue;
-                    bool detonated = true;
-                    for (int j = 0; j <= 2; j++)
-                        if (!((SpellObject)ArcherTrapObjectsArray[i, j]).DetonatedTrap) detonated = false;
-                    if (detonated) continue;
-                    for (int j = 0; j <= 2; j++)
-                        ((SpellObject)ArcherTrapObjectsArray[i, j]).DetonateTrapNow();
+                    if (ArcherTrapObject == null) continue;
+                    if (FindObject(ArcherTrapObject.ObjectID, 8) != null) continue;
+                    ExplosiveTrapDetonated();
                 }
 
                 if (CellTime + 700 < Envir.Time) _stepCounter = 0;
@@ -1191,7 +1188,11 @@ namespace Server.MirObjects
             if (Envir.Time > VampTime)
             {
                 VampTime = Envir.Time + VampDelay;
-
+                //限制噬血术最大累计为当前最大HP
+                if(VampAmount> MaxHP)
+                {
+                    VampAmount = MaxHP;
+                }
                 if (VampAmount > 10)
                 {
                     healthRegen += 10;
@@ -2067,12 +2068,12 @@ namespace Server.MirObjects
                 //加入书页爆率
                 DropInfo drop5 = DropInfo.FromLine("副本_书页", String.Format("1/10 G_书页残卷"));
 
-                drop5.Chance = minfo.HP*1.01 / 200000;
+                drop5.Chance = minfo.HP*1.01 / 30000;
                 if (drop5.Chance > 0.4)
                 {
                     drop5.Chance = 0.4;
                 }
-                //minfo.Drops.Add(drop5);
+                minfo.Drops.Add(drop5);
                 //黄怪不爆书页
 
                 minfo.Name = minfo.Name + "[" + "精英" + "]";
@@ -2148,7 +2149,7 @@ namespace Server.MirObjects
                 minfo.Drops.Add(drop4);
                 //加入书页爆率
                 DropInfo drop5 = DropInfo.FromLine("副本_书页", String.Format("1/10 G_书页残卷"));
-                drop5.Chance = minfo.HP * 1.01 / 50000;
+                drop5.Chance = minfo.HP * 1.01 / 8000;
                 if (drop5.Chance > 0.7)
                 {
                     drop5.Chance = 0.7;
@@ -2411,7 +2412,7 @@ namespace Server.MirObjects
                 }
             }
             int Leveldis = Envir.MaxLevel - Level;
-            if (Leveldis > 5)
+            if (Leveldis > 5 && Settings.openLevelExpSup)
             {
                 amount= amount + (uint)(amount * Leveldis * 5 / 100);
             }
@@ -2496,7 +2497,7 @@ namespace Server.MirObjects
             SetMP(MaxMP);
             //
             int Leveldis = Envir.MaxLevel - Level;
-            if (Leveldis > 5)
+            if (Leveldis > 5 && Settings.openLevelExpSup)
             {
                 ReceiveChat(string.Format("你的等级低于最高等级{0}级，享受{1}%的等级经验补差", Leveldis, Leveldis * 5), ChatType.Hint);
             }
@@ -2785,7 +2786,7 @@ namespace Server.MirObjects
             ReceiveChat("欢迎进入魔幻的传奇大陆，本服地图，怪物，装备超多，非常耐玩.欢迎加群670847004一起玩", ChatType.Hint);
 
             int Leveldis = Envir.MaxLevel - Level;
-            if (Leveldis>5)
+            if (Leveldis>5 && Settings.openLevelExpSup)
             {
                 ReceiveChat(string.Format("你的等级低于最高等级{0}级，享受{1}%的等级经验补差", Leveldis, Leveldis*5), ChatType.Hint);
             }
@@ -3351,9 +3352,17 @@ namespace Server.MirObjects
             //这里封顶攻速，8点到顶
             AttackSpeed = 1400 - ((ASpeed * 60) + Math.Min(370, (Level * 14)));
 
-            if (AttackSpeed < 550) AttackSpeed = 550;
+           
             //这里提升一点攻速
-            ///if (AttackSpeed < 450) AttackSpeed = 450;
+            if (hasItemSk(ItemSkill.Assassin6))
+            {
+                if (AttackSpeed < 330) AttackSpeed = 330;
+            }
+            else
+            {
+                if (AttackSpeed < 550) AttackSpeed = 550;
+            }
+            //if (AttackSpeed < 450) AttackSpeed = 450;
         }
 
         private void RefreshLevelStats()
@@ -3614,6 +3623,10 @@ namespace Server.MirObjects
                 if (temp.sk4 != 0)
                 {
                     sk4 = temp.sk4;
+                }
+                if (temp.hasItemSk(ItemSkill.Assassin6))
+                {
+                    ASpeed += 2;
                 }
 
 
@@ -4581,6 +4594,16 @@ namespace Server.MirObjects
                             Enqueue(new S.RefreshItem { Item = titem });
                         }
                        
+                        return;
+                    case "加属性":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+
+
+                        
+
                         return;
                     case "KILL":
                         if (!IsGM) return;
@@ -6790,7 +6813,15 @@ namespace Server.MirObjects
             Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, TargetID = targetID, Target = location, Spell = spell });
 
             AttackTime = Envir.Time + AttackSpeed;
-            ActionTime = Envir.Time + 550;
+            if (AttackSpeed < 550)
+            {
+                ActionTime = Envir.Time + AttackSpeed;
+            }
+            else
+            {
+                ActionTime = Envir.Time + 550;
+            }
+            
             RegenTime = Envir.Time + RegenDelay;
 
             return;
@@ -6920,7 +6951,14 @@ namespace Server.MirObjects
             Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Spell = spell, Level = level });
 
             AttackTime = Envir.Time + AttackSpeed;
-            ActionTime = Envir.Time + 550;
+            if (AttackSpeed < 550)
+            {
+                ActionTime = Envir.Time + AttackSpeed;
+            }
+            else
+            {
+                ActionTime = Envir.Time + 550;
+            }
             RegenTime = Envir.Time + RegenDelay;
 
             Point target = Functions.PointMove(CurrentLocation, dir, 1);
@@ -8359,7 +8397,7 @@ namespace Server.MirObjects
             for (int i = 0; i < Pets.Count; i++)
             {
                 monster = Pets[i];
-                if ((monster.Info.Name != Settings.SkeletonName) || monster.Dead) continue;
+                if ((!monster.Info.Name.StartsWith(Settings.SkeletonName)) || monster.Dead) continue;
                 if (monster.Node == null) continue;
                 monster.ActionList.Add(new DelayedAction(DelayedType.Recall, Envir.Time + 500));
                 return;
@@ -8375,20 +8413,33 @@ namespace Server.MirObjects
 
             if (hasItemSk(ItemSkill.Taoist2))
             {
-                info = info.Clone();
-                info.MaxMAC = (ushort)(info.MaxMAC * 2);
-                info.MaxAC = (ushort)(info.MaxAC * 2);
-                info.MaxDC = (ushort)(info.MaxDC * 2);
-                info.MaxMC = (ushort)(info.MaxMC * 2);
-                info.MaxSC = (ushort)(info.MaxSC * 2);
+                MonsterInfo _info = Envir.GetMonsterInfo(Settings.SkeletonName +"2");
+
+                if (_info != null)
+                {
+                    info = _info.Clone();
+                }
+                ushort _skCount = this.skCount;
+                if (_skCount > 50)
+                {
+                    _skCount = 50;
+                }
+                _skCount = (ushort)(_skCount / 2);
+                info.MaxMAC += _skCount;
+                info.MaxAC += _skCount;
+                info.MaxDC += _skCount;
             }
             LevelMagic(magic);
             ConsumeItem(item, 1);
 
             monster = MonsterObject.GetMonster(info);
             monster.PetLevel = magic.Level;
-            monster.Master = this;
             monster.MaxPetLevel = (byte)(4 + magic.Level);
+            if (hasItemSk(ItemSkill.Taoist2))
+            {
+                monster.PetLevel = monster.MaxPetLevel;
+            }
+            monster.Master = this;
             monster.ActionTime = Envir.Time + 1000;
             monster.RefreshNameColour(false);
 
@@ -8411,7 +8462,7 @@ namespace Server.MirObjects
             for (int i = 0; i < Pets.Count; i++)
             {
                 monster = Pets[i];
-                if ((monster.Info.Name != Settings.ShinsuName) || monster.Dead) continue;
+                if ((monster.Info.Name.IndexOf(Settings.ShinsuName)==-1) || monster.Dead) continue;
                 if (monster.Node == null) continue;
                 monster.ActionList.Add(new DelayedAction(DelayedType.Recall, Envir.Time + 500));
                 return;
@@ -8427,12 +8478,28 @@ namespace Server.MirObjects
 
             if (hasItemSk(ItemSkill.Taoist4))
             {
+                info = Envir.GetMonsterInfo("变异神兽");
                 info = info.Clone();
-                info.MaxMAC = (ushort)(info.MaxMAC * 2);
-                info.MaxAC = (ushort)(info.MaxAC * 2);
-                info.MaxDC = (ushort)(info.MaxDC * 2);
-                info.MaxMC = (ushort)(info.MaxMC * 2);
-                info.MaxSC = (ushort)(info.MaxSC * 2);
+                //info.MaxMAC = (ushort)(info.MaxMAC * 2);
+                //info.MaxAC = (ushort)(info.MaxAC * 2);
+                //info.MaxDC = (ushort)(info.MaxDC * 2);
+                //info.MaxMC = (ushort)(info.MaxMC * 2);
+                //info.MaxSC = (ushort)(info.MaxSC * 2);
+                //叠加层次
+                ushort _skCount = this.skCount;
+                if (_skCount > 50)
+                {
+                    _skCount = 50;
+                }
+                info.MaxAC += _skCount;
+                info.MaxMAC += _skCount;
+
+                info.MaxDC += _skCount;
+                //info.MinDC = (ushort)(info.MaxDC / 2);
+
+                info.MaxMC += _skCount;
+                //info.MinMC = (ushort)(info.MaxMC / 2);
+                info.MaxSC += _skCount;
             }
 
 
@@ -8442,8 +8509,12 @@ namespace Server.MirObjects
 
             monster = MonsterObject.GetMonster(info);
             monster.PetLevel = magic.Level;
-            monster.Master = this;
             monster.MaxPetLevel = (byte)(1 + magic.Level * 2);
+            if (hasItemSk(ItemSkill.Taoist4))
+            {
+                monster.PetLevel = monster.MaxPetLevel;
+            }
+            monster.Master = this;
             monster.Direction = Direction;
             monster.ActionTime = Envir.Time + 1000;
    
@@ -9599,42 +9670,84 @@ namespace Server.MirObjects
             ActionList.Add(action);
             return true;
         }
+        //释放烈火陷阱
         private void ExplosiveTrap(UserMagic magic, Point location)
         {
-            int trapCount = 0;
-            for (int i = 0; i <= 3; i++)
-                if (ArcherTrapObjectsArray[i, 0] != null) trapCount++;
-            if (trapCount >= magic.Level + 1) return;//max 4 traps
-
-            int freeTrapSpot = -1;
-            for (int i = 0; i <= 3; i++)
-                if (ArcherTrapObjectsArray[i, 0] == null)
-                {
-                    freeTrapSpot = i;
-                    break;
-                }
-            if (freeTrapSpot == -1) return;
 
             int damage = magic.GetDamage(GetAttackPower(MinMC, MaxMC));
-            DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, this, magic, damage, location, freeTrapSpot);
-            CurrentMap.ActionList.Add(action);
-        }
-        public void ExplosiveTrapDetonated(int obIDX, int Trapnr)
-        {
-            SpellObject ArcherTrap;
-            if (ArcherTrapObjectsArray[obIDX, Trapnr] == null) return;
-            for (int j = 0; j <= 2; j++)
+            if (ArcherTrapObject == null || ArcherTrapObject.CurrentMap!= CurrentMap)
             {
-                if (j != Trapnr)
-                {
-                    ArcherTrap = (SpellObject)ArcherTrapObjectsArray[obIDX, j];
-                    //this should technicaly remove them without explosion but it crashes server so leaving it for now
-                    //ArcherTrap.CurrentMap.RemoveObject(ArcherTrap);
-                    //ArcherTrap.Despawn();
-                    ArcherTrap.DetonateTrapNow();
-                }
-                ArcherTrapObjectsArray[obIDX, j] = null;
+                DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, this, magic, damage, location);
+                CurrentMap.ActionList.Add(action);
             }
+            else
+            {
+                //触发灵魂陷阱
+                ExplosiveTrapDetonated();
+            }
+        }
+        //触发烈火陷阱
+        public void ExplosiveTrapDetonated()
+        {
+            if (ArcherTrapObject == null)
+            {
+                return;
+            }
+            if(ArcherTrapObject.CurrentMap!= CurrentMap)
+            {
+                ArcherTrapObject = null;
+                return;
+            }
+            int damage = ((SpellObject)ArcherTrapObject).Value;
+            //烈火阵 
+            if (hasItemSk(ItemSkill.Archer1))
+            {
+                damage = damage * 13 / 10;
+            }
+            ((SpellObject)ArcherTrapObject).DetonateTrapNow();
+
+            //SMain.Enqueue($"广播炸弹1x:{ArcherTrapObject.CurrentLocation.X},y:{ArcherTrapObject.CurrentLocation.Y}");
+            for (int x= ArcherTrapObject.CurrentLocation.X-1;x<= ArcherTrapObject.CurrentLocation.X + 1; x++)
+            {
+                for (int y = ArcherTrapObject.CurrentLocation.Y - 1; y <= ArcherTrapObject.CurrentLocation.Y + 1; y++)
+                {
+                    if(!CurrentMap.ValidPoint(x, y)){
+                        continue;
+                    }
+                    if(ArcherTrapObject.CurrentLocation.X!=x || ArcherTrapObject.CurrentLocation.Y != y)
+                    {
+                        //广播炸弹
+                        SpellObject sp = new SpellObject
+                        {
+                            Spell = Spell.ExplosiveTrap,
+                            Value = damage,
+                            ExpireTime = Envir.Time + 100,
+                            TickSpeed = 500,
+                            Caster = this,
+                            CurrentLocation = new Point(x, y),
+                            CurrentMap = this.CurrentMap,
+                            Direction = Direction,
+                            DetonatedTrap = true
+                        };
+                        sp.Broadcast(sp.GetInfo());
+                    }
+                    //SMain.Enqueue($"广播炸弹x:{x},y:{y}");
+                    List<MapObject> listobj = CurrentMap.Objects[x, y];
+                    if (listobj == null)
+                    {
+                        continue;
+                    }
+                    foreach (MapObject ob in listobj)
+                    {
+                        if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
+                        if (ob.Dead) continue;
+                        if (!ob.IsAttackTarget(this)) continue;
+                        DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, damage, DefenceType.MAC, false);
+                        ActionList.Add(action);
+                    }
+                }
+            }
+            ArcherTrapObject = null;
         }
         public void DoKnockback(MapObject target, UserMagic magic)//ElementalShot - knockback
         {
@@ -10821,7 +10934,7 @@ namespace Server.MirObjects
 
         public void LevelMagic(UserMagic magic)
         {
-            byte exp = (byte)(RandomUtils.Next(3) + 1);
+            ushort exp = (ushort)(RandomUtils.Next(3) + 1);
 
             if ((Settings.MentorSkillBoost) && (Info.Mentor != 0) && (Info.isMentor))
             {
@@ -10836,7 +10949,9 @@ namespace Server.MirObjects
             }
 
             exp *= SkillNeckBoost;
-            
+            exp *= Settings.SkillRate;
+
+
             if (Level == 65535) exp = byte.MaxValue;
 
             int oldLevel = magic.Level;
@@ -13491,10 +13606,13 @@ namespace Server.MirObjects
                     }
 
                     successchance = successchance >= tempFrom.Info.CriticalRate ? 0 : (tempFrom.Info.CriticalRate - successchance) + (GemRate * 5);
-                    //保底成功率5%
-                    if (successchance < 5)
+
+                    //成功率下调10%
+                    //successchance = successchance - 10;
+                    //保底成功率15%
+                    if (successchance < 15)
                     {
-                        successchance = 5;
+                        successchance = 15;
                     }
                     //最高70
                     if (successchance > 70)
@@ -13510,7 +13628,7 @@ namespace Server.MirObjects
                     //check if combine will succeed
                     bool succeeded = RandomUtils.Next(100) < successchance + quality;
                     //随机失败，品质好的失败几率小一点
-                    if (succeeded && RandomUtils.Next(5 + tempTo.quality) == 1)
+                    if (succeeded && RandomUtils.Next(4 + tempTo.quality) == 1)
                     {
                         succeeded = false;
                     }
@@ -13601,8 +13719,8 @@ namespace Server.MirObjects
 
                     if (!succeeded)
                     {
-                        //3分之1的几率碎
-                        if ((tempFrom.Info.Shape == 3) && (RandomUtils.Next(tempTo.quality+3) == 1) )
+                        //3分之1的几率碎，碎的几率改到1/4
+                        if ((tempFrom.Info.Shape == 3) && (RandomUtils.Next(tempTo.quality+4) == 1) )
                         {
                             //item destroyed
                             ReceiveChat("物品已经损坏.", ChatType.Hint);
@@ -14154,6 +14272,18 @@ namespace Server.MirObjects
             }
             Account.Gold -= gold;
             Enqueue(new S.LoseGold { Gold = gold });
+        }
+
+        //失去元宝
+        public void LoseCredit(uint credit)
+        {
+            if (credit == 0) return;
+            if (Account.Credit < credit)
+            {
+                credit = Account.Credit;
+            }
+            Account.Credit -= credit;
+            Enqueue(new S.LoseCredit { Credit = credit });
         }
 
         //检测是否能携带此物品，检测负重，检测包裹
@@ -15993,7 +16123,8 @@ namespace Server.MirObjects
 
                 if (ob.Types.Count != 0 && !ob.Types.Contains(temp.Info.Type))
                 {
-                    ReceiveChat("此处无法卖此物品", ChatType.System);
+                    ReceiveChat("此处无法卖此物品"+ ob.Types.Count, ChatType.System);
+                    ReceiveChat("此处无法卖此物品" + temp.Info.Type, ChatType.System);
                     Enqueue(p);
                     return;
                 }
@@ -16256,6 +16387,7 @@ namespace Server.MirObjects
                 if (auction == null|| auction.isdel)
                 {
                     Enqueue(new S.MarketFail { Reason = 9 });
+                    return;
                 }
 
                 if (auction.Sold)
@@ -20182,7 +20314,7 @@ namespace Server.MirObjects
                 temps[0].samsaratype = (byte)temps[1].Info.Shape;
                 Info.SaItem = temps[0];
                 //轮回类型分类
-                if (RandomUtils.Next(100) < 50)
+                if (RandomUtils.Next(100) < 40)
                 {
                     Info.SaItemType = 0;
                 }
@@ -20190,6 +20322,26 @@ namespace Server.MirObjects
                 {
                     Info.SaItemType = (byte)RandomUtils.Next(1, 6);
                 }
+               
+                //地图没开的，不投放
+                if (Info.SaItemType == 2 && Envir.GetMapByNameAndInstance("Fox01") == null)
+                {
+                    Info.SaItemType = 0;
+                }
+
+                if (Info.SaItemType == 3 && Envir.GetMapByNameAndInstance("gumi101") == null)
+                {
+                    Info.SaItemType = 0;
+                }
+                if (Info.SaItemType == 4 && Envir.GetMapByNameAndInstance("HELL00") == null)
+                {
+                    Info.SaItemType = 0;
+                }
+                if (Info.SaItemType == 5 && Envir.GetMapByNameAndInstance("UMM") == null)
+                {
+                    Info.SaItemType = 0;
+                }
+
                 switch (Info.SaItemType)
                 {
                     case 0:
@@ -20304,6 +20456,7 @@ namespace Server.MirObjects
             if (type == 4)
             {
                 string erroritem = "";
+                uint cost = 0;
                 for (int t = 0; t < Info.ItemCollect.Length; t++)
                 {
                     UserItem temp = Info.ItemCollect[t];
@@ -20313,6 +20466,7 @@ namespace Server.MirObjects
                         erroritem += temp.Name + ",";
                         continue;
                     }
+                    cost += temp.Price();
                 }
                 if (erroritem.Length > 2)
                 {
@@ -20322,6 +20476,14 @@ namespace Server.MirObjects
                 }
                 p.Success = true;
                 Enqueue(p);
+                //检查费用
+                if (cost > Account.Gold)
+                {
+                    ReceiveChat(String.Format("你没有足够的金币来进行装备分解."), ChatType.System);
+                    return;
+                }
+                LoseGold(cost);
+
                 int st_count = 0;//获得的原石数量
                 for (int t = 0; t < Info.ItemCollect.Length; t++)
                 {

@@ -8,7 +8,7 @@ namespace Server.MirObjects.Monsters
 {
     public class FlamingMutant  : MonsterObject
     {
-        private const byte AttackRange = 8;
+        private const byte AttackRange = 10;
 
         protected internal FlamingMutant(MonsterInfo info)
             : base(info)
@@ -38,16 +38,27 @@ namespace Server.MirObjects.Monsters
             
             if (!ranged)
             {
-                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
+                if (RandomUtils.Next(10) < 2)
+                {
+                    Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, TargetID = Target.ObjectID });
+                    int damage = GetAttackPower(MinMC, MaxMC);
+                    if (damage == 0) return;
+                    int delay = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation) * 20 + 500; //50 MS per Step
 
-                int damage = GetAttackPower(MinDC, MaxDC);
-                if (damage == 0) return;
-
-                Target.Attacked(this, damage, DefenceType.ACAgility);
+                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.MACAgility);
+                    ActionList.Add(action);
+                }
+                else
+                {
+                    Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
+                    int damage = GetAttackPower(MinDC, MaxDC);
+                    if (damage == 0) return;
+                    Target.Attacked(this, damage, DefenceType.ACAgility);
+                }
             }
             else
             {
-                if (RandomUtils.Next(10) == 0)
+                if (RandomUtils.Next(10) < 3)
                 {
                     Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, TargetID = Target.ObjectID });
                     
@@ -63,7 +74,6 @@ namespace Server.MirObjects.Monsters
                 {
                     MoveTo(Target.CurrentLocation);
                 }
-
             }
 
 

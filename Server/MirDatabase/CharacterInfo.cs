@@ -102,7 +102,7 @@ namespace Server.MirDatabase
 
         public List<QuestProgressInfo> CurrentQuests = new List<QuestProgressInfo>();
         public List<int> CompletedQuests = new List<int>();
-
+        //这个是各种标志位，主要做任务标识的
         public bool[] Flags = new bool[Globals.FlagIndexCount];
         //账号信息
         [JsonIgnore]

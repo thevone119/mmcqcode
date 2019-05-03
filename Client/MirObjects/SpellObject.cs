@@ -125,6 +125,7 @@ namespace Client.MirObjects
                     break;
                 case Spell.ExplosiveTrap://这个是陷阱
                     BodyLibrary = Libraries.Magic3;
+               
                     if (info.Param)
                     {
                         DrawFrame = 1570;

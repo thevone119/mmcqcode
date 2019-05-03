@@ -283,7 +283,7 @@ namespace Server.MirObjects
                     return new ShellFighter(info);
                     
                 //unfinished
-                case 253:
+                case 253://鸟人像？
                     return new FlamingMutant(info);
                 case 254:
                     return new StoningStatue(info);
@@ -294,8 +294,12 @@ namespace Server.MirObjects
                     return new Runaway(info);
                 case 201://custom
                     return new TalkingMonster(info);
+                case 210://custom
+                    return new FlameTiger(info);
                 case 255://custom
                     return new TestAttackMon(info);
+               
+                    
 
                 default:
                     return new MonsterObject(info);
@@ -624,7 +628,7 @@ namespace Server.MirObjects
                 MinDC = (ushort)Math.Min(ushort.MaxValue, MinDC *1.0* (10 + PetLevel/2.0) / 10.0);//攻击成长，最高成长1.35倍攻击
                 MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC *1.0* (10 + PetLevel/2.0) / 10.0);//攻击成长，最高成长1.35倍攻击
 
-            if (Info.Name == Settings.SkeletonName ||Info.Name == Settings.ShinsuName ||Info.Name == Settings.AngelName) 
+            if (Info.Name.StartsWith(Settings.SkeletonName) ||Info.Name.IndexOf(Settings.ShinsuName)!=-1 ||Info.Name == Settings.AngelName) 
             {
                 MoveSpeed = (ushort)Math.Min(ushort.MaxValue, (Math.Max(ushort.MinValue, MoveSpeed - MaxPetLevel * 130)));
                 AttackSpeed = (ushort)Math.Min(ushort.MaxValue, (Math.Max(ushort.MinValue, AttackSpeed - MaxPetLevel * 70)));

@@ -173,8 +173,8 @@ namespace Server.MirObjects.Monsters
 
             if (_currentAttacker != null && (_currentAttacker != attacker || _currentAttacker != attacker.Master))
             {
-                OutputAverage();
-                ResetStats();
+                //OutputAverage();
+                //ResetStats();
             }
             
             if (_currentAttacker == null)
@@ -189,7 +189,8 @@ namespace Server.MirObjects.Monsters
                 timespend = 1000;
             double Dps = _totalDamage / (timespend * 0.001);
             _currentAttacker.ReceiveChat(string.Format("{1} 造成 {0} 伤害, 秒均伤害: {2:#.00}.", damage, attacker is MonsterObject ? "你宠物的毒" : "你的毒", Dps), ChatType.Trainer);
-            Poisoned = true;
+            //Poisoned = true;
+            PoisonList.Clear();
         }
 
         protected override void ProcessRegen()
@@ -268,7 +269,7 @@ namespace Server.MirObjects.Monsters
             if (_StartTime == 0)
                 timespend = 1000;
             double Dps = _totalDamage / (timespend * 0.001);
-            _currentAttacker.ReceiveChat(string.Format("平均伤害为: {0}, 秒均伤害: {1:#.00}.", (int)(_totalDamage / _hitCount),Dps), ChatType.Trainer);
+            _currentAttacker.ReceiveChat(string.Format("平均伤害为: {0}, 秒均伤害: {1:#.00}.攻击次数:{2},攻击总耗时:{3}秒", (int)(_totalDamage / _hitCount),Dps, _hitCount, (_lastAttackTime - _StartTime)/1000), ChatType.Trainer);
         }
     }
 }
