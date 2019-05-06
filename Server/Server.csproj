@@ -288,6 +288,7 @@
     <Compile Include="MirObjects\MonsterObject.cs" />
     <Compile Include="MirObjects\Monsters\FlameTiger.cs" />
     <Compile Include="MirObjects\Monsters\ShellFighter.cs" />
+    <Compile Include="MirObjects\Monsters\WarTownArcher.cs" />
     <Compile Include="MirObjects\Monsters\TreeQueen.cs" />
     <Compile Include="MirObjects\Monsters\SmallPot.cs" />
     <Compile Include="MirObjects\Monsters\MudWarrior.cs" />

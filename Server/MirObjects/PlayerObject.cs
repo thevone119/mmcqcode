@@ -17,6 +17,8 @@ namespace Server.MirObjects
 {
     /// <summary>
     /// 玩家各种操作的主逻辑，都在这里了，这个是核心类
+    /// 登录后的玩家，都在这里
+    /// 退出后，这个对象就回收了？
     /// </summary>
     public sealed class PlayerObject : MapObject
     {
@@ -47,10 +49,22 @@ namespace Server.MirObjects
         public MirConnection Connection;
         public Reporting Report;
 
+        //
+        //更改玩家的名字，这个是核心逻辑啊
+        private String _Name = null;
         public override string Name
         {
-            get { return Info.Name; }
-            set { /*Check if Name exists.*/ }
+            get {
+                if(_Name==null|| _Name == String.Empty)
+                {
+                    return Info.Name;
+                }
+                return _Name;
+            }
+            set {
+                /*Check if Name exists.*/
+                _Name = value;
+            }
         }
 
         public override int CurrentMapIndex
@@ -96,6 +110,15 @@ namespace Server.MirObjects
 
         public ushort MaxHP, MaxMP;
 
+        //战场的攻击模式
+        private WarGroup _WGroup;
+        public override WarGroup WGroup
+        {
+            get { return _WGroup; }
+            set { _WGroup = value; }
+        }
+
+        //攻击模式，这个要改，增加战场攻击模式
         public override AttackMode AMode
         {
             get { return Info.AMode; }
@@ -3155,6 +3178,7 @@ namespace Server.MirObjects
                 CheckItem(item);
             }
         }
+        //返回用户信息
         private void GetUserInfo()
         {
             string guildname = MyGuild != null ? MyGuild.Name : "";
@@ -4235,10 +4259,15 @@ namespace Server.MirObjects
                 GoldDropRateOffset = (float)Math.Min(float.MaxValue, GoldDropRateOffset + Buff.Info.BuffGoldRate);
             }
         }
+
         public void RefreshNameColour()
         {
             Color colour = Color.White;
-            
+
+            if (ChangeNameColour != Color.White)
+            {
+                colour = ChangeNameColour;
+            }
             if (PKPoints >= 200)
                 colour = Color.Red;
             else if (WarZone)
@@ -4262,10 +4291,15 @@ namespace Server.MirObjects
             BroadcastColourChange();
         }
 
+        //获取别的玩家的名字颜色
         public Color GetNameColour(PlayerObject player)
         {
             if (player == null) return NameColour;
 
+            if (player.ChangeNameColour != Color.White)
+            {
+                return player.ChangeNameColour;
+            }
             if (WarZone)
             {
                 if (MyGuild == null)
@@ -11338,6 +11372,11 @@ namespace Server.MirObjects
         public override bool IsAttackTarget(PlayerObject attacker)
         {
             if (attacker == null || attacker.Node == null) return false;
+            //加入战场攻击模式
+            if (WGroup != attacker.WGroup)
+            {
+                return true;
+            }
             if (Dead || InSafeZone || attacker.InSafeZone || attacker == this || GMGameMaster) return false;
             if (CurrentMap.Info.NoFight) return false;
 
@@ -11363,6 +11402,11 @@ namespace Server.MirObjects
         {
             if (attacker == null || attacker.Node == null) return false;
             if (Dead || attacker.Master == this || GMGameMaster) return false;
+            //加入战场攻击模式
+            if (WGroup != attacker.WGroup)
+            {
+                return true;
+            }
             if (attacker.Info.AI == 6 || attacker.Info.AI == 58) return PKPoints >= 200;
             if (attacker.Master == null) return true;
             if (InSafeZone || attacker.InSafeZone || attacker.Master.InSafeZone) return false;
@@ -11405,7 +11449,11 @@ namespace Server.MirObjects
         public override bool IsFriendlyTarget(PlayerObject ally)
         {
             if (ally == this) return true;
-
+            //加入战场攻击模式
+            if (WGroup != ally.WGroup)
+            {
+                return false;
+            }
             switch (ally.AMode)
             {
                 case AttackMode.Group:
@@ -11422,6 +11470,11 @@ namespace Server.MirObjects
         public override bool IsFriendlyTarget(MonsterObject ally)
         {
             if (ally.Race != ObjectType.Monster) return false;
+            //加入战场攻击模式
+            if (WGroup != ally.WGroup)
+            {
+                return false;
+            }
             if (ally.Master == null) return false;
 
             switch (ally.Master.Race)

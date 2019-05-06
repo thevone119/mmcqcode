@@ -124,11 +124,17 @@ namespace Server.MirObjects
                         }
                     }
                     break;
-                case Spell.Healing: //SafeZone
+                case Spell.Healing: //SafeZone，安全区域治疗效果
                     if (ob.Race != ObjectType.Player && (ob.Race != ObjectType.Monster || ob.Master == null || ob.Master.Race != ObjectType.Player)||ob.CurrentMap.SafeZoneHealingTime > Envir.Time) return;
                     if (ob.Dead || ob.HealAmount != 0 || ob.PercentHealth == 100) return;
-
-                    ob.HealAmount += 25;
+                    //战场模式，只治愈自己队伍的
+                    SafeZoneInfo szi = ob.CurrentMap.GetSafeZone(ob.CurrentLocation);
+                    if (szi!=null && ob.WGroup != szi.WGroup)
+                    {
+                        return;
+                    }
+                    //增加一些安全区的治愈效果，之前是每次加25
+                    ob.HealAmount += 35;
                     Broadcast(new S.ObjectEffect {ObjectID = ob.ObjectID, Effect = SpellEffect.Healing});
                     break;
                 case Spell.PoisonCloud:

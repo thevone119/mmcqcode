@@ -915,6 +915,15 @@ public enum FishingSlot : byte
     Finder = 3,//取景器，鱼竿？
     Reel = 4//绕在卷轴上的线,鱼线？
 }
+
+//战场分组
+[Obfuscation(Feature = "renaming", Exclude = true)]
+public enum WarGroup : byte
+{
+    None = 0,//默认，非战场模式,没有战场分组
+    GroupA = 1,//战场编组1
+    GroupB = 2,//战场编组2
+}
 //攻击模式
 [Obfuscation(Feature = "renaming", Exclude = true)]
 public enum AttackMode : byte
@@ -5870,6 +5879,8 @@ public class SafeZoneInfo
     public bool StartPoint;
     //地图引用（服务器才使用）
     public int MapIndex;
+    //安全区归属的战场分组，分组一样的可以进行治疗
+    public WarGroup WGroup;//战场分组，不在同一
 
     public SafeZoneInfo()
     {

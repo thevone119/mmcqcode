@@ -27,6 +27,7 @@ namespace Server.MirEnvir
         private static byte LowWall = 0;
         private static byte Fishing = 4;
         public long SafeZoneHealingTime;//安全区恢复治疗的时间，默认是0，就是一直可以治疗
+        
 
 
         public string getTitle()
@@ -2894,7 +2895,7 @@ namespace Server.MirEnvir
             //2000分之1,10倍爆率
             if (RandomUtils.Next(1000) == 1&& Info.Count > 1 && Monster.HP<5000)
             {
-                SMain.Enqueue("刷新紫色精英怪："+ Monster.Name+",在："+Map.getTitle());
+                //SMain.Enqueue("刷新紫色精英怪："+ Monster.Name+",在："+Map.getTitle());
                 //先复制怪物info
                 MonsterInfo minfo = Monster.Clone();
                 foreach (DropInfo drop in minfo.Drops)

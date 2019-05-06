@@ -61,7 +61,6 @@ namespace Server.MirDatabase
 
         public ushort HP, MP;
         public long Experience;
-
         public AttackMode AMode;
         public PetMode PMode;
         public bool AllowGroup;
@@ -247,6 +246,8 @@ namespace Server.MirDatabase
                 obj.MP = (ushort)read.GetInt32(read.GetOrdinal("MP"));
                 obj.Experience = read.GetInt64(read.GetOrdinal("Experience"));
                 obj.AMode = (AttackMode)read.GetByte(read.GetOrdinal("AMode"));
+
+                
                 obj.PMode = (PetMode)read.GetByte(read.GetOrdinal("PMode"));
                 obj.PKPoints = read.GetInt32(read.GetOrdinal("PKPoints"));
                 //扩展背包的容量
@@ -504,6 +505,7 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("MP", MP));
             lp.Add(new SQLiteParameter("Experience", Experience));
             lp.Add(new SQLiteParameter("AMode", (byte)AMode));
+
             lp.Add(new SQLiteParameter("PMode", (byte)PMode));
             lp.Add(new SQLiteParameter("PKPoints", PKPoints));
             

@@ -81,7 +81,7 @@ namespace Server.MirObjects
 
         public long CellTime, BrownTime, PKPointTime, LastHitTime, EXPOwnerTime;
         public Color NameColour = Color.White;
-        //增加一个字段，可以更改怪物名称
+        //增加一个字段，可以更改人物，怪物名称颜色
         public Color ChangeNameColour = Color.White;
 
         public bool Dead, Undead, Harvested, AutoRev;
@@ -175,6 +175,9 @@ namespace Server.MirObjects
 
         public List<PlayerObject> GroupMembers;//组队成员，包含自己
 
+        //战场分组
+        public virtual WarGroup WGroup { get; set; }
+        //攻击模式
         public virtual AttackMode AMode { get; set; }
 
         public virtual PetMode PMode { get; set; }

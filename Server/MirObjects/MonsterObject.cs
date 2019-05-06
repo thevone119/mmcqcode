@@ -294,6 +294,8 @@ namespace Server.MirObjects
                     return new Runaway(info);
                 case 201://custom
                     return new TalkingMonster(info);
+                case 202://弓箭护卫（战场中的弓箭护卫）
+                    return new WarTownArcher(info);
                 case 210://custom
                     return new FlameTiger(info);
                 case 255://custom
@@ -347,6 +349,22 @@ namespace Server.MirObjects
                 _Level=value;
             }
         }
+
+
+        //战场的攻击模式
+        private WarGroup _WGroup;
+        public override sealed WarGroup WGroup
+        {
+            get {
+                if (Master != null)
+                {
+                    return Master.WGroup;
+                }
+                return _WGroup;
+            }
+            set { _WGroup = value; }
+        }
+
 
         public override sealed AttackMode AMode
         {
@@ -2136,6 +2154,11 @@ namespace Server.MirObjects
         {
             if (attacker == null || attacker.Node == null) return false;
             if (Dead) return false;
+            //加入战场攻击模式
+            if(WGroup!= attacker.WGroup)
+            {
+                return true;
+            }
             if (Master == null) return true;
             if (attacker.AMode == AttackMode.Peace) return false;
             if (Master == attacker) return attacker.AMode == AttackMode.All;
@@ -2169,6 +2192,11 @@ namespace Server.MirObjects
             if (attacker == null || attacker.Node == null) return false;
             if (Dead || attacker == this) return false;
             if (attacker.Race == ObjectType.Creature) return false;
+            //加入战场攻击模式
+            if (WGroup != attacker.WGroup)
+            {
+                return true;
+            }
             //护卫
             if (attacker.Info.AI == 6) // Guard
             {
@@ -2242,6 +2270,11 @@ namespace Server.MirObjects
         }
         public override bool IsFriendlyTarget(PlayerObject ally)
         {
+            //加入战场攻击模式
+            if (WGroup != ally.WGroup)
+            {
+                return false;
+            }
             if (Master == null) return false;
             if (Master == ally) return true;
 
@@ -2261,6 +2294,11 @@ namespace Server.MirObjects
 
         public override bool IsFriendlyTarget(MonsterObject ally)
         {
+            //加入战场攻击模式
+            if (WGroup != ally.WGroup)
+            {
+                return false;
+            }
             if (Master != null) return false;
             if (ally.Race != ObjectType.Monster) return false;
             if (ally.Master != null) return false;
