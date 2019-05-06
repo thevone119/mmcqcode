@@ -131,10 +131,67 @@ namespace Server.MirDatabase
         public int onlineDay = 0;//当前日期
 
         //记录地狱副本的层级，得分，总用时,创建时间（日）
-        public int fb1_level;
-        public int fb1_score;
-        public int fb1_usetime;
-        public int fb1_createday;
+        private int fb1_level;
+        private int fb1_score;
+        private int fb1_usetime;
+        private int fb1_createday;
+        //增加天榜积分(5天掉100分)，积分规则，每赢1场，增加100分，输1场掉100分,
+        //如果积分大于500，则赢一场增加90分，如果积分大于1000，则赢1场增加80分，积分大于1500，则赢1场增加70积分
+        private int fb2_score;
+        private int fb2_createday;
+
+        //获取副本1的最终积分
+        public int getFb1_score()
+        {
+            int day = SMain.Envir.Now.DayOfYear;
+            if(fb1_createday> day)
+            {
+                fb1_createday = day-100;
+            }
+            int _fb1_score = fb1_score - (day - fb1_createday-3) * 100;
+            if (_fb1_score> fb1_score)
+            {
+                return fb1_score;
+            }
+            if (_fb1_score < 0)
+            {
+                return 0;
+            }
+            return _fb1_score;
+        }
+
+        public void setFb1_score(int _score)
+        {
+            fb1_createday = SMain.Envir.Now.DayOfYear;
+            fb1_score = _score;
+        }
+
+        //获取副本2的最终积分
+        public int getFb2_score()
+        {
+            int day = SMain.Envir.Now.DayOfYear;
+            if (fb2_createday > day)
+            {
+                fb2_createday = day - 100;
+            }
+            int _fb2_score = fb2_score - (day - fb2_createday - 5) * 100;
+            if (_fb2_score > fb2_score)
+            {
+                return fb2_score;
+            }
+            if (_fb2_score < 0)
+            {
+                return 0;
+            }
+            return _fb2_score;
+        }
+
+        //设置副本2的最终积分
+        public void setFb2_score(int _score)
+        {
+            fb2_createday = SMain.Envir.Now.DayOfYear;
+            fb2_score = _score;
+        }
 
         public CharacterInfo()
         {
@@ -374,6 +431,9 @@ namespace Server.MirDatabase
                 obj.fb1_usetime = read.GetInt32(read.GetOrdinal("fb1_usetime"));
                 obj.fb1_createday = read.GetInt32(read.GetOrdinal("fb1_createday"));
 
+                obj.fb2_score = read.GetInt32(read.GetOrdinal("fb2_score"));
+                obj.fb2_createday = read.GetInt32(read.GetOrdinal("fb2_createday"));
+                
                 //添加2个字段
                 //obj.onlineTime = (uint)read.GetInt32(read.GetOrdinal("onlineTime"));
                 //obj.onlineDay = read.GetInt32(read.GetOrdinal("onlineDay"));
@@ -507,6 +567,9 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("fb1_score", fb1_score));
             lp.Add(new SQLiteParameter("fb1_usetime", fb1_usetime));
             lp.Add(new SQLiteParameter("fb1_createday", fb1_createday));
+
+            lp.Add(new SQLiteParameter("fb2_score", fb2_score));
+            lp.Add(new SQLiteParameter("fb2_createday", fb2_createday));
 
             lp.Add(new SQLiteParameter("killMon2", JsonConvert.SerializeObject(killMon2)));
 

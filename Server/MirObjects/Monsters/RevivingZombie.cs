@@ -18,7 +18,7 @@ namespace Server.MirObjects.Monsters
             : base(info)
         {
             RevivalCount = 0;
-            LifeCount = RandomUtils.Next(3);//这里改下，最多复活3次
+            LifeCount = RandomUtils.Next(2);//这里改下，最多复活2次
         }
 
         public override void Die()

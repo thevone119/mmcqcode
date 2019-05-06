@@ -606,6 +606,14 @@ namespace Server.MirEnvir
                         CreateSafeZone(Info.SafeZones[i]);
                     }
                     loadRandomValidPoints();
+
+                    //这里加入一些特殊地图的处理
+                    if (Info.Mcode == "GroupWar" && mapSProcess==null)
+                    {
+                        mapSProcess = new GroupWar();
+                    }
+
+
                     return true;
                 }
             }

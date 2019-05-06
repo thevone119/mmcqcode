@@ -735,7 +735,7 @@ namespace Server.MirObjects
                     }
                     else
                     {
-                        acts.Add(new NPCActions(ActionType.WarSignUp, parts[1]));
+                        acts.Add(new NPCActions(ActionType.WarSignUp, parts[1], parts[2]));
                     }
                     break;
 
@@ -2991,29 +2991,20 @@ namespace Server.MirObjects
                     case ActionType.WarSignUp://战役报名
                         //战役类型 1：匹配1  2：匹配2  3：军团3  4：军团4
                         byte warType = 0;
+                        byte costType = 0;
                         if (!Settings.openGroupWar)
                         {
                             player.ReceiveChat($"当前系统未开放战役", ChatType.Hint);
                             return;
                         }
                         //报名时间
-                        DateTime now = DateTime.Now;
-                        if (now.Hour != 20)
-                        {
-                            player.ReceiveChat($"当前时间不接受报名，请在晚上20点-20点09分前来报名", ChatType.Hint);
-                            return;
-                        }
-                        if (now.Minute > 8)
-                        {
-                            player.ReceiveChat($"当前时间不接受报名，请在晚上20点-20点09分前来报名", ChatType.Hint);
-                            return;
-                        }
                         if (param.Count >= 1)
                         {
-                            byte.TryParse(param[0], out rtype);
+                            byte.TryParse(param[0], out warType);
+                            byte.TryParse(param[1], out costType);
                         }
                         //检查身上金钱是否足够。这里就不检查了，进去的时候再检查
-                        player.ReceiveChat(GroupWar.signUp(player, warType), ChatType.Hint);
+                        player.ReceiveChat(GroupWar.signUp(player, warType, costType), ChatType.Hint);
                         break;
                     case ActionType.CallNewPlayerMob://召唤新人宝宝
                         //战役类型 1：匹配1  2：匹配2  3：军团3  4：军团4

@@ -823,51 +823,62 @@ namespace Server.MirObjects
         //怪物死亡
         public override void Die()
         {
-            if (Dead) return;
-
-            HP = 0;
-            Dead = true;
-
-            DeadTime = Envir.Time + DeadDelay;
-
-            Broadcast(new S.ObjectDied { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
-            //触发死亡脚本
-            if (Info.HasDieScript && (SMain.Envir.MonsterNPC != null))
+            try
             {
-                SMain.Envir.MonsterNPC.Call(this,string.Format("[@_DIE({0})]", Info.Index));
-            }
+                if (Dead) return;
 
-            //经验拥有者
-            if (EXPOwner != null && Master == null && EXPOwner.Race == ObjectType.Player)
-            {
-                EXPOwner.WinExp(Experience, Level);
+                HP = 0;
+                Dead = true;
 
-                PlayerObject playerObj = (PlayerObject)EXPOwner;
-                playerObj.CheckGroupQuestKill(Info);
-                if (!IsCopy)
+                DeadTime = Envir.Time + DeadDelay;
+
+                Broadcast(new S.ObjectDied { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
+                //触发死亡脚本
+                if (Info != null && Info.HasDieScript && (SMain.Envir.MonsterNPC != null))
                 {
-                    playerObj.killMon(this);
+                    SMain.Envir.MonsterNPC.Call(this, string.Format("[@_DIE({0})]", Info.Index));
+                }
+
+                //经验拥有者
+                if (EXPOwner != null && Master == null && EXPOwner.Race == ObjectType.Player)
+                {
+                    EXPOwner.WinExp(Experience, Level);
+
+                    PlayerObject playerObj = (PlayerObject)EXPOwner;
+                    playerObj.CheckGroupQuestKill(Info);
+                    if (!IsCopy)
+                    {
+                        playerObj.killMon(this);
+                    }
+                }
+                //如果是副本怪物，则调用副本处理方法
+                if (IsCopy && CurrentMap != null && CurrentMap.mapSProcess != null)
+                {
+                    CurrentMap.mapSProcess.monDie(this);
+                }
+
+
+                if (Respawn != null)
+                    Respawn.Count--;
+
+                //没有主人，并且有经验拥有者才爆东西
+                if (Master == null && EXPOwner != null)
+                    Drop();
+
+                Master = null;
+
+                PoisonList.Clear();
+                Envir.MonsterCount--;
+                //这里之前会空指针，坑死人咩
+                if (CurrentMap != null)
+                {
+                    CurrentMap.MonsterCount--;
                 }
             }
-            //如果是副本怪物，则调用副本处理方法
-            if (IsCopy && CurrentMap.mapSProcess != null)
+            catch(Exception e)
             {
-                CurrentMap.mapSProcess.monDie(this);
+                SMain.Enqueue(e);
             }
-         
-
-            if (Respawn != null)
-                Respawn.Count--;
-
-            //没有主人，并且有经验拥有者才爆东西
-            if (Master == null && EXPOwner != null)
-                 Drop();
-
-            Master = null;
-
-            PoisonList.Clear();
-            Envir.MonsterCount--;
-            CurrentMap.MonsterCount--;
         }
         //复活
         public void Revive(uint hp, bool effect)
@@ -1064,49 +1075,57 @@ namespace Server.MirObjects
 
             return true;
         }
+        //死循环调用入口，这个用trycatch 包裹，因为这里非常多逻辑，非常容易发生异常
         //死循环处理
         public override void Process()
         {
-            base.Process();
-
-            RefreshNameColour();
-
-            if (Target != null && (Target.CurrentMap != CurrentMap || !Target.IsAttackTarget(this) || !Functions.InRange(CurrentLocation, Target.CurrentLocation, Globals.DataRange)))
-                Target = null;
-
-            for (int i = SlaveList.Count - 1; i >= 0; i--)
-                if (SlaveList[i].Dead || SlaveList[i].Node == null)
-                    SlaveList.RemoveAt(i);
-
-            if (Dead && Envir.Time >= DeadTime)
+            try
             {
-                CurrentMap.RemoveObject(this);
-                if (Master != null)
+                base.Process();
+
+                RefreshNameColour();
+
+                if (Target != null && (Target.CurrentMap != CurrentMap || !Target.IsAttackTarget(this) || !Functions.InRange(CurrentLocation, Target.CurrentLocation, Globals.DataRange)))
+                    Target = null;
+
+                for (int i = SlaveList.Count - 1; i >= 0; i--)
+                    if (SlaveList[i].Dead || SlaveList[i].Node == null)
+                        SlaveList.RemoveAt(i);
+
+                if (Dead && Envir.Time >= DeadTime)
+                {
+                    CurrentMap.RemoveObject(this);
+                    if (Master != null)
+                    {
+                        Master.Pets.Remove(this);
+                        Master = null;
+                    }
+
+                    Despawn();
+                    return;
+                }
+
+                if (Master != null && TameTime > 0 && Envir.Time >= TameTime)
                 {
                     Master.Pets.Remove(this);
                     Master = null;
+                    Broadcast(new S.ObjectName { ObjectID = ObjectID, Name = Name });
                 }
 
-                Despawn();
-                return;
-            }
+                ProcessAI();
 
-            if(Master != null && TameTime > 0 && Envir.Time >= TameTime)
+                ProcessBuffs();
+                ProcessRegen();
+                ProcessPoison();
+
+            }
+            catch (Exception e)
             {
-                Master.Pets.Remove(this);
-                Master = null;
-                Broadcast(new S.ObjectName { ObjectID = ObjectID, Name = Name });
+                SMain.Enqueue(e);
             }
+            
 
-            ProcessAI();
-
-            ProcessBuffs();
-            ProcessRegen();
-            ProcessPoison();
-
-
-         /*   if (!HealthChanged) return;
-
+             /*if (!HealthChanged) return;
             HealthChanged = false;
             
             BroadcastHealthChange();*/

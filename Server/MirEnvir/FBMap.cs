@@ -1129,14 +1129,11 @@ namespace Server.MirEnvir
                 
                     foreach (PlayerObject p in map.Players)
                     {
-                        if(p.Info.fb1_score < fb_score)
+                        if(p.Info.getFb1_score() < fb_score)
                         {
-                            p.Info.fb1_score = fb_score;
-                            p.Info.fb1_level = fb_level;
-                            p.Info.fb1_usetime = fb_usertime;
-                            p.Info.fb1_createday = Envir.Now.DayOfYear;
+                            p.Info.setFb1_score(fb_score);
                         }
-                        p.ReceiveChat($"闯关成功，当前层数{fb_level + 1},用时{usetminute}分{useSecond}秒，得分{score}，累计分{fb_score},历史最高{p.Info.fb1_score}分，您的积分将记录于地榜中...", ChatType.System2);
+                        p.ReceiveChat($"闯关成功，当前层数{fb_level + 1},用时{usetminute}分{useSecond}秒，得分{score}，累计分{fb_score},历史最高{p.Info.getFb1_score()}分，您的积分将记录于地榜中...", ChatType.System2);
                     }
                     //发送消息
                     if (fb_level+1 >= Max_Level)

@@ -1098,9 +1098,9 @@ namespace Client.MirScenes
             }
 
             //添加自动烈火处理,相当于0.5秒按一次，身前有怪物，人物才释放
-            if (GameScene.UserSet.AutoFlaming && CMain.Time > GameScene.UserSet.LastFlamingTime && CMain.Time<LastAttackTime+7000)
+            if (GameScene.UserSet.AutoFlaming && CMain.Time > GameScene.UserSet.LastFlamingTime && CMain.Time<LastAttackTime+15000)
             {
-                GameScene.UserSet.LastFlamingTime = CMain.Time + 200;
+                GameScene.UserSet.LastFlamingTime = CMain.Time + 1500;
                 ClientMagic mag = User.GetMagic(Spell.FlamingSword);
                 if (mag != null)
                 {
@@ -1116,8 +1116,9 @@ namespace Client.MirScenes
                             }
                         }
                     }
-                    if (mag != null && hasMon)
+                    if (mag != null)
                     {
+                        MirLog.debug("自动烈火处理");
                         UseSpell(mag);
                     }
                 }
@@ -4469,9 +4470,14 @@ namespace Client.MirScenes
                 case Spell.FlamingSword:
                     FlamingSword = p.CanUse;
                     if (FlamingSword)
+                    {
+                        GameScene.UserSet.LastFlamingTime = CMain.Time + 7000;
                         ChatDialog.ReceiveChat(LanguageUtils.Format("Your weapon is glowed by spirit of fire."), ChatType.Hint);
+                    }
                     else
+                    {
                         ChatDialog.ReceiveChat(LanguageUtils.Format("The spirits of fire disappeared."), ChatType.System);
+                    }
                     break;
             }
         }

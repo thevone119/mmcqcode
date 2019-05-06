@@ -93,8 +93,9 @@ namespace Server
         public static bool openFatigue = false;//是否开启防疲劳系统
         public static bool openLevelExpSup = false;//是否开启等级经验补偿
 
-        public static bool openGroupWar = true;//是否开启战役
+        public static bool openGroupWar = false;//是否开启战役
 
+        public static readonly bool saveSetting = false;//是否保存配置
 
 
         //Database
@@ -520,6 +521,10 @@ namespace Server
         }
         public static void Save()
         {
+            if (!saveSetting)
+            {
+                return;
+            }
             //General
             Reader.Write("General", "VersionPath", VersionPath);
             Reader.Write("General", "CheckVersion", CheckVersion);

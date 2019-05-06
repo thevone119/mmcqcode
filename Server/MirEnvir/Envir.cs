@@ -1060,15 +1060,10 @@ namespace Server.MirEnvir
                     }
                 }
             }
-            //地榜得分保留3天，超过3天每天降100分
-            for (int ac = 0; ac < CharacterList.Count; ac++)
-            {
-
-            }
-            int day = Now.DayOfYear;
-
+     
             List<Rank_Character_Info> all0 = new List<Rank_Character_Info>();//人榜
-            List<Rank_Character_Info> all1 = new List<Rank_Character_Info>();//地帮
+            List<Rank_Character_Info> all1 = new List<Rank_Character_Info>();//地榜
+            List<Rank_Character_Info> all2 = new List<Rank_Character_Info>();//天榜
             //在内存中计算排行榜
             for (int ac = 0; ac < CharacterList.Count; ac++)
             {
@@ -1078,38 +1073,21 @@ namespace Server.MirEnvir
                 }
                 if(CharacterList[ac].AccountInfo!=null && CharacterList[ac].AccountInfo.AdminAccount)
                 {
-                    continue;
+                    //continue;
                 }
-                //地榜得分保留3天，超过3天每天降100分
-                if (CharacterList[ac].fb1_createday == 0|| CharacterList[ac].fb1_createday> day)
-                {
-                    CharacterList[ac].fb1_createday = day;
-                }
-                if (CharacterList[ac].fb1_score > 0)
-                {
-                    if (day - CharacterList[ac].fb1_createday > 2)
-                    {
-                        CharacterList[ac].fb1_score = CharacterList[ac].fb1_score - 100;
-                        CharacterList[ac].fb1_createday = day - 2;
-                    }
-                }
-                
-                if (CharacterList[ac].fb1_score < 0)
-                {
-                    CharacterList[ac].fb1_score = 0;
-                }
-
-
-
+                //人，地，天3个榜单
                 Rank_Character_Info r0 = new Rank_Character_Info() { Class = CharacterList[ac].Class, Name = CharacterList[ac].Name, CharacterId= CharacterList[ac].Index, level = CharacterList[ac].Level, Experience = CharacterList[ac].Experience };
-                Rank_Character_Info r1 = new Rank_Character_Info() { Class = CharacterList[ac].Class, Name = CharacterList[ac].Name, CharacterId = CharacterList[ac].Index, level = CharacterList[ac].fb1_score };
+                Rank_Character_Info r1 = new Rank_Character_Info() { Class = CharacterList[ac].Class, Name = CharacterList[ac].Name, CharacterId = CharacterList[ac].Index, level = CharacterList[ac].getFb1_score() };
+                Rank_Character_Info r2 = new Rank_Character_Info() { Class = CharacterList[ac].Class, Name = CharacterList[ac].Name, CharacterId = CharacterList[ac].Index, level = CharacterList[ac].getFb2_score() };
                 if (CharacterList[ac].Player != null)
                 {
                     r0.PlayerId = CharacterList[ac].Player.ObjectID;
                     r1.PlayerId = CharacterList[ac].Player.ObjectID;
+                    r2.PlayerId = CharacterList[ac].Player.ObjectID;
                 }
                 all0.Add(r0);
                 all1.Add(r1);
+                all2.Add(r2);
             }
             //先排序
             all0.Sort(delegate (Rank_Character_Info p2, Rank_Character_Info p1) {
@@ -1120,6 +1098,8 @@ namespace Server.MirEnvir
                 return p1.level.CompareTo(p2.level);
             });
             all1.Sort(delegate (Rank_Character_Info p2, Rank_Character_Info p1) { return p1.level.CompareTo(p2.level); });
+
+            all2.Sort(delegate (Rank_Character_Info p2, Rank_Character_Info p1) { return p1.level.CompareTo(p2.level); });
 
             if (all0.Count > 0)
             {
@@ -1168,11 +1148,24 @@ namespace Server.MirEnvir
                     }
                     if (j == 2)//天榜
                     {
-                        
+                        for (int c = 0; c < all2.Count; c++)
+                        {
+                            if (RankClass[i, j].Count >= 20)
+                            {
+                                break;
+                            }
+                            if (i == 0)
+                            {
+                                RankClass[i, j].Add(all2[c]);
+                            }
+                            else if (i == ((byte)all2[c].Class + 1))
+                            {
+                                RankClass[i, j].Add(all2[c]);
+                            }
+                        }
                     }
                 }
             }
-
         }
 
         //加载钓鱼，掉落物品

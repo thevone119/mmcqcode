@@ -3805,20 +3805,43 @@ namespace Server.MirObjects
                         MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 1);
                         MaxBagWeight = (ushort)Math.Min(ushort.MaxValue, MaxBagWeight + 17);
                         break;
-                    case ItemSet.Hyeolryong:
+                    case ItemSet.Hyeolryong://龙血套（5件套），全属性加2，血量加70
                         MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxSC + 2);
-                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 15);
+                        MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 2);
+                        MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxSC + 2);
+                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 70);
                         MaxMP = (ushort)Math.Min(ushort.MaxValue, MaxMP + 20);
                         Holy = (byte)Math.Min(byte.MaxValue, Holy + 1);
                         Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + 1);
                         break;
-                    case ItemSet.Monitor:
+                    case ItemSet.Monitor://掠夺者套 5件套，全属性加2
                         MagicResist = (byte)Math.Min(byte.MaxValue, MagicResist + 1);
                         PoisonResist = (byte)Math.Min(byte.MaxValue, PoisonResist + 1);
+                        MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxSC + 2);
+                        MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 2);
+                        MaxMC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 2);
                         break;
-                    case ItemSet.Oppressive:
+                    case ItemSet.Oppressive://狂暴套 5件套,暴击加1，敏捷加1，攻速加1
                         MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 1);
+                        MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 1);
                         Agility = (byte)Math.Min(byte.MaxValue, Agility + 1);
+                        ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
+                        CriticalRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 1);
+                        break;
+                    case ItemSet.Paeok://贝玉套 5件套,暴击加1，准确加1，攻速加1
+                        MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 2);
+                        MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 2);
+                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 50);
+                        Accuracy = (byte)Math.Min(byte.MaxValue, Agility + 1);
+                        ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
+                        break;
+                    case ItemSet.Sulgwan://黑暗套 5件套,暴击加1，准确加1，攻速加1
+                        MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 2);
+                        MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 2);
+                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 60);
+                        Agility = (byte)Math.Min(byte.MaxValue, Agility + 1);
+                        ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
+                        HpDrainRate = (byte)Math.Min(byte.MaxValue, HpDrainRate + 2);
                         break;
                     case ItemSet.GaleWind://狂风套，加2点攻速
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 2);
@@ -3905,10 +3928,11 @@ namespace Server.MirObjects
             SpellRecovery = Math.Min(Settings.MaxManaRegen, SpellRecovery);
             HpDrainRate = Math.Min((byte)100, HpDrainRate);
         }
-        //坐骑
+
+        //刷新坐骑的属性加成，这里要改下，不骑马也照样加属性
         public void RefreshMountStats()
         {
-            if (!RidingMount || !Mount.HasMount) return;
+            if ((ServerConfig.NeedRidingMountAtt&&!RidingMount) || !Mount.HasMount) return;
 
             UserItem[] Slots = Mount.Slots;
 
@@ -7836,7 +7860,7 @@ namespace Server.MirObjects
 
             if (spell == null)
             {
-                ReceiveChat("技能需要冥想.", ChatType.System);
+                ReceiveChat("技能需要气功术.", ChatType.System);
                 return;
             }
 
@@ -15852,7 +15876,7 @@ namespace Server.MirObjects
 
                     Enqueue(new S.ObjectMagic { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Spell = spell });
                     break;
-                case Spell.FlamingSword:
+                case Spell.FlamingSword://烈火，10秒一次
                     if (FlamingSword || Envir.Time < FlamingSwordTime) return;
                     magic = GetMagic(spell);
                     if (magic == null) return;
