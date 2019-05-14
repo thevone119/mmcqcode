@@ -738,7 +738,12 @@ namespace Server.MirObjects
                         acts.Add(new NPCActions(ActionType.WarSignUp, parts[1], parts[2]));
                     }
                     break;
-
+                case "WARSIGNCANCEL":
+                    acts.Add(new NPCActions(ActionType.WarSignCancel));
+                    break;
+                case "WARSURRENDER":
+                    acts.Add(new NPCActions(ActionType.WarSurrender));
+                    break;
                     
                 case "QUERYHAIR":
                     acts.Add(new NPCActions(ActionType.QueryHair));
@@ -3005,6 +3010,14 @@ namespace Server.MirObjects
                         }
                         //检查身上金钱是否足够。这里就不检查了，进去的时候再检查
                         player.ReceiveChat(GroupWar.signUp(player, warType, costType), ChatType.Hint);
+                        break;
+                    case ActionType.WarSignCancel://取消战役报名
+      
+                        player.ReceiveChat(GroupWar.cancelSign(player), ChatType.Hint);
+                        break;
+                    case ActionType.WarSurrender://战役投降
+                                                
+                        player.ReceiveChat(GroupWar.WarSurrender(player), ChatType.Hint);
                         break;
                     case ActionType.CallNewPlayerMob://召唤新人宝宝
                         //战役类型 1：匹配1  2：匹配2  3：军团3  4：军团4

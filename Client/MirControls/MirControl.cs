@@ -791,13 +791,21 @@ namespace Client.MirControls
                     if (Controls[i] != null)
                         Controls[i].Draw();
         }
+        //这里有时候会引起奔溃？
         protected virtual void DrawBorder()
         {
             if (!Border || BorderInfo == null)
                 return;
-
-            DXManager.Sprite.Flush();
-            DXManager.Line.Draw(BorderInfo, _borderColour);
+            //这里加个异常处理试下
+            try
+            {
+                DXManager.Sprite.Flush();
+                DXManager.Line.Draw(BorderInfo, _borderColour);
+            }
+            catch(Exception e)
+            {
+                CMain.SaveError(e.StackTrace);
+            }
         }
         protected void AfterDrawControl()
         {

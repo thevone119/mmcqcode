@@ -1377,7 +1377,7 @@ namespace Server.MirObjects
                         continue;
                     }
                         
-
+                    //绿毒拉仇恨太猛了，看要不要改
                     if (poison.PType == PoisonType.Green || poison.PType == PoisonType.Bleeding)
                     {
                         if (EXPOwner == null || EXPOwner.Dead)
@@ -1386,7 +1386,11 @@ namespace Server.MirObjects
                             EXPOwnerTime = Envir.Time + EXPOwnerDelay;
                         }
                         else if (EXPOwner == poison.Owner)
+                        {
+                            //这里可以改成前面5下掉血才拉仇恨的
                             EXPOwnerTime = Envir.Time + EXPOwnerDelay;
+                        }
+                           
 
                         if (poison.PType == PoisonType.Bleeding)
                         {
@@ -2383,7 +2387,10 @@ namespace Server.MirObjects
                         Target = attacker;
                 }
                 else
+                {
+                    //这个仇恨系统看要不要改哟，2分之1的几率拉走仇恨吧
                     Target = attacker;
+                }
             }
 
             if (BindingShotCenter) ReleaseBindingShot();
@@ -2405,7 +2412,10 @@ namespace Server.MirObjects
                 EXPOwner = attacker;
 
             if (EXPOwner == attacker)
+            {
                 EXPOwnerTime = Envir.Time + EXPOwnerDelay;
+            }
+               
 
             ushort LevelOffset = (ushort)(Level > attacker.Level ? 0 : Math.Min(10, attacker.Level - Level));
 
@@ -2551,7 +2561,10 @@ namespace Server.MirObjects
                         EXPOwner = attacker.Master;
 
                     if (EXPOwner == attacker.Master)
+                    {
                         EXPOwnerTime = Envir.Time + EXPOwnerDelay;
+                    }
+                        
                 }
 
             }
@@ -3298,9 +3311,17 @@ namespace Server.MirObjects
             SendHealth(player);
         }
 
+        //经验拥有者才可以看到血
+        //这里改下，大家都可以看到怪物的血
         public override void SendHealth(PlayerObject player)
         {
+            //不显示血
             if (!player.IsMember(Master) && !(player.IsMember(EXPOwner) && AutoRev) && Envir.Time > RevTime) return;
+
+            if (!AutoRev && Envir.Time > RevTime)
+            {
+                return;
+            }
             byte time = Math.Min(byte.MaxValue, (byte) Math.Max(5, (RevTime - Envir.Time)/1000));
             
             player.Enqueue(new S.ObjectHealth { ObjectID = ObjectID, HP = this.HP,MaxHP=this.MaxHP, Expire = time });

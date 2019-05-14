@@ -186,12 +186,12 @@ namespace Server
         public static string CreatureBlackStoneName = "黑色灵物石";
 
         //Fishing Settings,钓鱼要巨型多角虫干嘛哦，钓鱼应该记录出现海龟，爆东西
-        public static int FishingAttempts = 30;
-        public static int FishingSuccessStart = 10;
+        public static int FishingAttempts = 30;//一次钓鱼尝试的次数，下面的进度条
+        public static int FishingSuccessStart = 10;//基础成功率
         public static int FishingSuccessMultiplier = 10;
-        public static long FishingDelay = 0;
-        //钓鱼的过程中有几率出现巨型多角虫,出现几率5%
-        public static int FishingMobSpawnChance = 5;
+        public static long FishingDelay = 0;//下次的等待延时
+        //钓鱼的过程中有几率出现巨型多角虫,出现几率1%
+        public static int FishingMobSpawnChance = 1;
         public static string FishingMonster = "巨型多角虫";
 
         //Mail Settings

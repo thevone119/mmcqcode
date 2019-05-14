@@ -112,5 +112,15 @@ namespace Server.MirDatabase
 
             return !int.TryParse(data[2], out info.Delay) ? info : info;
         }
+        public RouteInfo()
+        {
+
+        }
+
+        public RouteInfo(Point p, int d)
+        {
+            Location = p;
+            Delay = d;
+        }
     }
 }

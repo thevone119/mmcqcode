@@ -2091,10 +2091,14 @@ namespace Client.MirControls
             }
             else
             {
-                if (i.Weight - (Item != null ? Item.Weight : 0) + MapObject.User.CurrentWearWeight > MapObject.User.MaxWearWeight)
+                //这里要对鱼饵进行处理，否则，鱼饵装备不上
+                if(i.Info.Type!= ItemType.Bait)
                 {
-                    GameScene.Scene.ChatDialog.ReceiveChat("太重了.", ChatType.System);
-                    return false;
+                    if (i.Weight - (Item != null ? Item.Weight : 0) + MapObject.User.CurrentWearWeight > MapObject.User.MaxWearWeight)
+                    {
+                        GameScene.Scene.ChatDialog.ReceiveChat("太重了.", ChatType.System);
+                        return false;
+                    }
                 }
             }
 

@@ -95,6 +95,21 @@ namespace Server.MirObjects
         //这2个是增加爆率，数值为百分比，比如30，就是增加百分之30的的爆率
         public float ItemDropRateOffset = 0, GoldDropRateOffset = 0;
 
+        //战场攻击力的百分比，默认是百分百攻击力
+        private int _WarAttackPercent = 100;
+        public int WarAttackPercent
+        {
+            get
+            {
+                return _WarAttackPercent;
+            }
+
+            set
+            {
+                _WarAttackPercent = value;
+            }
+        }
+
         public bool CoolEye;
         private bool _hidden;
         
@@ -165,7 +180,7 @@ namespace Server.MirObjects
             }
 
         }
-        //主人，最后攻击人，经验拥有者，拥有者
+        //主人，最后攻击人，经验拥有者，拥有者(怪物的经验归属，装备归属这个要调整下，否则道士的毒太厉害了)
         public MapObject Master, LastHitter, EXPOwner, Owner;
         public long ExpireTime, OwnerTime, OperateTime;
         public int OperateDelay = 100;
@@ -265,10 +280,13 @@ namespace Server.MirObjects
         }
 
         public abstract void SetOperateTime();
-        //获取攻击
-        public int GetAttackPower(int min, int max)
+        //获取攻击,这里
+        //这里增加战场的特殊处理，攻击力百分比计算
+        public virtual int GetAttackPower(int min, int max)
         {
             if (min < 0) min = 0;
+            //这里加入攻击力百分比，可以调整玩家的当前攻击力系数
+            max = (int)(WarAttackPercent / 100.0f * max);
             if (min > max) max = min;
             //幸运与诅咒计算,多少几率打出最大，最小伤害
             if (Luck > 0)
@@ -281,7 +299,6 @@ namespace Server.MirObjects
                 if (Luck < -RandomUtils.Next(Settings.MaxLuck))
                     return min;
             }
-
             return RandomUtils.Next(min, max + 1);
         }
         //获取防御

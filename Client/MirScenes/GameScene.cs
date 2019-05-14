@@ -1285,7 +1285,24 @@ namespace Client.MirScenes
                     }
                 }
             }
+
+            //自动钓鱼处理，2秒检测一次
+            if (GameScene.UserSet.AutoFishing && CMain.Time > GameScene.UserSet.AutoFishingTime)
+            {
+                GameScene.UserSet.AutoFishingTime = CMain.Time + 2000;
+                if (!GameScene.Scene.FishingStatusDialog.Visible && MapControl.CanFish(User.Direction))
+                {
+                    User.FishingTime = CMain.Time;
+                    Network.Enqueue(new C.FishingCast { CastOut = true });
+                }
+                if(GameScene.Scene.FishingStatusDialog.Visible && GameScene.Scene.FishingStatusDialog.FishButton.Visible)
+                {
+                    Network.Enqueue(new C.FishingCast { CastOut = false });
+                }
+            }
+
                 
+
         }
 
         //先检查按钮栏BeltDialog，再检查背包InventoryDialog
@@ -2802,11 +2819,17 @@ namespace Client.MirScenes
             GameScene.Scene.FishingStatusDialog.ChancePercent = p.ChancePercent;
 
             GameScene.Scene.FishingStatusDialog.ChanceLabel.Text = string.Format("{0}%", GameScene.Scene.FishingStatusDialog.ChancePercent);
-
+            
             if (p.Fishing)
+            {
                 GameScene.Scene.FishingStatusDialog.Show();
+            }
             else
+            {
                 GameScene.Scene.FishingStatusDialog.Hide();
+            }
+     
+               
 
             Redraw();
         }
@@ -6634,7 +6657,7 @@ namespace Client.MirScenes
 
                 if(fishingItem)
                 {
-                    CRITICALRATELabel.Text = string.Format(addValue > 0 ? "敏捷: + {0} (+{1})" : "敏捷: + {0}", minValue + addValue, addValue);
+                    CRITICALRATELabel.Text = string.Format(addValue > 0 ? "柔韧度: + {0} (+{1})" : "柔韧度: + {0}", minValue + addValue, addValue);
                 }
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, CRITICALRATELabel.DisplayRectangle.Right + 4),
@@ -6813,15 +6836,15 @@ namespace Client.MirScenes
                 {
                     if (HoverItem.Info.Type == ItemType.Float)
                     {
-                        ACLabel.Text = LanguageUtils.Format("咬口几率 + " + (addValue > 0 ? "{0}~{1}% (+{2})" : "{0}~{1}%"), minValue, maxValue + addValue);
+                        ACLabel.Text = LanguageUtils.Format("啃食速率 + " + (addValue > 0 ? "{0}~{1}% (+{2})" : "{0}~{1}%"), minValue, maxValue + addValue);
                     }
                     else if (HoverItem.Info.Type == ItemType.Finder)
                     {
-                        ACLabel.Text = LanguageUtils.Format("Finder Increase + " + (addValue > 0 ? "{0}~{1}% (+{2})" : "{0}~{1}%"), minValue, maxValue + addValue);
+                        ACLabel.Text = LanguageUtils.Format("咬钩几率 + " + (addValue > 0 ? "{0}~{1}% (+{2})" : "{0}~{1}%"), minValue, maxValue + addValue);
                     }
                     else
                     {
-                        ACLabel.Text = LanguageUtils.Format("成功几率 + " + (addValue > 0 ? "{0}% (+{1})" : "{0}%"), maxValue, maxValue + addValue);
+                        ACLabel.Text = LanguageUtils.Format("上钩几率 + " + (addValue > 0 ? "{0}% (+{1})" : "{0}%"), maxValue, maxValue + addValue);
                     }
                 }
 
@@ -6857,7 +6880,8 @@ namespace Client.MirScenes
 
                 if (fishingItem)
                 {
-                    MACLabel.Text = LanguageUtils.Format("AutoReel Chance + {0}%", maxValue + addValue);
+                    //MACLabel.Text = LanguageUtils.Format("AutoReel Chance + {0}%", maxValue + addValue);
+                    MACLabel.Text = LanguageUtils.Format("自动几率 + {0}%", maxValue + addValue);
                 }
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, MACLabel.DisplayRectangle.Right + 4),
@@ -7951,7 +7975,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = LanguageUtils.Format("Soulbinds on equip")
+                    Text = LanguageUtils.Format("穿戴绑定")
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, BOELabel.DisplayRectangle.Right + 4),
@@ -7967,7 +7991,7 @@ namespace Client.MirScenes
                     Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
                     OutLine = true,
                     Parent = ItemLabel,
-                    Text = "Soulbound to: " + GetUserName((uint)HoverItem.SoulBoundId)
+                    Text = "绑定: " + GetUserName((ulong)HoverItem.SoulBoundId)
                 };
 
                 ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, BOELabel.DisplayRectangle.Right + 4),
@@ -9043,8 +9067,9 @@ namespace Client.MirScenes
         }
         
         //获取用户名称,内存中有的话，就显示内存中的，内存中没有，就查询
-        public string GetUserName(uint id)
+        public string GetUserName(ulong id)
         {
+            //MirLog.info("id:"+id);
             for (int i = 0; i < UserIdList.Count; i++)
             {
                 UserId who = UserIdList[i];
@@ -9598,6 +9623,7 @@ namespace Client.MirScenes
         }
 
         //创建纹理
+        //这里会出现异常，造成应用挂掉？
         protected override void CreateTexture()
         {
             if (User == null) return;

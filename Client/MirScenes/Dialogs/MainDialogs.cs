@@ -3474,20 +3474,20 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 PressedIndex = 433,
                 Sound = SoundList.ButtonA,
-                Hint = LanguageUtils.Format("Invite to Group"),
+                Hint = LanguageUtils.Format("邀请组队"),
             };
             GroupButton.Click += (o, e) =>
             {
 
                 if (GroupDialog.GroupList.Count >= Globals.MaxGroup)
                 {
-                    GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("Your group already has the maximum number of members."), ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("您的组已达到最大成员数."), ChatType.System);
                     return;
                 }
                 if (GroupDialog.GroupList.Count > 0 && GroupDialog.GroupList[0] != MapObject.User.Name)
                 {
 
-                    GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("You are not the leader of your group."), ChatType.System);
+                    GameScene.Scene.ChatDialog.ReceiveChat(LanguageUtils.Format("你不是你所在小组的领导人."), ChatType.System);
                 }
 
                 Network.Enqueue(new C.AddMember { Name = Name });
@@ -3503,7 +3503,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 PressedIndex = 436,
                 Sound = SoundList.ButtonA,
-                Hint = LanguageUtils.Format("Add to Friends List"),
+                Hint = LanguageUtils.Format("添加到好友列表"),
             };
             FriendButton.Click += (o, e) =>
             {
@@ -3519,7 +3519,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 PressedIndex = 439,
                 Sound = SoundList.ButtonA,
-                Hint = LanguageUtils.Format("Send Mail"),
+                Hint = LanguageUtils.Format("发邮件"),
             };
             MailButton.Click += (o, e) => GameScene.Scene.MailComposeLetterDialog.ComposeMail(Name);
 

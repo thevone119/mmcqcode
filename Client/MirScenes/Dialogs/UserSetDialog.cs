@@ -23,7 +23,7 @@ namespace Client.MirScenes.Dialogs
         public byte currTab = 1;//当前选择的TAB
         //各种开关
         //基本
-        public MirCheckBox ShowLevelBox, ExcuseShiftBox, ShowPingBox, ShowFashionBox, ShowMonNameBox, ShowTargetDead, ShowMonCorpse;
+        public MirCheckBox ShowLevelBox, ExcuseShiftBox, ShowPingBox, ShowFashionBox, ShowMonNameBox, ShowTargetDead, ShowMonCorpse, AutoFishingBox;
         //职业
         public MirCheckBox SeptumBox, AutoFlamingBox, AutoShieldBox, switchPoisonBox, AutoHasteBox, AutoFuryBox;
         public MirLabel tx_df;//提醒自动毒符
@@ -242,9 +242,16 @@ namespace Client.MirScenes.Dialogs
             {
                 changeData();
             };
-      
+            top += 30;
+            AutoFishingBox = new MirCheckBox { Location = new Point(left, top), LabelText = "自动钓鱼", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            AutoFishingBox.Click += (o, e) =>
+            {
+                changeData();
+            };
 
             
+
+
 
             //2.职业
             left = 50;
@@ -517,6 +524,8 @@ namespace Client.MirScenes.Dialogs
             ShowMonNameBox.Checked = GameScene.UserSet.ShowMonName;
             ShowTargetDead.Checked = Settings.TargetDead;
             ShowMonCorpse.Checked = GameScene.UserSet.ShowMonCorpse;
+            AutoFishingBox.Checked = GameScene.UserSet.AutoFishing;
+            
             SeptumBox.Checked = GameScene.UserSet.Septum;
             AutoFlamingBox.Checked = GameScene.UserSet.AutoFlaming;
             AutoShieldBox.Checked = GameScene.UserSet.AutoShield;
@@ -562,6 +571,8 @@ namespace Client.MirScenes.Dialogs
 
             Settings.TargetDead = ShowTargetDead.Checked;
             GameScene.UserSet.ShowMonCorpse = ShowMonCorpse.Checked;
+            GameScene.UserSet.AutoFishing = AutoFishingBox.Checked;
+            
 
             byte.TryParse(HPLower1Text.Text,out GameScene.UserSet.HPLower1);
             byte.TryParse(HPLower2Text.Text, out GameScene.UserSet.HPLower2);
@@ -646,6 +657,7 @@ namespace Client.MirScenes.Dialogs
             ShowMonNameBox.Visible = visible;
             ShowTargetDead.Visible = visible;
             ShowMonCorpse.Visible = visible;
+            AutoFishingBox.Visible = visible;
             ShowFashionBox.Visible = visible;
             if (visible)
             {

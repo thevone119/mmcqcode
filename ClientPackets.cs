@@ -719,6 +719,7 @@ namespace ClientPackets
         {
         }
     }
+    //查看玩家装备
     public sealed class Inspect : Packet
     {
         public override short Index
@@ -1436,11 +1437,11 @@ namespace ClientPackets
     {
         public override short Index { get { return (short)ClientPacketIds.RequestUserName; } }
 
-        public uint UserID;
+        public ulong UserID;
 
         protected override void ReadPacket(BinaryReader reader)
         {
-            UserID = reader.ReadUInt32();
+            UserID = reader.ReadUInt64();
         }
 
         protected override void WritePacket(BinaryWriter writer)
@@ -1647,7 +1648,7 @@ namespace ClientPackets
     {
         public override short Index { get { return (short)ClientPacketIds.FishingCast; } }
 
-        public bool CastOut;
+        public bool CastOut;//是否投递，如果不是投递，就是拉钩
 
         protected override void ReadPacket(BinaryReader reader)
         {

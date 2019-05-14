@@ -79,7 +79,11 @@ namespace Client
         //自动捡物品
         public bool AutoPickUp = true;
         public long AutoPickUpTime = 0;//最后使用物品时间
-      
+
+        //自动钓鱼
+        public bool AutoFishing = false;
+        public long AutoFishingTime = 0;//自动钓鱼
+
         //捡取物品的列表
         public List<PickItem> PickUpList = new List<PickItem>();//物品列表已名字_0;名字_1这种格式保存
         public long CheckPickTime = 0;//最后使用物品时间
@@ -148,7 +152,8 @@ namespace Client
             OpenProtect = Reader.ReadBoolean("UserSettings", "OpenProtect", OpenProtect);
             AutoPickUp = Reader.ReadBoolean("UserSettings", "AutoPickUp", AutoPickUp);
             ShowMonName = Reader.ReadBoolean("UserSettings", "ShowMonName", ShowMonName);
-
+            AutoFishing = Reader.ReadBoolean("UserSettings", "AutoFishing", AutoFishing);
+            
             ShowMonCorpse = Reader.ReadBoolean("UserSettings", "ShowMonCorpse", ShowMonCorpse);
             
 
@@ -191,7 +196,7 @@ namespace Client
             Reader.Write("UserSettings", "AutoPickUp", AutoPickUp);
             Reader.Write("UserSettings", "ShowMonName", ShowMonName);
             Reader.Write("UserSettings", "ShowMonCorpse", ShowMonCorpse);
-
+            Reader.Write("UserSettings", "AutoFishing", AutoFishing);
 
             Reader.Write("UserSettings", "HPLower1", HPLower1);
             Reader.Write("UserSettings", "HPLower2", HPLower2);

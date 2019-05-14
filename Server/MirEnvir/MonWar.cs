@@ -35,12 +35,7 @@ namespace Server.MirEnvir
 
 
 
-        private Point p1=new Point(354,335), p2= new Point(309,301), p3 = new Point(330, 330);//怪物攻城的2个集合点 ，从2个方向进攻土城
-
-        private int moveEnd = 0;
-
-        //所有产生的怪，都记录在这里，死亡的就删除掉
-        private List<MonsterObject> allmon = new List<MonsterObject>();
+        private Point p1=new Point(354,335), p2= new Point(309,301), MiddlePoint = new Point(330, 330), MiddlePoint2 = new Point(320, 330);//怪物攻城的2个集合点 ，从2个方向进攻土城
 
 
         //最后处理时间
@@ -51,16 +46,21 @@ namespace Server.MirEnvir
         private long fb_starttime;//副本的开始时间(针对当前地图)
         private int fb_playcount;//副本的玩家数
 
+        private int moncount = 0;//所有刷怪数量，刷1200个怪在土城吧。哈哈，每一波200个，3分钟刷
+        private int mcount1, mcount2, mcount3;//3种不同怪物的数量
+        private long fb_refreshmon;//刷怪开始时间
+
+
 
         //各种处理
         public override void Process(Map map)
         {
-            //500毫秒处理一次哦
+            //200毫秒处理一次哦
             if (lastPtime > Envir.Time)
             {
                 return;
             }
-            lastPtime = Envir.Time + 500;
+            lastPtime = Envir.Time + 200;
 
             if (fb_starttime == 0)
             {
@@ -79,8 +79,8 @@ namespace Server.MirEnvir
             {
                 foreach(PlayerObject p in Envir.Players)
                 {
-                    p.ReceiveChat($"2分钟后怪物发起攻城，目标进攻地点盟重土城", ChatType.System);
-                    p.ReceiveChat($"2分钟后怪物发起攻城，目标进攻地点盟重土城", ChatType.System);
+                    p.ReceiveChat($"1分钟后怪物发起攻城，目标进攻地点盟重土城", ChatType.System);
+                    p.ReceiveChat($"1分钟后怪物发起攻城，目标进攻地点盟重土城", ChatType.System);
                 }
                 fb_step++;
                 lastPtime = Envir.Time + 1000*60*1;
@@ -89,61 +89,21 @@ namespace Server.MirEnvir
                 return;
             }
 
-            //刷怪处理
+            //刷怪处理(一直刷)
             if (fb_step == 1)
             {
-                foreach (PlayerObject p in Envir.Players)
-                {
-                    p.ReceiveChat($"第{fb_level + 1}波怪物袭击盟重土城", ChatType.System);
-                    p.ReceiveChat($"第{fb_level + 1}波怪物袭击盟重土城", ChatType.System);
-                }
-                RefreshFBMon(map, p1);
-                RefreshFBMon(map, p2);
-                fb_step++;
-                lastPtime = Envir.Time + 1000  * 2;
+                RefreshFBMon(map);
                 return;
             }
-
-            //掉落宝物
-            if (fb_step == 2)
-            {
-                drop(map);
-                fb_step++;
-                lastPtime = Envir.Time + 1000 * 3;
-                return;
-            }
-
-            //怪物向指定地点移动
-            if (fb_step == 3)
-            {
-                if (moveEnd < 15)
-                {
-                    foreach (MonsterObject m in allmon)
-                    {
-                        if (Functions.InRange(m.CurrentLocation, p3, 5))
-                        {
-                            continue;
-                        }
-                        m.MoveAndFly(p3);
-                    }
-                    moveEnd++;
-                }
-                else
-                {
-                    moveEnd = 0;
-                    fb_step = 1;
-                    fb_level++;
-                    lastPtime = fb_starttime+ fb_level*1000*60*4;
-                }
-            }
-
-
-            
 
             //结束
             if (fb_level > 5)
             {
-                map.mapSProcess = null;
+                //2小时候结束
+                if (Envir.Time > fb_starttime + 1000 * 60 * 60 * 2)
+                {
+                    map.mapSProcess = null;
+                }
             }
 
         }
@@ -205,7 +165,7 @@ namespace Server.MirEnvir
             DropInfo drop4 = DropInfo.FromLine("副本_经验", String.Format("1/1 经验加成(50%)1 {0}-{1}", 1, 1));
 
             DropInfo drop5 = DropInfo.FromLine("副本_经验", String.Format("1/1 经验加成(100%)1 {0}-{1}", 1, 1));
-            DropInfo drop6 = DropInfo.FromLine("副本_金条", String.Format("1/1 金条 {0}-{1}", 1, 1));
+            DropInfo drop6 = DropInfo.FromLine("副本_金砖", String.Format("1/1 金砖 {0}-{1}", 1, 1));
 
             foreach (var player in Envir.Players)
             {
@@ -213,7 +173,7 @@ namespace Server.MirEnvir
             }
             foreach (ItemInfo ditem in drop1.DropItems())
             {
-                Point p = getPoint(map, p3, 0, 20);
+                Point p = getPoint(map, MiddlePoint, 0, 20);
                 UserItem item = ditem.CreateDropItem();
                 if (item == null) continue;
      
@@ -225,7 +185,7 @@ namespace Server.MirEnvir
 
             foreach (ItemInfo ditem in drop2.DropItems())
             {
-                Point p = getPoint(map, p3, 0, 20);
+                Point p = getPoint(map, MiddlePoint, 0, 20);
                 UserItem item = ditem.CreateDropItem();
                 if (item == null) continue;
 
@@ -241,7 +201,7 @@ namespace Server.MirEnvir
             {
                 foreach (ItemInfo ditem in drop5.DropItems())
                 {
-                    Point p = map.RandomValidPoint();
+                    Point p = getPoint(map, MiddlePoint, 0, 10);
                     foreach (var player in Envir.Players)
                     {
                         player.ReceiveChat($"攻城怪物掉落【经验加成100%】在 盟重（{p.X}，{p.Y}）处", ChatType.System2);
@@ -257,10 +217,10 @@ namespace Server.MirEnvir
 
                 foreach (ItemInfo ditem in drop6.DropItems())
                 {
-                    Point p = getPoint(map, p3, 0, 10);
+                    Point p = getPoint(map, MiddlePoint, 0, 10);
                     foreach (var player in Envir.Players)
                     {
-                        player.ReceiveChat($"攻城怪物掉落【金条】在 盟重（{p.X}，{p.Y}）处", ChatType.System2);
+                        player.ReceiveChat($"攻城怪物掉落【金砖】在 盟重（{p.X}，{p.Y}）处", ChatType.System2);
                     }
                     UserItem item = ditem.CreateDropItem();
                     if (item == null) continue;
@@ -273,11 +233,11 @@ namespace Server.MirEnvir
             }
             else
             {
-                if (RandomUtils.Next(4) == 1)
+                if (RandomUtils.Next(2) == 1)
                 {
                     foreach (ItemInfo ditem in drop3.DropItems())
                     {
-                        Point p = getPoint(map, p3, 5, 30);
+                        Point p = getPoint(map, MiddlePoint, 5, 30);
                         foreach (var player in Envir.Players)
                         {
                             player.ReceiveChat($"攻城怪物掉落【金条】在 盟重（{p.X}，{p.Y}）处", ChatType.System2);
@@ -309,11 +269,11 @@ namespace Server.MirEnvir
                     }
                 }
 
-                if (RandomUtils.Next(4) == 1)
+                if (RandomUtils.Next(3) == 1)
                 {
                     foreach (ItemInfo ditem in drop4.DropItems())
                     {
-                        Point p = getPoint(map, p3, 0, 20);
+                        Point p = getPoint(map, MiddlePoint, 0, 20);
                         foreach (var player in Envir.Players)
                         {
                             player.ReceiveChat($"攻城怪物掉落【经验加成50%】在 盟重（{p.X}，{p.Y}）处", ChatType.System2);
@@ -349,13 +309,146 @@ namespace Server.MirEnvir
         }
 
 
+        /// <summary>
+        /// 修改刷怪处理脚本
+        /// 2秒刷一次,一次刷2个，相当于每秒刷1个了
+        /// </summary>
+        /// <param name="map"></param>
+        private void RefreshFBMon(Map map)
+        {
+            if (Envir.Time<fb_refreshmon)
+            {
+                return;
+            }
+            //刷完6波怪，就结束了
+            if (fb_level > 5)
+            {
+                fb_step++;
+                return;
+            }
+            fb_refreshmon = Envir.Time + 4000;
 
-        //副本地图刷怪
-        //线程刷怪？
-        private void RefreshFBMon(Map map,Point SP)
+            //第一波
+            if(fb_level==0&& moncount == 0)
+            {
+                drop(map);
+                foreach (PlayerObject p in Envir.Players)
+                {
+                    p.ReceiveChat($"第{fb_level + 1}波怪物袭击盟重土城", ChatType.System);
+                    p.ReceiveChat($"第{fb_level + 1}波怪物袭击盟重土城", ChatType.System);
+                }
+            }
+
+            //200个怪物一层，一共刷1200个怪物
+            if (moncount > 200)
+            {
+                moncount = 0;
+                fb_level++;
+                //刷完6波怪，就结束了
+                if (fb_level > 5)
+                {
+                    fb_step++;
+                    return;
+                }
+                drop(map);
+                foreach (PlayerObject p in Envir.Players)
+                {
+                    p.ReceiveChat($"第{fb_level + 1}波怪物袭击盟重土城", ChatType.System);
+                    p.ReceiveChat($"第{fb_level + 1}波怪物袭击盟重土城", ChatType.System);
+                }
+            }
+
+            //怪物全城随机刷，部分怪物步行到安全区
+            int rd = RandomUtils.Next(100);
+            int montype = 1;
+            if (rd < 50)
+            {
+                montype = 1;
+            }
+            else if (rd < 80)
+            {
+                montype = 2;
+            }
+            else
+            {
+                montype = 3;
+            }
+            //第3种怪物
+            if (montype == 3 && mcount3 > (fb_level + 1) * 2)
+            {
+                montype = 1;
+            }
+            //第1种怪物
+            if (montype==1 && mcount1 > (fb_level+1)*150)
+            {
+                montype = 2;
+            }
+            //怪物刷新位置
+            int mpoint = RandomUtils.Next(100);
+            Point SP = Point.Empty;//怪物刷新位置
+            //30几率刷在安全区
+            //30几率刷在玩家身边
+            //30几率大范围刷
+            if (rd < 25)//30的几率刷在安全区
+            {
+                SP= MiddlePoint;
+            }
+            else if (rd < 40)
+            {
+                SP = MiddlePoint2;
+            }
+            else if (rd < 70)
+            {
+                foreach(PlayerObject p in map.Players)
+                {
+                    //如果玩家在安全区域，则刷在玩家身边
+                    if(Functions.InRange(p.Back, MiddlePoint2, Globals.DataRange))
+                    {
+                        SP = p.Back;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                SP = map.RandomValidPoint(MiddlePoint2.X, MiddlePoint2.Y,30);
+            }
+            //刷怪，每次刷2个，15几率怪物向安全区域移动
+            switch (montype)
+            {
+                case 1:
+                    mcount1 += 4;
+                    moncount += 4;
+                    RefreshFBMon1(map, SP, 4);
+                    break;
+                case 2:
+                    mcount2 += 2;
+                    moncount += 2;
+                    RefreshFBMon2(map, SP, 2);
+                    break;
+                case 3:
+                    mcount3 += 2;
+                    moncount += 2;
+                    RefreshFBMon3(map, SP, 2);
+                    break;
+            }
+
+
+
+
+
+        }
+
+
+        /// <summary>
+        /// 刷小怪
+        /// </summary>
+        /// <param name="map"></param>
+        /// <param name="SP"></param>
+        private void RefreshFBMon1(Map map,Point SP,int count)
         {
             //刷新小怪，50个先锋小怪
-            for (int i = 0; i < 60; i++)
+            for (int i = 0; i < count; i++)
             {
                 string mname = getMonName(fbxiaoguiai, fb_level);
                 MonsterInfo mInfo = null;
@@ -374,14 +467,14 @@ namespace Server.MirEnvir
                 MonsterInfo _minfo = mInfo.Clone();
                 //加入经验爆率
                 DropInfo drop5 = DropInfo.FromLine("副本_经验", String.Format("1/200 经验加成(50%)1"));
-                drop5.Chance = 1.0 / 150.0;
+                drop5.Chance = 1.0 / 300.0;
                 _minfo.Drops.Add(drop5);
 
                 _minfo.CoolEye = 10;
                 _minfo.Name = _minfo.Name + "[先锋]";
                 //1.设置小怪的血量
                 _minfo.Level = (ushort)(_minfo.Level+ 10);
-                _minfo.HP = (uint)(800 + fb_level * 100);//基础血量
+                _minfo.HP = (uint)(1000 + fb_level * 100);//基础血量
                 _minfo.MaxAC = (ushort)(30+ fb_level*2);
                 //3.小怪的攻击
                 _minfo.MaxDC = (ushort)(70 + fb_level * 5);//基础攻击
@@ -420,13 +513,21 @@ namespace Server.MirEnvir
                 if (monster == null) continue;
                 monster.IsCopy = true;
                 monster.RefreshAll();
-                monster.SpawnNew(map, getPoint(map, SP,2,6));
-                allmon.Add(monster);
-                Thread.Sleep(10);
-            }
+                if (RandomUtils.Next(100) < 15)
+                {
+                    List<RouteInfo> r = new List<RouteInfo>();
+                    r.Add(new RouteInfo(map.RandomValidPoint(MiddlePoint2.X, MiddlePoint2.Y, 10), 2000));
+                    monster.Route = r;
+                }
+                monster.SpawnNew(map, getPoint(map, SP,0,6));
 
-            //10个远程怪
-            for (int i = 0; i < 15; i++)
+            }
+        }
+
+
+        private void RefreshFBMon2(Map map, Point SP, int count)
+        {
+            for (int i = 0; i < count; i++)
             {
                 string mname = getMonName(fbtxguai, fb_level);
                 MonsterInfo mInfo = null;
@@ -446,8 +547,8 @@ namespace Server.MirEnvir
 
                 //加入经验爆率
                 DropInfo drop5 = DropInfo.FromLine("副本_经验", String.Format("1/40 经验加成(50%)1"));
-                
-                drop5.Chance = 1.0 / 50.0;
+
+                drop5.Chance = 1.0 / 120.0;
                 _minfo.Drops.Add(drop5);
 
                 _minfo.CoolEye = 20;
@@ -495,15 +596,21 @@ namespace Server.MirEnvir
                 monster.NameColour = Color.DeepSkyBlue;
                 monster.ChangeNameColour = Color.DeepSkyBlue;
                 monster.RefreshAll();
-
-                monster.SpawnNew(map, getPoint(map, SP, 2, 6));
-                allmon.Add(monster);
-                Thread.Sleep(10);
+                if (RandomUtils.Next(100) < 15)
+                {
+                    List<RouteInfo> r = new List<RouteInfo>();
+                    r.Add(new RouteInfo(map.RandomValidPoint(MiddlePoint2.X, MiddlePoint2.Y, 10), 2000));
+                    monster.Route = r;
+                }
+                monster.SpawnNew(map, getPoint(map, SP, 0, 6));
             }
+        }
 
 
+        private void RefreshFBMon3(Map map, Point SP, int count)
+        {
             //刷1个BOSS
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < count; i++)
             {
                 string mname = getMonName(fbboss, fb_level);
                 MonsterInfo mInfo = null;
@@ -522,9 +629,9 @@ namespace Server.MirEnvir
                 MonsterInfo _minfo = mInfo.Clone();
                 //加入经验爆率
                 DropInfo drop6 = DropInfo.FromLine("副本_经验", String.Format("1/10 经验加成(100%)1"));
-                
+
                 //drop5.Chance = 1 / 6;
-                drop6.Chance = 1.0 / 10.0;
+                drop6.Chance = 1.0 / 12.0;
                 //_minfo.Drops.Add(drop5);
                 _minfo.Drops.Add(drop6);
 
@@ -533,12 +640,12 @@ namespace Server.MirEnvir
                 _minfo.Name = _minfo.Name + "[统领]";
                 //1.设置小怪的血量
                 _minfo.Level = (ushort)(_minfo.Level + 10);
-                _minfo.HP = (uint)(30000 + fb_level * 2000);//基础血量
-                _minfo.MaxAC = (ushort)(70 + fb_level * 2);
+                _minfo.HP = (uint)(30000 + fb_level * 3000);//基础血量
+                _minfo.MaxAC = (ushort)(70 + fb_level * 5);
                 //3.小怪的攻击
-                _minfo.MaxDC = (ushort)(140 + fb_level * 10);//基础攻击
-                _minfo.MaxSC = (ushort)(140 + fb_level * 10);//基础攻击
-                _minfo.MaxMC = (ushort)(140 + fb_level * 10);//基础攻击
+                _minfo.MaxDC = (ushort)(130 + fb_level * 10);//基础攻击
+                _minfo.MaxSC = (ushort)(130 + fb_level * 10);//基础攻击
+                _minfo.MaxMC = (ushort)(130 + fb_level * 10);//基础攻击
                 //4.攻速
                 int AttackSpeed = 1300 - (fb_level * 100);
                 if (AttackSpeed < 800)
@@ -574,18 +681,69 @@ namespace Server.MirEnvir
                 monster.NameColour = Color.Red;
                 monster.ChangeNameColour = Color.Red;
                 monster.RefreshAll();
-
-                monster.SpawnNew(map, getPoint(map, SP, 0, 4));
-                allmon.Add(monster);
+                if (RandomUtils.Next(100) < 35)
+                {
+                    List<RouteInfo> r = new List<RouteInfo>();
+                    r.Add(new RouteInfo(map.RandomValidPoint(MiddlePoint2.X, MiddlePoint2.Y, 10), 2000));
+                    monster.Route = r;
+                }
+                monster.SpawnNew(map, getPoint(map, SP, 0, 6));
             }
-            //return list;
         }
-
         //副本怪物死亡，怪物死亡会调用这个方法
         public override void monDie(MonsterObject mon)
         {
-            allmon.Remove(mon);
+            //allmon.Remove(mon);
             //fb_killmoncount++;
+
+            //部分经验卷等在这里爆
+            if (mon == null || mon.EXPOwner == null)
+            {
+                return;
+            }
+            if (mon.Name.Contains("[先锋]"))
+            {
+                if (RandomUtils.Next(mcount1) >= 2)
+                {
+                    return;
+                }
+            }
+            if (mon.Name.Contains("[射手]"))
+            {
+                if (RandomUtils.Next(mcount2) >= 2)
+                {
+                    return;
+                }
+            }
+            if (mon.Name.Contains("[统领]"))
+            {
+                if (RandomUtils.Next(mcount3) >= 2)
+                {
+                    return;
+                }
+            }
+            DropInfo drop3 = DropInfo.FromLine("副本_金条", String.Format("1/1 金条 {0}-{1}", 1, 1));
+            if (RandomUtils.Next(100) < 55)
+            {
+                drop3 = DropInfo.FromLine("副本_经验", String.Format("1/1 经验加成(50%)1 {0}-{1}", 1, 1));
+            }
+
+
+            foreach (ItemInfo ditem in drop3.DropItems())
+            {
+                Point p = getPoint(mon.CurrentMap, MiddlePoint2, 0, 10);
+                foreach (var player in Envir.Players)
+                {
+                    player.ReceiveChat($"攻城怪物掉落【经验加成50%】在 盟重（{p.X}，{p.Y}）处", ChatType.System2);
+                }
+                UserItem item = ditem.CreateDropItem();
+                if (item == null) continue;
+
+                ItemObject ob = new ItemObject(mon.CurrentMap, item, p)
+                {
+                };
+                ob.Drop(Settings.DropRange + 1);
+            }
         }
 
 

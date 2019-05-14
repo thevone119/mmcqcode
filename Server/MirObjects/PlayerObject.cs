@@ -49,6 +49,7 @@ namespace Server.MirObjects
         public MirConnection Connection;
         public Reporting Report;
 
+   
         //
         //更改玩家的名字，这个是核心逻辑啊
         private String _Name = null;
@@ -185,8 +186,9 @@ namespace Server.MirObjects
         }
 
         public short TransformType;
-
+        //FishingChance：上钩率 FishingProgressMax：30次尝试 FishingProgress下面的进度 
         public int FishingChance, FishingChanceCounter, FishingProgressMax, FishingProgress, FishingAutoReelChance = 0, FishingNibbleChance = 0;
+        //正在钓鱼，自动消耗鱼饵，咬钩，首次咬钩
         public bool Fishing, FishingAutocast, FishFound, FishFirstFound;
 
         public bool CanMove
@@ -263,7 +265,7 @@ namespace Server.MirObjects
         public bool CreatureSummoned;
 
         public LevelEffects LevelEffects = LevelEffects.None;
-
+        //_fishCounter:钓鱼的计数器，750毫秒变化一次的，30次就钓一下
         private int _stepCounter, _runCounter, _fishCounter, _restedCounter;
 
         //弓手当前的烈火阵，只有一个哦
@@ -1537,7 +1539,7 @@ namespace Server.MirObjects
 
                 if (AtWar(hitter) || WarZone)
                 {
-                    hitter.ReceiveChat(string.Format("你受到法律保护"), ChatType.System);
+                    hitter.ReceiveChat(string.Format("正当防卫，你受到法律保护"), ChatType.System);
                 }
                 else if (Envir.Time > BrownTime && PKPoints < 200)
                 {
@@ -1604,6 +1606,11 @@ namespace Server.MirObjects
             CallDefaultNPC(DefaultNPCType.Die);
 
             Report.Died(CurrentMap.Info.Mcode);
+            //这里加入特殊处理
+            if ( CurrentMap != null && CurrentMap.mapSProcess != null)
+            {
+                CurrentMap.mapSProcess.PlayerDie(this);
+            }
         }
 
         //死亡爆东西
@@ -2412,7 +2419,7 @@ namespace Server.MirObjects
         }
 
         //增益的经验
-        public void GainExp(uint amount)
+        public void GainExp(uint amount,bool EXPBonus=true)
         {
             if (!CanGainExp) return;
 
@@ -2440,7 +2447,7 @@ namespace Server.MirObjects
                 amount= amount + (uint)(amount * Leveldis * 5 / 100);
             }
             
-
+            //结婚加成
             if (Info.Married != 0)
             { 
                 Buff buff = Buffs.Where(e => e.Type == BuffType.RelationshipEXP).FirstOrDefault();
@@ -2454,7 +2461,7 @@ namespace Server.MirObjects
                     }
                 }
             }
-
+            //师徒加成
             if (Info.Mentor != 0 && !Info.isMentor)
             {
                 Buff buffMentor = Buffs.Where(e => e.Type == BuffType.Mentee).FirstOrDefault();
@@ -2468,11 +2475,18 @@ namespace Server.MirObjects
                     }
                 }
             }
-
-            if (ExpRateOffset > 0)
+            //这个是经验卷加成
+            if (ExpRateOffset > 0 && EXPBonus)
+            {
                 amount += (uint)(amount * (ExpRateOffset / 100));
+            }
+
+            //师徒的存储经验，就是给师傅的经验   
             if (Info.Mentor != 0 && !Info.isMentor)
+            {
                 MenteeEXP += (amount / 100) * Settings.MenteeExpBank;
+            }
+                
 
             Experience += amount;
 
@@ -4286,8 +4300,9 @@ namespace Server.MirObjects
 
             NameColour = colour;
             if ((MyGuild == null) || (!MyGuild.IsAtWar()))
+            {
                 Enqueue(new S.ColourChanged { NameColour = NameColour });
-
+            }
             BroadcastColourChange();
         }
 
@@ -4335,7 +4350,11 @@ namespace Server.MirObjects
                 if (player == this) continue;
 
                 if (Functions.InRange(CurrentLocation, player.CurrentLocation, Globals.DataRange))
-                    player.Enqueue(new S.ObjectColourChanged { ObjectID = ObjectID, NameColour = GetNameColour(player) });
+                {
+                    //这个名字颜色感觉有问题啊,应该是广播自己的颜色，给别人
+                    //player.Enqueue(new S.ObjectColourChanged { ObjectID = ObjectID, NameColour = GetNameColour(player) });
+                    player.Enqueue(new S.ObjectColourChanged { ObjectID = ObjectID, NameColour = GetNameColour(this) });
+                }
             }
         }
 
@@ -4612,6 +4631,31 @@ namespace Server.MirObjects
                         {
                             CurrentMap.mapSProcess = new MonWar();
                         }
+                        return;
+                    case "封印能力":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        int _WarAttackPercent = 0;
+                        int.TryParse(parts[1], out _WarAttackPercent);
+                        WarAttackPercent = _WarAttackPercent;
+                        SMain.Enqueue("封印能力"+ WarAttackPercent);
+                        return;
+                    case "改变颜色":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        ChangeNameColour=Color.Blue;
+                        SMain.Enqueue("改变颜色");
+                        return;
+                    case "当前名字颜色":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        SMain.Enqueue("当前名字颜色"+ ChangeNameColour+ ",NameColour"+ NameColour);
                         return;
                     case "创建测试NPC":
                         if (!IsGM)
@@ -7353,6 +7397,8 @@ namespace Server.MirObjects
                 //挖矿逻辑处理
                 if (Info.Equipment[(int)EquipmentSlot.Weapon] == null) return;
                 if (!Info.Equipment[(int)EquipmentSlot.Weapon].Info.CanMine) return;
+                //没有持久无法挖矿
+                if (Info.Equipment[(int)EquipmentSlot.Weapon].CurrentDura == 0) return;
                 MineSpot Mine = CurrentMap.getMine(target.X, target.Y);
                 if ((Mine == null) || (Mine.Mine == null)) return;
                 if (Mine.StonesLeft > 0)
@@ -11357,13 +11403,16 @@ namespace Server.MirObjects
                 LevelEffects = LevelEffects
             };
         }
+
         public Packet GetInfoEx(PlayerObject player)
         {
             var p = (S.ObjectPlayer)GetInfo();
 
             if (p != null)
             {
-                p.NameColour = GetNameColour(player);
+                //他妈的这里有毛病吧
+                //p.NameColour = GetNameColour(player);
+                p.NameColour = GetNameColour(this);
             }
 
             return p;
@@ -14235,8 +14284,13 @@ namespace Server.MirObjects
                 MapObject ob = CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i];
 
                 if (ob.Race != ObjectType.Item) continue;
-
-                if (ob.Owner != null && ob.Owner != this && !IsGroupMember(ob.Owner)) //Or Group member.
+                //加入战场捡取
+                if(ob.Owner!=null && ob.Owner.WGroup != WGroup)
+                {
+                    sendFail = true;
+                    continue;
+                }
+                if (ob.Owner != null && ob.Owner != this && !IsGroupMember(ob.Owner) && WGroup== WarGroup.None) //Or Group member.
                 {
                     sendFail = true;
                     continue;
@@ -15185,16 +15239,19 @@ namespace Server.MirObjects
             return true;
         }
 
-        public void RequestUserName(uint id)
+        public void RequestUserName(ulong id)
         {
-            CharacterInfo Character = Envir.GetCharacterInfo((ulong)id);
+            CharacterInfo Character = Envir.GetCharacterInfo(id);
             if (Character != null)
-                Enqueue(new S.UserName { Id = (uint)Character.Index, Name = Character.Name });
+            {
+                Enqueue(new S.UserName { Id = Character.Index, Name = Character.Name });
+            }
         }
         public void RequestChatItem(ulong id)
         {
             //Enqueue(new S.ChatItemStats { ChatItemId = id, Stats = whatever });
         }
+        //查看玩家装备
         public void Inspect(uint id)
         {
             if (ObjectID == id) return;
@@ -15204,8 +15261,14 @@ namespace Server.MirObjects
             if (player == null) return;
             Inspect(player.Info.Index);
         }
+        //查看玩家装备
         public void Inspect(ulong id)
         {
+            //加入逻辑，如果当前地图不显示玩家名称，则不允许查看装备
+            if (CurrentMap.Info.NoNames)
+            {
+                return;
+            }
             if (ObjectID == id) return;
             CharacterInfo player = Envir.GetCharacterInfo(id);
             if (player == null) return;
@@ -18399,7 +18462,7 @@ namespace Server.MirObjects
                 else if (!Mount.CanMapRide)
                 {
                     RidingMount = false;
-                    ReceiveChat("你不能骑在这张地图上", ChatType.System);
+                    ReceiveChat("你不能骑马在这张地图上", ChatType.System);
                 }
                 else if (!Mount.CanDungeonRide)
                 {
@@ -18450,13 +18513,20 @@ namespace Server.MirObjects
 
         #region Fishing 钓鱼系统
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cast">是否投递</param>
+        /// <param name="cancel">是否取消</param>
         public void FishingCast(bool cast, bool cancel = false)
         {
             UserItem rod = Info.Equipment[(int)EquipmentSlot.Weapon];
 
-            byte flexibilityStat = 0;
+            byte flexibilityStat = 0;//柔韧度
             sbyte successStat = 0;
+            //咬口几率
             byte nibbleMin = 0, nibbleMax = 0;
+
             byte failedAddSuccessMin = 0, failedAddSuccessMax = 0;
             FishingProgressMax = Settings.FishingAttempts;//30;
 
@@ -18579,7 +18649,7 @@ namespace Server.MirObjects
                     Enqueue(GetFishInfo());
                     return;
                 }
-
+                //改下这里实现自动钓哦
                 Fishing = false;
 
                 if (FishingProgress > 99)
@@ -18591,10 +18661,8 @@ namespace Server.MirObjects
                 {
                     int getChance = FishingChance + RandomUtils.Next(10, 24) + (FishingProgress > 50 ? flexibilityStat / 2 : 0);
                     getChance = Math.Min(100, Math.Max(0, getChance));
-
                     if (RandomUtils.Next(0, 100) <= getChance)
                     {
-                        SMain.Enqueue("钓到了");
                         FishingChanceCounter = 0;
                        
                         UserItem dropItem = null;
@@ -18632,19 +18700,95 @@ namespace Server.MirObjects
                             GainItem(dropItem);
                             Report.ItemChanged("FishedItem", dropItem, dropItem.Count, 2);
                         }
-
-                        if (RandomUtils.Next(100) < Settings.FishingMobSpawnChance)
+                        //1.百分之1几率出现生物（元宝钓竿的情况下）
+                        //1.86%几率多角虫（一个小时4个左右）（120发）
+                        //2.6%几率出现小财神龟（1-2个金条）（1400发）
+                        //3.3%几率出现经验卷(2-3个50%的，1/5几率100%的，大概200-300块可以出一张100的卷)（3333发）
+                        //4.2%财富龟（1金砖 1金条 1/5金盒，大概200-300块可以出一张金盒）（5000发）
+                        //5.3%幸运龟(5-10个神珠，1/22几率出幸运项链，这样大概要花2000-3000才可能出到一条项链）（3333发）
+                        //随机产生怪物在身后，不管有没钓到
+                        if (RandomUtils.Next(1000) <15)
                         {
-                            MonsterObject mob = MonsterObject.GetMonster(Envir.GetMonsterInfo(Settings.FishingMonster));
-
-                            if (mob == null) return;
-
-                            mob.Spawn(CurrentMap, Back);
+                            MonsterObject mob = null;
+                            int rd = RandomUtils.Next(1000);
+                            if (rd < 860)
+                            {
+                                SMain.Enqueue("钓到 巨型多角虫");
+                                mob = MonsterObject.GetMonster(Envir.GetMonsterInfo("巨型多角虫"));
+                                
+                            }
+                            else if (rd < 920)
+                            {
+                                SMain.Enqueue("钓到 小财神龟");
+                                mob = MonsterObject.GetMonster(Envir.GetMonsterInfo("小财神龟"));
+                            }
+                            else if (rd < 950)
+                            {
+                                SMain.Enqueue("钓到 绿毛龟");
+                                mob = MonsterObject.GetMonster(Envir.GetMonsterInfo("绿毛龟"));
+                            }
+                            else if (rd < 980)
+                            {
+                                SMain.Enqueue("钓到 幸运龟");
+                                mob = MonsterObject.GetMonster(Envir.GetMonsterInfo("幸运龟"));
+                            }
+                            else
+                            {
+                                SMain.Enqueue("钓到 财神龟");
+                                mob = MonsterObject.GetMonster(Envir.GetMonsterInfo("财神龟"));
+                            }
+                            if (mob != null)
+                            {
+                                //默认是0.022f;降低恢复速度
+                                mob.HealthScale = 0.001f;
+                                if (CurrentMap.ValidPoint(Back))
+                                {
+                                    mob.Spawn(CurrentMap, Back);
+                                }
+                                else
+                                {
+                                    mob.Spawn(CurrentMap, CurrentMap.RandomValidPoint(CurrentLocation.X, CurrentLocation.Y,2));
+                                }
+                            }
                         }
+                        if (Level < Envir.MaxLevel - 3)
+                        {
+                            //这里增加下，可获得经验
+                            if (this.Level < 30)
+                            {
+                                this.GainExp(500);
+                            }
+                            else if (this.Level < 35)
+                            {
+                                this.GainExp(1000);
+                            }
+                            else if (this.Level < 40)
+                            {
+                                this.GainExp(1500);
+                            }
+                            else if (this.Level < 45)
+                            {
+                                this.GainExp(2000);
+                            }
+                            else if (this.Level < 50)
+                            {
+                                this.GainExp(2500);
+                            }
+                            else if (this.Level < 55)
+                            {
+                                this.GainExp(3000);
+                            }
+                            else if (this.Level < 70)
+                            {
+                                this.GainExp(3500);
+                            }
+                        }
+    
 
                         DamagedFishingItem(FishingSlot.Reel, 1);
+                        //改下这里实现自动钓哦
+                        cancel = false;
 
-                        cancel = true;
                     }
                     else
                         ReceiveChat("你的鱼逃走了!", ChatType.System);
@@ -18668,6 +18812,11 @@ namespace Server.MirObjects
                 FishingCast(true);
             }
         }
+
+        /// <summary>
+        /// 是否自动消耗
+        /// </summary>
+        /// <param name="autoCast"></param>
         public void FishingChangeAutocast(bool autoCast)
         {
             UserItem rod = Info.Equipment[(int)EquipmentSlot.Weapon];
@@ -18684,6 +18833,7 @@ namespace Server.MirObjects
 
             FishingAutocast = autoCast;
         }
+        //更新客户端的钓鱼效果
         public void UpdateFish()
         {
             if (FishFound != true && FishFirstFound != true)
@@ -18709,7 +18859,6 @@ namespace Server.MirObjects
                 FishFound = false;
 
             FishingTime = Envir.Time + FishingDelay;
-
             Enqueue(GetFishInfo());
 
             if (FishingProgress > 100)
@@ -20471,7 +20620,7 @@ namespace Server.MirObjects
                 {
                     UserItem temp = Info.ItemCollect[t];
                     if (temp == null) continue;
-                    if(temp.Info.Type > ItemType.Stone)
+                    if(temp.Info.Type > ItemType.Stone )
                     {
                         erroritem += temp.Name + ",";
                         continue;
@@ -20512,7 +20661,7 @@ namespace Server.MirObjects
                 {
                     UserItem temp = Info.ItemCollect[t];
                     if (temp == null) continue;
-                    uint exp = temp.Info.Price * 2 ;
+                    uint exp = temp.Info.Price * 2 * temp.Count;
                     //品质影响回收
                     if (temp.quality > 0)
                     {

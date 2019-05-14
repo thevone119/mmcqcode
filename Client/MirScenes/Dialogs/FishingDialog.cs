@@ -15,6 +15,9 @@ using S = ServerPackets;
 
 namespace Client.MirScenes.Dialogs
 {
+    /// <summary>
+    /// 钓鱼窗口
+    /// </summary>
     public sealed class FishingDialog : MirImageControl
     {
         public MirLabel TitleLabel;
@@ -170,6 +173,10 @@ namespace Client.MirScenes.Dialogs
             return null;
         }
     }
+    /// <summary>
+    /// 这个才是真正的钓鱼窗口
+    /// 上面那个是鱼竿显示等窗口
+    /// </summary>
     public sealed class FishingStatusDialog : MirImageControl
     {
         public MirImageControl TitleLabel, AutoCastBox, ESCTick, ESCExit, FishDisableButton;

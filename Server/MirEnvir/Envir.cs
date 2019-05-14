@@ -1073,7 +1073,7 @@ namespace Server.MirEnvir
                 }
                 if(CharacterList[ac].AccountInfo!=null && CharacterList[ac].AccountInfo.AdminAccount)
                 {
-                    //continue;
+                    continue;
                 }
                 //人，地，天3个榜单
                 Rank_Character_Info r0 = new Rank_Character_Info() { Class = CharacterList[ac].Class, Name = CharacterList[ac].Name, CharacterId= CharacterList[ac].Index, level = CharacterList[ac].Level, Experience = CharacterList[ac].Experience };

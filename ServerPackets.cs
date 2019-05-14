@@ -831,7 +831,7 @@ namespace ServerPackets
         public MirDirection Direction;
         public byte Hair;//头发
         public byte Light;//发光？
-		public short Weapon, WeaponEffect, Armour;//武器，武器效果，衣服
+		public short Weapon, WeaponEffect, Armour;//武器，武器效果，衣服，这里可以做 幻化衣服，武器，武器特效等
         public PoisonType Poison;//中毒类型
         public bool Dead, Hidden;//死，隐身？
         public SpellEffect Effect;//魔法效果
@@ -4145,11 +4145,11 @@ namespace ServerPackets
     public sealed class UserName : Packet
     {
         public override short Index { get { return (short)ServerPacketIds.UserName; } }
-        public uint Id;
+        public ulong Id;
         public string Name;
         protected override void ReadPacket(BinaryReader reader)
         {
-            Id = reader.ReadUInt32();
+            Id = reader.ReadUInt64();
             Name = reader.ReadString();
         }
         protected override void WritePacket(BinaryWriter writer)
@@ -4554,7 +4554,7 @@ namespace ServerPackets
         public override short Index { get { return (short)ServerPacketIds.FishingUpdate; } }
 
         public long ObjectID;
-        public bool Fishing;
+        public bool Fishing;//是否正在钓鱼，如果是否，则客户端关闭钓鱼状态窗口
         public int ProgressPercent;
         public int ChancePercent;
         public Point FishingPoint;

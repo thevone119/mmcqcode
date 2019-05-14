@@ -32,8 +32,16 @@ namespace Server.MirEnvir
             return null;
         }
 
+        //怪物死亡
         //虚函数，子类可以实现覆盖
         public virtual void monDie(MonsterObject mon)
+        {
+
+        }
+
+        //玩家死亡
+        //虚函数，子类可以实现覆盖
+        public virtual void PlayerDie(PlayerObject player)
         {
 
         }

@@ -623,7 +623,7 @@ namespace Server.MirDatabase
             }
         }
 
-        //获取零时值,默认0
+        //获取存储值,默认0
         public int getSaveValue(string key)
         {
             if (saveKey.ContainsKey(key))
@@ -636,7 +636,7 @@ namespace Server.MirDatabase
             }
         }
 
-        //更新零时值
+        //更新存储值
         public void putSaveValue(string key, int val)
         {
             if (saveKey.ContainsKey(key))

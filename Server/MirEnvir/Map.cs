@@ -830,6 +830,38 @@ namespace Server.MirEnvir
             mapSProcess = null;
         }
 
+        /// <summary>
+        /// 清理怪物
+        /// </summary>
+        public void ClearMonster()
+        {
+            try
+            {
+                for (int w = 0; w < Width; w++)
+                {
+                    for (int h = 0; h < Height; h++)
+                    {
+                        if (Objects[w, h] == null)
+                        {
+                            continue;
+                        }
+                        foreach (MapObject o in Objects[w, h])
+                        {
+                            if (o.Race == ObjectType.Monster && !o.Dead)
+                            {
+                                o.Die();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SMain.Enqueue("清理怪物数据出错");
+                SMain.Enqueue(ex);
+            }
+        }
+
         public void Remove(MapObject mapObject)
         {
             Remove(mapObject.CurrentLocation.X, mapObject.CurrentLocation.Y, mapObject);

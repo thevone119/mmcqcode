@@ -100,6 +100,8 @@ public class ItemInfo
     public byte MinMaterial, MaxMaterial;
 
 
+
+
     public bool IsConsumable
     {
         get { return Type == ItemType.Potion || Type == ItemType.Scroll || Type == ItemType.Food || Type == ItemType.Transform || Type == ItemType.Script; }
@@ -914,7 +916,7 @@ public class UserItem
     public byte RefineTime = 0;//升级的次数
 
     public bool DuraChanged;
-    public long SoulBoundId = -1;
+    public long SoulBoundId = -1;//绑定ID
     public bool Identified = false;
     public bool Cursed = false;
 
@@ -1411,13 +1413,13 @@ public class UserItem
 
         return p * Count;
     }
-    //物品销售的价格，5万封顶
+    //物品销售的价格，单个物品5万封顶
     public uint SellPrice()
     {
         uint _p = Price();
-        if (_p > 50000)
+        if (_p > 50000* Count)
         {
-            _p = 50000;
+            _p = 50000* Count;
         }
         return _p;
     }
@@ -1439,9 +1441,9 @@ public class UserItem
 
         if (RentalInformation == null)
             return cost;
-        if (cost > 50000)
+        if (cost > 100000)
         {
-            cost = 50000;
+            cost = 100000;
         }
         return cost * 2;
     }
@@ -1682,8 +1684,8 @@ public class SecondUserItem
             return;
         }
         list.AddFirst(item);
-        //最多只保留100个.
-        if (list.Count > 100)
+        //最多只保留160个.
+        if (list.Count > 160)
         {
             list.RemoveLast();
         }
