@@ -614,6 +614,10 @@ namespace Server.MirEnvir
                         mapSProcess = new GroupWar();
                     }
 
+                    if (Info.Mcode == "PlayerPK" && mapSProcess == null)
+                    {
+                        mapSProcess = new PlayerPK();
+                    }
 
                     return true;
                 }

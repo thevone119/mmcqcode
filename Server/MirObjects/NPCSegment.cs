@@ -738,13 +738,30 @@ namespace Server.MirObjects
                         acts.Add(new NPCActions(ActionType.WarSignUp, parts[1], parts[2]));
                     }
                     break;
+  
+
                 case "WARSIGNCANCEL":
                     acts.Add(new NPCActions(ActionType.WarSignCancel));
                     break;
                 case "WARSURRENDER":
                     acts.Add(new NPCActions(ActionType.WarSurrender));
                     break;
-                    
+                case "PLAYERPKSIGNUP":
+                    if (parts.Length < 2)
+                    {
+                        acts.Add(new NPCActions(ActionType.PlayerPKSignUp));
+                    }
+                    else
+                    {
+                        acts.Add(new NPCActions(ActionType.PlayerPKSignUp, parts[1], parts[2]));
+                    }
+                    break;
+                case "PLAYERPKJOININ":
+                    acts.Add(new NPCActions(ActionType.PlayerPKJoinIn));
+                    break;
+                case "PLAYERPKCANCEL":
+                    acts.Add(new NPCActions(ActionType.PlayerPKCancel));
+                    break;
                 case "QUERYHAIR":
                     acts.Add(new NPCActions(ActionType.QueryHair));
                     break;
@@ -3018,6 +3035,25 @@ namespace Server.MirObjects
                     case ActionType.WarSurrender://战役投降
                                                 
                         player.ReceiveChat(GroupWar.WarSurrender(player), ChatType.Hint);
+                        break;
+
+                    case ActionType.PlayerPKSignUp://PK挑战赛发起
+                        byte warType2 = 0;
+                        byte costType2 = 0;
+                        //报名时间
+                        if (param.Count >= 1)
+                        {
+                            byte.TryParse(param[0], out warType2);
+                            byte.TryParse(param[1], out costType2);
+                        }
+                        player.ReceiveChat(PlayerPK.signUp(player, warType2, costType2), ChatType.Hint);
+                        break;
+
+                    case ActionType.PlayerPKJoinIn://PK挑战赛参加
+                        player.ReceiveChat(PlayerPK.JoinIn(player), ChatType.Hint);
+                        break;
+                    case ActionType.PlayerPKCancel://PK挑战赛取消
+                        player.ReceiveChat(PlayerPK.cancelSign(player), ChatType.Hint);
                         break;
                     case ActionType.CallNewPlayerMob://召唤新人宝宝
                         //战役类型 1：匹配1  2：匹配2  3：军团3  4：军团4

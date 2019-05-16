@@ -4383,9 +4383,17 @@ namespace Server.MirObjects
                     colour = Color.Blue;
             }
             else if (Envir.Time < BrownTime)
-                colour = Color.SaddleBrown;
+            {
+                //如果是战斗区域，不改变玩家颜色
+                if (!CurrentMap.Info.Fight)
+                {
+                    colour = Color.SaddleBrown;
+                }
+            }
             else if (PKPoints >= 100)
+            {
                 colour = Color.Yellow;
+            }
 
             if (colour == NameColour) return;
 
@@ -4745,6 +4753,24 @@ namespace Server.MirObjects
                         int.TryParse(parts[1], out _WarAttackPercent);
                         WarAttackPercent = _WarAttackPercent;
                         SMain.Enqueue("封印能力"+ WarAttackPercent);
+                        return;
+                    case "更改战场模式":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        int _WGroup = 0;
+                        
+                        int.TryParse(parts[1], out _WGroup);
+                        if (_WGroup == 1)
+                        {
+                            WGroup = WarGroup.GroupA;
+                        }
+                        else
+                        {
+                            WGroup = WarGroup.GroupB;
+                        }
+                        SMain.Enqueue("更改战场模式" + WGroup);
                         return;
                     case "改变颜色":
                         if (!IsGM)
@@ -11429,6 +11455,20 @@ namespace Server.MirObjects
             return false;
         }
 
+        //这个是回城
+        public void TeleportBackHome()
+        {
+            if (!Teleport(Envir.GetMap(BindMapIndex), BindLocation))
+            {
+                //如果回城有问题，就当做地牢吧
+                if (!TeleportEscape(20))
+                {
+                    return;
+                }
+            }
+            return;
+        }
+
         private Packet GetMountInfo()
         {
             return new S.MountUpdate
@@ -11526,10 +11566,18 @@ namespace Server.MirObjects
         {
             if (attacker == null || attacker.Node == null) return false;
             //加入战场攻击模式
-            if (WGroup != attacker.WGroup)
+            if (WGroup != WarGroup.None)
             {
-                return true;
+                if (WGroup != attacker.WGroup)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
+            
             if (Dead || InSafeZone || attacker.InSafeZone || attacker == this || GMGameMaster) return false;
             if (CurrentMap.Info.NoFight) return false;
 
@@ -11556,9 +11604,16 @@ namespace Server.MirObjects
             if (attacker == null || attacker.Node == null) return false;
             if (Dead || attacker.Master == this || GMGameMaster) return false;
             //加入战场攻击模式
-            if (WGroup != attacker.WGroup)
+            if (WGroup != WarGroup.None)
             {
-                return true;
+                if (WGroup != attacker.WGroup)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             if (attacker.Info.AI == 6 || attacker.Info.AI == 58) return PKPoints >= 200;
             if (attacker.Master == null) return true;
@@ -11603,9 +11658,16 @@ namespace Server.MirObjects
         {
             if (ally == this) return true;
             //加入战场攻击模式
-            if (WGroup != ally.WGroup)
+            if (WGroup != WarGroup.None)
             {
-                return false;
+                if (WGroup != ally.WGroup)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
             switch (ally.AMode)
             {
@@ -11624,9 +11686,16 @@ namespace Server.MirObjects
         {
             if (ally.Race != ObjectType.Monster) return false;
             //加入战场攻击模式
-            if (WGroup != ally.WGroup)
+            if (WGroup != WarGroup.None)
             {
-                return false;
+                if (WGroup != ally.WGroup)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
             if (ally.Master == null) return false;
 
@@ -14474,6 +14543,7 @@ namespace Server.MirObjects
                     player.GainGold(gold);
             }
         }
+        //得到金币
         public void GainGold(uint gold)
         {
             if (gold == 0) return;
@@ -14485,6 +14555,7 @@ namespace Server.MirObjects
 
             Enqueue(new S.GainedGold { Gold = gold });
         }
+        //得到元宝
         public void GainCredit(uint credit)
         {
             if (credit == 0) return;

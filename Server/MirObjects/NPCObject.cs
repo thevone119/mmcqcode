@@ -1950,6 +1950,10 @@ namespace Server.MirObjects
         WarSignCancel,//取消报名
         WarSurrender,//战役投降
         CallNewPlayerMob,//召唤新人宝宝
+        PlayerPKSignUp,//PK挑战赛发起
+        PlayerPKJoinIn,//PK挑战赛参加
+        PlayerPKCancel,//PK挑战赛取消
+
     }
     public enum CheckType
     {

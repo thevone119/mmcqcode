@@ -252,6 +252,7 @@ namespace Server.MirEnvir
         {
             lock (lockObj)
             {
+                List<PayOrder> dellist = new List<PayOrder>();
                 foreach (PayOrder p in listall)
                 {
                     //过滤已支付，或者超过1分钟的订单
@@ -262,13 +263,18 @@ namespace Server.MirEnvir
                     //如果存在，则直接更改之前的订单创建时间，并且重新发起创建请求
                     if (p.AccountId == AccountId && p.pay_type == pay_type && p.price == price)
                     {
-                        listall.Remove(p);
+                        dellist.Add(p);
                         p.create_time = create_time;
                         Thread t1 = new Thread(() => p.Create());
                         t1.IsBackground = true;
                         t1.Start();
                         return;
                     }
+                }
+
+                foreach (PayOrder o in dellist)
+                {
+                    listall.Remove(o);
                 }
             }
             Thread t = new Thread(() => Create());
@@ -481,13 +487,18 @@ namespace Server.MirEnvir
             long mimtime = ct - Settings.Day*7;//7天时间时间的，进行删除
             lock (lockObj)
             {
+                List<PayOrder> dellist = new List<PayOrder>();
                 foreach (PayOrder o in listall)
                 {
                     o.SaveDB();
                     if(o.create_time< mimtime)
                     {
-                        listall.Remove(o);
+                        dellist.Add(o);
                     }
+                }
+                foreach (PayOrder o in dellist)
+                {
+                    listall.Remove(o);
                 }
             }
         }

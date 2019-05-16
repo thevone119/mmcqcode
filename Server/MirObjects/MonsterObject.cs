@@ -2159,9 +2159,16 @@ namespace Server.MirObjects
             if (attacker == null || attacker.Node == null) return false;
             if (Dead) return false;
             //加入战场攻击模式
-            if(WGroup!= attacker.WGroup)
+            if (WGroup != WarGroup.None)
             {
-                return true;
+                if (WGroup != attacker.WGroup)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             if (Master == null) return true;
             if (attacker.AMode == AttackMode.Peace) return false;
@@ -2197,9 +2204,16 @@ namespace Server.MirObjects
             if (Dead || attacker == this) return false;
             if (attacker.Race == ObjectType.Creature) return false;
             //加入战场攻击模式
-            if (WGroup != attacker.WGroup)
+            if (WGroup != WarGroup.None)
             {
-                return true;
+                if (WGroup != attacker.WGroup)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             //护卫
             if (attacker.Info.AI == 6) // Guard
@@ -2275,9 +2289,16 @@ namespace Server.MirObjects
         public override bool IsFriendlyTarget(PlayerObject ally)
         {
             //加入战场攻击模式
-            if (WGroup != ally.WGroup)
+            if (WGroup != WarGroup.None)
             {
-                return false;
+                if (WGroup != ally.WGroup)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
             if (Master == null) return false;
             if (Master == ally) return true;
@@ -2299,9 +2320,16 @@ namespace Server.MirObjects
         public override bool IsFriendlyTarget(MonsterObject ally)
         {
             //加入战场攻击模式
-            if (WGroup != ally.WGroup)
+            if (WGroup != WarGroup.None)
             {
-                return false;
+                if (WGroup != ally.WGroup)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
             if (Master != null) return false;
             if (ally.Race != ObjectType.Monster) return false;

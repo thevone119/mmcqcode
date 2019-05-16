@@ -122,7 +122,7 @@
     <Compile Include="MirDatabase\RecipeInfo.cs" />
     <Compile Include="MirEnvir\MapSpecialProcess.cs" />
     <Compile Include="MirEnvir\GroupWar.cs" />
-    <Compile Include="MirEnvir\PlayerWar.cs" />
+    <Compile Include="MirEnvir\PlayerPK.cs" />
     <Compile Include="MirEnvir\MonWar.cs" />
     <Compile Include="MirEnvir\FBMap.cs" />
     <Compile Include="MirEnvir\Reporting.cs" />
