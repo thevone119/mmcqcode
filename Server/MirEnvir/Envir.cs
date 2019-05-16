@@ -1041,6 +1041,31 @@ namespace Server.MirEnvir
             }
         }
 
+        //
+        /// <summary>
+        /// 获取某个玩家的榜单
+        /// </summary>
+        /// <param name="ranktype">0人榜，1地榜，2天榜</param>
+        /// <param name="uid"></param>
+        /// <returns></returns>
+        public Rank_Character_Info getRank(int ranktype,ulong uid)
+        {
+            if (ranktype >= RankClass.GetLength(1))
+            {
+                return null;
+            }
+            List<Rank_Character_Info> list = RankClass[0, ranktype];
+            for (int r= 0;r < list.Count;r++)
+            {
+                if(list[r].CharacterId== uid)
+                {
+                    list[r].rank = r + 1;
+                    return list[r];
+                }
+            }
+            return null;
+        }
+
         //加载排行榜
         //每5分钟加载刷新一次
         //只排前20
@@ -1073,7 +1098,7 @@ namespace Server.MirEnvir
                 }
                 if(CharacterList[ac].AccountInfo!=null && CharacterList[ac].AccountInfo.AdminAccount)
                 {
-                    continue;
+                    //continue;
                 }
                 //人，地，天3个榜单
                 Rank_Character_Info r0 = new Rank_Character_Info() { Class = CharacterList[ac].Class, Name = CharacterList[ac].Name, CharacterId= CharacterList[ac].Index, level = CharacterList[ac].Level, Experience = CharacterList[ac].Experience };
@@ -1166,6 +1191,8 @@ namespace Server.MirEnvir
                     }
                 }
             }
+            //这里重设下玩家榜单？
+
         }
 
         //加载钓鱼，掉落物品

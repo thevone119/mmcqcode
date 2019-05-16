@@ -58,6 +58,7 @@ namespace Server.MirObjects
             get {
                 if(_Name==null|| _Name == String.Empty)
                 {
+                    
                     return Info.Name;
                 }
                 return _Name;
@@ -117,6 +118,14 @@ namespace Server.MirObjects
         {
             get { return _WGroup; }
             set { _WGroup = value; }
+        }
+
+        //玩家封号体系
+        private PlayerTitle _playerTitle;
+        public PlayerTitle playerTitle
+        {
+            get { return _playerTitle; }
+            set { _playerTitle = value; }
         }
 
         //攻击模式，这个要改，增加战场攻击模式
@@ -995,6 +1004,7 @@ namespace Server.MirObjects
         }
 
 
+        
         private void ProcessBuffs()
         {
             bool refresh = false;
@@ -2113,17 +2123,26 @@ namespace Server.MirObjects
                 minfo.MaxMAC = (ushort)(minfo.MaxAC * 4 / 3);
                 minfo.MaxDC = (ushort)(minfo.MaxDC * 15 / 10);//1.5倍的基础攻击
                 minfo.MaxMC = (ushort)(minfo.MaxMC * 15 / 10);//1.5倍的基础攻击
-                int AttackSpeed = minfo.AttackSpeed - 200 - (killlev * 100);
-
-                if (minfo.AttackSpeed < 500)
+                int AttackSpeed = minfo.AttackSpeed;
+                AttackSpeed = AttackSpeed - 200 - (killlev * 100);
+                if (AttackSpeed < 500)
                 {
                     AttackSpeed = 500;
                 }
+                if (AttackSpeed > 3000)
+                {
+                    AttackSpeed = 3000;
+                }
                 minfo.AttackSpeed = (ushort)AttackSpeed;
-                int MoveSpeed = minfo.MoveSpeed - 200 - (killlev * 100);
+                int MoveSpeed = minfo.MoveSpeed;
+                MoveSpeed = MoveSpeed - 200 - (killlev * 100);
                 if (MoveSpeed < 500)
                 {
                     MoveSpeed = 500;
+                }
+                if (MoveSpeed > 3000)
+                {
+                    MoveSpeed = 3000;
                 }
                 minfo.MoveSpeed = (ushort)MoveSpeed;
 
@@ -2193,18 +2212,27 @@ namespace Server.MirObjects
                 minfo.MaxMAC = (ushort)(minfo.MaxAC * 3 / 2);
                 minfo.MaxDC = (ushort)(minfo.MaxDC * 20 / 10);//2倍的基础攻击
                 minfo.MaxMC = (ushort)(minfo.MaxMC * 20 / 10);//2倍的基础攻击
-                int AttackSpeed = minfo.AttackSpeed - 500 - (killlev * 100);
-   
+
+                int AttackSpeed = minfo.AttackSpeed;
+                AttackSpeed = AttackSpeed - 200 - (killlev * 100);
                 if (AttackSpeed < 500)
                 {
                     AttackSpeed = 500;
                 }
+                if (AttackSpeed > 3000)
+                {
+                    AttackSpeed = 3000;
+                }
                 minfo.AttackSpeed = (ushort)AttackSpeed;
-
-                int MoveSpeed = minfo.MoveSpeed - 500 - (killlev * 100);
+                int MoveSpeed = minfo.MoveSpeed;
+                MoveSpeed = MoveSpeed - 200 - (killlev * 100);
                 if (MoveSpeed < 500)
                 {
                     MoveSpeed = 500;
+                }
+                if (MoveSpeed > 3000)
+                {
+                    MoveSpeed = 3000;
                 }
                 minfo.MoveSpeed = (ushort)MoveSpeed;
 
@@ -2822,6 +2850,17 @@ namespace Server.MirObjects
             Enqueue(new S.StartGame { Result = 4, Resolution = Settings.AllowedResolution });
             ReceiveChat("欢迎进入魔幻的传奇大陆，本服地图，怪物，装备超多，非常耐玩.欢迎加群670847004一起玩", ChatType.Hint);
 
+
+            //这里重设下玩家的天榜属性，青铜，王者等
+            if (Info != null)
+            {
+                Rank_Character_Info rank = Envir.getRank(2, Info.Index);
+                if (rank != null)
+                {
+                    playerTitle = PlayerTitleUtil.getPlayerTitle(rank.rank, Info.getFb2_score());
+                }
+            }
+            //等级补差
             int Leveldis = Envir.MaxLevel - Level;
             if (Leveldis>5 && Settings.openLevelExpSup)
             {
@@ -2979,7 +3018,10 @@ namespace Server.MirObjects
             Report.Connected(Connection.IPAddress);
 
             SMain.Enqueue(string.Format("{0} has connected.", Info.Name));
+
             
+
+
             if (IsGM) return;
             //LastRankUpdate = Envir.Time;
             
@@ -3201,7 +3243,7 @@ namespace Server.MirObjects
             {
                 ObjectID = ObjectID,
                 RealId = Info.Index,
-                Name = Name,
+                Name = PlayerTitleUtil.getPlayerTitleName(playerTitle)+Name,
                 GuildName = guildname,
                 GuildRank = guildrank,
                 NameColour = GetNameColour(this),
@@ -3403,6 +3445,7 @@ namespace Server.MirObjects
             //if (AttackSpeed < 450) AttackSpeed = 450;
         }
 
+        //刷新等级属性数据
         private void RefreshLevelStats()
         {
             MaxExperience = Level < Settings.ExperienceList.Count ? Settings.ExperienceList[Level - 1] : 0;
@@ -3480,6 +3523,54 @@ namespace Server.MirObjects
                     break;
                 case MirClass.Archer:
                     MaxMP = (ushort)Math.Min(ushort.MaxValue, (11 + Level * 4F) + (Level * Settings.ClassBaseStats[(byte)Class].MpGainRate));
+                    break;
+            }
+
+            //这里增加玩家称号属性(隐藏属性，不发送到客户端的)
+            switch (playerTitle)
+            {
+                case PlayerTitle.Title1:
+                    MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 1);
+                    MaxMC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 1);
+                    MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 1);
+                    break;
+                case PlayerTitle.Title2:
+                    MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 2);
+                    MaxMC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 2);
+                    MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 2);
+                    break;
+                case PlayerTitle.Title3:
+                    MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 3);
+                    MaxMC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 3);
+                    MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 3);
+                    Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + 1);
+                    Agility = (byte)Math.Min(byte.MaxValue, Agility + 1);
+                    break;
+                case PlayerTitle.Title4:
+                    MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 4);
+                    MaxMC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 4);
+                    MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 4);
+                    Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + 2);
+                    Agility = (byte)Math.Min(byte.MaxValue, Agility + 2);
+                    break;
+                case PlayerTitle.Title5:
+                    MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 5);
+                    MaxMC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 5);
+                    MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 5);
+                    Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + 2);
+                    Agility = (byte)Math.Min(byte.MaxValue, Agility + 2);
+                    CriticalRate = (byte)Math.Max(byte.MinValue, (Math.Min(byte.MaxValue, CriticalRate + 1)));
+                    break;
+                case PlayerTitle.Title6:
+                    MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 5);
+                    MaxMC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 5);
+                    MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 5);
+                    Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + 2);
+                    Agility = (byte)Math.Min(byte.MaxValue, Agility + 2);
+                    CriticalRate = (byte)Math.Max(byte.MinValue, (Math.Min(byte.MaxValue, CriticalRate + 1)));
+                    Luck = (sbyte)Math.Max(sbyte.MinValue, (Math.Min(sbyte.MaxValue, Luck + 1)));
+                    break;
+                default:
                     break;
             }
 
@@ -4298,7 +4389,14 @@ namespace Server.MirObjects
 
             if (colour == NameColour) return;
 
+
             NameColour = colour;
+
+            //更新玩家名字颜色
+            if (NameColour == Color.White)
+            {
+                NameColour= PlayerTitleUtil.getPlayerTitleColor(playerTitle);
+            }
             if ((MyGuild == null) || (!MyGuild.IsAtWar()))
             {
                 Enqueue(new S.ColourChanged { NameColour = NameColour });
@@ -4315,6 +4413,7 @@ namespace Server.MirObjects
             {
                 return player.ChangeNameColour;
             }
+            
             if (WarZone)
             {
                 if (MyGuild == null)
@@ -4337,6 +4436,11 @@ namespace Server.MirObjects
                     else
                         if (MyGuild.IsEnemy(player.MyGuild))
                             return Color.Orange;
+            //
+            if(NameColour== Color.White)
+            {
+                return PlayerTitleUtil.getPlayerTitleColor(playerTitle);
+            }
             return NameColour;
         }
 
@@ -11369,7 +11473,7 @@ namespace Server.MirObjects
             return new S.ObjectPlayer
             {
                 ObjectID = ObjectID,
-                Name = CurrentMap.Info.NoNames ? "?????" : Name,
+                Name = CurrentMap.Info.NoNames ? "?????" : PlayerTitleUtil.getPlayerTitleName(playerTitle)+Name,
                 NameColour = NameColour,
                 GuildName = CurrentMap.Info.NoNames ? "?????" : gName,
                 GuildRankName = CurrentMap.Info.NoNames ? "?????" : MyGuildRank != null ? MyGuildRank.Name : "",

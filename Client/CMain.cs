@@ -178,8 +178,10 @@ namespace Client
             Ctrl = e.Control;
             //这个~应该是Oemtilde键才对？
             if (e.KeyCode == Keys.Oem8|| e.KeyCode== Keys.Oemtilde)
+            {
                 CMain.Tilde = true;
-
+            }
+            //MirLog.info("Alt:"+ Alt+ e.KeyCode);
             try
             {
                 //切换全屏
@@ -193,7 +195,6 @@ namespace Client
                 {
                     MirScene.ActiveScene.OnKeyDown(e);
                 }
-
             }
             catch (Exception ex)
             {

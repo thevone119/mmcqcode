@@ -127,6 +127,7 @@ namespace Client.MirObjects
             }
         }
 
+        public string TitleName;//封号（目前没用哦）
         public string GuildName;
         public string GuildRankName;
 
@@ -5223,7 +5224,7 @@ namespace Client.MirObjects
         {
             NameLabel = null;
             GuildLabel = null;
-
+            TitleLabel = null;
             for (int i = 0; i < LabelList.Count; i++)
             {
                 if (LabelList[i].Text != Name || LabelList[i].ForeColour != NameColour) continue;
@@ -5237,6 +5238,15 @@ namespace Client.MirObjects
                 GuildLabel = LabelList[i];
                 break;
             }
+
+            for (int i = 0; i < LabelList.Count; i++)
+            {
+                if (LabelList[i].Text != TitleName || LabelList[i].ForeColour != TitleColour) continue;
+                TitleLabel = LabelList[i];
+                break;
+            }
+
+            
 
             if (NameLabel != null && !NameLabel.IsDisposed && GuildLabel != null && !GuildLabel.IsDisposed) return;
 
@@ -5263,6 +5273,22 @@ namespace Client.MirObjects
             };
             GuildLabel.Disposing += (o, e) => LabelList.Remove(GuildLabel);
             LabelList.Add(GuildLabel);
+
+            //封号系统
+            //TitleLabel
+            TitleLabel = new MirLabel
+            {
+                AutoSize = true,
+                BackColour = Color.Transparent,
+                ForeColour = TitleColour,
+                OutLine = true,
+                OutLineColour = Color.Black,
+                Text = TitleName,
+            };
+            TitleLabel.Disposing += (o, e) => LabelList.Remove(TitleLabel);
+            LabelList.Add(TitleLabel);
+
+
         }
 
         public override void DrawName()
@@ -5278,10 +5304,19 @@ namespace Client.MirObjects
                 GuildLabel.Draw();
             }
 
+
             NameLabel.Text = Name;
             NameLabel.Location = new Point(DisplayRectangle.X + (50 - NameLabel.Size.Width) / 2, DisplayRectangle.Y - (32 - NameLabel.Size.Height / 2) + (Dead ? 35 : 8)); //was 48 -
             NameLabel.Draw();
-            
+
+            //封号系统
+            if (TitleName != "")
+            {
+                TitleLabel.Text = TitleName;
+                TitleLabel.Location = new Point(NameLabel.Location.X - TitleLabel.Size.Width+5, DisplayRectangle.Y - (32 - NameLabel.Size.Height / 2) + (Dead ? 35 : 8)); //was 48 -
+                TitleLabel.Draw();
+            }
+
         }
 
         public override void DrawHealthLabel()

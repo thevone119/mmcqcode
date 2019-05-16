@@ -82,9 +82,12 @@ namespace Client.MirObjects
         public List<BuffType> Buffs = new List<BuffType>();
 
         public MLibrary BodyLibrary;
-        public Color DrawColour = Color.White, NameColour = Color.White, LightColour = Color.White;
+        //TitleColour 封号的颜色
+        public Color DrawColour = Color.White, NameColour = Color.White, LightColour = Color.White, TitleColour = Color.White;
         //这里加入血条数值显示
-        public MirLabel NameLabel, ChatLabel, GuildLabel, HealthLabel;
+        //HealthLabel血条数值
+        //TitleLabel封号
+        public MirLabel NameLabel, ChatLabel, GuildLabel, HealthLabel, TitleLabel;
         public long ChatTime;
         public int DrawFrame, DrawWingFrame;
         public Point DrawLocation, Movement, FinalDrawLocation, OffSetMove;
@@ -410,50 +413,50 @@ namespace Client.MirObjects
             {
                 if (Poison.HasFlag(PoisonType.Green))
                 {
-                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 21)), Color.Black);
-                    DXManager.Sprite.Draw2D(DXManager.RadarTexture, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 20)), Color.Green);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground7, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 21)), Color.Black);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 20)), Color.Green);
                     poisoncount++;
                 }
                 if (Poison.HasFlag(PoisonType.Red))
                 {
-                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 21)), Color.Black);
-                    DXManager.Sprite.Draw2D(DXManager.RadarTexture, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 20)), Color.Red);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground7, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 21)), Color.Black);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 20)), Color.Red);
                     poisoncount++;
                 }
                 if (Poison.HasFlag(PoisonType.Bleeding))
                 {
-                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 21)), Color.Black);
-                    DXManager.Sprite.Draw2D(DXManager.RadarTexture, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 20)), Color.DarkRed);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground7, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 21)), Color.Black);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 20)), Color.DarkRed);
                     poisoncount++;
                 }
                 if (Poison.HasFlag(PoisonType.Slow))
                 {
-                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 21)), Color.Black);
-                    DXManager.Sprite.Draw2D(DXManager.RadarTexture, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 20)), Color.Purple);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground7, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 21)), Color.Black);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 20)), Color.Purple);
                     poisoncount++;
                 }
                 if (Poison.HasFlag(PoisonType.Stun))
                 {
-                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 21)), Color.Black);
-                    DXManager.Sprite.Draw2D(DXManager.RadarTexture, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 20)), Color.Yellow);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground7, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 21)), Color.Black);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 20)), Color.Yellow);
                     poisoncount++;
                 }
                 if (Poison.HasFlag(PoisonType.Frozen))
                 {
-                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 21)), Color.Black);
-                    DXManager.Sprite.Draw2D(DXManager.RadarTexture, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 20)), Color.Blue);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground7, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 21)), Color.Black);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 20)), Color.Blue);
                     poisoncount++;
                 }
                 if (Poison.HasFlag(PoisonType.Paralysis) || Poison.HasFlag(PoisonType.LRParalysis))
                 {
-                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 21)), Color.Black);
-                    DXManager.Sprite.Draw2D(DXManager.RadarTexture, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 20)), Color.Gray);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground7, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 21)), Color.Black);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 20)), Color.Gray);
                     poisoncount++;
                 }
                 if (Poison.HasFlag(PoisonType.DelayedExplosion))
                 {
-                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 21)), Color.Black);
-                    DXManager.Sprite.Draw2D(DXManager.RadarTexture, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 3)), (int)(DisplayRectangle.Y - 20)), Color.Orange);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground7, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 21)), Color.Black);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 20)), Color.Orange);
                     poisoncount++;
                 }
             }

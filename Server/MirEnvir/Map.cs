@@ -756,7 +756,8 @@ namespace Server.MirEnvir
             }
             foreach(MapObject o in Objects[x, y])
             {
-                if (o.Blocking)
+                //排除NPC
+                if (o.Blocking && o.Race!= ObjectType.Merchant)
                 {
                     return false;
                 }

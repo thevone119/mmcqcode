@@ -47,6 +47,8 @@ namespace Client.MirGraphics
         public static List<Texture> Lights = new List<Texture>();
         //5*5的点
         public static Texture PoisonDotBackground;
+        //7*7的点
+        public static Texture PoisonDotBackground7;
         //定义4个着色器，灰度，正常，魔法，阴影
         public static PixelShader GrayScalePixelShader;
         public static PixelShader NormalPixelShader;
@@ -166,10 +168,10 @@ namespace Client.MirGraphics
 
             if (RadarTexture3 == null || RadarTexture3.Disposed)
             {
-                RadarTexture3 = new Texture(Device, 2, 2, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);
+                RadarTexture3 = new Texture(Device, 3, 3, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);
 
                 using (GraphicsStream stream = RadarTexture3.LockRectangle(0, LockFlags.Discard))
-                using (Bitmap image = new Bitmap(2, 2, 8, PixelFormat.Format32bppArgb, (IntPtr)stream.InternalDataPointer))
+                using (Bitmap image = new Bitmap(3, 3, 8, PixelFormat.Format32bppArgb, (IntPtr)stream.InternalDataPointer))
                 using (Graphics graphics = Graphics.FromImage(image))
                     graphics.Clear(Color.White);
             }
@@ -183,6 +185,16 @@ namespace Client.MirGraphics
                 using (Graphics graphics = Graphics.FromImage(image))
                     graphics.Clear(Color.White);
             }
+            if (PoisonDotBackground7 == null || PoisonDotBackground7.Disposed)
+            {
+                PoisonDotBackground7 = new Texture(Device, 7, 7, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);
+
+                using (GraphicsStream stream = PoisonDotBackground7.LockRectangle(0, LockFlags.Discard))
+                using (Bitmap image = new Bitmap(7, 7, 20, PixelFormat.Format32bppArgb, (IntPtr)stream.InternalDataPointer))
+                using (Graphics graphics = Graphics.FromImage(image))
+                    graphics.Clear(Color.White);
+            }
+            
             CreateLights();
         }
         //创建灯光

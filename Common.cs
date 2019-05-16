@@ -924,6 +924,22 @@ public enum WarGroup : byte
     GroupA = 1,//战场编组1
     GroupB = 2,//战场编组2
 }
+
+
+//玩家封号(6级封号)
+//1.青铜 2.白银 3.黄金 4.铂金 5.钻石 6.王者
+[Obfuscation(Feature = "renaming", Exclude = true)]
+public enum PlayerTitle : byte
+{
+    None = 0,//默认，无封号
+    Title1 = 1,//青铜
+    Title2 = 2,//白银
+    Title3 = 3,//黄金
+    Title4 = 4,//帕金
+    Title5 = 5,//钻石
+    Title6 = 6,//王者
+}
+
 //攻击模式
 [Obfuscation(Feature = "renaming", Exclude = true)]
 public enum AttackMode : byte
@@ -5768,7 +5784,7 @@ public class Rank_Character_Info
     public string Name;
     public MirClass Class;
     public int level;//人榜：等级，地榜：评分，天榜：评分
-    //public int rank;
+    public int rank;//排名，不过不传到客户端
     //经验
     public long Experience;//clients shouldnt care about this only server
     public object info;//again only keep this on server!
@@ -6224,6 +6240,100 @@ public class ItemSkillBean
 }
 
 
+/// <summary>
+/// 玩家称号处理
+/// </summary>
+public class PlayerTitleUtil
+{
+
+    public static string getPlayerTitleName(PlayerTitle pt)
+    {
+        switch (pt)
+        {
+            case PlayerTitle.None:
+                return "";
+            case PlayerTitle.Title1:
+                return "[青铜]";
+            case PlayerTitle.Title2:
+                return "[白银]";
+            case PlayerTitle.Title3:
+                return "[黄金]";
+            case PlayerTitle.Title4:
+                return "[铂金]";
+            case PlayerTitle.Title5:
+                return "[钻石]";
+            case PlayerTitle.Title6:
+                return "[王者]";
+            default:
+                return "";
+        }
+    }
+
+    public static Color getPlayerTitleColor(PlayerTitle pt)
+    {
+        switch (pt)
+        {
+            case PlayerTitle.None:
+                return Color.White;
+            case PlayerTitle.Title1:
+                return Color.LightSkyBlue;//蓝色
+            case PlayerTitle.Title2:
+                return Color.DeepSkyBlue;//蓝色
+            case PlayerTitle.Title3:
+                return Color.DarkOrange;//紫
+            case PlayerTitle.Title4:
+                return Color.Gold;//金
+            case PlayerTitle.Title5:
+                return Color.LimeGreen;//绿
+            case PlayerTitle.Title6:
+                return Color.Violet;//粉
+            default:
+                return Color.White;
+        }
+    }
+
+    //根据积分，排名等获得相应的职称
+    public static PlayerTitle getPlayerTitle(int ranking,int score)
+    {
+        //只有前20
+        if (ranking > 20 || score<100)
+        {
+            return PlayerTitle.None;
+        }
+        PlayerTitle ret = PlayerTitle.None;
+        //根据积分先排名
+        if (score < 300)
+        {
+            ret = PlayerTitle.Title1;
+        }else if(score < 500)
+        {
+            ret = PlayerTitle.Title2;
+        }
+        else if (score < 800)
+        {
+            ret = PlayerTitle.Title3;
+        }
+        else if (score < 1000)
+        {
+            ret = PlayerTitle.Title4;
+        }
+        else if (score < 1300)
+        {
+            ret = PlayerTitle.Title5;
+        }
+        else
+        {
+            ret = PlayerTitle.Title6;
+        }
+        //最多3个王者
+        if (ranking > 3 && ret== PlayerTitle.Title6)
+        {
+            ret = PlayerTitle.Title5;
+        }
+        return ret;
+    }
+
+}
 
 
 //针对各种定义的名字进行转换处理

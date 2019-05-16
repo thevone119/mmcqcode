@@ -1497,10 +1497,10 @@ namespace Server.MirObjects
             get { return Info.Name; }
             set { throw new NotSupportedException(); }
         }
-
+        //ÊÇ·ñ×èµ²
         public override bool Blocking
         {
-            get { return Visible; }
+            get { return Visible ; }
         }
 
 

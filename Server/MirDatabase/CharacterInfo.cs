@@ -137,6 +137,7 @@ namespace Server.MirDatabase
         //增加天榜积分(5天掉100分)，积分规则，每赢1场，增加100分，输1场掉100分,
         //如果积分大于500，则赢一场增加90分，如果积分大于1000，则赢1场增加80分，积分大于1500，则赢1场增加70积分
         private int fb2_score;
+        private int fb2_addscore;//这个是累计积分，不会掉的，可以用累计积分兑换物品
         private int fb2_createday;
 
         //获取副本1的最终积分
@@ -185,12 +186,27 @@ namespace Server.MirDatabase
             return _fb2_score;
         }
 
-        //设置副本2的最终积分
-        public void setFb2_score(int _score)
+
+        /// <summary>
+        /// 追加积分，这里可能是负数的
+        /// </summary>
+        /// <param name="_score"></param>
+        public void addFb2_score(int _score)
         {
+            int curr_score = getFb2_score();
+            curr_score += _score;
+            if (curr_score < 0)
+            {
+                curr_score = 0;
+            }
             fb2_createday = SMain.Envir.Now.DayOfYear;
-            fb2_score = _score;
+            fb2_score = curr_score;
+            if (_score > 0)
+            {
+                fb2_addscore += _score;
+            }
         }
+
 
         public CharacterInfo()
         {
@@ -433,6 +449,8 @@ namespace Server.MirDatabase
                 obj.fb1_createday = read.GetInt32(read.GetOrdinal("fb1_createday"));
 
                 obj.fb2_score = read.GetInt32(read.GetOrdinal("fb2_score"));
+                obj.fb2_addscore = read.GetInt32(read.GetOrdinal("fb2_addscore"));
+                
                 obj.fb2_createday = read.GetInt32(read.GetOrdinal("fb2_createday"));
                 
                 //添加2个字段
@@ -572,7 +590,8 @@ namespace Server.MirDatabase
 
             lp.Add(new SQLiteParameter("fb2_score", fb2_score));
             lp.Add(new SQLiteParameter("fb2_createday", fb2_createday));
-
+            lp.Add(new SQLiteParameter("fb2_addscore", fb2_addscore));
+            
             lp.Add(new SQLiteParameter("killMon2", JsonConvert.SerializeObject(killMon2)));
 
             //lp.Add(new SQLiteParameter("onlineTime", onlineTime));

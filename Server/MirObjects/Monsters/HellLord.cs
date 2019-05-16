@@ -3,9 +3,13 @@ using Server.MirEnvir;
 using S = ServerPackets;
 using System.Drawing;
 using System;
+using System.Collections.Generic;
 
 namespace Server.MirObjects.Monsters
 {
+    /// <summary>
+    /// 炎魔太子
+    /// </summary>
     public class HellLord : MonsterObject
     {   
         protected override bool CanMove { get { return false; } }
@@ -116,6 +120,24 @@ namespace Server.MirObjects.Monsters
            
         }
 
+        //怪物死亡
+        public override void Die()
+        {
+            //周围20格的怪物全死
+            List<MapObject> objs = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 20);
+            foreach(MapObject o in objs)
+            {
+                if(o==null||o.Race!= ObjectType.Monster)
+                {
+                    continue;
+                }
+                if(o.EXPOwner!=null || o.Master != null){
+                    continue;
+                }
+                o.Die();
+            }
+            base.Die();
+        }
         private void SpawnQuakes()
         {
             int count = RandomUtils.Next(1, _raged ? _quakeCount * 2 : _quakeCount);
@@ -146,7 +168,7 @@ namespace Server.MirObjects.Monsters
                                 spellObj = new SpellObject
                                 {
                                     Spell = Spell.MapQuake1,
-                                    Value = RandomUtils.Next(RandomUtils.Next(MinDC, MaxDC)),
+                                    Value = RandomUtils.Next(MinDC, MaxDC),
                                     ExpireTime = Envir.Time + (2000),
                                     TickSpeed = 500,
                                     Caster = null,
@@ -161,7 +183,7 @@ namespace Server.MirObjects.Monsters
                                 spellObj = new SpellObject
                                 {
                                     Spell = Spell.MapQuake2,
-                                    Value = RandomUtils.Next(RandomUtils.Next(MinDC, MaxDC)),
+                                    Value = RandomUtils.Next(MinDC, MaxDC),
                                     ExpireTime = Envir.Time + (2000),
                                     TickSpeed = 500,
                                     Caster = null,
@@ -182,8 +204,8 @@ namespace Server.MirObjects.Monsters
         //刷新小怪，这里控制下，不要无限刷新？
         private void SpawnBomb()
         {
-            //当前地图怪物超过1500，不刷新了
-            if (CurrentMap.MonsterCount > 1500)
+            //当前地图怪物超过1200，不刷新了
+            if (CurrentMap.MonsterCount > 1000)
             {
                 return;
             }

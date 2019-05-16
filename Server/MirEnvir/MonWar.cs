@@ -432,11 +432,6 @@ namespace Server.MirEnvir
                     RefreshFBMon3(map, SP, 2);
                     break;
             }
-
-
-
-
-
         }
 
 
