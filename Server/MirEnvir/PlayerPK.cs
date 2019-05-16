@@ -551,6 +551,14 @@ namespace Server.MirEnvir
                 return $"您的元宝数不足，小于({_costCredit})元宝，无法参加PK赛";
             }
 
+            //判断是否已在参战方
+            if (getPKMember(p.Info.Index) != null)
+            {
+                return $"您已属于参战成员,无法应战";
+            }
+            //
+
+
             //对战成立,把双方队伍传入
             if (warType == 1)
             {
@@ -564,6 +572,10 @@ namespace Server.MirEnvir
             {
                 foreach (PlayerObject pk in p.GroupMembers)
                 {
+                    if (getPKMember(pk.Info.Index) != null)
+                    {
+                        return $"您的成员中存在发起挑战的成员,无法应战";
+                    }
                     PlayerPKMember m = new PlayerPKMember();
                     m.WGroup = WarGroup.GroupB;
                     m.gid = pk.Info.Index;
