@@ -40,7 +40,7 @@ namespace Server.MirObjects.Monsters
         protected override void ProcessTarget()
         {
             if (!CanAttack) return;
-            if (!FindFriendsNearby(7)) return;
+            if (FindFriendsNearby(7).Count==0) return;
 
             ShockTime = 0;
 

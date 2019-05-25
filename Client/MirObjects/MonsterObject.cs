@@ -130,7 +130,7 @@ namespace Client.MirObjects
                             SoundManager.PlaySound(BaseSound + 8);
                         }
                         break;
-                    case Monster.HellLord:
+                    case Monster.HellLord://太子
                         {
                             Effects.Clear();
 
@@ -1507,7 +1507,12 @@ namespace Client.MirObjects
                                 MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.AncientBringer], 560, 8, 400, Functions.PointMove(CurrentLocation, Direction, 1), CMain.Time + 500));
                                 break;
 
-
+                            case Monster.OmaWitchDoctor://奥玛巫医攻击1，身前的地板砸效果
+                                MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.OmaWitchDoctor], 856, 10, 500, Functions.PointMove(CurrentLocation, Direction, 2), CMain.Time + 500));
+                                break;
+                            case Monster.IceCrystalSoldier://冰晶战士攻击1，身前的地板砸效果
+                                MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.IceCrystalSoldier], 464, 6, 600, Functions.PointMove(CurrentLocation, Direction, 1), CMain.Time + 500));
+                                break;
                             case Monster.DemonGuard:
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.DemonGuard], 288 + (int)Direction * 2, 2, Frame.Count * Frame.Interval, this));
                                 break;
@@ -1620,6 +1625,12 @@ namespace Client.MirObjects
                             case Monster.AncientBringer://丹墨攻击2，狮子叫
                                 //MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.AncientBringer], 740, 14, 1400, Functions.PointMove(CurrentLocation, Direction, 3), CMain.Time + 1000));
                                 break;
+                            case Monster.FrozenKnight://雪原勇士攻击2，身前的2格地板砸效果
+                                MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.FrozenKnight], 456, 10, 500, Functions.PointMove(CurrentLocation, Direction, 2), CMain.Time + 500));
+                                break;
+                            case Monster.IceCrystalSoldier://冰晶战士攻击2，身前的地板砸效果
+                                MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.IceCrystalSoldier], 470, 6, 600, Functions.PointMove(CurrentLocation, Direction, 1), CMain.Time + 500));
+                                break;
                         }
 
                         if ((ushort)BaseImage >= 10000)
@@ -1676,6 +1687,8 @@ namespace Client.MirObjects
                                     MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.GreatFoxSpirit], 375 + (CMain.Random.Next(3) * 20), 20, 1400, source, CMain.Time + CMain.Random.Next(600)));
                                 }
                                 break;
+                 
+                                
                             case Monster.EvilMir:
                                 Effects.Add(new Effect(Libraries.Dragon, 90 + (int)Direction * 10, 10, 10 * Frame.Interval, this));
                                 break;
@@ -1993,11 +2006,13 @@ namespace Client.MirObjects
                         {
                             switch (BaseImage)
                             {
-
+                                //针对食人花之类的，隐藏就删除掉
                                 case Monster.CannibalPlant:
                                 case Monster.EvilCentipede:
                                 case Monster.DigOutZombie:
                                 case Monster.DeathCrawler:
+                                case Monster.CreeperPlant:
+                                case Monster.IcePhantom:
                                     Remove();
                                     return;
                                 case Monster.ZumaStatue:
@@ -2323,6 +2338,7 @@ namespace Client.MirObjects
                                                     SoundManager.PlaySound(BaseSound + 6);
                                                 }
                                                 break;
+                                     
                                         }
                                         break;
                                     }
@@ -2338,6 +2354,18 @@ namespace Client.MirObjects
                                                 break;
                                             case Monster.FlameSpear:
                                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.FlameSpear], 544 + (int)Direction * 10, 10, 10 * 100, this));
+                                                break;
+                                            case Monster.DarkWraith://暗黑战士 丢冰球
+                                                missile = CreateProjectile(796, Libraries.Monsters[(ushort)Monster.DarkWraith], true, 5, 20, 0,false);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        //440 + (int)Direction * 10
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.DarkWraith], 836, 6, 1000, missile.Target));
+                                                    };
+                                                }
                                                 break;
                                         }
                                         break;
@@ -2374,6 +2402,15 @@ namespace Client.MirObjects
                                                     ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.GeneralJinmYo], 512, 10, 2000, ob));
                                                 }
                                                 break;
+                                            case Monster.KillerPlant://黑暗船长，雷电
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.KillerPlant], 1200, 12, 2000, ob));
+                                                }
+                                                break;
+
+                                                
                                             case Monster.BurningZombie://火焰僵尸，火球？
                                                 ob = MapControl.GetObject(TargetID);
                                                 if (ob != null)
@@ -2427,6 +2464,57 @@ namespace Client.MirObjects
                                                     };
                                                 }
                                                 break;
+                                            case Monster.FrozenMagician://冰魄法师 丢火球
+                                                missile = CreateProjectile(560, Libraries.Monsters[(ushort)Monster.FrozenMagician], true, 6, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        //440 + (int)Direction * 10
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.FrozenMagician], 656, 6, 1000, missile.Target) );
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.SnowYeti://冰魄雪人 丢火球
+                                                missile = CreateProjectile(560, Libraries.Monsters[(ushort)Monster.SnowYeti], true, 6, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        //440 + (int)Direction * 10
+                                                        //missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.FrozenMagician], 656, 6, 1000, missile.Target));
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.Monster403://花仙子
+                                                missile = CreateProjectile(331, Libraries.Monsters[(ushort)Monster.Monster403], true, 6, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        //440 + (int)Direction * 10
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.FrozenMagician], 427, 9, 1000, missile.Target));
+                                                    };
+                                                }
+                                                break;
+                                                
+                                            case Monster.DarkSpirit://幽灵战士 丢土球
+                                                missile = CreateProjectile(512, Libraries.Monsters[(ushort)Monster.DarkSpirit], true, 6, 30, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        //440 + (int)Direction * 10
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.DarkSpirit], 608, 10, 1000, missile.Target));
+                                                    };
+                                                }
+                                                break;
+
+                                                
                                             case Monster.OmaMage://奥玛法师 丢冰弹
                                                 missile = CreateProjectile(392, Libraries.Monsters[(ushort)Monster.OmaMage], true, 8, 20, 0);
 
@@ -2438,7 +2526,70 @@ namespace Client.MirObjects
                                                     };
                                                 }
                                                 break;
+                                            case Monster.FloatingWraith://幽灵射手 丢冰弹
+                                                missile = CreateProjectile(248, Libraries.Monsters[(ushort)Monster.FloatingWraith], true, 2, 50, 0);
 
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        //missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.OmaMage], 520, 9, 900, missile.Target));
+                                                        SoundManager.PlaySound(BaseSound + 6);
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.AvengingSpirit://复仇的恶灵 丢冰弹
+                                                missile = CreateProjectile(368, Libraries.Monsters[(ushort)Monster.AvengingSpirit], true, 4, 40, 0);
+
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.AvengingSpirit], 432, 10, 1000, missile.Target));
+                                                        SoundManager.PlaySound(BaseSound + 6);
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.AvengingWarrior://复仇的恶灵 丢冰弹
+                                                missile = CreateProjectile(312, Libraries.Monsters[(ushort)Monster.AvengingWarrior], true, 5, 40, 0);
+
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.AvengingWarrior], 392, 6, 1200, missile.Target));
+                                                        SoundManager.PlaySound(BaseSound + 6);
+                                                    };
+                                                }
+                                                break;
+
+                                            case Monster.IcePhantom://复仇的恶灵 丢火蛇
+                                                missile = CreateProjectile(779, Libraries.Monsters[(ushort)Monster.IcePhantom], true, 8, 40, 0,false);
+
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.IcePhantom], 682, 10, 1000, missile.Target));
+                                                        SoundManager.PlaySound(BaseSound + 6);
+                                                    };
+                                                }
+                                                break;
+
+                                            case Monster.ClawBeast://水手长，放雷电
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.ClawBeast], 815, 10, 1500, new Point(ob.CurrentLocation.X, ob.CurrentLocation.Y)));
+                                                }
+                                                break;
+                                            case Monster.CreeperPlant://攀缘花，放地钉
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.CreeperPlant], 256, 10, 1000, new Point(ob.CurrentLocation.X, ob.CurrentLocation.Y)));
+                                                }
+                                                break;
                                             case Monster.ShellFighter://斗争者，全屏毒？
                                                 Point source = new Point(User.CurrentLocation.X , User.CurrentLocation.Y );
 
@@ -2455,7 +2606,7 @@ namespace Client.MirObjects
                                                     };
                                                 }
                                                 break;
-
+                                            
                                             case Monster.Dark:
                                                 if (MapControl.GetObject(TargetID) != null)
                                                     CreateProjectile(224, Libraries.Monsters[(ushort)Monster.Dark], false, 3, 30, 0);
@@ -2742,6 +2893,22 @@ namespace Client.MirObjects
                                 case 5:
                                     
                                     break;
+                                case 8:
+                                    switch (BaseImage)
+                                    {
+                                        case Monster.FrozenArcher://雪原弓手
+                                            missile = CreateProjectile(264, Libraries.Monsters[(ushort)Monster.FrozenArcher], true, 5, 20, 0);
+
+                                            if (missile.Target != null)
+                                            {
+                                                missile.Complete += (o, e) =>
+                                                {
+                                                    SoundManager.PlaySound(BaseSound + 6);
+                                                };
+                                            }
+                                            break;
+                                    }
+                                    break;
                             }
                             NextMotion += FrameInterval;
                         }
@@ -2838,6 +3005,29 @@ namespace Client.MirObjects
                                                         if (missile.Target.CurrentAction == MirAction.Dead) return;
                                                         missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.SeedingsGeneral], 1337, 8, 1000, missile.Target));
                                                         SoundManager.PlaySound(BaseSound + 7);
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.IcePhantom://复仇的恶灵 丢冰蛇
+                                                missile = CreateProjectile(779, Libraries.Monsters[(ushort)Monster.IcePhantom], true, 8, 40, 0, false);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.IcePhantom], 772, 7, 1200, missile.Target));
+                                                        SoundManager.PlaySound(BaseSound + 6);
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.FrozenMagician://冰魄法师 丢火球
+                                                missile = CreateProjectile(734, Libraries.Monsters[(ushort)Monster.FrozenMagician], true, 6, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        //440 + (int)Direction * 10
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.FrozenMagician], 830, 10, 1500, missile.Target));
                                                     };
                                                 }
                                                 break;
@@ -4069,10 +4259,43 @@ namespace Client.MirObjects
 
                     break;
 
+                case Monster.OmaWitchDoctor://奥玛巫医
+                    if (CurrentAction != MirAction.Dead)
+                    {
+                        Libraries.Monsters[(ushort)Monster.OmaWitchDoctor].DrawBlend(400 + (FrameIndex + (int)Direction * 10), DrawLocation, Color.White, true);
+                        //Libraries.Monsters[(ushort)Monster.OmaWitchDoctor].DrawBlend(480 + (FrameIndex + (int)Direction * 4), DrawLocation, Color.White, true);
+                    }
+                    if (CurrentAction == MirAction.Struck)
+                    {
+                        //Libraries.Monsters[(ushort)Monster.Jar2].DrawBlend(520 + (FrameIndex + (int)Direction * 3), DrawLocation, Color.White, true);
+                        //if (FrameIndex >= 2) Libraries.Monsters[(ushort)Monster.Jar2].DrawBlend(624 + (FrameIndex + (int)Direction * 8) - 2, DrawLocation, Color.White, true);
+                    }
+                    if (CurrentAction == MirAction.Die)
+                    {
+                        //Libraries.Monsters[(ushort)Monster.Jar2].DrawBlend(544 + (FrameIndex + (int)Direction * 10), DrawLocation, Color.White, true);
+                    }
+
+                    break;
+
+                case Monster.ClawBeast://水手长(2种形态，攻击手段不一样的)
+                    if (CurrentAction != MirAction.Dead)
+                    {
+                        if (Stage == 0)
+                        {
+                            Libraries.Monsters[(ushort)Monster.ClawBeast].DrawBlend(654 + (FrameIndex + (int)Direction * 6), DrawLocation, Color.White, true);
+                        }
+                        if (Stage == 1)
+                        {
+                            Libraries.Monsters[(ushort)Monster.ClawBeast].DrawBlend(711 + (FrameIndex + (int)Direction * 2), DrawLocation, Color.White, true);
+                        }
+                    }
+                    break;
+
                 case Monster.GeneralJinmYo:
                     //猫妖将军，狂暴
-                    if (Stage == 1)
+                    if (Stage == 1 && CurrentAction != MirAction.Dead)
                     {
+                        
                         Libraries.Monsters[(ushort)Monster.GeneralJinmYo].DrawBlend(529 , DrawLocation, Color.White, true);
                     }
                     break;

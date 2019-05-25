@@ -20,7 +20,7 @@ namespace Server.MirEnvir
         //刷怪,3种怪物
         public static string fbboss1 = "夜火红猪";//每批都刷
         public static string fbboss2 = "夜火白猪";//2批一刷
-        public static string fbboss3 = "夜火战车";//3批一刷
+        public static string fbboss3 = "夜火战车";//4批一刷
 
 
         //比奇安全区点
@@ -55,7 +55,7 @@ namespace Server.MirEnvir
 
         //战役时间处理,warHour：活动开始整点，MaxBaoMingTime：最大报名时间（10分钟），MaxWarTime：最大的战斗时间（45分钟）
         //怪物刷新间隔MonRefreshInterval，5分钟刷一批
-        private static int warHour = 22, MaxBaoMingTime = 1000*60*2, MaxWarTime = 1000*60*5, MonRefreshInterval=1000*60*1,minWarPlayCount=2;
+        private static int warHour = 20, MaxBaoMingTime = 1000*60*10, MaxWarTime = 1000*60*30, MonRefreshInterval=1000*60*5,minWarPlayCount=4;
 
 
         //各种处理
@@ -129,6 +129,7 @@ namespace Server.MirEnvir
                     player.ReceiveChat($"封神战役现已开始接受报名，各位勇士想要封神的，可来报名参赛", ChatType.System2);
                     player.ReceiveChat($"封神战役现已开始接受报名，各位勇士想要封神的，可来报名参赛", ChatType.System2);
                 }
+                GroupWarPlayer.clearHuodongPlayer();
                 fb_step = 2;
                 SMain.Enqueue( $" 封神战役开启...");
                 //这里清理怪物
@@ -728,8 +729,8 @@ namespace Server.MirEnvir
                 }
             }
 
-            //3批一刷
-            if (mon_step % 3 == 0)
+            //4批一刷
+            if (mon_step % 4 == 0)
             {
                 MonsterInfo info3 = getFBMon(3);
                 MonsterObject monster3 = MonsterObject.GetMonster(info3);

@@ -28,7 +28,7 @@ namespace Server.MirObjects.Monsters
             if (!Dead && Envir.Time > FearTime)
             {
                 FearTime = Envir.Time + 2000;
-                if (RandomUtils.Next(2) == 0)
+                if (RandomUtils.Next(100) < 70)
                 {
                     AttackRange = 2;
                 }
@@ -92,7 +92,7 @@ namespace Server.MirObjects.Monsters
                         DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage, DefenceType.ACAgility);
                         ActionList.Add(action);
 
-                        if (i == 2 && RandomUtils.Next(5)==1)
+                        if (i == 2 && RandomUtils.Next(3)==1)
                         {
                             ob.ApplyPoison(new Poison
                             {

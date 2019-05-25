@@ -170,12 +170,12 @@ namespace Server.MirObjects.Monsters
                     ActionList.Add(action);
                     if (_stage == 1)
                     {
-                        if (RandomUtils.Next(5) == 1)
+                        if (RandomUtils.Next(2) == 1)
                         {
                             Target.ApplyPoison(new Poison
                             {
                                 Owner = this,
-                                Duration = 3,
+                                Duration = 5,
                                 PType = PoisonType.Frozen,
                                 Value = damage,
                                 TickSpeed = 2000
@@ -184,12 +184,12 @@ namespace Server.MirObjects.Monsters
                     }
                     else
                     {
-                        if (RandomUtils.Next(8) == 1)
+                        if (RandomUtils.Next(3) == 1)
                         {
                             Target.ApplyPoison(new Poison
                             {
                                 Owner = this,
-                                Duration = 5,
+                                Duration = 8,
                                 PType = PoisonType.Stun,
                                 Value = damage,
                                 TickSpeed = 2000

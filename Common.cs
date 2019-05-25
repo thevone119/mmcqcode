@@ -620,7 +620,30 @@ public enum Monster : ushort
     Ram1 = 400,
     Ram2 = 401,
     Kite = 402,
-    
+
+    //这里增加雪域怪物
+    Monster403 = 403,
+    Monster404 = 404,
+    Monster405 = 405,
+    Monster406 = 406,
+    Monster407 = 407,
+    Monster408 = 408,
+    Monster409 = 409,
+    Monster410 = 410,
+    Monster411 = 411,
+    Monster412 = 412,
+    Monster413 = 413,
+    Monster414 = 414,
+    Monster415 = 415,
+    Monster416 = 416,
+    Monster417 = 417,
+    Monster418 = 418,
+    Monster419 = 419,
+    Monster420 = 420,
+    Monster421 = 421,
+    Monster422 = 422,
+    Monster423 = 423,
+
 
     EvilMir = 900,
     EvilMirBody = 901,

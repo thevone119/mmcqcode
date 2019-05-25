@@ -1193,6 +1193,30 @@ namespace Server.MirEnvir
             }
             //这里重设下玩家榜单？
 
+            //这里循环判断地图，有些地图要多少个玩家到达多少级才开放的
+            foreach(Map m in MapList)
+            {
+                if (m.Info == null|| m.Info.OpenPlayerLevel==0|| m.Info.MinPlayerCount==0)
+                {
+                    continue;
+                }
+                if(m.Info.MinPlayerCount> 0 && m.Info.OpenPlayerLevel > 0)
+                {
+                    if(m.Info.MinPlayerCount > all0.Count)
+                    {
+                        m.MapOpen = false;
+                        continue;
+                    }
+                    if(all0[m.Info.MinPlayerCount-1].level>= m.Info.OpenPlayerLevel)
+                    {
+                        m.MapOpen = true;
+                    }
+                    else
+                    {
+                        m.MapOpen = false;
+                    }
+                }
+            }
         }
 
         //加载钓鱼，掉落物品
@@ -1363,6 +1387,7 @@ namespace Server.MirEnvir
             });
         }
         //占领，城池？
+        //这里要改下哦?
         public void LoadConquests()
         {
             lock (LoadLock)

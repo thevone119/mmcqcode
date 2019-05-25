@@ -131,7 +131,7 @@ namespace Server.MirObjects.Monsters
 
                     if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist)
                     {
-                        if (RandomUtils.Next(3) == 0)
+                        if (RandomUtils.Next(2) == 0)
                         {
                             Target.ApplyPoison(new Poison { Owner = this, Duration = 2, PType = PoisonType.Bleeding, Value = damage/2, TickSpeed = 2000 }, this);
                         }

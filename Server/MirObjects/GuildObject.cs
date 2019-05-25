@@ -45,7 +45,7 @@ namespace Server.MirObjects
         public ushort FlagImage = 1000;
         public Color FlagColour = Color.White;
 
-        public ConquestObject Conquest;
+        public ConquestObject Conquest;//这个要保存到数据库啊
         //同盟行会
         public List<GuildObject> AllyGuilds = new List<GuildObject>();
         public int AllyCount;

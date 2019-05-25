@@ -11,6 +11,7 @@ using Server.MirObjects.Monsters;
 namespace Server.MirObjects
 {
     //这个是攻城战争？
+    //沙巴克攻城战役
     public class ConquestObject
     {
         protected static Envir Envir
@@ -56,8 +57,8 @@ namespace Server.MirObjects
         public long ScoreTimer;
 
 
-        public const int MAX_KING_POINTS = 18; //3 minutes
-        public const int MAX_CONTROL_POINTS = 6; //1 minute
+        public const int MAX_KING_POINTS = 18; //3 minutes  3分钟
+        public const int MAX_CONTROL_POINTS = 6; //1 minute  1分钟
 
         public Dictionary<GuildObject, int> KingPoints = new Dictionary<GuildObject, int>();
         public Dictionary<ConquestFlagObject, Dictionary<GuildObject, int>> ControlPoints = new Dictionary<ConquestFlagObject, Dictionary<GuildObject, int>>();
@@ -334,27 +335,27 @@ namespace Server.MirObjects
 
         public bool CheckDay()
         {
-            switch (DateTime.Now.DayOfWeek.ToString())
+            switch (DateTime.Now.DayOfWeek)
             {
-                case "Monday":
+                case DayOfWeek.Monday:
                     return Info.Monday;
-                case "Tuesday":
+                case DayOfWeek.Tuesday:
                     return Info.Tuesday;
-                case "Wednesday":
+                case DayOfWeek.Wednesday:
                     return Info.Wednesday;
-                case "Thursday":
+                case DayOfWeek.Thursday:
                     return Info.Thursday;
-                case "Friday":
+                case DayOfWeek.Friday:
                     return Info.Friday;
-                case "Saturday":
+                case DayOfWeek.Saturday:
                     return Info.Saturday;
-                case "Sunday":
+                case DayOfWeek.Sunday:
                     return Info.Sunday;
             }
-
             return true;
         }
 
+        //每分钟执行一次
         public void AutoSchedule()
         {
             int start = ((Info.StartHour * 60));
@@ -391,7 +392,6 @@ namespace Server.MirObjects
                             StartType = Info.Type;
                             StartWar(Info.Game);
                         }
-
                     }
                 }
             }
@@ -442,6 +442,7 @@ namespace Server.MirObjects
             NeedSave = true;
         }
 
+        //占领
         public void TakeConquest(PlayerObject player = null, GuildObject winningGuild = null)
         {
             if (winningGuild == null && (player == null || player.MyGuild == null || player.MyGuild.Conquest != null)) return;
@@ -484,6 +485,11 @@ namespace Server.MirObjects
                     Owner = winningGuild.Guildindex;
                     Guild = winningGuild;
                     Guild.Conquest = this;
+
+                    foreach (PlayerObject p in Envir.Players)
+                    {
+                        p.ReceiveChat(string.Format("{0} 被 {1} 占领.", Info.Name, winningGuild.Name), ChatType.System);
+                    }
                     break;
                 case ConquestGame.ControlPoints:
                     Owner = winningGuild.Guildindex;
@@ -597,13 +603,15 @@ namespace Server.MirObjects
 
         }
 
+        //行会战的几种不同的玩法
+        //这个是战役的时候死循环，判断占领情况
         public void ScorePoints()
         {
             bool PointsChanged = false;
 
             switch (GameType)
             {
-                case ConquestGame.ControlPoints:
+                case ConquestGame.ControlPoints://控制点占领
                     {
                         int points;
 
@@ -682,7 +690,7 @@ namespace Server.MirObjects
                         }
                     }
                     break;
-                case ConquestGame.KingOfHill:
+                case ConquestGame.KingOfHill://占领皇宫
                     {
                         int points;
 
@@ -754,7 +762,7 @@ namespace Server.MirObjects
                         }
                     }
                     break;
-                case ConquestGame.Classic:
+                case ConquestGame.Classic://经典玩法(占领皇宫，只有一个行会占领皇宫则)
                     int GuildCounter = 0;
                     GuildObject TakingGuild = null;
                     for (int i = 0; i < PalaceMap.Players.Count; i++)
@@ -788,20 +796,25 @@ namespace Server.MirObjects
                     return;
             }
 
-            
-
         }
 
         public void StartWar(ConquestGame type)
         {
+            foreach(PlayerObject p in Envir.Players)
+            {
+                p.ReceiveChat(string.Format("{0} 争夺战争开始了.", Info.Name), ChatType.System);
+            }
             WarIsOn = true;
         }
 
         public void EndWar(ConquestGame type)
         {
             WarIsOn = false;
-
-            switch(type)
+            foreach (PlayerObject p in Envir.Players)
+            {
+                p.ReceiveChat(string.Format("{0} 争夺战争结束了.", Info.Name), ChatType.System);
+            }
+            switch (type)
             {
                 case ConquestGame.ControlPoints:
                     Dictionary<GuildObject, int> controlledPoints = new Dictionary<GuildObject, int>();
@@ -1048,7 +1061,7 @@ namespace Server.MirObjects
         {
             if (Wall != null) Health = Wall.HP;
             writer.Write(Index);
-            writer.Write(Wall.Health);
+            writer.Write(Health);
         }
 
 

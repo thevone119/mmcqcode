@@ -64,7 +64,7 @@ namespace Server.MirObjects.Monsters
                 {
                     if (Target.Attacked(this, damage, DefenceType.MACAgility) > 0 )
                     {
-                        int ptype = RandomUtils.Next(5);
+                        int ptype = RandomUtils.Next(4);
                         if (ptype == 0)
                         {
                             if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist)
@@ -190,7 +190,7 @@ namespace Server.MirObjects.Monsters
                 }
                 else if (CurrentMap.ValidPoint(Target.Front))
                 {
-                    Teleport(CurrentMap, Target.Back);
+                    Teleport(CurrentMap, Target.Front);
                     return;
                 }
             }

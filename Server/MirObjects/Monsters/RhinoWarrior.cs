@@ -83,7 +83,7 @@ namespace Server.MirObjects.Monsters
             }
             else
             {
-                if (rd < 2)
+                if (rd < 4)
                 {
                     attType = 1;
                 }

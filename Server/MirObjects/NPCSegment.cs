@@ -3623,7 +3623,11 @@ namespace Server.MirObjects
 
                         uint repairCost = ConquestWall.GetRepairCost();
 
-                        if (player.MyGuild == null || player.MyGuild.Gold < repairCost) return;
+                        if (player.MyGuild == null || player.MyGuild.Gold < repairCost)
+                        {
+                            player.ReceiveChat(string.Format("公会资金不足"), ChatType.System);
+                            return;
+                        }
 
                         player.MyGuild.Gold -= repairCost;
                         player.MyGuild.SendServerPacket(new S.GuildStorageGoldChange() { Type = 2, Amount = repairCost });

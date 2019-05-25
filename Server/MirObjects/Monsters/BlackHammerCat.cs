@@ -64,7 +64,7 @@ namespace Server.MirObjects.Monsters
             Direction = Functions.DirectionFromPoint(CurrentLocation, Target.CurrentLocation);
             int distance = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
 
-            if (distance <= 1 && RandomUtils.Next(5) != 1)
+            if (distance <= 1 && RandomUtils.Next(4) != 1)
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0 });
                 LineAttack(2, 0);

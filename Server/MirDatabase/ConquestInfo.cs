@@ -24,12 +24,12 @@ namespace Server.MirDatabase
         public Point Location;
         public ushort Size;
         public string Name;
-        public int MapIndex;
-        public int PalaceIndex;
+        public int MapIndex;//地图
+        public int PalaceIndex;//皇宫
         public List<int> ExtraMaps = new List<int>();
-        public List<ConquestArcherInfo> ConquestGuards = new List<ConquestArcherInfo>();
-        public List<ConquestGateInfo> ConquestGates = new List<ConquestGateInfo>();
-        public List<ConquestWallInfo> ConquestWalls = new List<ConquestWallInfo>();
+        public List<ConquestArcherInfo> ConquestGuards = new List<ConquestArcherInfo>();//弓箭手
+        public List<ConquestGateInfo> ConquestGates = new List<ConquestGateInfo>();//大门
+        public List<ConquestWallInfo> ConquestWalls = new List<ConquestWallInfo>();//城门
         public List<ConquestSiegeInfo> ConquestSieges = new List<ConquestSiegeInfo>();
         public List<ConquestFlagInfo> ConquestFlags = new List<ConquestFlagInfo>();
 

@@ -48,6 +48,13 @@ namespace Server.MirDatabase
         //活动的坐标？非数据库字段（这里的点，是通过默认NPC，添加进来的，玩家去到这些点，则触发默认NPC事件哦）
         public List<Point> ActiveCoords = new List<Point>();
 
+        //地图开放条件(1)
+        //条件1.玩家>=多少级的玩家，有多少个
+        public byte OpenPlayerLevel = 0, MinPlayerCount = 0;
+
+        //消耗元宝数，消耗金币数(每10秒)
+        public int UseGold = 0, UseCredit = 0;
+
         //实例包裹
         //[JsonIgnore]
         //public InstanceInfo Instance;
@@ -56,6 +63,10 @@ namespace Server.MirDatabase
         {
 
         }
+
+
+
+
 
         /// <summary>
         /// 加载所有数据
@@ -115,6 +126,11 @@ namespace Server.MirDatabase
                 obj.NeedBridle = read.GetBoolean(read.GetOrdinal("NeedBridle"));
                 obj.NoFight = read.GetBoolean(read.GetOrdinal("NoFight"));
                 obj.Music = (ushort)read.GetInt16(read.GetOrdinal("Music"));
+                //加4个字段
+                obj.OpenPlayerLevel = read.GetByte(read.GetOrdinal("OpenPlayerLevel"));
+                obj.MinPlayerCount = read.GetByte(read.GetOrdinal("MinPlayerCount"));
+                obj.UseGold = read.GetInt32(read.GetOrdinal("UseGold"));
+                obj.UseCredit = read.GetInt32(read.GetOrdinal("UseCredit"));
 
                 obj.SafeZones = JsonConvert.DeserializeObject<List<SafeZoneInfo>>(read.GetString(read.GetOrdinal("SafeZones")));
                 //反向引用
@@ -189,6 +205,13 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("Movements", JsonConvert.SerializeObject(Movements)));
             lp.Add(new SQLiteParameter("Respawns", JsonConvert.SerializeObject(Respawns)));
             lp.Add(new SQLiteParameter("MineZones", JsonConvert.SerializeObject(MineZones)));
+
+            //加4个字段
+            lp.Add(new SQLiteParameter("OpenPlayerLevel", OpenPlayerLevel));
+            lp.Add(new SQLiteParameter("MinPlayerCount", MinPlayerCount));
+            lp.Add(new SQLiteParameter("UseGold", UseGold));
+            lp.Add(new SQLiteParameter("UseCredit", UseCredit));
+            
 
             //新增
             if (state == 1)

@@ -165,7 +165,8 @@ namespace Server
                              VampireName = "召唤蜘蛛",
                              ToadName = "召唤蛤蟆",
                              SnakeTotemName = "召唤图腾",
-                             SnakesName = "鬼魅蛇";
+                             SnakesName = "鬼魅蛇",
+                             SnowWolfName = "雪原冰狼";
         //这几个是技能的Sell,对应技能的的Spell（byte）
         public static string HealRing = "Healing",
                              FireRing = "FireBall",

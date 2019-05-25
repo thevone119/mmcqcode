@@ -61,10 +61,10 @@ namespace Server.MirObjects.Monsters
                 ActionList.Add(action);
             }
 
-            int rd = 8;
+            int rd = 5;
             if (HP < MaxHP / 2)
             {
-                rd = 4;
+                rd = 3;
             }
             else if (HP < MaxHP / 4)
             {

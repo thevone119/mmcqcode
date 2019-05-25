@@ -213,7 +213,7 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Dead, new Frame(153, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(144, 10, 0, 100) { Reverse = true });
 
-            //3 - CannibalPlant
+            //3 - CannibalPlant 食人花
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, -4, 500));
             frame.Frames.Add(MirAction.Show, new Frame(4, 8, -8, 200));
@@ -1440,13 +1440,13 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Dead, new Frame(321, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(312, 10, 0, 100) { Reverse = true });
 
-            //120 - OmaWitchDoctor 奥玛巫医
+            //120 - OmaWitchDoctor 奥玛巫医 OK
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 9, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(72, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(120, 7, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(176, 7, 0, 100));
-            frame.Frames.Add(MirAction.Attack3, new Frame(232, 9, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(120, 7, 0, 100, 520, 7, 0, 100) { EffectStartTime = 100});
+            frame.Frames.Add(MirAction.Attack2, new Frame(176, 7, 0, 100, 576, 7, 0, 100) { EffectStartTime = 100, EStart2 = 800, ECount2 = 7, EInterval2 = 100, ETime2 = 300 });
+            frame.Frames.Add(MirAction.Attack3, new Frame(232, 9, 0, 100, 632, 9, 0, 100) { EffectStartTime = 300,EStart2 = 867, ECount2 = 10, ESkip2 = -10, EInterval2 = 150, ETime2 = 200 });
             frame.Frames.Add(MirAction.Struck, new Frame(304, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(328, 9, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(336, 1, 8, 1000));
@@ -1487,41 +1487,41 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Dead, new Frame(703, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(704, 10, 0, 100) { Reverse = true });
 
-            //124 - CaveMage
+            //124 - CaveMage 洞穴法师？
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 2, -2, 800));
-            frame.Frames.Add(MirAction.Attack1, new Frame(0, 2, -2, 80));
-            frame.Frames.Add(MirAction.Struck, new Frame(0, 2, -2, 200));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(0, 2, -2, 80));
+            frame.Frames.Add(MirAction.Struck, new Frame(0, 2, -2, 200, 10, 7, -7, 100));
             frame.Frames.Add(MirAction.Die, new Frame(2, 8, -8, 120));
             frame.Frames.Add(MirAction.Dead, new Frame(9, 1, -1, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(2, 8, -8, 150) { Reverse = true });
 
-            //125 - Mandrill
+            //125 - Mandrill 长鼻猴 普通攻击 攻击并净化，回血
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(80, 7, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(136, 3, 0, 200));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 7, 0, 100, 264, 2, 0, 200) { EffectStartTime = 500 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(136, 3, 0, 200,280,10,-10,100));
             frame.Frames.Add(MirAction.Struck, new Frame(160, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(184, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(193, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(184, 10, 0, 100) { Reverse = true });
 
-            //126 - PlagueCrab
+            //126 - PlagueCrab 瘟疫蟹
             Monsters.Add(frame = new FrameSet());
-            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
-            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(80, 8, 0, 100));
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500,248,4,0,500));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200, 280, 6, 0, 200));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 8, 0, 100, 328, 8, 0, 100) { EStart2=488, ECount2=7, ESkip2=0, EInterval2=100,ETime2 = 300});
             frame.Frames.Add(MirAction.Struck, new Frame(144, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(168, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(177, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(168, 10, 0, 100) { Reverse = true });
 
-            //127 - CreeperPlant
+            //127 - CreeperPlant 攀缘花
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
-            frame.Frames.Add(MirAction.Attack1, new Frame(32, 7, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(88, 7, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(32, 7, 0, 100, 250, 6, -6, 100) { EffectStartTime=200 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(88, 7, 0, 100, 266, 6, -6, 100) { EffectStartTime = 200 });
             frame.Frames.Add(MirAction.Struck, new Frame(136, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(160, 9, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(168, 1, 8, 1000));
@@ -1563,37 +1563,37 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Dead, new Frame(287, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(288, 10, 0, 100) { Reverse = true });
 
-            //131 - FloatingWraith
+            //131 - FloatingWraith 幽灵射手 --OK
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 100));
-            frame.Frames.Add(MirAction.Attack1, new Frame(80, 8, 0, 100));
-            frame.Frames.Add(MirAction.Struck, new Frame(143, 3, 0, 200));
-            frame.Frames.Add(MirAction.Die, new Frame(167, 10, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(176, 1, 9, 1000));
-            frame.Frames.Add(MirAction.Revive, new Frame(167, 10, 0, 100) { Reverse = true });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(80, 8, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(144, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(168, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(177, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(168, 10, 0, 100) { Reverse = true });
 
-            //132 - ArmedPlant
+            //132 - ArmedPlant 幽灵厨子 - OK
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(96, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 6, 0, 100, 256, 2, 0, 200) { EffectStartTime = 200 });
             frame.Frames.Add(MirAction.Struck, new Frame(144, 6, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(192, 8, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(198, 1, 7, 1000));
+            frame.Frames.Add(MirAction.Dead, new Frame(199, 1, 7, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(192, 8, 0, 100) { Reverse = true });
 
-            //133 - AvengerPlant
+            //133 - AvengerPlant 幽灵船员 -OK
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(80, 7, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 7, 0, 100, 224, 3, 0, 200) { EffectStartTime = 200 });
             frame.Frames.Add(MirAction.Struck, new Frame(136, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(160, 8, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(167, 1, 7, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(160, 8, 0, 100) { Reverse = true });
 
-            //134 - Nadz, AvengingSpirit
+            //134 - Nadz, AvengingSpirit  ---错误，在后面覆盖实现
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200));
@@ -1603,46 +1603,57 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Dead, new Frame(140, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(144, 10, 0, 100) { Reverse = true });
 
-            //135 - AvengingWarrior
+            //135 - AvengingWarrior--复仇的勇士
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(80, 6, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(128, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 6, 0, 100, 272, 5, 0, 100) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(128, 6, 0, 100));
             frame.Frames.Add(MirAction.Struck, new Frame(178, 2, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(192, 10, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(191, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Dead, new Frame(201, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(192, 10, 0, 100) { Reverse = true });
 
-            //136 - AxePlant, ClawBeast
+            //136 - AxePlant, ClawBeast 黑暗头目-OK  ClawBeast（有问题，重写）
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 100));
-            frame.Frames.Add(MirAction.Attack1, new Frame(80, 10, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 10, 0, 100, 256, 10, 0, 100) { EffectStartTime = 600 });
             frame.Frames.Add(MirAction.Struck, new Frame(160, 3, 0, 200));
-            frame.Frames.Add(MirAction.Die, new Frame(185, 8, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(193, 1, 9, 1000));
-            frame.Frames.Add(MirAction.Revive, new Frame(185, 8, 0, 100) { Reverse = true });
+            frame.Frames.Add(MirAction.Die, new Frame(184, 9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(192, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(184, 9, 0, 100) { Reverse = true });
 
-            //137 - WoodBox
+            //137 - WoodBox，爆炸箱子
             Monsters.Add(frame = new FrameSet());
-            frame.Frames.Add(MirAction.Standing, new Frame(1, 1, 0, 500));
-            frame.Frames.Add(MirAction.Struck, new Frame(1, 1, 0, 200));
-            frame.Frames.Add(MirAction.Die, new Frame(9, 11, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(19, 1, 0, 1000));
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 1, 0, 500));
+            frame.Frames.Add(MirAction.Struck, new Frame(8, 3, 9, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(11, 9, 3, 100,104,6,-6,100) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.Dead, new Frame(19, 1, 11, 1000));
 
-            //138 - KillerPlant
+            //138 - KillerPlant ,黑暗船长
             Monsters.Add(frame = new FrameSet());
-            frame.Frames.Add(MirAction.Standing, new Frame(0, 10, 0, 500));
-            frame.Frames.Add(MirAction.Walking, new Frame(80, 8, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(144, 7, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(200, 7, 0, 100));
-            frame.Frames.Add(MirAction.Attack3, new Frame(256, 7, 0, 100));
-            frame.Frames.Add(MirAction.AttackRange1, new Frame(368, 7, 0, 100));
-            frame.Frames.Add(MirAction.AttackRange2, new Frame(424, 7, 0, 100));
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 10, 0, 200, 584, 10, 0, 200));
+            frame.Frames.Add(MirAction.Walking, new Frame(80, 8, 0, 100, 664,8,0,100));
+            //1.挥刀砍，范围伤害
+            frame.Frames.Add(MirAction.Attack1, new Frame(144, 7, 0, 100,1168,4,0,100) { EffectStartTime = 300 ,EStart2=728, ECount2=7, ESkip2=0, EInterval2=100, ETime2=0 });
+            //攻击2解毒，加血
+            frame.Frames.Add(MirAction.Attack2, new Frame(256, 7, 0, 100, 840, 7, 0, 100) { EffectStartTime = 0, EStart2 = 1224, ECount2 = 10, ESkip2 = -10, EInterval2 = 100, ETime2 = 200 });
+            //3.踏地板，眩晕，麻痹
+            frame.Frames.Add(MirAction.Attack3, new Frame(256, 7, 0, 100,840,7,0,100) { EffectStartTime = 0, EStart2 = 1214, ECount2 = 10, ESkip2 = -10, EInterval2 = 100, ETime2 = 200 });
+
+            //4.没调试好
+            frame.Frames.Add(MirAction.Attack4, new Frame(200, 7, 0, 100, 784, 7, 0, 100) { EffectStartTime = 0, EStart2 = 1224, ECount2 = 10, ESkip2 = -10, EInterval2 = 100, ETime2 = 200 });
+
+            //放雷电，追踪雷电
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(368, 7, 0, 100, 952, 7, 0, 100));
+
+            //放雷电，满天的雷电
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(424, 7, 0, 100, 896, 7, 0, 100));-OK
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(424, 7, 0, 100, 1008, 7, 0, 100) { EffectStartTime = 0, EStart2 = 1234, ECount2 = 12, ESkip2 = -12, EInterval2 = 100, ETime2 = 200 });
             frame.Frames.Add(MirAction.Struck, new Frame(480, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(504, 10, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(503, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Dead, new Frame(513, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(504, 10, 0, 100) { Reverse = true });
 
             //139 - Hydrax
@@ -1840,88 +1851,94 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Die, new Frame(48, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(57, 1, 9, 1000));
 
-            //157 - FrozenSoldier
+            //157 - FrozenSoldier 雪原士兵-OK
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(80, 9, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 9, 0, 100,256,10,-10,100));
             frame.Frames.Add(MirAction.Struck, new Frame(152, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(176, 10, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(175, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Dead, new Frame(185, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(176, 10, 0, 100) { Reverse = true });
 
-            //158 - FrozenFighter //DUPE of 142
+            //158 - FrozenFighter //DUPE of 142  雪原战士-OK
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(80, 10, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(160, 9, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 10, 0, 100,336,6,0,100) { EffectStartTime = 400 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(160, 9, 0, 100, 384,5,0,100) { EffectStartTime = 400 });
             frame.Frames.Add(MirAction.Struck, new Frame(232, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(256, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(265, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(256, 10, 0, 100) { Reverse = true });
 
-            //159 - FrozenArcher
+            //159 - FrozenArcher 雪原弓手-OK
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(80, 10, 0, 100));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(80, 10, 0, 100));
             frame.Frames.Add(MirAction.Struck, new Frame(160, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(184, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(193, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(184, 10, 0, 100) { Reverse = true });
 
-            //160 - FrozenKnight
+            //160 - FrozenKnight 雪原勇士
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 8, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(96, 10, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(176, 10, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 10, 0, 100, 360, 3, 0, 200) { EffectStartTime = 400 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(176, 10, 0, 100,384,9,0,100) { EffectStartTime = 200 });
             frame.Frames.Add(MirAction.Struck, new Frame(256, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(280, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(289, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(280, 10, 0, 100) { Reverse = true });
 
-            //161 - FrozenGolem
+            //161 - FrozenGolem 雪原鬼尊
             Monsters.Add(frame = new FrameSet());
-            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
-            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(80, 8, 0, 100));
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 200,264,4,0,200));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200,296,6,0,200));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 8, 0, 100, 344, 8, 0, 100));
+            frame.Frames.Add(MirAction.Attack2, new Frame(168, 12, 0, 100, 408, 6, 0, 200) { EStart2 = 463, ECount2 = 7, ESkip2 = -7, EInterval2 = 200, ETime2 = 0 });
             frame.Frames.Add(MirAction.Struck, new Frame(144, 3, 0, 200));
-            frame.Frames.Add(MirAction.Die, new Frame(168, 12, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(179, 1, 11, 1000));
-            frame.Frames.Add(MirAction.Revive, new Frame(168, 11, 0, 100) { Reverse = true });
+            frame.Frames.Add(MirAction.Die, new Frame(456, 7, -7, 200));
+            frame.Frames.Add(MirAction.Dead, new Frame(458, 1, -1, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(456, 7, -7, 200) { Reverse = true });
 
-            //162 - IcePhantom
+            //162 - IcePhantom 雪原恶鬼 - OK 隐身
             Monsters.Add(frame = new FrameSet());
-            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
-            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(80, 9, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(152, 8, 0, 100));
-            frame.Frames.Add(MirAction.Struck, new Frame(216, 3, 0, 200));
-            frame.Frames.Add(MirAction.Die, new Frame(240, 10, 0, 100));
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 200,320,4,0,200));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200, 352,6,0,200));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 9, 0, 100, 400,9,0,100) { EStart2 = 640, ECount2 = 4, ESkip2 = 0, EInterval2 = 200, ETime2 = 200 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(152, 8, 0, 100, 472,8,0,100) { EStart2 = 672, ECount2 = 10, ESkip2 = -10, EInterval2 = 100, ETime2 = 100 });
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(152, 8, 0, 100, 472, 8, 0, 100) );
+            frame.Frames.Add(MirAction.Struck, new Frame(216, 3, 0, 200, 536,3,0,200));
+            frame.Frames.Add(MirAction.Die, new Frame(240, 10, 0, 100, 560,10,0,100));
             frame.Frames.Add(MirAction.Dead, new Frame(249, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Hide, new Frame(692, 10, 0, 100));
+            frame.Frames.Add(MirAction.Appear, new Frame(692, 10, 0, 100) { Reverse = true });
+            frame.Frames.Add(MirAction.Show, new Frame(692, 10, 0, 100) { Reverse = true });
             frame.Frames.Add(MirAction.Revive, new Frame(240, 10, 0, 100) { Reverse = true });
 
-            //163 - SnowWolf
+            //163 - SnowWolf 雪原冰狼-OK
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200));
             frame.Frames.Add(MirAction.Attack1, new Frame(80, 10, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(160, 9, 0, 100));
+            frame.Frames.Add(MirAction.Attack2, new Frame(160, 9, 0, 100,328,9,-9,100) { EffectStartTime = 200 });
             frame.Frames.Add(MirAction.Struck, new Frame(232, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(256, 9, 0, 100));
-            frame.Frames.Add(MirAction.Dead, new Frame(254, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Dead, new Frame(264, 1, 8, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(256, 9, 0, 100) { Reverse = true });
 
-            //164 - SnowWolfKing
+            //164 - SnowWolfKing 雪太狼
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 8, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(160, 9, 0, 100));
-            frame.Frames.Add(MirAction.Attack3, new Frame(232, 10, 0, 100));
-            frame.Frames.Add(MirAction.AttackRange1, new Frame(312, 5, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100,456,3,0,200) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(160, 9, 0, 100,489,9,0,100) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.Attack3, new Frame(232, 10, 0, 100,581,3,0,200) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(312, 5, 0, 100, 456, 3, 0, 200) { EffectStartTime = 300, EStart2 = 480, ECount2 = 8, ESkip2 = -8, EInterval2 = 100, ETime2 = 500 });
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(312, 5, 0, 100, 456, 3, 0, 200) { EffectStartTime = 300,  EStart2 = 605, ECount2 = 10, ESkip2 = -10, EInterval2 = 100, ETime2 = 300 });
             frame.Frames.Add(MirAction.Struck, new Frame(352, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(376, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(385, 1, 9, 1000));
@@ -2015,95 +2032,95 @@ namespace Client.MirObjects
             //173 - BLANK
             Monsters.Add(frame = new FrameSet());
 
-            //174 - FrozenMiner
+            //174 - FrozenMiner 冰魄矿工-OK
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(32, 10, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(112, 6, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(160, 10, 0, 100));
-            frame.Frames.Add(MirAction.Attack3, new Frame(240, 10, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(112, 6, 0, 100) );//这个攻击不要了，没什么用
+            frame.Frames.Add(MirAction.Attack2, new Frame(160, 10, 0, 100, 432, 3, 0, 200) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.Attack3, new Frame(240, 10, 0, 100, 462, 5, 0, 200) { EffectStartTime = 100 });
             frame.Frames.Add(MirAction.Struck, new Frame(320, 4, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(352, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(361, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(352, 10, 0, 100) { Reverse = true });
 
-            //175 - FrozenAxeman
+            //175 - FrozenAxeman 冰魄斧兵-OK
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             //frame.Frames.Add(MirAction.Standing2, new Frame(32, 10, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(112, 8, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(176, 10, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(256, 10, 0, 100));
-            frame.Frames.Add(MirAction.Attack3, new Frame(336, 10, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(176, 10, 0, 100,528,3,0,200) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(256, 10, 0, 100,558,3,0,200) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.Attack3, new Frame(336, 10, 0, 100,588,3,0,200) { EffectStartTime = 300 });
             frame.Frames.Add(MirAction.Struck, new Frame(416, 4, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(448, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(457, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(448, 10, 0, 100) { Reverse = true });
 
-            //176 - FrozenMagician
+            //176 - FrozenMagician 冰魄法师-OK
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
             //frame.Frames.Add(MirAction.Standing2, new Frame(32, 10, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(112, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(160, 10, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(240, 10, 0, 100));
-            frame.Frames.Add(MirAction.Attack3, new Frame(320, 10, 0, 100));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(160, 10, 0, 100,512,6,0,100) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(240, 10, 0, 100,662,8,0,100) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.Attack1, new Frame(320, 10, 0, 100,840,4,0,200) { EffectStartTime = 300 });
             frame.Frames.Add(MirAction.Struck, new Frame(400, 4, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(432, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(441, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(432, 10, 0, 100) { Reverse = true });
 
-            //177 - SnowYeti
+            //177 - SnowYeti 冰魄雪人
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 7, 0, 500));
             //frame.Frames.Add(MirAction.Standing2, new Frame(56, 10, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(136, 8, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(200, 9, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(272, 9, 0, 100));
-            frame.Frames.Add(MirAction.Attack3, new Frame(344, 8, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(200, 9, 0, 100, 504, 4, 0, 200) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(272, 9, 0, 100, 536, 3, 0, 200) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(344, 8, 0, 100));
             frame.Frames.Add(MirAction.Struck, new Frame(408, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(432, 9, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(440, 1, 8, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(432, 9, 0, 100) { Reverse = true });
 
-            //178 - IceCrystalSoldier
+            //178 - IceCrystalSoldier 冰晶战士-OK
             Monsters.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
             frame.Frames.Add(MirAction.Walking, new Frame(48, 8, 0, 200));
             frame.Frames.Add(MirAction.Attack1, new Frame(112, 10, 0, 100));
             frame.Frames.Add(MirAction.Attack2, new Frame(192, 10, 0, 100));
-            frame.Frames.Add(MirAction.Attack3, new Frame(272, 10, 0, 100));
+            frame.Frames.Add(MirAction.Attack3, new Frame(272, 10, 0, 100,476,8,-8,100) { EffectStartTime = 300 });
             frame.Frames.Add(MirAction.Struck, new Frame(352, 4, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(384, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(393, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(384, 10, 0, 100) { Reverse = true });
 
-            //179 - DarkWraith
+            //179 - DarkWraith 暗黑战士
             Monsters.Add(frame = new FrameSet());
-            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
-            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(80, 8, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(144, 10, 0, 100));
-            frame.Frames.Add(MirAction.Attack3, new Frame(224, 4, 0, 100));
-            frame.Frames.Add(MirAction.Struck, new Frame(256, 4, 0, 200));
-            frame.Frames.Add(MirAction.Die, new Frame(280, 10, 0, 100));
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500, 360, 4, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200, 392, 6, 0, 200));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 8, 0, 100, 440, 8, 0, 100,720,3,0,200) { ETime2 = 300 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(144, 10, 0, 100, 504,10,0,100,750,5,0,100) { ETime2 = 500 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(224, 4, 0, 200, 584, 4, 0, 200));
+            frame.Frames.Add(MirAction.Struck, new Frame(256, 3, 0, 200, 616, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(280, 10, 0, 100, 640, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(289, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(280, 10, 0, 100) { Reverse = true });
 
-            //180 - CrystalBeast
+            //180 - CrystalBeast 水晶兽 冰雪守护神
             Monsters.Add(frame = new FrameSet());
-            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
-            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(96, 10, 0, 100));
-            frame.Frames.Add(MirAction.Attack2, new Frame(176, 8, 0, 100));
-            frame.Frames.Add(MirAction.Attack3, new Frame(240, 6, 0, 100));
-            frame.Frames.Add(MirAction.AttackRange1, new Frame(288, 5, 0, 100));
-            frame.Frames.Add(MirAction.AttackRange2, new Frame(328, 2, 0, 100));
-            frame.Frames.Add(MirAction.AttackRange3, new Frame(344, 8, 0, 100));
-            frame.Frames.Add(MirAction.Struck, new Frame(408, 3, 0, 200));
-            frame.Frames.Add(MirAction.Die, new Frame(432, 8, 0, 100));
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500,496,6,0,500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 200, 544, 6, 0, 200));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 10, 0, 100, 592,10,0,100,976,4,0,200) { ETime2 = 300 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(176, 8, 0, 100, 672,8,0,100,1014,5,0,100) { ETime2 = 300 });
+            frame.Frames.Add(MirAction.Attack3, new Frame(240, 6, 0, 100, 736,6,0,100,1141,7,-7,100));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(288, 5, 0, 100, 784, 5,0,100,1101,5,0,200));
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(328, 2, 0, 100, 824, 2,0,100,1153,10,-10,100));
+            frame.Frames.Add(MirAction.AttackRange3, new Frame(344, 8, 0, 100, 840, 8,0,100,1170,12,-12,100));
+            frame.Frames.Add(MirAction.Struck, new Frame(408, 3, 0, 200, 904, 3,0,200));
+            frame.Frames.Add(MirAction.Die, new Frame(432, 8, 0, 100, 928, 6, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(440, 1, 7, 1000));
-            frame.Frames.Add(MirAction.Revive, new Frame(432, 8, 0, 100) { Reverse = true });
+            frame.Frames.Add(MirAction.Revive, new Frame(432, 8, 0, 100, 928, 6, 0, 100) { Reverse = true });
 
             //181 - RedOrb, BlueOrb, YellowOrb, GreenOrb, WhiteOrb
             Monsters.Add(frame = new FrameSet());
@@ -2545,8 +2562,8 @@ namespace Client.MirObjects
             Gates.Add(frame = new FrameSet());
             frame.Frames.Add(MirAction.Standing, new Frame(80, 1, 7, 1000));
             frame.Frames.Add(MirAction.Struck, new Frame(80, 4, 4, 200));
-            frame.Frames.Add(MirAction.Attack1, new Frame(120, 6, -6, 200));//open
-            frame.Frames.Add(MirAction.Attack2, new Frame(128, 6, -6, 200));//close
+            frame.Frames.Add(MirAction.Attack1, new Frame(136, 6, -6, 200));//open
+            frame.Frames.Add(MirAction.Attack2, new Frame(144, 6, -6, 200));//close
             frame.Frames.Add(MirAction.Die, new Frame(104, 10, -10, 200));
             frame.Frames.Add(MirAction.Dead, new Frame(113, 1, -1, 1000));
 
@@ -2711,10 +2728,64 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Die, new Frame(352, 8, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(359, 1, 7, 1000));
             MonstersMap.Add(Monster.GeneralJinmYo, frame);
-            
 
+            //重新定义Nadz 淹死的奴隶
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 400));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 150));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 6, 0, 100, 280, 5, 0, 100) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(128, 8, 0, 100, 320, 8, 0, 100) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.Struck, new Frame(192, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(216, 8, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(223, 1, 7, 1000));
+            MonstersMap.Add(Monster.Nadz, frame);
 
+            //重新定义AvengingSpirit 复仇的恶灵
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 400));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 150));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 8, 0, 100, 280, 8, 0, 100) { EffectStartTime = 200 ,EStart2= 442, ECount2=10, ESkip2=0, EInterval2=100, ETime2=100 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(144, 7, 0, 100, 344, 3, 0, 100) { EffectStartTime =100 });
+            frame.Frames.Add(MirAction.Struck, new Frame(200, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(224, 7, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(230, 1, 6, 1000));
+            MonstersMap.Add(Monster.AvengingSpirit, frame);
 
+            //重新定义ClawBeast 水手长
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(80, 10, 0, 100, 504, 8, 0, 100) { EffectStartTime = 600 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(80, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(160, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(184, 9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(192, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(184, 9, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.ClawBeast, frame);
+
+            //重新定义 - DarkSpirit 幽灵战士
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500,256,4,0,500));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 200, 288,6,0,200));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(80, 9, 0, 100, 336, 9, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(152, 3, 0, 200, 408,3,0,200));
+            frame.Frames.Add(MirAction.Die, new Frame(176, 10, 0, 100, 432,10,0,100));
+            frame.Frames.Add(MirAction.Dead, new Frame(185, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(176, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.DarkSpirit, frame);
+
+            //自定义 Monster403 雪花
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 9, 0, 100));
+            frame.Frames.Add(MirAction.Walking, new Frame(72, 7, 0, 000));
+            frame.Frames.Add(MirAction.Attack1, new Frame(184, 8, 0, 100, 436, 6, 0, 100) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(128, 7, 0, 100, 328, 3, -3, 200) { EffectStartTime = 300 });
+          
+            frame.Frames.Add(MirAction.Struck, new Frame(248, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(272, 7, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(278, 1, 6, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(272, 7, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster403, frame);
 
         }
     }
@@ -2748,21 +2819,22 @@ namespace Client.MirObjects
         }
 
         //比如人物站立 0, 4, 0, 500, 0, 8, 0, 250
-        public Frame(int start, int count, int skip, int interval, int effectstart = 0, int effectcount = 0, int effectskip = 0, int effectinterval = 0,int EStart2=0,int ECount2=0, int ESkip2=0,int EInterval2=0)
+        public Frame(int start, int count, int skip, int interval, int effectstart = 0, int effectcount = 0, int effectskip = 0, int effectinterval = 0,int eStart2=0,int eCount2=0, int eSkip2=0,int eInterval2=0)
         {
             Start = start;
             Count = count;
             Skip = skip;
             Interval = interval;
+
             EffectStart = effectstart;
             EffectCount = effectcount;
             EffectSkip = effectskip;
             EffectInterval = effectinterval;
 
-            EStart2 = EStart2;
-            ECount2 = ECount2;
-            ESkip2 = ESkip2;
-            EInterval2 = EInterval2;
+            EStart2 = eStart2;
+            ECount2 = eCount2;
+            ESkip2 = eSkip2;
+            EInterval2 = eInterval2;
         }
     }
 

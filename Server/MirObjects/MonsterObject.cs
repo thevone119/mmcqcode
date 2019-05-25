@@ -281,7 +281,87 @@ namespace Server.MirObjects
                     return new TreeQueen(info);
                 case 133://ShellFighter 斗争者
                     return new ShellFighter(info);
-                    
+                case 134://黑暗的沸沸 
+                    return new DarkBaboon(info);
+                case 135://双头兽 
+                    return new TwinHeadBeast(info);
+                case 136://奥玛食人族 
+                    return new OmaCannibal(info);
+                case 137://奥玛祝福 普通攻击，砸地板 
+                    return new OmaBlest(info);
+                case 138://奥玛斧头兵 破防
+                    return new OmaSlasher(info);
+                case 139://奥玛刺客 闪现近身，破防，攻击完，又随机闪开
+                    return new OmaAssassin(info);
+                case 140://奥玛法师，随机闪开
+                    return new OmaMage(info);
+                case 141://奥玛巫医，3种攻击手段
+                    return new OmaWitchDoctor(info);
+                case 142://长鼻猴 普通攻击 攻击并净化，回血
+                    return new Mandrill(info);
+                case 143://瘟疫蟹 雷电攻击
+                    return new PlagueCrab(info);
+                case 144://攀缘花 
+                    return new CreeperPlant(info);
+                case 145://幽灵射手 
+                    return new FloatingWraith(info);
+                case 146://幽灵厨子 破防 
+                    return new ArmedPlant(info);
+                case 147://淹死的奴隶 
+                    return new Nadz(info);
+                case 148://复仇的恶灵 
+                    return new AvengingSpirit(info);
+                case 149://复仇的勇士 
+                    return new AvengingWarrior(info);
+                case 150://ClawBeast 水手长 
+                    return new ClawBeast(info);
+                case 151://WoodBox 爆炸箱子 
+                    return new WoodBox(info);
+                case 152://KillerPlant 黑暗船长 
+                    return new KillerPlant(info);
+                case 153://FrozenFighter 雪原战士 
+                    return new FrozenFighter(info);
+                case 154://FrozenKnight 雪原勇士 
+                    return new FrozenKnight(info);
+                case 155://FrozenGolem 雪原鬼尊 
+                    return new FrozenGolem(info);
+                case 156://IcePhantom 雪原恶鬼 
+                    return new IcePhantom(info);
+                case 157://SnowWolf 雪原冰狼 
+                    return new SnowWolf(info);
+                case 158://SnowWolfKing 雪太狼 
+                    return new SnowWolfKing(info);
+                case 159://FrozenMiner 冰魄矿工 
+                    return new FrozenMiner(info);
+                case 160://FrozenAxeman 冰魄斧兵 
+                    return new FrozenAxeman(info);
+                case 161://FrozenMagician 冰魄法师 
+                    return new FrozenMagician(info);
+                case 162://SnowYeti 冰魄雪人 
+                    return new SnowYeti(info);
+                case 163://IceCrystalSoldier 冰晶战士 
+                    return new IceCrystalSoldier(info);
+                case 164://DarkWraith 暗黑战士 
+                    return new DarkWraith(info);
+                case 165://DarkSpirit 幽灵战士 
+                    return new DarkSpirit(info);
+                case 166://CrystalBeast 水晶兽 冰雪守护神 
+                    return new CrystalBeast(info);
+                case 168://Monster403 紫花仙子
+                    return new Monster403(info);
+                case 169://Monster404 花仙子
+                    return new Monster404(info);
+                case 170://Monster405 花仙子
+                    return new Monster405(info);
+                case 171://Monster406 花仙子
+                    return new Monster406(info);
+                case 172://Monster407 花仙子
+                    return new Monster407(info);
+                case 173://Monster408 花仙子
+                    return new Monster408(info);
+                case 174://Monster409 虹花仙子
+                    return new Monster409(info);
+
                 //unfinished
                 case 253://鸟人像？
                     return new FlamingMutant(info);
@@ -2030,8 +2110,10 @@ namespace Server.MirObjects
 
             return false;
         }
-        public bool FindFriendsNearby(int distance)
+
+        public List<MapObject> FindFriendsNearby(int distance)
         {
+            List<MapObject> Friends = new List<MapObject>();
             for (int d = 0; d <= distance; d++)
             {
                 for (int y = CurrentLocation.Y - d; y <= CurrentLocation.Y + d; y++)
@@ -2061,7 +2143,8 @@ namespace Server.MirObjects
                                         PlayerObject player = ((PlayerObject)ob);
                                         if (player.GMGameMaster) continue;
                                     }
-                                    return true;
+                                    Friends.Add(ob);
+                                    break;
                                 default:
                                     continue;
                             }
@@ -2070,7 +2153,7 @@ namespace Server.MirObjects
                 }
             }
 
-            return false;
+            return Friends;
         }
 
         public List<MapObject> FindAllNearby(int dist, Point location, bool needSight = true)

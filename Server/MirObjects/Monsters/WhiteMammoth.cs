@@ -33,10 +33,10 @@ namespace Server.MirObjects.Monsters
             int distance = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
             int delay = distance * 50 + 750; //50 MS per Step
 
-            int rd = 8;
+            int rd = 4;
             if (HP < MaxHP / 2)
             {
-                rd = 4;
+                rd = 3;
             }
             else if (HP < MaxHP / 4)
             {
@@ -75,13 +75,13 @@ namespace Server.MirObjects.Monsters
                     DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage, DefenceType.AC);
                     ActionList.Add(action);
                     //ob.Attacked(this, damage, DefenceType.AC);
-                    if (RandomUtils.Next(5) == 1)
+                    if (RandomUtils.Next(3) == 1)
                     {
                         int poison = GetAttackPower(MinSC, MaxSC);
                         Target.ApplyPoison(new Poison
                         {
                             Owner = this,
-                            Duration = 2,
+                            Duration = 3,
                             PType = PoisonType.Paralysis,
                             Value = poison,
                             TickSpeed = 2000

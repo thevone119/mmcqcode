@@ -11,23 +11,20 @@ namespace Server.MirObjects.Monsters
     /// <summary>
     /// ShellFighter 斗争者
     /// 攻击方式
-    /// 0：普通攻击
-    /// 1:隔位攻击
-    /// 2：隔位攻击
-    /// 3：放群毒，周围都中毒
-    /// 4:放蜘蛛网，束缚，麻痹
+    /// Attack1 0：普通攻击0
+    /// Attack2 1:隔位攻击1
+    /// Attack3 2：隔位攻击2
+    /// AttackRange1 3：放群毒，周围都中毒3
+    /// AttackRange2 4:放蜘蛛网，束缚，麻痹4
     /// </summary>
     class ShellFighter : MonsterObject
     {
-        private byte attckType = 0;//攻击类型
-        protected override bool CanMove { get { return false; } }
-        //protected override bool CanRegen { get { return false; } }
         
+        private byte attckType = 0;//攻击类型
+        private byte AttackRange = 2;//攻击范围
 
         protected internal ShellFighter(MonsterInfo info) : base(info)
         {
-            Direction = MirDirection.Up;
-
             ActionTime = Envir.Time + 300;
             AttackTime = Envir.Time + AttackSpeed;
         }
@@ -35,173 +32,151 @@ namespace Server.MirObjects.Monsters
         protected override bool InAttackRange()
         {
             if (Target.CurrentMap != CurrentMap) return false;
-
-            return Target.CurrentLocation != CurrentLocation && Functions.InRange(CurrentLocation, Target.CurrentLocation, Info.ViewRange);
-        }
-
-        public override void Turn(MirDirection dir)
-        {
-        }
-        public override bool Walk(MirDirection dir) { return false; }
-
-
-       
-        //public override void ApplyPoison(Poison p, MapObject Caster = null, bool NoResist = false) { }
-
-        protected override void ProcessTarget()
-        {
-            if (!CanAttack) return;
-
-            List<MapObject> targets = FindAllTargets(Info.ViewRange, CurrentLocation);
-            if (targets.Count == 0) return;
-            List<MapObject> targets2 = FindAllTargets(2, CurrentLocation);
-            //判断2格范围内是否有人，如果有人，则进行进身攻击
-            if (RandomUtils.Next(10) < 3)
+            if (RandomUtils.Next(10) < 6)
             {
-                if (targets2.Count > 0)
+                AttackRange = 1;
+            }
+            else
+            {
+                AttackRange = 8;
+            }
+            return Target.CurrentLocation != CurrentLocation && Functions.InRange(CurrentLocation, Target.CurrentLocation, AttackRange);
+        }
+
+
+        protected override void Attack()
+        {
+            if (!Target.IsAttackTarget(this))
+            {
+                Target = null;
+                return;
+            }
+
+            DelayedAction action;
+
+            Direction = Functions.DirectionFromPoint(CurrentLocation, Target.CurrentLocation);
+            int distance = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
+            bool ranged = Functions.InRange(CurrentLocation, Target.CurrentLocation, 2);
+            //伤害根据血量升级
+            int damage = GetAttackPower(MinDC, MaxDC);
+            if (HP < MaxHP / 8)
+            {
+                damage = damage * 4 / 2;
+            }
+            else if (HP < MaxHP / 4)
+            {
+                damage = damage * 4 / 3;
+            }
+            //确定攻击类型,不在攻击访问内，则几率出麻痹和群毒
+            if (distance > 2)
+            {
+                if (RandomUtils.Next(10) < 6)
                 {
-                    if (RandomUtils.Next(10) < 5)
-                    {
-                        attckType = 0;
-                    }
-                    else
-                    {
-                        attckType = 1;
-                    }
+                    attckType = 3;
+                }
+                else
+                {
+                    attckType = 4;
                 }
             }
             else
             {
-                int rd = RandomUtils.Next(10);
-                if (HP < MaxHP / 4)
+                //在攻击访问内
+                if (distance == 1 && RandomUtils.Next(10)<3)
                 {
-                    if (rd < 8)
-                    {
-                        attckType = 1;
-                    }else if(rd < 9)
-                    {
-                        attckType = 2;
-                    }
-                    else
-                    {
-                        attckType = 3;
-                    }
+                    attckType = 0;
                 }
                 else
                 {
-                    if (rd < 7)
-                    {
-                        attckType = 1;
-                    }
-                    else if (rd < 8)
-                    {
-                        attckType = 2;
-                    }
-                    else
-                    {
-                        attckType = 3;
-                    }
+                    attckType = (byte)RandomUtils.Next(5);
                 }
             }
-            ShockTime = 0;
-
-            switch (attckType)
+            //
+            if (attckType == 1)
             {
-                case 0:
-                    Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type=0 });
-                    for (int i = 0; i < targets2.Count; i++)
-                    {
-                        Target = targets2[i];
-                        Attack();
-                    }
-                    break;
-                case 1:
-                    Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
-                    for (int i = 0; i < targets.Count; i++)
-                    {
-                        Target = targets[i];
-                        Attack();
-                    }
-                    break;
-                case 2://随机挑选1个进行攻击,尽量挑选玩家
-                    Target = targets[RandomUtils.Next(targets.Count)];
-                    if (Target.Race != ObjectType.Player)
-                    {
-                        Target = targets[RandomUtils.Next(targets.Count)];
-                    }
-                    Attack();
-                    break;
-                case 3://随机挑选1个进行攻击
-                    Target = targets[RandomUtils.Next(targets.Count)];
-                    if (Target.Race != ObjectType.Player)
-                    {
-                        Target = targets[RandomUtils.Next(targets.Count)];
-                    }
-                    Attack();
-                    break;
+                damage = damage * 3 / 2;
+            }
+            if (attckType == 2)
+            {
+                damage = damage * 4 / 2;
             }
 
 
-            ActionTime = Envir.Time + 300;
-            AttackTime = Envir.Time + AttackSpeed;
-        }
 
-        protected override void Attack()
-        {
-            int damage = GetAttackPower(MinDC, MaxDC);
-            if (damage == 0) return;
-            int distance = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
-            int delay = 800; //50 MS per Step
-            DelayedAction action = null;
-            switch (attckType)
+            if (attckType == 0)
             {
-                case 0:
-                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.ACAgility);
+                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0 });
+                action = new DelayedAction(DelayedType.Damage, Envir.Time + 300, Target, damage, DefenceType.ACAgility);
+                ActionList.Add(action);
+            }
+            if (attckType == 1|| attckType==2)
+            {
+                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = attckType });
+                action = new DelayedAction(DelayedType.Damage, Envir.Time + 300, Target, damage, DefenceType.MAC);
+                ActionList.Add(action);
+            }
+
+            //放全屏毒
+            if (attckType == 3)
+            {
+                Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0, TargetID = Target.ObjectID });
+                List<MapObject> targets = FindAllTargets(8, CurrentLocation);
+                for (int i = 0; i < targets.Count; i++)
+                {
+                    action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + 1000, targets[i], damage, DefenceType.MAC, 0);
                     ActionList.Add(action);
-                    Target.Pushed(this, Functions.DirectionFromPoint(CurrentLocation, Target.CurrentLocation),2);
-                    break;
-                case 1://近身地刺伤害增加1.5倍
-                    if (distance < 3)
-                    {
-                        action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, Target, damage*3/2, DefenceType.ACAgility);
-                        ActionList.Add(action);
-                    }
-                    else
-                    {
-                        Broadcast(new S.ObjectEffect { ObjectID = Target.ObjectID, Effect = SpellEffect.TreeQueen });
-                        action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, Target, damage, DefenceType.MACAgility);
-                        ActionList.Add(action);
-                    }
-                    break;
-                case 2://随机挑选1个进行攻击,尽量挑选玩家
-                    Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID= Target.ObjectID, Location = CurrentLocation, Type = 0 });
-                    List<MapObject> targets2 = FindAllTargets(2, Target.CurrentLocation);
-                    for (int i = 0; i < targets2.Count; i++)
-                    {
-                        action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, targets2[i], damage, DefenceType.MACAgility);
-                        ActionList.Add(action);
-                        if (RandomUtils.Next(Settings.PoisonResistWeight) >= targets2[i].PoisonResist)
-                        {
-                            if (RandomUtils.Next(10) < 7)
-                            {
-                                targets2[i].ApplyPoison(new Poison { PType = PoisonType.Paralysis, Duration = 6, TickSpeed = 1000 }, this);
-                            }
-                        }
-                    }
-                    break;
-                case 3://随机挑选1个进行攻击,2段伤害
-                    Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID = Target.ObjectID, Location = CurrentLocation, Type = 1 });
-                    List<MapObject> targets3 = FindAllTargets(3, Target.CurrentLocation);
-                    for (int i = 0; i < targets3.Count; i++)
-                    {
-                        action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, targets3[i], damage*2/3, DefenceType.MACAgility);
-                        ActionList.Add(action);
-                        action = new DelayedAction(DelayedType.Damage, Envir.Time + 800, targets3[i], damage*3/2, DefenceType.MACAgility);
-                        ActionList.Add(action);
-                    }
-                    break;
+                    action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + 2000, targets[i], damage, DefenceType.MAC, 0);
+                    ActionList.Add(action);
+                    action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + 3000, targets[i], damage, DefenceType.MAC, 0);
+                    ActionList.Add(action);
+                }
+            }
+            if(attckType==4)//麻痹
+            {
+                Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1, TargetID = Target.ObjectID });
+                List<MapObject> targets = FindAllTargets(2, Target.CurrentLocation);
+                for (int i = 0; i < targets.Count; i++)
+                {
+                    action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + 1000, targets[i], damage, DefenceType.MAC, 1);
+                    ActionList.Add(action);
+                }
+            }
+            ActionTime = Envir.Time + 800;
+            AttackTime = Envir.Time + AttackSpeed;
+            return;
+        }
+
+        protected override void CompleteRangeAttack(IList<object> data)
+        {
+            MapObject target = (MapObject)data[0];
+            int damage = (int)data[1];
+            DefenceType defence = (DefenceType)data[2];
+            int aType = (int)data[3];
+
+            if (target == null || !target.IsAttackTarget(this) || target.CurrentMap != CurrentMap || target.Node == null) return;
+            if (aType == 0)
+            {
+                //中毒
+                if (target.Attacked(this, damage, defence) <= 0) return;
+                if (RandomUtils.Next(Settings.PoisonResistWeight) >= target.PoisonResist)
+                {
+                    target.ApplyPoison(new Poison { Owner = this, Duration = damage/10, PType = PoisonType.Green, Value = damage / 10, TickSpeed = 2000 }, this);
+                }
+            }
+            else
+            {
+                //麻痹
+                int poisonTime = RandomUtils.Next(3, 10);
+                if (target.Attacked(this, damage, defence) <= 0) return;
+                if (RandomUtils.Next(Settings.PoisonResistWeight) >= target.PoisonResist)
+                {
+                    target.ApplyPoison(new Poison { Owner = this, Duration = 5, PType = PoisonType.Paralysis, Value = poisonTime, TickSpeed = 2000 }, this);
+                    //Broadcast(new S.ObjectEffect { ObjectID = target.ObjectID, Effect = SpellEffect.Stunned, Time = (uint)poisonTime * 1000 });
+                }
             }
         }
+
+       
 
     }
 }

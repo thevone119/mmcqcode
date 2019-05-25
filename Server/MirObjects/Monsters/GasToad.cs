@@ -45,7 +45,7 @@ namespace Server.MirObjects.Monsters
             int delay = distance * 50 + 750; //50 MS per Step
 
  
-            if (RandomUtils.Next(4) == 0)
+            if (RandomUtils.Next(3) == 0)
             {
                 //判断目标身后是否空，如果空则冲撞
                 Point target = Functions.PointMove(CurrentLocation, Direction, 2);

@@ -4412,16 +4412,20 @@ namespace Server.MirObjects
             BroadcastColourChange();
         }
 
-        //获取别的玩家的名字颜色
+        /// <summary>
+        /// 获取玩家名字颜色，区分观察者，本体
+        /// </summary>
+        /// <param name="player">观察者</param>
+        /// <returns></returns>
         public Color GetNameColour(PlayerObject player)
         {
             if (player == null) return NameColour;
 
-            if (player.ChangeNameColour != Color.White)
-            {
-                return player.ChangeNameColour;
-            }
-            
+            //在战争区域内
+            //1.自己没行会，则别人看到你是绿色
+            //2.自己有行会，别人没行会，则别人看到你是黄色
+            //3.自己有行会，同行会的看到是蓝色
+            //4.自己有行会，不同行会的看到你是黄色
             if (WarZone)
             {
                 if (MyGuild == null)
@@ -4436,16 +4440,29 @@ namespace Server.MirObjects
                         return Color.Orange;
                 }
             }
-
+            //行会战期间
+            //有行会的，并且是行会战期间，自己行会的看到是绿色，别人看到的是黄色
             if (MyGuild != null)
+            {
                 if (MyGuild.IsAtWar())
+                {
                     if (player.MyGuild == MyGuild)
+                    {
                         return Color.Blue;
-                    else
-                        if (MyGuild.IsEnemy(player.MyGuild))
-                            return Color.Orange;
+                    }
+                    else if (MyGuild.IsEnemy(player.MyGuild))
+                    {
+                        return Color.Orange;
+                    }
+                }
+            }
+            //颜色改变了，则直接别人看到你的颜色也变化了
+            if (ChangeNameColour != Color.White)
+            {
+                return ChangeNameColour;
+            }
             //
-            if(NameColour== Color.White)
+            if (NameColour == Color.White)
             {
                 return PlayerTitleUtil.getPlayerTitleColor(playerTitle);
             }
@@ -4465,7 +4482,7 @@ namespace Server.MirObjects
                 {
                     //这个名字颜色感觉有问题啊,应该是广播自己的颜色，给别人
                     //player.Enqueue(new S.ObjectColourChanged { ObjectID = ObjectID, NameColour = GetNameColour(player) });
-                    player.Enqueue(new S.ObjectColourChanged { ObjectID = ObjectID, NameColour = GetNameColour(this) });
+                    player.Enqueue(new S.ObjectColourChanged { ObjectID = ObjectID, NameColour = GetNameColour(player) });
                 }
             }
         }
@@ -11289,7 +11306,7 @@ namespace Server.MirObjects
 
                 Map temp = Envir.GetMap(info.MapIndex);
 
-                if (temp == null || !temp.ValidPoint(info.Destination)) continue;
+                if (temp == null || !temp.ValidPoint(info.Destination)|| !temp.MapOpen) continue;
 
                 CurrentMap.RemoveObject(this);
                 Broadcast(new S.ObjectRemove { ObjectID = ObjectID });
@@ -11365,9 +11382,13 @@ namespace Server.MirObjects
         }
 
 
-
+        //传送到某个地图
         public override bool Teleport(Map temp, Point location, bool effects = true, byte effectnumber = 0)
         {
+            if (!temp.MapOpen)
+            {
+                return false;
+            }
             Map oldMap = CurrentMap;
             Point oldLocation = CurrentLocation;
 
@@ -11554,9 +11575,9 @@ namespace Server.MirObjects
 
             if (p != null)
             {
-                //他妈的这里有毛病吧
+                //他妈的这里有毛病吧，其实没毛病
                 //p.NameColour = GetNameColour(player);
-                p.NameColour = GetNameColour(this);
+                p.NameColour = GetNameColour(player);
             }
 
             return p;
@@ -13032,7 +13053,7 @@ namespace Server.MirObjects
                         case 10://GuildSkillScroll(行会技能卷轴)
                             MyGuild.NewBuff(item.Info.Effect, false);
                             break;
-                        case 11://HomeTeleport(行会回城卷轴)
+                        case 11://HomeTeleport(领地回城卷，行会回城卷)
                             if (MyGuild != null && MyGuild.Conquest != null && !MyGuild.Conquest.WarIsOn && MyGuild.Conquest.PalaceMap != null && !TeleportRandom(200, 0, MyGuild.Conquest.PalaceMap))
                             {
                                 Enqueue(p);
@@ -13204,6 +13225,13 @@ namespace Server.MirObjects
                             if (player.Dead)
                             {
                                 ReceiveChat("你不能传送，对方已经死亡.", ChatType.System);
+                                Enqueue(p);
+                                return;
+                            }
+
+                            if (Math.Abs(player.Level - Level) <  5)
+                            {
+                                ReceiveChat("双方等级差距过大，无法传送", ChatType.System);
                                 Enqueue(p);
                                 return;
                             }
@@ -13908,10 +13936,10 @@ namespace Server.MirObjects
 
                     //成功率下调10%
                     //successchance = successchance - 10;
-                    //保底成功率15%
-                    if (successchance < 15)
+                    //保底成功率10%
+                    if (successchance < 10)
                     {
-                        successchance = 15;
+                        successchance = 10;
                     }
                     //最高70
                     if (successchance > 70)
@@ -18926,7 +18954,7 @@ namespace Server.MirObjects
                                 }
                             }
                         }
-                        if (Level < Envir.MaxLevel - 3)
+                        if (Level < Envir.MaxLevel)
                         {
                             //这里增加下，可获得经验
                             if (this.Level < 30)
@@ -18939,23 +18967,23 @@ namespace Server.MirObjects
                             }
                             else if (this.Level < 40)
                             {
-                                this.GainExp(1500);
+                                this.GainExp(2000);
                             }
                             else if (this.Level < 45)
                             {
-                                this.GainExp(2000);
+                                this.GainExp(3000);
                             }
                             else if (this.Level < 50)
                             {
-                                this.GainExp(2500);
+                                this.GainExp(4000);
                             }
                             else if (this.Level < 55)
                             {
-                                this.GainExp(3000);
+                                this.GainExp(5000);
                             }
                             else if (this.Level < 70)
                             {
-                                this.GainExp(3500);
+                                this.GainExp(6000);
                             }
                         }
     
@@ -20715,7 +20743,7 @@ namespace Server.MirObjects
                 temps[0].samsaratype = (byte)temps[1].Info.Shape;
                 Info.SaItem = temps[0];
                 //轮回类型分类
-                if (RandomUtils.Next(100) < 40)
+                if (RandomUtils.Next(100) < 30)
                 {
                     Info.SaItemType = 0;
                 }
@@ -20723,24 +20751,41 @@ namespace Server.MirObjects
                 {
                     Info.SaItemType = (byte)RandomUtils.Next(1, 6);
                 }
-               
-                //地图没开的，不投放
-                if (Info.SaItemType == 2 && Envir.GetMapByNameAndInstance("Fox01") == null)
-                {
-                    Info.SaItemType = 0;
-                }
 
-                if (Info.SaItemType == 3 && Envir.GetMapByNameAndInstance("gumi101") == null)
+                //地图没开的，不投放
+                Map lunhmap = null;
+                if (Info.SaItemType == 2)
                 {
-                    Info.SaItemType = 0;
+                    lunhmap = Envir.GetMapByNameAndInstance("Fox01");
+                    if (lunhmap == null || !lunhmap.MapOpen)
+                    {
+                        Info.SaItemType = 0;
+                    }
                 }
-                if (Info.SaItemType == 4 && Envir.GetMapByNameAndInstance("HELL00") == null)
+                
+                if (Info.SaItemType == 3)
                 {
-                    Info.SaItemType = 0;
+                    lunhmap = Envir.GetMapByNameAndInstance("gumi101");
+                    if (lunhmap == null || !lunhmap.MapOpen)
+                    {
+                        Info.SaItemType = 0;
+                    }
                 }
-                if (Info.SaItemType == 5 && Envir.GetMapByNameAndInstance("UMM") == null)
+                if (Info.SaItemType == 4)
                 {
-                    Info.SaItemType = 0;
+                    lunhmap = Envir.GetMapByNameAndInstance("HELL00");
+                    if (lunhmap == null || !lunhmap.MapOpen)
+                    {
+                        Info.SaItemType = 0;
+                    }
+                }
+                if (Info.SaItemType == 5 )
+                {
+                    lunhmap = Envir.GetMapByNameAndInstance("UMM");
+                    if (lunhmap == null || !lunhmap.MapOpen)
+                    {
+                        Info.SaItemType = 0;
+                    }
                 }
 
                 switch (Info.SaItemType)

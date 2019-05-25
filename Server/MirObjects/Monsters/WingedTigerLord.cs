@@ -82,11 +82,11 @@ namespace Server.MirObjects.Monsters
             bool ranged = Functions.InRange(CurrentLocation, Target.CurrentLocation, 2);
             //伤害根据血量升级
             int damage = GetAttackPower(MinDC, MaxDC);
-            if (HP < MaxHP / 10)
+            if (HP < MaxHP / 5)
             {
                 damage = damage * 3 / 2;
             }
-            else if(HP < MaxHP / 4)
+            else if(HP < MaxHP / 2)
             {
                 damage = damage * 4 / 3;
             }
@@ -190,7 +190,7 @@ namespace Server.MirObjects.Monsters
 
             if (RandomUtils.Next(Settings.PoisonResistWeight) >= target.PoisonResist)
             {
-                if (RandomUtils.Next(2) == 0)
+                if (RandomUtils.Next(100) < 65)
                 {
                     target.ApplyPoison(new Poison { Owner = this, Duration = 5, PType = PoisonType.Stun, Value = poisonTime, TickSpeed = 2000 }, this);
                     Broadcast(new S.ObjectEffect { ObjectID = target.ObjectID, Effect = SpellEffect.Stunned, Time = (uint)poisonTime * 1000 });

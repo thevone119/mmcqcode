@@ -46,7 +46,7 @@ namespace Server.MirObjects.Monsters
                     }
                 }
                 else {
-                    if (RandomUtils.Next(10) < 5)
+                    if (RandomUtils.Next(10) < 6)
                     {
                         AttackRange = 7;
                     }
@@ -96,7 +96,7 @@ namespace Server.MirObjects.Monsters
                 ActionList.Add(action);
                 if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist)
                 {
-                    if (RandomUtils.Next(8) == 0)
+                    if (RandomUtils.Next(5) == 0)
                     {
                         Target.ApplyPoison(new Poison { Owner = this, Duration = 5, PType = PoisonType.Stun, Value = damage / 5, TickSpeed = 2000 }, this);
                     }

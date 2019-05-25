@@ -73,7 +73,7 @@ namespace Client
                         MirLog.error(e.Message);
                     }
                 }
-                if (currClient >= 5)
+                if (currClient >= 4)
                 {
                     MirLog.info("最多只运行同时打开3个客户端");
                     MessageBox.Show("最多只运行同时打开3个客户端", "提示", MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);

@@ -17,12 +17,12 @@ namespace Server.MirObjects.Monsters
         protected internal BloodBaboon(MonsterInfo info)
             : base(info)
         {
-            if (RandomUtils.Next(10) == 0)
+            if (RandomUtils.Next(8) == 0)
             {
                 mtype = 1;
                 return;
             }
-            if (RandomUtils.Next(20) == 0)
+            if (RandomUtils.Next(15) == 0)
             {
                 mtype = 2;
                 return;
@@ -42,7 +42,7 @@ namespace Server.MirObjects.Monsters
             int distance = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
             int delay = distance * 50 + 750; //50 MS per Step
             DelayedAction action = null;
-            if (mtype >= 1 && RandomUtils.Next(5) == 0)
+            if (mtype >= 1 && RandomUtils.Next(3) == 0)
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
                 action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage * 3 / 2, DefenceType.ACAgility);
@@ -52,7 +52,7 @@ namespace Server.MirObjects.Monsters
                 AttackTime = Envir.Time + (AttackSpeed);
                 return;
             }
-            if (mtype == 2 && RandomUtils.Next(5)==0)
+            if (mtype == 2 && RandomUtils.Next(3)==0)
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 2 });
                 action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage*2, DefenceType.ACAgility);

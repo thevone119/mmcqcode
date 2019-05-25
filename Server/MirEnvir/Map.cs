@@ -74,6 +74,8 @@ namespace Server.MirEnvir
         public int MonsterCount;
         //空闲总次数，一开始默认空闲100,其实是空闲分钟数,默认是空闲5分钟，则停止当前地图的任何处理
         public uint InactiveCount=100;
+
+        private long FeeTime = 0;//收费时间
         //NPC
         public List<NPCObject> NPCs = new List<NPCObject>();
         //玩家
@@ -769,7 +771,21 @@ namespace Server.MirEnvir
             return true;
         }
 
-       
+        //判断当前地图是否已经开放
+        //针对没有开放的地图，走不过去，NPC也传送不过去
+        private bool _mapOpen = true;
+        public bool MapOpen
+        {
+            get
+            {
+                return _mapOpen;
+            }
+            set
+            {
+                _mapOpen = value;
+            }
+        }
+
 
         public void Add(MapObject mapObject)
         {
@@ -1134,6 +1150,8 @@ namespace Server.MirEnvir
                 }
                 //地图的副本处理
                 ProcessFB();
+                //地图扣费处理
+                ProcessFee();
             }
             catch(Exception ex)
             {
@@ -1226,7 +1244,58 @@ namespace Server.MirEnvir
                 SMain.Enqueue(ex);
             }
         }
+        
+        //各种副本处理
+        private void ProcessFee()
+        {
+            if (FeeTime > Envir.Time)
+            {
+                return;
+            }
+            FeeTime = Envir.Time + 1000 * 10;
+            List<PlayerObject> leavePlayer = new List<PlayerObject>();
+            if (Info.UseGold > 0)
+            {
+                foreach(PlayerObject p in Players)
+                {
+                    if (p.Dead)
+                    {
+                        continue;
+                    }
+                    if (p.Account.Gold < Info.UseGold)
+                    {
+                        leavePlayer.Add(p);
+                    }
+                    else
+                    {
+                        p.LoseGold((uint)Info.UseGold);
+                    }
+                }
+            }
+            if (Info.UseCredit > 0)
+            {
+                foreach (PlayerObject p in Players)
+                {
+                    if (p.Dead)
+                    {
+                        continue;
+                    }
+                    if(p.Account.Credit< Info.UseCredit)
+                    {
+                        leavePlayer.Add(p);
+                    }
+                    else
+                    {
+                        p.LoseCredit((uint)Info.UseCredit);
+                    }
+                }
+            }
 
+            foreach(PlayerObject p in leavePlayer)
+            {
+                p.TeleportEscape(10);
+            }
+        }
         //处理动作
         public void Process(DelayedAction action)
         {
