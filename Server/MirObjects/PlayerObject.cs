@@ -1950,7 +1950,10 @@ namespace Server.MirObjects
                 else
                 {
                     Info.killMon[monidx]++;
-                    ReceiveChat(string.Format("你已累计杀死 {0} 只蜈蚣洞怪", Info.killMon[monidx]), ChatType.Hint);
+                    if (Info.killMon[monidx] % 10 == 0)
+                    {
+                        ReceiveChat(string.Format("你已累计杀死 {0} 只蜈蚣洞怪", Info.killMon[monidx]), ChatType.Hint);
+                    }
                 }
                 return;
             }
@@ -1981,7 +1984,10 @@ namespace Server.MirObjects
                 else
                 {
                     Info.killMon[monidx]++;
-                    ReceiveChat(string.Format("你已累计杀死 {0} 只野猪", Info.killMon[monidx]), ChatType.Hint);
+                    if (Info.killMon[monidx] % 10 == 0)
+                    {
+                        ReceiveChat(string.Format("你已累计杀死 {0} 只野猪", Info.killMon[monidx]), ChatType.Hint);
+                    }
                 }
                 return;
             }
@@ -2012,7 +2018,11 @@ namespace Server.MirObjects
                 else
                 {
                     Info.killMon[monidx]++;
-                    ReceiveChat(string.Format("你已累计杀死 {0} 只牛魔怪", Info.killMon[monidx]), ChatType.Hint);
+                    if (Info.killMon[monidx] % 10 == 0)
+                    {
+                        ReceiveChat(string.Format("你已累计杀死 {0} 只牛魔怪", Info.killMon[monidx]), ChatType.Hint);
+                    }
+                  
                 }
                 return;
             }
@@ -2043,7 +2053,10 @@ namespace Server.MirObjects
                 else
                 {
                     Info.killMon[monidx]++;
-                    ReceiveChat(string.Format("你已累计杀死 {0} 只魔龙小怪", Info.killMon[monidx]), ChatType.Hint);
+                    if (Info.killMon[monidx] % 10 == 0)
+                    {
+                        ReceiveChat(string.Format("你已累计杀死 {0} 只魔龙小怪", Info.killMon[monidx]), ChatType.Hint);
+                    }
                 }
                 return;
             }
@@ -2065,7 +2078,7 @@ namespace Server.MirObjects
             //层数
             int killlev = Info.killMon2[midx] / 100;
             //每2个提醒一次
-            if (Info.killMon2[midx] % 1 == 0)
+            if (Info.killMon2[midx] % 10 == 0)
             {
                 ReceiveChat(string.Format("你已累计杀死 {0} 只 {1},叠加层数{2}", Info.killMon2[midx], mname, killlev), ChatType.Hint);
             }

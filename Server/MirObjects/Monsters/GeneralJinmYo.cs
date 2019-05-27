@@ -97,7 +97,7 @@ namespace Server.MirObjects.Monsters
                 if(stage!= _stage)
                 {
                     _stage = stage;
-                    Broadcast(GetObjectMonsterChange());
+                    Broadcast(GetInfo());
                 }
             }
             base.ProcessAI();
@@ -256,27 +256,7 @@ namespace Server.MirObjects.Monsters
                 ExtraByte = _stage,
             };
         }
-        //狂暴的时候，重新发送这个
-        public Packet GetObjectMonsterChange()
-        {
-            return new S.ObjectMonsterChange
-            {
-                ObjectID = ObjectID,
-                Name = Name,
-                NameColour = NameColour,
-
-                Image = Info.Image,
-
-                Effect = Info.Effect,
-                AI = Info.AI,
-                Light = Info.Light,
-                Dead = Dead,
-                Skeleton = Harvested,
-                Poison = CurrentPoison,
-                Hidden = Hidden,
-                ExtraByte = _stage,
-            };
-        }
+    
 
     }
 }

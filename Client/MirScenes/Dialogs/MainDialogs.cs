@@ -5017,8 +5017,14 @@ namespace Client.MirScenes.Dialogs
                     colour = Color.FromArgb(0, 255, 50);
                 else
                     colour = Color.FromArgb(255, 0, 0);
-
-                DXManager.Sprite.Draw2D(DXManager.RadarTexture, Point.Empty, 0, new PointF((int)(x - 0.5F), (int)(y - 0.5F)), colour);
+                if((ob.ObjectID == MapObject.User.ObjectID))
+                {
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground7, Point.Empty, 0, new PointF((int)(x - 3F), (int)(y - 3F)), Color.Blue);
+                }
+                else
+                {
+                    DXManager.Sprite.Draw2D(DXManager.RadarTexture, Point.Empty, 0, new PointF((int)(x - 0.5F), (int)(y - 0.5F)), colour);
+                }
             }
             //这里画自动寻路的路径
             for (int i = 0; i< map.RouteList.Count;i++)

@@ -7,23 +7,19 @@ using S = ServerPackets;
 namespace Server.MirObjects.Monsters
 {
     /// <summary>
-    ///  幽灵战士
+    ///  冰宫战士
     ///  3种攻击手段
     ///  1.远程攻击
     /// </summary>
     public class Monster406 : MonsterObject
     {
-        private byte attType;
         protected internal Monster406(MonsterInfo info)
             : base(info)
         {
 
         }
 
-        protected override bool InAttackRange()
-        {
-            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, 8);
-        }
+  
 
 
         protected override void Attack()
@@ -36,10 +32,21 @@ namespace Server.MirObjects.Monsters
             Direction = Functions.DirectionFromPoint(CurrentLocation, Target.CurrentLocation);
             int damage = GetAttackPower(MinDC, MaxDC);
             int distance = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
-            int delay = distance * 50 + 750; //50 MS per Step
-            Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID = Target.ObjectID, Location = CurrentLocation, Type = 0 });
-            DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.MAC);
-            ActionList.Add(action);
+            int delay = distance * 50 + 550; //50 MS per Step
+            if (RandomUtils.Next(100) < 65)
+            {
+                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0 });
+                DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.ACAgility);
+                ActionList.Add(action);
+            }
+            else
+            {
+                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
+                DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.AC);
+                ActionList.Add(action);
+                action = new DelayedAction(DelayedType.Damage, Envir.Time + delay + 300, Target, damage, DefenceType.AC);
+                ActionList.Add(action);
+            }
             ShockTime = 0;
             ActionTime = Envir.Time + 500;
             AttackTime = Envir.Time + (AttackSpeed);

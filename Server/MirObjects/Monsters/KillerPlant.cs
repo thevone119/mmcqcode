@@ -116,11 +116,11 @@ namespace Server.MirObjects.Monsters
                             if (!ob.IsAttackTarget(this)) continue;
                             action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage, DefenceType.AC);
                             ActionList.Add(action);
-                            if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist)
+                            if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist)
                             {
                                 if (RandomUtils.Next(3) == 1)
                                 {
-                                    Target.ApplyPoison(new Poison
+                                    ob.ApplyPoison(new Poison
                                     {
                                         Owner = this,
                                         Duration = RandomUtils.Next(3,7),
@@ -131,7 +131,7 @@ namespace Server.MirObjects.Monsters
                                 }
                                 else
                                 {
-                                    Target.ApplyPoison(new Poison
+                                    ob.ApplyPoison(new Poison
                                     {
                                         Owner = this,
                                         Duration = RandomUtils.Next(5, 15),

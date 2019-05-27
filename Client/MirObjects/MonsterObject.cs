@@ -119,6 +119,8 @@ namespace Client.MirObjects
             ShockTime = CMain.Time + info.ShockTime;
             BindingShotCenter = info.BindingShotCenter;
 
+
+
             if (Stage != info.ExtraByte)
             {
                 switch (BaseImage)
@@ -128,6 +130,21 @@ namespace Client.MirObjects
                         {
                             Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.GreatFoxSpirit], 335, 20, 3000, this));
                             SoundManager.PlaySound(BaseSound + 8);
+                        }
+                        break;
+                    case Monster.Monster413:
+
+                        Effects.Clear();
+                        if (info.ExtraByte == 1)
+                        {
+                            Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster413], 496, 8, 1600, this) { Repeat = true });
+                        }
+                        break;
+                    case Monster.Monster421:
+                        Effects.Clear();
+                        if (info.ExtraByte == 1)
+                        {
+                            Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster421], 637, 8, 1600, this) { Repeat = true });
                         }
                         break;
                     case Monster.HellLord://太子
@@ -1506,7 +1523,8 @@ namespace Client.MirObjects
                             case Monster.AncientBringer://丹墨攻击1，身前的地板砸效果
                                 MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.AncientBringer], 560, 8, 400, Functions.PointMove(CurrentLocation, Direction, 1), CMain.Time + 500));
                                 break;
-
+              
+                                
                             case Monster.OmaWitchDoctor://奥玛巫医攻击1，身前的地板砸效果
                                 MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.OmaWitchDoctor], 856, 10, 500, Functions.PointMove(CurrentLocation, Direction, 2), CMain.Time + 500));
                                 break;
@@ -1631,6 +1649,10 @@ namespace Client.MirObjects
                             case Monster.IceCrystalSoldier://冰晶战士攻击2，身前的地板砸效果
                                 MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.IceCrystalSoldier], 470, 6, 600, Functions.PointMove(CurrentLocation, Direction, 1), CMain.Time + 500));
                                 break;
+                            case Monster.Monster408://冰宫护卫攻击2，身前的地板砸效果
+                                MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster408], 357, 6, 600, Functions.PointMove(CurrentLocation, Direction, 1), CMain.Time + 500));
+                                break;
+                                
                         }
 
                         if ((ushort)BaseImage >= 10000)
@@ -2464,6 +2486,22 @@ namespace Client.MirObjects
                                                     };
                                                 }
                                                 break;
+                                            case Monster.Monster407://冰宫射手 射箭
+                                                missile = CreateProjectile(344, Libraries.Monsters[(ushort)Monster.Monster407], true, 5, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        //440 + (int)Direction * 10
+                                                        //missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster407], 656, 6, 1000, missile.Target));
+                                                    };
+                                                }
+                                                break;
+                                         
+                                                
+
+
                                             case Monster.FrozenMagician://冰魄法师 丢火球
                                                 missile = CreateProjectile(560, Libraries.Monsters[(ushort)Monster.FrozenMagician], true, 6, 20, 0);
                                                 if (missile.Target != null)
@@ -2496,11 +2534,92 @@ namespace Client.MirObjects
                                                     {
                                                         if (missile.Target.CurrentAction == MirAction.Dead) return;
                                                         //440 + (int)Direction * 10
-                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.FrozenMagician], 427, 9, 1000, missile.Target));
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster403], 427, 9, 1000, missile.Target));
                                                     };
                                                 }
                                                 break;
-                                                
+                                            case Monster.Monster409://花魁
+                                                missile = CreateProjectile(467, Libraries.Monsters[(ushort)Monster.Monster409], true, 5, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        //440 + (int)Direction * 10
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster409], 580,6, 1000, missile.Target));
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.Monster410://冰宫鼠卫
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster410], 384, 7, 700, ob));
+                                                }
+                                                break;
+                                            case Monster.Monster411://冰宫骑士
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster411], 342, 6, 600, ob));
+                                                }
+                                                break;
+                                            case Monster.Monster412://冰宫刀卫
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster412], 320, 6, 600, ob));
+                                                }
+                                                break;
+                                            case Monster.Monster413://冰宫护法
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster413], 470, 15, 1500, ob));
+                                                }
+                                                break;
+                                            case Monster.Monster416://冰宫画卷
+                                                missile = CreateProjectile(300, Libraries.Monsters[(ushort)Monster.Monster416], true, 5, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        //440 + (int)Direction * 10
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster416], 380, 8, 800, missile.Target));
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.Monster417://冰宫画卷
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster417], 299, 8, 800, ob));
+                                                }
+                                                break;
+                                            case Monster.Monster418://冰宫学者
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster418], 374, 13, 1300, ob));
+                                                }
+                                                break;
+                                            case Monster.Monster419://冰宫巫师
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster419], 392, 7, 700, ob));
+                                                }
+                                                break;
+                                            case Monster.Monster420://冰宫祭师
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster420], 463, 10, 1000, ob));
+                                                }
+                                                break;
+                                       
+
                                             case Monster.DarkSpirit://幽灵战士 丢土球
                                                 missile = CreateProjectile(512, Libraries.Monsters[(ushort)Monster.DarkSpirit], true, 6, 30, 0);
                                                 if (missile.Target != null)
@@ -2928,15 +3047,29 @@ namespace Client.MirObjects
                         }
                         else
                         {
+                            MapObject ob = null;
+                            Missile missile;
                             switch (FrameIndex)
                             {
-                                case 4:
+                                case 2:
                                     {
-                                        MapObject ob = null;
-                                        Missile missile;
                                         switch (BaseImage)
                                         {
+                                            case Monster.Monster412://冰宫刀卫
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster412], 374, 7, 700, ob));
+                                                }
+                                                break;
 
+                                        }
+                                        break;
+                                    }
+                                case 4:
+                                    {
+                                        switch (BaseImage)
+                                        {
                                             case Monster.RedFoxman:
                                                 ob = MapControl.GetObject(TargetID);
                                                 if (ob != null)
@@ -2975,6 +3108,44 @@ namespace Client.MirObjects
                                                     ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.TreeQueen], 44, 13, 1300, ob));
                                                 }
                                                 break;
+                                            case Monster.Monster409://红花仙子，放冰钉钉
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster409], 547, 9, 1000, new Point(ob.CurrentLocation.X, ob.CurrentLocation.Y)));
+                                                }
+                                                break;
+                                            case Monster.Monster407://冰宫射手 射箭
+                                                missile = CreateProjectile(429, Libraries.Monsters[(ushort)Monster.Monster407], true, 5, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        //440 + (int)Direction * 10
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster407], 424, 5, 800, missile.Target));
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.Monster410://冰宫鼠卫
+                                                missile = CreateProjectile(391, Libraries.Monsters[(ushort)Monster.Monster410], true, 1, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster410], 407, 7, 700, missile.Target));
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.Monster419://冰宫巫师
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster419], 438, 18, 1300, ob));
+                                                }
+                                                break;
+
                                             case Monster.ShellFighter:
                                                 ob = MapControl.GetObject(TargetID);
                                                 if (ob != null)
@@ -4297,6 +4468,14 @@ namespace Client.MirObjects
                     {
                         
                         Libraries.Monsters[(ushort)Monster.GeneralJinmYo].DrawBlend(529 , DrawLocation, Color.White, true);
+                    }
+                    break;
+                case Monster.Monster413:
+                    //
+                    if (Stage == 1 && CurrentAction != MirAction.Dead)
+                    {
+                        //this.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster413], 496, 8, 800, this,0,true));
+                        //Libraries.Monsters[(ushort)Monster.Monster413].DrawBlend(496+ (int)Direction, DrawLocation, Color.White, true);
                     }
                     break;
                 case Monster.CatShaman:

@@ -92,8 +92,8 @@ namespace Server.MirObjects.Monsters
                 Target.ApplyPoison(new Poison
                 {
                     Owner = this,
-                    Duration = RandomUtils.Next(2, 5),
-                    PType = PoisonType.Frozen,
+                    Duration = RandomUtils.Next(5, 10),
+                    PType = PoisonType.Slow,
                     Value = damage / 3,
                     TickSpeed = 1000
                 }, this);

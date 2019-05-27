@@ -2774,18 +2774,269 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Revive, new Frame(176, 10, 0, 100) { Reverse = true });
             MonstersMap.Add(Monster.DarkSpirit, frame);
 
-            //自定义 Monster403 雪花
+            //自定义 Monster403 紫花仙子
             frame = new FrameSet();
-            frame.Frames.Add(MirAction.Standing, new Frame(0, 9, 0, 100));
-            frame.Frames.Add(MirAction.Walking, new Frame(72, 7, 0, 000));
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 9, 0, 300));
+            frame.Frames.Add(MirAction.Walking, new Frame(72, 7, 0, 100));
             frame.Frames.Add(MirAction.Attack1, new Frame(184, 8, 0, 100, 436, 6, 0, 100) { EffectStartTime = 200 });
             frame.Frames.Add(MirAction.AttackRange1, new Frame(128, 7, 0, 100, 328, 3, -3, 200) { EffectStartTime = 300 });
-          
             frame.Frames.Add(MirAction.Struck, new Frame(248, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(272, 7, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(278, 1, 6, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(272, 7, 0, 100) { Reverse = true });
             MonstersMap.Add(Monster.Monster403, frame);
+
+            //自定义 Monster409 红花仙子
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 8, 0, 300));
+            frame.Frames.Add(MirAction.Walking, new Frame(64, 6, 0, 100));
+            //1.普通攻击
+            frame.Frames.Add(MirAction.Attack1, new Frame(112, 8, 0, 100,556,3,0,200) { EffectStartTime = 200 });
+            //2.抖花粉
+            frame.Frames.Add(MirAction.Attack2, new Frame(224, 9, 0, 100, 587, 10, -10, 100) { EffectStartTime = 200 });
+            //3.净化
+            frame.Frames.Add(MirAction.Attack3, new Frame(296, 7, 0, 100, 605, 10, -10, 100) { EffectStartTime = 100 });
+            //远程1
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(176, 6, 0, 100, 464, 3, 0, 200) { EffectStartTime = 100 });
+            //远程2
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(296, 6, 0, 100, 597, 8, 0, 100) { EffectStartTime = 100 });
+     
+            frame.Frames.Add(MirAction.Struck, new Frame(352, 5, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(392, 9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(400, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(392, 9, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster409, frame);
+
+            //自定义 Monster404 冰焰鼠
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 7, 0, 300));
+            frame.Frames.Add(MirAction.Walking, new Frame(56, 6, 0, 100));
+            //1.普通攻击
+            frame.Frames.Add(MirAction.Attack1, new Frame(104, 7, 0, 100,256,4,0,100) { EffectStartTime =300 });
+            frame.Frames.Add(MirAction.Struck, new Frame(160, 5, 0, 200) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.Die, new Frame(200, 7, 0, 100,288,8,-8,100));
+            frame.Frames.Add(MirAction.Dead, new Frame(206, 1, 6, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(200, 7, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster404, frame);
+
+            //自定义 Monster405 冰蜗牛
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 7, 0, 300));
+            frame.Frames.Add(MirAction.Walking, new Frame(56, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(104, 8, 0, 100) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(168, 10, 0, 100, 344, 5, 0, 200) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.Struck, new Frame(248, 5, 0, 100) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.Die, new Frame(288, 7, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(294, 1, 6, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(288, 7, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster405, frame);
+
+            //自定义 Monster406 冰宫战士
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 8, 0, 100));
+            //-素材有问题，后面几张错误了,先屏蔽掉了
+            //frame.Frames.Add(MirAction.Attack1, new Frame(96, 9, 0, 100, 320, 5, 0, 100) { EffectStartTime = 500 });
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 9, 0, 100) { EffectStartTime = 500 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(168, 7, 0, 100, 360, 5, 0, 100) { EffectStartTime = 400 });
+            frame.Frames.Add(MirAction.Struck, new Frame(224, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(248,9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(256, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(248, 9, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster406, frame);
+
+
+            //自定义 Monster407 冰宫射手
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 6, 0, 100));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(80, 6, 0, 100) );
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(128, 7, 0, 100) );
+            frame.Frames.Add(MirAction.Struck, new Frame(232, 4, 0, 100));
+            frame.Frames.Add(MirAction.Die, new Frame(264, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(273, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(264, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster407, frame);
+
+            //自定义 Monster408 冰宫护卫
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 400));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100));
+            frame.Frames.Add(MirAction.Attack2, new Frame(160, 8, 0, 100, 325, 4, 0, 100) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.Struck, new Frame(224, 5, 0, 100));
+            frame.Frames.Add(MirAction.Die, new Frame(264, 7, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(270, 1, 6, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(264, 7, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster408, frame);
+
+            //自定义 Monster410 冰宫鼠卫
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 400));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(96, 7, 0, 100) );
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(152, 9, 0, 100) );
+            frame.Frames.Add(MirAction.Attack1, new Frame(224, 6, 0, 100, 414, 6, 0, 100) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.Struck, new Frame(272, 6, 0, 100));
+            frame.Frames.Add(MirAction.Die, new Frame(320, 8, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(327, 1, 7, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(320, 8, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster410, frame);
+
+
+            //自定义 Monster411 冰宫骑士
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 5, 0, 400));
+            frame.Frames.Add(MirAction.Walking, new Frame(40, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(88, 6, 0, 100,304,6,-6,100) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(136, 7, 0, 100,310,4,0,100,348,6,-6,100) { EffectStartTime = 300, ETime2=200 });
+            frame.Frames.Add(MirAction.Struck, new Frame(192, 4, 0, 100));
+            frame.Frames.Add(MirAction.Die, new Frame(224, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(233, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(224, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster411, frame);
+
+            //自定义 Monster412 冰宫刀卫
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 400));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(96, 7, 0, 100,296,3,0,100) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(176, 4, 0, 100,350,3,0,100) { EffectStartTime = 200 });
+            //这个是瞬移的特效，瞬间接近目标，类似洪洞的怪
+            frame.Frames.Add(MirAction.Attack1, new Frame(152, 3, 0, 200, 326, 3, 0, 100) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.Struck, new Frame(208, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(232, 8, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(239, 1, 7, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(232, 8, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster412, frame);
+
+            //自定义 Monster413 冰宫护法
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 400));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            //1.普通攻击
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 6, 0, 100, 384, 4, 0, 100) { EffectStartTime = 300 });
+            //2.砸地板
+            frame.Frames.Add(MirAction.Attack2, new Frame(144, 8, 0, 100, 422, 6, 0, 100) { EffectStartTime = 200 });
+            //3.远程冰冻
+            //frame.Frames.Add(MirAction.Attack3, new Frame(208, 9, 0, 100,496,8,-8,100) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(208, 9, 0, 100) { EffectStartTime = 200 });
+            //4.恢复护盾
+            frame.Frames.Add(MirAction.Attack3, new Frame(208, 9, 0, 100, 485, 11, -11, 100) { EffectStartTime = 0 });
+            //5.护盾破灭
+            frame.Frames.Add(MirAction.Attack4, new Frame(208, 9, 0, 100, 504, 8, -8, 100) { EffectStartTime = 0 });
+            frame.Frames.Add(MirAction.Struck, new Frame(280, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(304, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(313, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(304, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster413, frame);
+
+
+            //自定义 Monster414 冰宫画卷
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 5, 0, 200));
+            frame.Frames.Add(MirAction.Attack1, new Frame(72, 6, 0, 100, 296, 8, -8, 100) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(120, 9, 0, 100, 304, 10, -10, 100) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.Struck, new Frame(192, 4, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(224, 9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(232, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(224, 9, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster414, frame);
+
+            //自定义 Monster415 冰宫画卷
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 5, 0, 200));
+            frame.Frames.Add(MirAction.Attack1, new Frame(72, 6, 0, 100, 272, 10, -10, 100) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(120, 9, 0, 100, 282, 11, -11, 100) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.Struck, new Frame(192, 4, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(224, 6, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(229, 1, 5, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(224, 6, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster415, frame);
+
+
+            //自定义 Monster416 冰宫画卷
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 5, 0, 200));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(72, 6, 0, 100, 296, 4, -4, 100) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(120, 9, 0, 100) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.Struck, new Frame(192, 4, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(224, 9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(232, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(224, 9, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster416, frame);
+
+
+            //自定义 Monster417 冰宫画卷
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 4, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(32, 5, 0, 200));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(72, 6, 0, 100, 296, 3, -3, 100) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(120, 9, 0, 100) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.Struck, new Frame(192, 4, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(224, 9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(232, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(224, 9, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster417, frame);
+
+            //自定义 Monster418 冰宫学者
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 8, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(64, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(112, 9, 0, 100, 352, 12, -12, 100) { EffectStartTime = 0 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(184, 9, 0, 100, 364, 10, -10, 100) { EffectStartTime = 0 });
+            frame.Frames.Add(MirAction.Struck, new Frame(256, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(280, 9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(288, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(280, 9, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster418, frame);
+
+            //自定义 Monster419 冰宫巫师
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(152, 7, 0, 100, 427, 10, -10, 100, 456, 9, -9, 100) { ETime2 = 200 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(96, 7, 0, 100, 368, 3, 0, 200) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(208, 7, 0, 100,399,8,-8,100,407,10,-10,100) { EffectStartTime = 0 });
+            frame.Frames.Add(MirAction.Struck, new Frame(264, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(297, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(288, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster419, frame);
+
+
+            //自定义 Monster420 冰宫祭师
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 7, 0, 100, 360, 4, 0, 100) { EffectStartTime = 300 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(152, 7, 0, 100, 398, 6, 0, 100) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(208, 6, 0, 100, 457, 6, -6, 100) { EffectStartTime = 200 });
+            frame.Frames.Add(MirAction.Struck, new Frame(256, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(280, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(289, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(280, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster420, frame);
+
+            //自定义 Monster421 冰女
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 8, 0, 200));
+            frame.Frames.Add(MirAction.Walking, new Frame(64, 6, 0, 100));
+            //frame.Frames.Add(MirAction.Attack1, new Frame(112, 7, 0, 100,424,5,0,100,637,8,-8,100) { EffectStartTime = 200, ETime2=400 });
+            frame.Frames.Add(MirAction.Attack1, new Frame(112, 7, 0, 100, 424, 5, 0, 100) { EffectStartTime = 200, ETime2 = 0 });
+            frame.Frames.Add(MirAction.Attack2, new Frame(168, 10, 0, 100, 471,10,0,100) { EffectStartTime = 100, ETime2 = 300 });
+            //frame.Frames.Add(MirAction.Attack3, new Frame(248, 8, 0, 100,551,8,0,100, 645, 7, 0, 100) { EffectStartTime = 100, ETime2 = 200 });
+            //frame.Frames.Add(MirAction.Attack3, new Frame(248, 8, 0, 100,  645, 7, 0, 100) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.Attack3, new Frame(248, 8, 0, 100, 551, 8, 0, 100) { EffectStartTime = 100 });
+            frame.Frames.Add(MirAction.Struck, new Frame(312, 4, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(344, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(353, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(344, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster421, frame);
+
 
         }
     }

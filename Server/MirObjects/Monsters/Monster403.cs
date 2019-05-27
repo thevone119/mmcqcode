@@ -36,7 +36,7 @@ namespace Server.MirObjects.Monsters
             Direction = Functions.DirectionFromPoint(CurrentLocation, Target.CurrentLocation);
             int damage = GetAttackPower(MinDC, MaxDC);
             int distance = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
-            int delay = distance * 50 + 750; //50 MS per Step
+            int delay = distance * 50 + 550; //50 MS per Step
             if (distance > 1)
             {
                 Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID = Target.ObjectID, Location = CurrentLocation, Type = 0 });

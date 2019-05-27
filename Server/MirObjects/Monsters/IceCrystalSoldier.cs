@@ -82,7 +82,7 @@ namespace Server.MirObjects.Monsters
                             Value = damage / 3,
                             TickSpeed = 1000
                         }, this);
-                        if (RandomUtils.Next(3)==1)
+                        if (RandomUtils.Next(5)==1)
                         {
                             ob.ApplyPoison(new Poison
                             {

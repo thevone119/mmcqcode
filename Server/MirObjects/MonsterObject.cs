@@ -349,19 +349,42 @@ namespace Server.MirObjects
                     return new CrystalBeast(info);
                 case 168://Monster403 紫花仙子
                     return new Monster403(info);
-                case 169://Monster404 花仙子
+                case 169://Monster404 冰焰鼠
                     return new Monster404(info);
-                case 170://Monster405 花仙子
+                case 170://Monster405 冰蜗牛
                     return new Monster405(info);
-                case 171://Monster406 花仙子
+                case 171://Monster406 冰宫战士
                     return new Monster406(info);
-                case 172://Monster407 花仙子
+                case 172://Monster407 冰宫射手
                     return new Monster407(info);
-                case 173://Monster408 花仙子
+                case 173://Monster408 冰宫卫士
                     return new Monster408(info);
                 case 174://Monster409 虹花仙子
                     return new Monster409(info);
-
+                case 175://Monster410 冰宫鼠卫
+                    return new Monster410(info);
+                case 176://Monster411 冰宫骑士
+                    return new Monster411(info);
+                case 177://Monster412 冰宫刀卫
+                    return new Monster412(info);
+                case 178://Monster413 冰宫护法
+                    return new Monster413(info);
+                case 179://Monster414 冰宫画卷
+                    return new Monster414(info);
+                case 180://Monster415 冰宫画卷
+                    return new Monster415(info);
+                case 181://Monster416 冰宫画卷
+                    return new Monster416(info);
+                case 182://Monster417 冰宫画卷
+                    return new Monster417(info);
+                case 183://Monster418 冰宫学者
+                    return new Monster418(info);
+                case 184://Monster419 冰宫巫师
+                    return new Monster419(info);
+                case 185://Monster420 冰宫祭师
+                    return new Monster420(info);
+                case 186://Monster421 冰雪女皇
+                    return new Monster421(info);
                 //unfinished
                 case 253://鸟人像？
                     return new FlamingMutant(info);

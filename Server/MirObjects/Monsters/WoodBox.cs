@@ -43,11 +43,28 @@ namespace Server.MirObjects.Monsters
             {
                 if (ob.IsAttackTarget(this))
                 {
-                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 300, ob, damage, DefenceType.None);
+                    DelayedAction action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + 400, ob, damage, DefenceType.None);
                     ActionList.Add(action);
                 }
             }
             base.Die();
+        }
+
+        protected override void CompleteRangeAttack(IList<object> data)
+        {
+            MapObject target = (MapObject)data[0];
+            int damage = (int)data[1];
+            DefenceType defence = (DefenceType)data[2];
+
+            if (target == null || !target.IsAttackTarget(this) || target.CurrentMap != CurrentMap || target.Node == null) return;
+            //超过1格，炸不到
+            int distance = Functions.MaxDistance(CurrentLocation, target.CurrentLocation);
+
+            if (distance > 1)
+            {
+                return;
+            }
+            target.Attacked(this, damage, defence);
         }
 
         protected override void ProcessTarget() { }
