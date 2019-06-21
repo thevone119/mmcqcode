@@ -622,9 +622,9 @@ namespace Server.MirEnvir
             int dropmincount = pcount + fb_level / 7;
             DropInfo drop1 = DropInfo.FromLine("副本爆率1", String.Format("1/1 G_药剂3 {0}-{1}", pcount * 4+fb_level, pcount * 8 + fb_level ));
             drop1.isPrice = false;
-            DropInfo drop2 = DropInfo.FromLine("副本_宝玉", String.Format("1/1 G_宝玉 {0}-{1}", dropmincount, dropmaxcount));
+            DropInfo drop2 = DropInfo.FromLine("副本_宝玉", String.Format("1/2 G_宝玉 {0}-{1}", dropmincount, dropmaxcount));
             drop2.isPrice = false;
-            DropInfo drop3 = DropInfo.FromLine("副本_符纸", String.Format("1/2 G_轮回符纸 {0}-{1}", dropmincount, dropmaxcount));
+            DropInfo drop3 = DropInfo.FromLine("副本_符纸", String.Format("1/5 G_轮回符纸 {0}-{1}", dropmincount, dropmaxcount));
             drop3.isPrice = false;
             DropInfo drop4 = DropInfo.FromLine("副本_身上的装备", String.Format("1/4 力量戒指 {0}-{1}", 1, 1));
             drop4.ItemList = userItems;
@@ -662,7 +662,7 @@ namespace Server.MirEnvir
                 dropItems.AddRange(drop2.DropItems());
             }
             //符纸的话，如果已经开了第一关外，这里就不爆了
-            if (drop3.isDrop(DropRate)& Envir.GetMapByNameAndInstance("HELL00") == null)
+            if (drop3.isDrop(DropRate))
             {
                 dropItems.AddRange(drop3.DropItems());//符纸放在地狱爆
             }

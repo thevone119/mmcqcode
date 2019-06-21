@@ -116,6 +116,7 @@
     </Compile>
     <Compile Include="CommonServer.cs" />
     <Compile Include="MirDatabase\DataHandle.cs" />
+    <Compile Include="MirDatabase\GoldCreditChange.cs" />
     <Compile Include="MirDatabase\PayOrder.cs" />
     <Compile Include="MirDatabase\MailInfo.cs" />
     <Compile Include="MirDatabase\ConquestInfo.cs" />

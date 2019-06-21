@@ -821,9 +821,10 @@ namespace Client.MirScenes
                     Network.Enqueue(new C.SpellToggle { Spell = magic.Spell, CanUse = DoubleSlash });
                     break;
                 case Spell.TwinDrakeBlade:
+                    //雷霆剑法的CD太夸张了吧
                     if (CMain.Time < ToggleTime) return;
-                    ToggleTime = CMain.Time + 500;
-
+                    //ToggleTime = CMain.Time + 500;
+                    ToggleTime = CMain.Time + 1800;
                     cost = magic.Level * magic.LevelCost + magic.BaseCost;
                     if (cost > MapObject.User.MP)
                     {
@@ -2093,7 +2094,12 @@ namespace Client.MirScenes
         {
             if (MapControl != null && !MapControl.IsDisposed)
                 MapControl.Dispose();
-            MapControl = new MapControl { FileName = Path.Combine(Settings.MapPath, p.FileName + ".map"), Title = p.Title, MiniMap = p.MiniMap, BigMap = p.BigMap, Lights = p.Lights, Lightning = p.Lightning, Fire = p.Fire, MapDarkLight = p.MapDarkLight, Music = p.Music, SafeZones=p.SafeZones };
+            MapControl = new MapControl { FileName = Path.Combine(Settings.MapPath, p.FileName + ".map"), Title = p.Title, MiniMap = p.MiniMap, BigMap = p.BigMap, Lights = p.Lights, Lightning = p.Lightning, Fire = p.Fire, MapDarkLight = p.MapDarkLight, Music = p.Music, SafeZones=p.SafeZones, CanFastRun=p.CanFastRun };
+            if (User != null)
+            {
+                User.FastRun = MapControl.CanFastRun;
+            }
+          
             MapControl.LoadMap();
             InsertControl(0, MapControl);
         }
@@ -3642,6 +3648,12 @@ namespace Client.MirScenes
             MapControl.Lights = p.Lights;
             MapControl.MapDarkLight = p.MapDarkLight;
             MapControl.Music = p.Music;
+            MapControl.SafeZones = p.SafeZones;
+            MapControl.CanFastRun = p.CanFastRun;
+            if (User != null)
+            {
+                User.FastRun = MapControl.CanFastRun;
+            }
             MapControl.LoadMap();
             MapControl.NextAction = 0;
 
@@ -4046,6 +4058,9 @@ namespace Client.MirScenes
             item.sk3 = p.Item.sk3;
             item.sk4 = p.Item.sk4;
             item.skCount = p.Item.skCount;
+            item.MaxGem = p.Item.MaxGem;
+            item.GemCount = p.Item.GemCount;
+
 
             GameScene.Scene.InventoryDialog.DisplayItemGridEffect(item.UniqueID, 0);
 
@@ -6387,13 +6402,39 @@ namespace Client.MirScenes
 
             #endregion
 
+            #region MaxGem GemCount 宝玉
+
+            minValue = (int)HoverItem.GemCount;
+            maxValue = HoverItem.MaxGem;
+            addValue = (!HoverItem.Info.NeedIdentify || HoverItem.Identified) ? HoverItem.MaxGem : 0;
+
+            if (maxValue > 0 )
+            {
+                count++;
+                text = string.Format("宝玉 {0}/{1}", minValue, maxValue);
+
+                MirLabel SCLabel = new MirLabel
+                {
+                    AutoSize = true,
+                    ForeColour = maxValue > 0 ? Color.Cyan : Color.White,
+                    Location = new Point(4, ItemLabel.DisplayRectangle.Bottom),
+                    OutLine = true,
+                    Parent = ItemLabel,
+                    //Text = string.Format("SC + {0}~{1}", minValue, maxValue + addValue)
+                    Text = text
+                };
+                ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, SCLabel.DisplayRectangle.Right + 4),
+                    Math.Max(ItemLabel.Size.Height, SCLabel.DisplayRectangle.Bottom));
+            }
+            #endregion
+
             #region quality 品质
 
             minValue = HoverItem.quality;
             maxValue = 0;
             addValue = (!HoverItem.Info.NeedIdentify || HoverItem.Identified) ? HoverItem.quality : 0;
 
-            if (minValue > 0 || maxValue > 0 || addValue > 0)
+            if (minValue > 0 || maxValue > 0 )
             {
                 count++;
                 text = string.Format("品质 + {0}", minValue);
@@ -6420,7 +6461,7 @@ namespace Client.MirScenes
             maxValue = 0;
             addValue = (!HoverItem.Info.NeedIdentify || HoverItem.Identified) ? HoverItem.spiritual : 0;
 
-            if (minValue > 0 || maxValue > 0 || addValue > 0)
+            if (minValue > 0 || maxValue > 0 )
             {
                 count++;
                 text = string.Format("灵性 {0}/{1}", HoverItem.samsaracount,minValue);
@@ -9350,6 +9391,8 @@ namespace Client.MirScenes
         public string Title = String.Empty;
         //小地图，大地图，音乐，设置音乐
         public ushort MiniMap, BigMap, Music, SetMusic;
+        //当前地图是否可以免助跑
+        public bool CanFastRun;
         //增加安全区
         //安全区域
         public List<SafeZoneInfo> SafeZones = new List<SafeZoneInfo>();
@@ -9506,7 +9549,7 @@ namespace Client.MirScenes
                     for (int i = cell.CellObjects.Count - 1; i >= 0; i--)
                     {
                         MapObject ob = cell.CellObjects[i];
-                        if (ob == MapObject.User || !ob.MouseOver(CMain.MPoint)) continue;
+                        if (ob == MapObject.User  || !ob.MouseOver(CMain.MPoint)) continue;
 
                         if (MapObject.MouseObject != ob)
                         {
@@ -9518,6 +9561,7 @@ namespace Client.MirScenes
                                 //continue;
                             }
                             MapObject.MouseObject = ob;
+
                             Redraw();
                         }
                         if (bestmouseobject != null && MapObject.MouseObject == null)
@@ -9661,15 +9705,17 @@ namespace Client.MirScenes
             if (setting != LightSetting.Day)
                 DrawLights(setting);
 
+            //
             if (Settings.DropView || GameScene.DropViewTime > CMain.Time)
             {
                 for (int i = 0; i < Objects.Count; i++)
                 {
                     ItemObject ob = Objects[i] as ItemObject;
                     if (ob == null) continue;
-
                     if (!ob.MouseOver(MouseLocation))
+                    {
                         ob.DrawName();
+                    }
                 }
             }
 
@@ -10567,7 +10613,7 @@ namespace Client.MirScenes
                     {
                         //重新规划路线
                         StartRoute();
-                        MirLog.info("重新规划路线:" + realdist);
+                        //MirLog.info("重新规划路线:" + realdist);
                     }
                 }
                 return;
@@ -10895,6 +10941,7 @@ namespace Client.MirScenes
                         User.ClearMagic();
                         return;
                     }
+
                     if (User.NextMagicObject != null)
                     {
                         if (!User.NextMagicObject.Dead && User.NextMagicObject.Race != ObjectType.Item && User.NextMagicObject.Race != ObjectType.Merchant)

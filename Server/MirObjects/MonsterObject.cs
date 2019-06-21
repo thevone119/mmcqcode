@@ -763,6 +763,11 @@ namespace Server.MirObjects
             if (AttackSpeed < 400) AttackSpeed = 400;
 
             RefreshBuffs();
+
+            if (MoveSpeed < 200) MoveSpeed = 200;
+            if (AttackSpeed < 200) AttackSpeed = 200;
+            if (MoveSpeed > 5000) MoveSpeed = 5000;
+            if (AttackSpeed > 5000) AttackSpeed = 5000;
         }
 
         //宝宝成长算法,主要用于血量成长
@@ -791,8 +796,14 @@ namespace Server.MirObjects
 
                 switch (buff.Type)
                 {
-                    case BuffType.Haste:
-                        ASpeed = (sbyte)Math.Max(sbyte.MinValue, (Math.Min(sbyte.MaxValue, ASpeed + buff.Values[0])));
+                    case BuffType.Haste://BUG,ASpeed,这个属性毛用没有？
+                        int _AttackSpeed = AttackSpeed;
+                        _AttackSpeed = _AttackSpeed - _AttackSpeed / 3;
+                        if (_AttackSpeed < 200)
+                        {
+                            _AttackSpeed = 200;
+                        }
+                        AttackSpeed = _AttackSpeed;
                         break;
                     case BuffType.SwiftFeet:
                         MoveSpeed = (ushort)Math.Max(ushort.MinValue, MoveSpeed + 100 * buff.Values[0]);
@@ -810,17 +821,19 @@ namespace Server.MirObjects
                         MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + buff.Values[0]);
                         break;
                     case BuffType.Curse:
-                        ushort rMaxDC = (ushort)(((int)MaxDC / 100) * buff.Values[0]);
-                        ushort rMaxMC = (ushort)(((int)MaxMC / 100) * buff.Values[0]);
-                        ushort rMaxSC = (ushort)(((int)MaxSC / 100) * buff.Values[0]);
-                        sbyte rASpeed = (sbyte)(((int)ASpeed / 100) * buff.Values[0]);
-                        ushort rMSpeed = (ushort)((MoveSpeed / 100) * buff.Values[0]);
-
+                        //这里有BUG?
+                        ushort rMaxDC = (ushort)(((int)MaxDC / 100.0) * buff.Values[0]);
+                        ushort rMaxMC = (ushort)(((int)MaxMC / 100.0) * buff.Values[0]);
+                        ushort rMaxSC = (ushort)(((int)MaxSC / 100.0) * buff.Values[0]);
+                        sbyte rASpeed = (sbyte)(((int)AttackSpeed / 100.0) * buff.Values[0]);
+                        ushort rMSpeed = (ushort)((MoveSpeed / 100.0) * buff.Values[0]);
                         MaxDC = (ushort)Math.Max(ushort.MinValue, MaxDC - rMaxDC);
                         MaxMC = (ushort)Math.Max(ushort.MinValue, MaxMC - rMaxMC);
                         MaxSC = (ushort)Math.Max(ushort.MinValue, MaxSC - rMaxSC);
-                        ASpeed = (sbyte)Math.Min(sbyte.MaxValue, (Math.Max(sbyte.MinValue, ASpeed - rASpeed)));
-                        MoveSpeed = (ushort)Math.Max(ushort.MinValue, MoveSpeed - rMSpeed);
+                  
+                        AttackSpeed = (sbyte)Math.Min(sbyte.MaxValue, (Math.Max(sbyte.MinValue, AttackSpeed + rASpeed)));
+                        MoveSpeed = (ushort)Math.Max(ushort.MinValue, MoveSpeed + rMSpeed);
+                        
                         break;
 
                     case BuffType.PetEnhancer:
@@ -964,7 +977,6 @@ namespace Server.MirObjects
                 if (EXPOwner != null && Master == null && EXPOwner.Race == ObjectType.Player)
                 {
                     EXPOwner.WinExp(Experience, Level);
-
                     PlayerObject playerObj = (PlayerObject)EXPOwner;
                     playerObj.CheckGroupQuestKill(Info);
                     if (!IsCopy)
@@ -1114,6 +1126,7 @@ namespace Server.MirObjects
                 {
                     uint gold = drop.DropGold(addGold);
                     if (gold <= 0) continue;
+                    
                     if (!DropGold((uint)gold)) return;
                 }
                 else
@@ -1532,9 +1545,7 @@ namespace Server.MirObjects
                         DamageRate += 0.5F;
                         break;
                     case PoisonType.Slow:
-                        MoveSpeed += 100;
-                        AttackSpeed += 100;
- 
+                        //这里严重的BUG，导致怪物中了此毒，一直减弱攻速，移速，无限减弱
                         if (poison.Time >= poison.Duration)
                         {
                             MoveSpeed = Info.MoveSpeed;
@@ -1546,6 +1557,27 @@ namespace Server.MirObjects
                                 AttackSpeed = (ushort)Math.Min(ushort.MaxValue, (Math.Max(ushort.MinValue, AttackSpeed - MaxPetLevel * 70)));
                             }
                         }
+                        else
+                        {
+                            //攻速移速减50%
+                            //MoveSpeed = Info.MoveSpeed;
+                            //AttackSpeed = Info.AttackSpeed;
+                            ushort _MoveSpeed = (ushort)(Info.MoveSpeed + Info.MoveSpeed + 500 );
+                            int _AttackSpeed = Info.AttackSpeed + Info.AttackSpeed + 500;
+                            //
+                            MoveSpeed += 100;
+                            AttackSpeed += 100;
+                            if(MoveSpeed > _MoveSpeed)
+                            {
+                                MoveSpeed = _MoveSpeed;
+                            }
+                            if(AttackSpeed> _AttackSpeed)
+                            {
+                                AttackSpeed = _AttackSpeed;
+                            }
+
+                        }
+    
                         break;
                 }
                 type |= poison.PType;

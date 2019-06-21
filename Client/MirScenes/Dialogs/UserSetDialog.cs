@@ -37,6 +37,8 @@ namespace Client.MirScenes.Dialogs
         public MirLabel HP11,HP12,HP21,HP22,HP31,HP32,MP11,MP12;
         //物品分页
         public MirCheckBox AutoPickUpBox;
+        public MirCheckBox FilterItem1Box;
+        public MirCheckBox FilterItem2Box;
         public MirCheckBox[] ItemRows;//这个是显示所有的物品的，要做分页处理
         public List<PickItem> ItemAll;//所有物品
         public MirLabel PageNumberLabel;
@@ -314,6 +316,19 @@ namespace Client.MirScenes.Dialogs
             {
                 changeData();
             };
+            left += 100;
+            FilterItem1Box = new MirCheckBox { Location = new Point(left, top), LabelText = "过滤普通", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            FilterItem1Box.Click += (o, e) =>
+            {
+                changeData();
+            };
+            left += 100;
+            FilterItem2Box = new MirCheckBox { Location = new Point(left, top), LabelText = "过滤高级", Library = Libraries.Prguse, Index = 2086, UnTickedIndex = 2086, TickedIndex = 2087, Parent = this };
+            FilterItem2Box.Click += (o, e) =>
+            {
+                changeData();
+            };
+            left = 50;
             //捡取的物品列表4行，3列
 
             ItemRows = new MirCheckBox[12];
@@ -535,6 +550,9 @@ namespace Client.MirScenes.Dialogs
             
             OpenProtectBox.Checked = GameScene.UserSet.OpenProtect;
             AutoPickUpBox.Checked = GameScene.UserSet.AutoPickUp;
+            FilterItem1Box.Checked = GameScene.UserSet.FilterItem1;
+            FilterItem2Box.Checked = GameScene.UserSet.FilterItem2;
+
             switchPoisonBox.Checked = GameScene.UserSet.switchPoison;
 
             HPLower1Text.Text = GameScene.UserSet.HPLower1+"";
@@ -566,6 +584,8 @@ namespace Client.MirScenes.Dialogs
             GameScene.UserSet.AutoFury = AutoFuryBox.Checked;
             GameScene.UserSet.OpenProtect = OpenProtectBox.Checked ;
             GameScene.UserSet.AutoPickUp = AutoPickUpBox.Checked ;
+            GameScene.UserSet.FilterItem1 = FilterItem1Box.Checked;
+            GameScene.UserSet.FilterItem2 = FilterItem2Box.Checked;
             GameScene.UserSet.ShowMonName = ShowMonNameBox.Checked;
             GameScene.UserSet.switchPoison = switchPoisonBox.Checked;
 
@@ -723,6 +743,8 @@ namespace Client.MirScenes.Dialogs
         private void TabVisible4(bool visible)
         {
             AutoPickUpBox.Visible = visible;
+            FilterItem1Box.Visible = visible;
+            FilterItem2Box.Visible = visible;
             PageNumberLabel.Visible = visible;
             PreviousButton.Visible = visible;
             NextButton.Visible = visible;

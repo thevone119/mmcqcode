@@ -95,6 +95,8 @@ namespace Server
 
         public static bool openGroupWar = false;//是否开启战役
 
+
+
         public static readonly bool saveSetting = false;//是否保存配置
 
 
@@ -104,6 +106,9 @@ namespace Server
 
         //Game(游戏设置)
         public static List<long> ExperienceList = new List<long>();
+
+        //等级怪物经验列表
+        public static List<long> LevelGoldExpList = new List<long>();
         public static List<long> OrbsExpList = new List<long>();
         public static List<long> OrbsDefList = new List<long>();
         public static List<long> OrbsDmgList = new List<long>();
@@ -260,7 +265,7 @@ namespace Server
                     CriticalDamageWeight = 100,//暴击伤害的权重，比如有5点暴击伤害，那么处于权重*10，那么就是双倍伤害了
                     MaxFreezing = 10,//最大冰冻伤害,每点10%
                     FreezingAttackWeight = 20,//权重，20，每点就是5%
-                    MaxPoisonAttack = 10,//毒性伤害，影响施毒术，毒云等，每点10%，每点1点伤害，1秒时长
+                    MaxPoisonAttack = 10,//毒性伤害，每点增加1点几率的毒性伤害
                     PoisonAttackWeight =20,
                     MaxHealthRegen = 8,//HP恢复
                     HealthRegenWeight = 10,//恢复权重
@@ -347,6 +352,7 @@ namespace Server
             GameMasterEffect = Reader.ReadBoolean("Optional", "GameMasterEffect", GameMasterEffect);
             openLevelExpSup = Reader.ReadBoolean("Optional", "openLevelExpSup", openLevelExpSup);
             openGroupWar = Reader.ReadBoolean("Optional", "openGroupWar", openGroupWar);
+
             
 
             //Database
@@ -694,6 +700,17 @@ namespace Server
                 exp = reader.ReadInt64("Att", "Orb" + i, exp);
                 OrbsDmgList.Add(exp);
             }
+
+            //每个等级的对应的金币和经验的比值
+            exp = 1;
+            reader = new InIReader(ConfigPath + @".\LevelGoldExpList.ini");
+            for (int i = 1; i <= 100; i++)
+            {
+                exp = reader.ReadInt64("Exp", "Level" + i, exp);
+                LevelGoldExpList.Add(exp);
+            }
+
+            
         }
 
         //这个是各职业的基础状态，基础属性，成长属性

@@ -13,7 +13,7 @@ namespace Server.MirObjects.Monsters
     /// </summary>
     public class Monster403 : MonsterObject
     {
-        private byte attType;
+        //private byte attType;
         protected internal Monster403(MonsterInfo info)
             : base(info)
         {

@@ -98,6 +98,10 @@ namespace Client.MirScenes.Dialogs
                 UseOffSet = true
             };
 
+     
+            
+
+
             Grid = new MirItemCell[Enum.GetNames(typeof(MountSlot)).Length];
 
             Grid[(int)MountSlot.Reins] = new MirItemCell
@@ -218,7 +222,20 @@ namespace Client.MirScenes.Dialogs
             }
             else
             {
-                MountImage.Index = StartIndex + (GameScene.User.MountType * 20);
+                
+                if (GameScene.User==null || GameScene.User.MountType < 12)
+                {
+                    MountImage.Library = Libraries.Prguse;
+                    MountImage.Index = StartIndex + (GameScene.User.MountType * 20);
+                }
+                else
+                {
+                    MountImage.Library = Libraries.Mounts[GameScene.User.MountType];
+                    MountImage.AnimationCount = 6;
+                    MountImage.Location = new Point(110, 200);
+                    MountImage.Index = 72;
+                }
+
                 MountImage.Animated = true;
 
                 UserItem item = MapObject.User.Equipment[(int)EquipmentSlot.Mount];

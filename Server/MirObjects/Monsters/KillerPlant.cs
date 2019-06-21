@@ -52,15 +52,15 @@ namespace Server.MirObjects.Monsters
             //血少后伤害增加
             if(HP < MaxHP / 4)
             {
-                damage = damage * 2;
+                damage = damage * 3 / 2;
             }
             else if (HP < MaxHP / 2)
             {
-                damage = damage *3/2;
+                damage = damage * 4 / 3;
             }
             attType = 0;
             //如果中毒了，几率解毒
-            if (PoisonList != null && PoisonList.Count > 0 && RandomUtils.Next(5)==0)
+            if (PoisonList != null && PoisonList.Count > 0 && RandomUtils.Next(8)==0)
             {
                 attType = 1;
             }
@@ -123,7 +123,7 @@ namespace Server.MirObjects.Monsters
                                     ob.ApplyPoison(new Poison
                                     {
                                         Owner = this,
-                                        Duration = RandomUtils.Next(3,7),
+                                        Duration = RandomUtils.Next(3,6),
                                         PType = PoisonType.Paralysis,
                                         Value = damage/3,
                                         TickSpeed = 1000
@@ -134,7 +134,7 @@ namespace Server.MirObjects.Monsters
                                     ob.ApplyPoison(new Poison
                                     {
                                         Owner = this,
-                                        Duration = RandomUtils.Next(5, 15),
+                                        Duration = RandomUtils.Next(5, 10),
                                         PType = PoisonType.Stun,
                                         Value = damage / 3,
                                         TickSpeed = 1000

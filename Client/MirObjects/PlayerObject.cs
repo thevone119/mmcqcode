@@ -767,7 +767,9 @@ namespace Client.MirObjects
             if (this == User)
             {
                 if (CMain.Time - GameScene.LastRunTime > 899)
+                {
                     GameScene.CanRun = false;
+                }
             }
 
             SkipFrames = this != User && ActionFeed.Count > 1;
@@ -1482,7 +1484,7 @@ namespace Client.MirObjects
              
                             GameScene.AttackTime = CMain.Time + User.AttackSpeed;
                             MapControl.NextAction = CMain.Time + 2500;
-                            MirLog.info("AttackTime:" + GameScene.AttackTime+ "User.AttackSpeed:"+ User.AttackSpeed);
+                            //MirLog.info("AttackTime:" + GameScene.AttackTime+ "User.AttackSpeed:"+ User.AttackSpeed);
                             break;
                         case MirAction.Attack2:
                             //Network.Enqueue(new C.Attack2 { Direction = Direction });
@@ -1672,6 +1674,9 @@ namespace Client.MirObjects
 
                         PlayStruckSound();
                         PlayFlinchSound();
+                        //被攻击，也不能跑步哦
+                        GameScene.LastRunTime = CMain.Time;
+                        GameScene.CanRun = false;
                         break;
                     case MirAction.AttackRange1: //ArcherTest - Assign Target for other users
                         if (this != User)
@@ -5112,9 +5117,53 @@ namespace Client.MirObjects
         public void DrawMount()
         {
             if (MountType < 0 || !RidingMount) return;
-
+            //坐骑，这个是画坐骑啊。看要怎么改啊
             if (MountLibrary != null)
-                MountLibrary.Draw(DrawFrame - 416 + MountOffset, DrawLocation, DrawColour, true);
+            {
+                int dindex = DrawFrame - 416 + MountOffset;
+                if (MountType < 12)
+                {
+                    MountLibrary.Draw(dindex, DrawLocation, DrawColour, true);
+                }
+                else
+                {
+                    if (dindex ==38|| dindex==39)
+                    {
+                        dindex = dindex - 4;
+                    }
+                    if (dindex == 46 || dindex == 47)
+                    {
+                        dindex = dindex - 4;
+                    }
+                    if (dindex == 54 || dindex == 55)
+                    {
+                        dindex = dindex-4;
+                    }
+                    if (dindex == 62 || dindex == 63)
+                    {
+                        dindex = dindex - 4;
+                    }
+                    if (dindex == 70 || dindex == 71)
+                    {
+                        dindex = dindex - 4;
+                    }
+                    if (dindex == 78 || dindex == 79)
+                    {
+                        dindex = dindex - 4;
+                    }
+                    if (dindex == 86 || dindex == 87)
+                    {
+                        dindex = dindex - 4;
+                    }
+                    if (dindex == 94 || dindex == 95)
+                    {
+                        dindex = dindex - 4;
+                    }
+                    MountLibrary.Draw(dindex, DrawLocation, DrawColour, true);
+                }
+            }
+
+               
         }
 
         private bool IsVitalEffect(Effect effect)

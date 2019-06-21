@@ -35,7 +35,8 @@ namespace Server.MirDatabase
         public DateTime ChatBanExpiryDate;
 
         public string LastIP = string.Empty;
-        public DateTime LastDate;
+        public DateTime LastDate;//最后退出游戏的时间
+        public DateTime LastLoginDate;//最后登录的时间
 
         public bool Deleted;
         public DateTime DeleteDate;
@@ -128,6 +129,8 @@ namespace Server.MirDatabase
         //角色在线时长
         public uint onlineTime = 0;//在线时长，每天的
         public int onlineDay = 0;//当前日期
+
+        public uint offlineTime = 0;//累计的（这个不存储到数据库）
 
         //记录地狱副本的层级，得分，总用时,创建时间（日）
         private int fb1_level;
@@ -354,27 +357,38 @@ namespace Server.MirDatabase
 
                 obj.GuildIndex = read.GetInt64(read.GetOrdinal("GuildIndex"));
                 obj.AllowTrade = read.GetBoolean(read.GetOrdinal("AllowTrade"));
-                obj.CurrentQuests = JsonConvert.DeserializeObject<List<QuestProgressInfo>>(read.GetString(read.GetOrdinal("CurrentQuests")));
-                if (obj.CurrentQuests != null)
+                if (!read.IsDBNull(read.GetOrdinal("CurrentQuests")))
                 {
-                    for (int i = 0; i < obj.CurrentQuests.Count; i++)
+                    obj.CurrentQuests = JsonConvert.DeserializeObject<List<QuestProgressInfo>>(read.GetString(read.GetOrdinal("CurrentQuests")));
+                    if (obj.CurrentQuests != null)
                     {
-                        if (!SMain.Envir.BindQuest(obj.CurrentQuests[i]))
+                        for (int i = 0; i < obj.CurrentQuests.Count; i++)
                         {
-                            obj.CurrentQuests.Remove(obj.CurrentQuests[i]);
+                            if (!SMain.Envir.BindQuest(obj.CurrentQuests[i]))
+                            {
+                                obj.CurrentQuests.Remove(obj.CurrentQuests[i]);
+                            }
                         }
                     }
                 }
                 
+                
 
                 obj.Buffs = JsonConvert.DeserializeObject<List<Buff>>(read.GetString(read.GetOrdinal("Buffs")));
-                obj.Mail = JsonConvert.DeserializeObject<List<MailInfo>>(read.GetString(read.GetOrdinal("Mail")));
-                for (int i = 0; i < obj.Mail.Count; i++)
+                if (!read.IsDBNull(read.GetOrdinal("Mail")))
                 {
-                    obj.Mail[i].BindItems();
+                    obj.Mail = JsonConvert.DeserializeObject<List<MailInfo>>(read.GetString(read.GetOrdinal("Mail")));
+                    for (int i = 0; i < obj.Mail.Count; i++)
+                    {
+                        obj.Mail[i].BindItems();
+                    }
                 }
 
-                obj.IntelligentCreatures = JsonConvert.DeserializeObject<List<UserIntelligentCreature>>(read.GetString(read.GetOrdinal("IntelligentCreatures")));
+                if (!read.IsDBNull(read.GetOrdinal("IntelligentCreatures")))
+                {
+                    obj.IntelligentCreatures = JsonConvert.DeserializeObject<List<UserIntelligentCreature>>(read.GetString(read.GetOrdinal("IntelligentCreatures")));
+                }
+              
                 obj.PearlCount = read.GetInt32(read.GetOrdinal("PearlCount"));
                 obj.CompletedQuests = JsonConvert.DeserializeObject<List<int>>(read.GetString(read.GetOrdinal("CompletedQuests")));
                 //武器升级物品
@@ -412,8 +426,12 @@ namespace Server.MirDatabase
                 obj.CollectTime = read.GetInt64(read.GetOrdinal("CollectTime"));
                 //这里的时间要重置的
                 obj.CollectTime += SMain.Envir.Time;
-                
-                obj.Friends = JsonConvert.DeserializeObject<List<FriendInfo>>(read.GetString(read.GetOrdinal("Friends")));
+
+                if (!read.IsDBNull(read.GetOrdinal("Friends")))
+                {
+                    obj.Friends = JsonConvert.DeserializeObject<List<FriendInfo>>(read.GetString(read.GetOrdinal("Friends")));
+                }
+                   
 
                 obj.RentedItems = JsonConvert.DeserializeObject<List<ItemRentalInformation>>(read.GetString(read.GetOrdinal("RentedItems")));
                 obj.HasRentedItem = read.GetBoolean(read.GetOrdinal("HasRentedItem"));
@@ -713,6 +731,18 @@ namespace Server.MirDatabase
 
             return Inventory.Length;
         }
+
+        //计算获取当前玩家的离线经验
+        public uint OffLineExp()
+        {
+
+
+
+            return 0;
+        }
+        
+
+
     }
     //宠物
     public class PetInfo

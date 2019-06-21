@@ -164,8 +164,12 @@ namespace Server.MirEnvir
                                 if (addCredit > 0)
                                 {
                                     SMain.Envir.AccountList[i].Credit += addCredit;
+
+                                    SMain.Envir.AccountList[i].RechargeGold += p.price;
+
                                     SMain.EnqueueDebugging(SMain.Envir.AccountList[i].AccountID +" 充值元宝：" + addCredit);
                                     SMain.EnqueueDebugging(SMain.Envir.AccountList[i].UserName + " 充值元宝：" + addCredit);
+                                    SMain.Envir.AddCredit += addCredit;
                                     p.rec_state = 1;
                                 }
                                 else

@@ -79,6 +79,8 @@ namespace Client
         //自动捡物品
         public bool AutoPickUp = true;
         public long AutoPickUpTime = 0;//最后使用物品时间
+        public bool FilterItem1 = false;//过滤普通物品
+        public bool FilterItem2 = false;//过滤高级物品
 
         //自动钓鱼
         public bool AutoFishing = false;
@@ -151,6 +153,10 @@ namespace Client
             AutoLightBody = Reader.ReadBoolean("UserSettings", "AutoLightBody", AutoLightBody);
             OpenProtect = Reader.ReadBoolean("UserSettings", "OpenProtect", OpenProtect);
             AutoPickUp = Reader.ReadBoolean("UserSettings", "AutoPickUp", AutoPickUp);
+            FilterItem1 = Reader.ReadBoolean("UserSettings", "FilterItem1", FilterItem1);
+            FilterItem2 = Reader.ReadBoolean("UserSettings", "FilterItem2", FilterItem2);
+
+
             ShowMonName = Reader.ReadBoolean("UserSettings", "ShowMonName", ShowMonName);
             AutoFishing = Reader.ReadBoolean("UserSettings", "AutoFishing", AutoFishing);
             
@@ -194,6 +200,9 @@ namespace Client
   
             Reader.Write("UserSettings", "OpenProtect", OpenProtect);
             Reader.Write("UserSettings", "AutoPickUp", AutoPickUp);
+            Reader.Write("UserSettings", "FilterItem1", FilterItem1);
+            Reader.Write("UserSettings", "FilterItem2", FilterItem2);
+            
             Reader.Write("UserSettings", "ShowMonName", ShowMonName);
             Reader.Write("UserSettings", "ShowMonCorpse", ShowMonCorpse);
             Reader.Write("UserSettings", "AutoFishing", AutoFishing);

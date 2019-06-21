@@ -358,11 +358,12 @@ namespace Client.MirControls
                 UseOffSet = true,
                 NotControl = true,
             };
+            //这个改成6，原版坐骑是8格
             MountImage = new MirAnimatedControl
             {
                 Animated = false,
                 Location = new Point(105, 160),
-                AnimationCount = 8,
+                AnimationCount = 6,
                 AnimationDelay = 150,
                 Index = 0,
                 Library = Libraries.Prguse,
@@ -443,7 +444,7 @@ namespace Client.MirControls
             WeaponImage.Visible = false;
             WeaponImage2.Visible = false;
             if (GameScene.User.Equipment[(int)EquipmentSlot.Armour] != null)
-                PreviewImage.Library = Libraries.CArmours[GameScene.User.Equipment[(int)EquipmentSlot.Armour].Info.Shape];
+                PreviewImage.Library = Libraries.CArmours[GameScene.User.Equipment[(int)EquipmentSlot.Armour].Shape];
             else
                 PreviewImage.Library = Libraries.CArmours[0];
 

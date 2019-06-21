@@ -488,7 +488,12 @@ namespace Server.MirObjects
                     string count = parts.Length < 3 ? string.Empty : parts[2];
                     acts.Add(new NPCActions(ActionType.GiveItem, parts[1], count));
                     break;
-
+                case "GIVERANDOMITEM":
+                    //GIVERANDOMITEM 混沌石|混沌石|XX神珠
+                    if (parts.Length < 2) return;
+                    acts.Add(new NPCActions(ActionType.GiveRandomItem, parts[1]));
+                    break;
+                    
                 case "TAKEITEM":
                     if (parts.Length < 3) return;
 
@@ -714,7 +719,7 @@ namespace Server.MirObjects
                     }
                     else
                     {
-                        acts.Add(new NPCActions(ActionType.RefreshWeaponSkill, parts[1]));
+                        acts.Add(new NPCActions(ActionType.RefreshWeaponSkill, parts[1], parts[2]));
                     }
                     break;
                 case "CALLNEWPLAYERMOB"://召唤新人宝宝，
@@ -761,6 +766,12 @@ namespace Server.MirObjects
                     break;
                 case "PLAYERPKCANCEL":
                     acts.Add(new NPCActions(ActionType.PlayerPKCancel));
+                    break;
+                case "CREDITBUYGOLD":
+                    acts.Add(new NPCActions(ActionType.CreditBuyGold));
+                    break;
+                case "GOLDBUYCREDIT":
+                    acts.Add(new NPCActions(ActionType.GoldBuyCredit));
                     break;
                 case "QUERYHAIR":
                     acts.Add(new NPCActions(ActionType.QueryHair));
@@ -2800,7 +2811,44 @@ namespace Server.MirObjects
                                 player.GainItem(item);
                         }
                         break;
+                    case ActionType.GiveRandomItem:
+                        string itemnames = param[0];
+                        string[] its2 = itemnames.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                        List<ItemInfo> ItemList = new List<ItemInfo>();
+                        foreach (string itname in its2)
+                        {
+                            if (string.IsNullOrWhiteSpace(itname))
+                            {
+                                continue;
+                            }
+                            ItemInfo _info = ItemInfo.getItem(itname);
+                            if (_info == null)
+                            {
+                                continue;
+                            }
+                            ItemList.Add(_info);
+                        }
+                        if (ItemList.Count == 0)
+                        {
+                            SMain.Enqueue(string.Format("Failed to get ItemList: {0}, Page: {1}", param[0], Key));
+                            break;
+                        }
+                        info = ItemList[RandomUtils.Next(ItemList.Count)];
 
+                        UserItem item2 = info.CreateFreshItem();
+
+                        if (item2 == null)
+                        {
+                            SMain.Enqueue(string.Format("Failed to create UserItem: {0}, Page: {1}", param[0], Key));
+                            return;
+                        }
+
+                        if (player.CanGainItem(item2, false))
+                        {
+                            player.GainItem(item2);
+                        }
+                           
+                        break;
                     case ActionType.TakeItem:
                         if (param.Count < 2 || !uint.TryParse(param[1], out count)) count = 1;
                         info = ItemInfo.getItem(param[0]);
@@ -2991,14 +3039,18 @@ namespace Server.MirObjects
                             return;
                         }
                         byte rtype = 0;
-   
+                        byte maxlevel = 0;
                         if (param.Count >= 1)
                         {
                             byte.TryParse(param[0], out rtype);
                         }
-                        
+                        if (param.Count >= 2)
+                        {
+                            byte.TryParse(param[1], out maxlevel);
+                        }
 
-                        if (ItemSkillBean.RefreshWeaponSkill(player.Info.Equipment[(int)EquipmentSlot.Weapon], player.Class, rtype))
+
+                        if (ItemSkillBean.RefreshWeaponSkill(player.Info.Equipment[(int)EquipmentSlot.Weapon], player.Class, rtype, maxlevel))
                         {
                             player.ReceiveChat($"武器已成功封印阵法", ChatType.Hint);
                         }
@@ -3052,6 +3104,44 @@ namespace Server.MirObjects
                     case ActionType.PlayerPKJoinIn://PK挑战赛参加
                         player.ReceiveChat(PlayerPK.JoinIn(player), ChatType.Hint);
                         break;
+                    case ActionType.CreditBuyGold://元宝购买金币
+                        //1千元宝，购买8万金币
+                        if (player.Account.Credit < 1000)
+                        {
+                            player.ReceiveChat("元宝不足，无法兑换金币", ChatType.System2);
+                            break;
+                        }
+                        //1千元宝，购买8万金币
+                        if (SMain.Envir.AddDropGold < 80000)
+                        {
+                            //player.ReceiveChat("系统金币库存不足，无法兑换金币", ChatType.System2);
+                            //break;
+                        }
+                        uint retgold = GoldCreditChange.CreditBuyGold();
+                        //SMain.Envir.AddDropGold -= retgold;
+                        player.LoseCredit(1000);
+                        player.GainGold(retgold);
+
+                        break;
+                    case ActionType.GoldBuyCredit://金币购买元宝
+                        //10万金币，购买800元宝
+                        if (player.Account.Gold < 100000)
+                        {
+                            player.ReceiveChat("金币不足，无法兑换元宝", ChatType.System2);
+                            break;
+                        }
+                        //10万金币，购买800元宝
+                        if (SMain.Envir.AddCredit < 800)
+                        {
+                            //player.ReceiveChat("系统元宝库存不足，无法兑换元宝", ChatType.System2);
+                            //break;
+                        }
+                        //SMain.Envir.AddCredit -= 800;
+                        player.LoseGold(100000);
+                        player.GainCredit(GoldCreditChange.GoldBuyCredit());
+
+                        break;
+                        
                     case ActionType.PlayerPKCancel://PK挑战赛取消
                         player.ReceiveChat(PlayerPK.cancelSign(player), ChatType.Hint);
                         break;

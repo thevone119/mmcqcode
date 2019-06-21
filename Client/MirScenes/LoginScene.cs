@@ -176,12 +176,20 @@ namespace Client.MirScenes
             _connectBox.Label.Text = "Sending Client Version.";
 
             C.ClientVersion p = new C.ClientVersion();
+            byte[] sum = { 1};
             try
             {
-                byte[] sum;
+
                 using (MD5 md5 = MD5.Create())
                 using (FileStream stream = File.OpenRead(Application.ExecutablePath))
                     sum = md5.ComputeHash(stream);
+            }
+            catch (Exception ex)
+            {
+                if (Settings.LogErrors) CMain.SaveError(ex.ToString());
+            }
+            try
+            {
 
                 p.VersionHash = sum;
                 Network.Enqueue(p);

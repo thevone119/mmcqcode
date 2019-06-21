@@ -827,6 +827,20 @@ namespace Server.MirObjects
             }
         }
 
+        //判断是否有某个脚本key
+        public bool HasKey(string key)
+        {
+            for (int i = 0; i < NPCPages.Count; i++)
+            {
+                NPCPage page = NPCPages[i];
+                if (String.Equals(page.Key, key, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         //玩家触发NPC命令
         public void Call(PlayerObject player, string key)
         {
@@ -1662,8 +1676,13 @@ namespace Server.MirObjects
                 if (Conq != null) Conq.GoldStorage += (cost - baseCost);
             }
             player.GainItem(item);
+            //最多累计千万
+            if (Envir.AddDropGold < 10000000)
+            {
+                Envir.AddDropGold += cost;
+            }
             //删除二手物品
-           
+
             SecondUserItem.removeItem(goods);
             if (player.NPCPage.Key.ToUpper() == SecondBuyKey)//二手买卖
             {
@@ -1710,6 +1729,7 @@ namespace Server.MirObjects
             BuyBack[player.Name].Add(item);
             //这里加入二手
             SecondUserItem.add(item);
+            hasBuy.Remove(item.UniqueID);
         }
 
 
@@ -1953,6 +1973,9 @@ namespace Server.MirObjects
         PlayerPKSignUp,//PK挑战赛发起
         PlayerPKJoinIn,//PK挑战赛参加
         PlayerPKCancel,//PK挑战赛取消
+        CreditBuyGold,//元宝购买金币
+        GoldBuyCredit,//金币购买元宝
+        GiveRandomItem,//给与随机物品
 
     }
     public enum CheckType

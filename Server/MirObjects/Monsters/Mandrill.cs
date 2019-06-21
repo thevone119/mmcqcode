@@ -40,7 +40,7 @@ namespace Server.MirObjects.Monsters
             }
             if(PoisonList!=null&& PoisonList.Count > 0)
             {
-                rd = 2;
+                rd = 3;
             }
 
             if (RandomUtils.Next(rd) == 0 )

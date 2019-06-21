@@ -72,7 +72,7 @@ namespace Server.MirObjects.Monsters
                     DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage * 3 / 2, DefenceType.MAC);
                     ActionList.Add(action);
                     //冰冻
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist)
+                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist && RandomUtils.Next(2) == 1)
                     {
                         ob.ApplyPoison(new Poison
                         {

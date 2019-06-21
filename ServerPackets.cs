@@ -483,9 +483,11 @@ namespace ServerPackets
         public LightSetting Lights;
         public bool Lightning, Fire;
         public byte MapDarkLight;
+        public bool CanFastRun;
         //地图信息增加安全区,用于客户端判断是否在安全区，在安全区则可以穿人，穿怪
         //安全区域
         public List<SafeZoneInfo> SafeZones = new List<SafeZoneInfo>();
+
 
 
         protected override void ReadPacket(BinaryReader reader)
@@ -500,6 +502,7 @@ namespace ServerPackets
             if ((bools & 0x02) == 0x02) Fire = true;
             MapDarkLight = reader.ReadByte();
             Music = reader.ReadUInt16();
+            CanFastRun = reader.ReadBoolean();
             int count = reader.ReadInt32();
             for (int i = 0; i < count; i++)
             {
@@ -520,6 +523,7 @@ namespace ServerPackets
             writer.Write(bools);
             writer.Write(MapDarkLight);
             writer.Write(Music);
+            writer.Write(CanFastRun);
             writer.Write(SafeZones.Count);
             for (int i = 0; i < SafeZones.Count; i++)
             {
@@ -2791,7 +2795,10 @@ namespace ServerPackets
         public Point Location;
         public MirDirection Direction;
         public byte MapDarkLight;
-
+        public bool CanFastRun;
+        //地图信息增加安全区,用于客户端判断是否在安全区，在安全区则可以穿人，穿怪
+        //安全区域
+        public List<SafeZoneInfo> SafeZones = new List<SafeZoneInfo>();
 
         protected override void ReadPacket(BinaryReader reader)
         {
@@ -2804,6 +2811,12 @@ namespace ServerPackets
             Direction = (MirDirection)reader.ReadByte();
             MapDarkLight = reader.ReadByte();
             Music = reader.ReadUInt16();
+            CanFastRun = reader.ReadBoolean();
+            int count = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
+            {
+                SafeZones.Add(new SafeZoneInfo(reader));
+            }
         }
         protected override void WritePacket(BinaryWriter writer)
         {
@@ -2817,6 +2830,12 @@ namespace ServerPackets
             writer.Write((byte)Direction);
             writer.Write(MapDarkLight);
             writer.Write(Music);
+            writer.Write(CanFastRun);
+            writer.Write(SafeZones.Count);
+            for (int i = 0; i < SafeZones.Count; i++)
+            {
+                SafeZones[i].Save(writer);
+            }
         }
     }
     public sealed class ObjectTeleportOut : Packet

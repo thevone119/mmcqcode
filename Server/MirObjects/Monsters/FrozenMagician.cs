@@ -74,7 +74,7 @@ namespace Server.MirObjects.Monsters
                 Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID = Target.ObjectID, Location = CurrentLocation, Type = 1 });
                 DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage * 2, DefenceType.MAC);
                 ActionList.Add(action);
-                if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist)
+                if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist && RandomUtils.Next(2) == 1)
                 {
                     if (RandomUtils.Next(2) == 0)
                     {

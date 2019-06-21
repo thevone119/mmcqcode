@@ -160,6 +160,10 @@ namespace Server.MirEnvir
         //public int[] RankBottomLevel = new int[6];
         //最高等级
         public int MaxLevel = 0;
+        //累计金币(全服累计爆出的金币)
+        public uint AddDropGold = 0;
+        //累计元宝，充值元宝数
+        public uint AddCredit = 0;
 
         //静态加载一些规则，正则
         static Envir()
@@ -647,8 +651,9 @@ namespace Server.MirEnvir
             //这个总是设置为白天
             if (ServerConfig.lightType != LightType.none)
             {
-                Lights = LightSetting.Day;
+                //Lights = LightSetting.Day;
             }
+           
             if (oldLights == Lights) return;
 
             Broadcast(new S.TimeOfDay { Lights = Lights });

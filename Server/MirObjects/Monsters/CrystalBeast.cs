@@ -7,7 +7,7 @@ using S = ServerPackets;
 namespace Server.MirObjects.Monsters
 {
     /// <summary>
-    /// 攻击力设置 200-400
+    /// 攻击力设置 300-500
     ///  水晶兽 冰雪守护神
     ///  1.摆尾
     ///  2.拍击
@@ -183,6 +183,7 @@ namespace Server.MirObjects.Monsters
                         action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage, DefenceType.MACAgility);
                         ActionList.Add(action);
                         //冰冻
+                       
                         if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist)
                         {
                             ob.ApplyPoison(new Poison

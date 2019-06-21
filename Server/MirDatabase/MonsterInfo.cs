@@ -359,7 +359,7 @@ namespace Server.MirDatabase
             //1000-1万血，血量越高，爆率越高
             if (!baoyu && HP >= 10000)
             {
-                string line = HP + "/" + 40000 + " G_宝玉";
+                string line = HP + "/" + 50000 + " G_宝玉";
                 DropInfo di = DropInfo.FromLine(this.Name,line);
                 Drops.Add(di);
             }

@@ -55,6 +55,11 @@ namespace Server.MirDatabase
         //消耗元宝数，消耗金币数(每10秒)
         public int UseGold = 0, UseCredit = 0;
 
+        public int minLevel = 0;//最小进入的等级
+        public int enterGold = 0;//进入地图一次性消耗的金币，针对时空卷进行2次收费
+
+        public bool CanFastRun = false;
+
         //实例包裹
         //[JsonIgnore]
         //public InstanceInfo Instance;
@@ -131,6 +136,10 @@ namespace Server.MirDatabase
                 obj.MinPlayerCount = read.GetByte(read.GetOrdinal("MinPlayerCount"));
                 obj.UseGold = read.GetInt32(read.GetOrdinal("UseGold"));
                 obj.UseCredit = read.GetInt32(read.GetOrdinal("UseCredit"));
+                obj.CanFastRun = read.GetBoolean(read.GetOrdinal("CanFastRun"));
+                //最小进入等级，针对夫妻卷，时空卷做的限制
+                obj.minLevel = read.GetInt32(read.GetOrdinal("minLevel"));
+                obj.enterGold = read.GetInt32(read.GetOrdinal("enterGold"));
 
                 obj.SafeZones = JsonConvert.DeserializeObject<List<SafeZoneInfo>>(read.GetString(read.GetOrdinal("SafeZones")));
                 //反向引用
@@ -211,7 +220,8 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("MinPlayerCount", MinPlayerCount));
             lp.Add(new SQLiteParameter("UseGold", UseGold));
             lp.Add(new SQLiteParameter("UseCredit", UseCredit));
-            
+
+            lp.Add(new SQLiteParameter("CanFastRun", CanFastRun));
 
             //新增
             if (state == 1)

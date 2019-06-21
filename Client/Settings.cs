@@ -128,7 +128,7 @@ namespace Client
         public static bool
             SkillMode = false,//技能模式是否开启
             SkillBar = true,//是否显示技能条？左上角的么
-            //SkillSet = true,
+                            //SkillSet = true,
             Effect = true,
             LevelEffect = true,
             DropView = true,
@@ -138,6 +138,7 @@ namespace Client
             DuraView = false,//是否显示持久面板
             DisplayDamage = true,
             TargetDead = false,//死亡的是否作为目标，影响到复活术哦，如果死了不作为目标，复活术就没法使用了,做到外挂中配置
+            MagicUserLock = true,//魔法用户锁定,Pk锁定
             ExpandedBuffWindow = true;
 
         public static int[,] SkillbarLocation = new int[2, 2] { { 0, 0 }, { 216, 0 }  };
@@ -172,7 +173,8 @@ namespace Client
         public static bool P_Patcher = true;
         //更新的路径
         //public static string P_Host = @"http://mirfiles.co.uk/mir2/cmir/patch/"; //ftp://212.67.209.184
-        public static string P_Host = @"ftp://47.106.70.111";
+        //public static string P_Host = @"ftp://47.106.70.111";
+        public static string P_Host = @"http://47.106.70.111:9000/";
         public static string P_PatchFileName = @"PList.gz";
         public static bool P_NeedLogin = true;//是否需要登录
         public static string P_Login = "mirread";//登录账户

@@ -53,24 +53,24 @@ namespace Client.MirGraphics
             Deco = new MLibrary(Settings.DataPath + "Deco");
 
         public static readonly MLibrary[] CArmours = new MLibrary[42],
-                                          CWeapons = new MLibrary[55],
+                                          CWeapons = new MLibrary[60],
                                           CWeaponEffect = new MLibrary[67],
                                           CHair = new MLibrary[9],
                                           CHumEffect = new MLibrary[6],
                                           AArmours = new MLibrary[17],
-                                          AWeaponsL = new MLibrary[14],
-                                          AWeaponsR = new MLibrary[14],
+                                          AWeaponsL = new MLibrary[20],
+                                          AWeaponsR = new MLibrary[20],
                                           AHair = new MLibrary[9],
                                           AHumEffect = new MLibrary[3],
                                           ARArmours = new MLibrary[17],
-                                          ARWeapons = new MLibrary[19],
-                                          ARWeaponsS = new MLibrary[19],
+                                          ARWeapons = new MLibrary[22],
+                                          ARWeaponsS = new MLibrary[22],
                                           ARHair = new MLibrary[9],
                                           ARHumEffect = new MLibrary[3],
                                           Monsters = new MLibrary[430],//怪物
                                           Gates = new MLibrary[2],
                                           Flags = new MLibrary[12],
-                                          Mounts = new MLibrary[12],
+                                          Mounts = new MLibrary[32],
                                           NPCs = new MLibrary[400],
                                           Fishing = new MLibrary[2],
                                           Pets = new MLibrary[14],
@@ -661,6 +661,8 @@ namespace Client.MirGraphics
 
             mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
+
+
 
         public void Draw(int index, Point point, Color colour, bool offSet, float opacity)
         {

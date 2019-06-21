@@ -99,7 +99,8 @@ public class ItemInfo
     //装备的分解获得石头的数量，这个只保留在服务器，不发送到客户端,最小材料数，最大材料数
     public byte MinMaterial, MaxMaterial;
 
-
+    public byte MinGem, MaxGem;//物品可砸最大宝玉，小
+    
 
 
     public bool IsConsumable
@@ -451,7 +452,8 @@ public class ItemInfo
             obj.ToolTip = read.GetString(read.GetOrdinal("ToolTip"));
             obj.MinMaterial = read.GetByte(read.GetOrdinal("MinMaterial"));
             obj.MaxMaterial = read.GetByte(read.GetOrdinal("MaxMaterial"));
-
+            obj.MinGem = read.GetByte(read.GetOrdinal("MinGem"));
+            obj.MaxGem = read.GetByte(read.GetOrdinal("MaxGem"));
             DBObjectUtils.updateObjState(obj, obj.Index);
             
             _listAll.Add(obj);
@@ -890,8 +892,9 @@ public class UserItem
     //持久是每个装备都不一样的属性，当前持久，和最大持久放在具体的装备上
     public ushort CurrentDura, MaxDura;
     //当前数量，最大数量，这个是打包的
-    //GemCount,砸宝石的次数
+    //GemCount,砸宝石的次数（成功的次数）
     public uint Count = 1, GemCount = 0;
+    public byte MaxGem=0;//最大允许的宝玉上限
     //这里是增加的属性
     public byte AC, MAC, DC, MC, SC, Accuracy, Agility, HP, MP, Strong, MagicResist, PoisonResist, HealthRecovery, ManaRecovery, PoisonRecovery, CriticalRate, CriticalDamage, Freezing, PoisonAttack;
     public sbyte AttackSpeed, Luck;
@@ -910,6 +913,10 @@ public class UserItem
     public ItemSkill sk1, sk2, sk3, sk4;
     public ushort skCount;//阵法的层数
 
+    //衣服，武器的幻化
+    public ushort n_Image=0;
+    public short n_Shape=-1;
+    public byte n_Effect=0;
 
     public RefinedValue RefinedValue = RefinedValue.None;
     public byte RefineAdded = 0;
@@ -1012,7 +1019,6 @@ public class UserItem
         SoulBoundId = -1;
         ItemIndex = info.Index;
         Info = info;
-
         SetSlotSize();
     }
 
@@ -1119,6 +1125,12 @@ public class UserItem
         sk3 = (ItemSkill)reader.ReadByte();
         sk4 = (ItemSkill)reader.ReadByte();
         skCount = reader.ReadUInt16();
+        //增加一个宝石上限
+        MaxGem = reader.ReadByte();
+        //衣服武器的幻化
+        n_Image = reader.ReadUInt16();
+        n_Shape = reader.ReadInt16();
+        n_Effect = reader.ReadByte();
     }
 
     /// <summary>
@@ -1303,6 +1315,12 @@ public class UserItem
         writer.Write((byte)sk3);
         writer.Write((byte)sk4);
         writer.Write(skCount);
+        //最大的宝玉
+        writer.Write(MaxGem);//
+        //衣服武器的幻化
+        writer.Write(n_Image);
+        writer.Write(n_Shape);
+        writer.Write(n_Effect);
     }
 
     //作废，不单独保存
@@ -1499,10 +1517,10 @@ public class UserItem
 
         switch (Info.Type)
         {
-            case ItemType.Mount:
+            case ItemType.Mount://虎类坐骑不能带面具，狼类坐骑就可以带面具
                 if (Info.Shape < 7)
                     amount = 4;
-                else if (Info.Shape < 12)
+                else if (Info.Shape < 32)
                     amount = 5;
                 break;
             case ItemType.Weapon:
@@ -1549,10 +1567,27 @@ public class UserItem
             }
 
             #endregion
-
+            if (n_Image > 0)
+            {
+                return n_Image;
+            }
             return Info.Image;
         }
     }
+
+
+    public short Shape
+    {
+        get
+        {
+            if (n_Shape > -1)
+            {
+                return n_Shape;
+            }
+            return Info.Shape;
+        }
+    }
+
     //物品的副本
     //这里好多问题哦
     public UserItem Clone()
@@ -1652,6 +1687,24 @@ public class UserItem
         if ((stat.AttackSpeedChance > 0) && (RandomUtils.Next(stat.AttackSpeedChance) == 0)) AttackSpeed = (sbyte)(RandomomRange(stat.AttackSpeedMaxStat - 1, stat.AttackSpeedStatChance) + 1);
         if ((stat.LuckChance > 0) && (RandomUtils.Next(stat.LuckChance) == 0)) Luck = (sbyte)(RandomomRange(stat.LuckMaxStat - 1, stat.LuckStatChance) + 1);
         if ((stat.CurseChance > 0) && (RandomUtils.Next(100) <= stat.CurseChance)) Cursed = true;
+
+        if (ServerConfig.openMaxGem && Info.Type < ItemType.Stone && Info.Type > ItemType.Nothing)
+        {
+            MaxGem = Info.MinGem;
+            for(int i = 0; i < 5; i++)
+            {
+                if (RandomUtils.Next(100) < 25 && MaxGem < Info.MaxGem)
+                {
+                    MaxGem++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+    
+        
     }
 
     //最大增加数，增加几率1/x

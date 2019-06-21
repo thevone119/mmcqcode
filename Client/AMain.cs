@@ -270,6 +270,10 @@ namespace Launcher
         //返回成功，失败
         public bool Download(FileInformation info)
         {
+            if(Settings.P_Host.IndexOf("http:", StringComparison.CurrentCultureIgnoreCase) != -1)
+            {
+                return DownloadHttp(info);
+            }
             bool ret = false;
             string fileName = info.FileName.Replace(@"\", "/");
             if (fileName != "PList.gz")
@@ -360,11 +364,147 @@ namespace Launcher
 
         }
 
-        
-        
+
+        public bool DownloadHttp(FileInformation info)
+        {
+            bool ret = false;
+            string fileName = info.FileName.Replace(@"\", "/");
+            if (fileName != "PList.gz")
+                fileName += ".gz";
+            string tempfile = Settings.P_Client + "download/" + info.FileName;
+            string rfile = Settings.P_Client + info.FileName;
+            //不存在目录则创建
+            if (!Directory.Exists(Path.GetDirectoryName(tempfile)))
+                Directory.CreateDirectory(Path.GetDirectoryName(tempfile));
+            if (!Directory.Exists(Path.GetDirectoryName(rfile)))
+                Directory.CreateDirectory(Path.GetDirectoryName(rfile));
+
+            long t_completedBytes = _completedBytes;
+            _currentBytes = 0;
+            try
+            {
+
+                HttpWebRequest myRequest = (HttpWebRequest)HttpWebRequest.Create(Settings.P_Host + fileName);// 打开网络连接
+          
+
+                using (Stream ftpStream = myRequest.GetResponse().GetResponseStream())
+                {
+                    using (FileStream outputStream = new FileStream(tempfile, FileMode.Create))
+                    {
+                        int bufferSize = 2048;
+                        int readCount;
+                        byte[] buffer = new byte[bufferSize];
+
+                        readCount = ftpStream.Read(buffer, 0, bufferSize);
+                        while (readCount > 0)
+                        {
+                            if (WinClose)
+                            {
+                                return false;
+                            }
+                            outputStream.Write(buffer, 0, readCount);
+                            _completedBytes += readCount;
+                            _currentBytes += readCount;
+                            readCount = ftpStream.Read(buffer, 0, bufferSize);
+                        }
+                        //执行到这里，其实就已经是成功了
+                        ret = true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                System.Console.WriteLine("下载文件失败：" + fileName);
+                File.AppendAllText(@".\Config\Error.txt",
+                                       string.Format("[{0}] {1}{2}", DateTime.Now, info.FileName + " could not be downloaded. (" + e.Message + ")", Environment.NewLine));
+            }
+            //如果失败了，需要进行重置
+            if (!ret)
+            {
+                _completedBytes = t_completedBytes;
+                _currentBytes = 0;
+            }
+            else
+            {
+                //下载成功，则复制替换旧的文件
+                try
+                {
+                    //
+                    if ((info.FileName.EndsWith(System.AppDomain.CurrentDomain.FriendlyName, StringComparison.CurrentCultureIgnoreCase)))
+                    {
+                        FileMove(Settings.P_Client + System.AppDomain.CurrentDomain.FriendlyName, Settings.P_Client + oldClientName);
+                        Restart = true;
+                    }
+                    File.Copy(tempfile, rfile, true);
+                    File.Delete(tempfile);
+                }
+                catch (Exception e)
+                {
+                    File.AppendAllText(@".\Config\Error.txt",
+                                       string.Format("[{0}] {1}{2}", DateTime.Now, info.FileName + " file copy Error. (" + e.Message + ")", Environment.NewLine));
+                }
+            }
+
+            return ret;
+        }
+
+
+        public byte[] DownloadHttp(string fileName)
+        {
+            fileName = fileName.Replace(@"\", "/");
+
+            if (fileName != "PList.gz")
+                fileName += ".gz";
+            byte[] ret = new byte[1];
+            try
+            {
+                MirLog.info("downfile:" + fileName);
+                using (MemoryStream mStream = new MemoryStream())
+                {
+                    using (BinaryWriter gStream = new BinaryWriter(mStream))
+                    {
+                        HttpWebRequest myRequest = (HttpWebRequest)HttpWebRequest.Create(Settings.P_Host + fileName);// 打开网络连接
+
+    
+                        Stream ftpStream = myRequest.GetResponse().GetResponseStream();// 向服务器请求,获得服务器的回应数据流
+                        int bufferSize = 1024;
+                        int readCount;
+                        byte[] buffer = new byte[bufferSize];
+
+                        readCount = ftpStream.Read(buffer, 0, bufferSize);
+                        while (readCount > 0)
+                        {
+                            gStream.Write(buffer, 0, readCount);
+                            readCount = ftpStream.Read(buffer, 0, bufferSize);
+                        }
+                        ret = mStream.ToArray();
+                        ftpStream.Close();
+                    }
+                }
+                //using (WebClient client = new WebClient())
+                //{
+                //    client.Credentials = new NetworkCredential(Settings.Login, Settings.Password);
+                //   return client.DownloadData(Settings.Host  + fileName);
+                //}
+            }
+            catch
+            {
+                System.Console.WriteLine("下载文件失败：" + fileName);
+            }
+            if (ret.Length > 10)
+            {
+                return ret;
+            }
+            return null;
+        }
+
         //下载文件，返回的是字节数组
         public byte[] Download(string fileName)
         {
+            if (Settings.P_Host.IndexOf("http:", StringComparison.CurrentCultureIgnoreCase) != -1)
+            {
+                return DownloadHttp(fileName);
+            }
             fileName = fileName.Replace(@"\", "/");
 
             if (fileName != "PList.gz")

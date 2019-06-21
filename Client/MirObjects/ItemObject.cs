@@ -27,6 +27,7 @@ namespace Client.MirObjects
 
         public Size Size;
 
+        public ItemGrade grade;
 
         public ItemObject(uint objectID) : base(objectID)
         {
@@ -44,7 +45,7 @@ namespace Client.MirObjects
             MapLocation = info.Location;
             GameScene.Scene.MapControl.AddObject(this);
             DrawFrame = info.Image;
-
+            grade = info.grade;
             Size = BodyLibrary.GetTrueSize(DrawFrame);
 
             DrawY = CurrentLocation.Y;
@@ -101,6 +102,16 @@ namespace Client.MirObjects
 
         public override void DrawName()
         {
+            //这里加入物品显示过滤
+            if (NameColour.ToArgb() == Color.White.ToArgb() && GameScene.UserSet.FilterItem1)
+            {
+                return;
+            }
+            if (NameColour.ToArgb() == Color.LightSkyBlue.ToArgb() && GameScene.UserSet.FilterItem2)
+            {
+                return;
+            }
+
             CreateLabel(Color.Transparent, false, true);
 
             if (NameLabel == null) return;
@@ -122,6 +133,8 @@ namespace Client.MirObjects
 
         public void DrawName(int y)
         {
+        
+   
             CreateLabel(Color.FromArgb(100, 0, 24, 48), true, false);
 
             NameLabel.Location = new Point(

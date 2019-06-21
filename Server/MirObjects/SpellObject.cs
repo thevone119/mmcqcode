@@ -150,14 +150,17 @@ namespace Server.MirObjects
                     }
                     ob.Attacked(Caster, _Value, DefenceType.MAC, false);
                     if (!ob.Dead)
-                    ob.ApplyPoison(new Poison
+                    {
+                        ob.ApplyPoison(new Poison
                         {
-                            Duration = 15,
+                            Duration = 20,
                             Owner = Caster,
                             PType = PoisonType.Green,
                             TickSpeed = 2000,
                             Value = _Value / 20
-                        }, Caster, false, false);
+                        }, Caster);
+                    }
+                    
                     break;
                 case Spell.HealingCircle://五行阵
                     if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) return;
@@ -165,7 +168,7 @@ namespace Server.MirObjects
                     //伤害敌军
                     if (ob.IsAttackTarget(Caster))
                     {
-                        ob.Attacked(Caster, Value/2, DefenceType.MAC, false);
+                        ob.Attacked(Caster, Value*10/8, DefenceType.MAC, false);
                     }
                     else if (ob.IsFriendlyTarget(Caster))//治疗友军
                     {

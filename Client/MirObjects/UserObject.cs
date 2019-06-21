@@ -330,6 +330,10 @@ namespace Client.MirObjects
             {
                 FastRun = true;//可以免助跑
             }
+            if (GameScene.Scene.MapControl.CanFastRun)
+            {
+                FastRun = true;//可以免助跑
+            }
             short Macrate = 0, Acrate = 0, HPrate = 0, MPrate = 0;
 
             ItemSets.Clear();
@@ -436,11 +440,27 @@ namespace Client.MirObjects
                 {
                     Armour = RealItem.Shape;
                     WingEffect = RealItem.Effect;
+                    if (temp.n_Shape > -1)
+                    {
+                        Armour = temp.n_Shape;
+                    }
+                    if (temp.n_Effect > 0)
+                    {
+                        WingEffect = temp.n_Effect;
+                    }
                 }
 				if (RealItem.Type == ItemType.Weapon)
 				{
 					Weapon = RealItem.Shape;
-					WeaponEffect = RealItem.Effect;
+                    WeaponEffect = RealItem.Effect;
+                    if (temp.n_Shape > -1)
+                    {
+                        Weapon = temp.n_Shape;
+                    }
+                    if (temp.n_Effect > 0)
+                    {
+                        WeaponEffect = temp.n_Effect;
+                    }
 				}
 
 				if (RealItem.Type == ItemType.Mount)
@@ -607,11 +627,11 @@ namespace Client.MirObjects
                         MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 1);
                         MaxBagWeight = (ushort)Math.Min(ushort.MaxValue, MaxBagWeight + 17);
                         break;
-                    case ItemSet.Hyeolryong://龙血套（5件套），全属性加2，血量加70
+                    case ItemSet.Hyeolryong://龙血套（5件套），全属性加2，血量加50
                         MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxSC + 2);
                         MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 2);
                         MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxSC + 2);
-                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 70);
+                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 50);
                         MaxMP = (ushort)Math.Min(ushort.MaxValue, MaxMP + 20);
                         Holy = (byte)Math.Min(byte.MaxValue, Holy + 1);
                         Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + 1);
@@ -630,22 +650,23 @@ namespace Client.MirObjects
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
                         CriticalRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 1);
                         break;
-                    case ItemSet.Paeok://贝玉套 5件套,暴击加1，准确加1，攻速加1
+                    case ItemSet.Paeok://贝玉套-改成3件套了 5件套,暴击加1，准确加1，攻速加1
                         MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 2);
                         MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 2);
-                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 50);
+                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 30);
                         Accuracy = (byte)Math.Min(byte.MaxValue, Agility + 1);
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
+                        HpDrainRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 1);
                         break;
                     case ItemSet.Sulgwan://黑暗套 5件套,暴击加1，准确加1，攻速加1
-                        MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 2);
-                        MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 2);
-                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 60);
-                        Agility = (byte)Math.Min(byte.MaxValue, Agility + 1);
+                        MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 3);
+                        MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 3);
+                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 50);
+                        Agility = (byte)Math.Min(byte.MaxValue, Agility + 2);
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
-                        HpDrainRate = (byte)Math.Min(byte.MaxValue, HpDrainRate + 2);
+                        HpDrainRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 2);
                         break;
-                        
+
                     case ItemSet.GaleWind://狂风套，加2点攻速
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 2);
                         break;

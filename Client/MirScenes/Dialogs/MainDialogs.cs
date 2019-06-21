@@ -2317,14 +2317,27 @@ namespace Client.MirScenes.Dialogs
                     }
 
                     RealItem = Functions.GetRealItem(Grid[(int)EquipmentSlot.Armour].Item.Info, MapObject.User.Level, MapObject.User.Class, GameScene.ItemInfoList);
-                    Libraries.StateItems.Draw(RealItem.Image, DisplayLocation, Color.White, true, 1F);
-
+                    if (Grid[(int)EquipmentSlot.Armour].Item.n_Image > 0)
+                    {
+                        Libraries.StateItems.Draw(Grid[(int)EquipmentSlot.Armour].Item.n_Image, DisplayLocation, Color.White, true, 1F);
+                    }
+                    else
+                    {
+                        Libraries.StateItems.Draw(RealItem.Image, DisplayLocation, Color.White, true, 1F);
+                    }
                 }
                 if (Grid[(int)EquipmentSlot.Weapon].Item != null)
                 {
                     RealItem = Functions.GetRealItem(Grid[(int)EquipmentSlot.Weapon].Item.Info, MapObject.User.Level, MapObject.User.Class, GameScene.ItemInfoList);
-                    Libraries.StateItems.Draw(RealItem.Image, DisplayLocation, Color.White, true, 1F);
 
+                    if (Grid[(int)EquipmentSlot.Weapon].Item.n_Image > 0)
+                    {
+                        Libraries.StateItems.Draw(Grid[(int)EquipmentSlot.Weapon].Item.n_Image, DisplayLocation, Color.White, true, 1F);
+                    }
+                    else
+                    {
+                        Libraries.StateItems.Draw(RealItem.Image, DisplayLocation, Color.White, true, 1F);
+                    }
                 }
 
                 if (Grid[(int)EquipmentSlot.Helmet].Item != null)

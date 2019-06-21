@@ -53,7 +53,7 @@ namespace Server.MirObjects.Monsters
                 {
                     if (!ob.IsAttackTarget(this)) continue;
                     //几率冰冻
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist)
+                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist && RandomUtils.Next(3)==1)
                     {
                         ob.ApplyPoison(new Poison
                         {

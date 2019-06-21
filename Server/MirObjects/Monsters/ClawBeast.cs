@@ -10,7 +10,7 @@ using System.Drawing;
 namespace Server.MirObjects.Monsters
 {
     /// <summary>
-    /// 水手长（2种形态）
+    /// 水手长（2种形态进行切换）
     /// 1.刀砍
     /// 2.丢火球
     /// </summary>

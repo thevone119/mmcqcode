@@ -50,6 +50,12 @@ namespace Server.MirObjects.Monsters
             base.Die();
         }
 
+        //被动引爆
+        public void detonate()
+        {
+
+        }
+
         protected override void CompleteRangeAttack(IList<object> data)
         {
             MapObject target = (MapObject)data[0];

@@ -37,12 +37,12 @@ namespace Server.MirObjects.Monsters
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
                 //攻击
                 DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 400, Target, damage, DefenceType.MACAgility);
-                if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist)
+                if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist && RandomUtils.Next(100) < 20)
                 {
                     Target.ApplyPoison(new Poison
                     {
                         Owner = this,
-                        Duration = 6,
+                        Duration = 4,
                         PType = PoisonType.Stun,
                         Value = damage,
                         TickSpeed = 2000

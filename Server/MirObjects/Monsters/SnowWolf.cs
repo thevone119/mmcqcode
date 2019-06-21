@@ -33,10 +33,10 @@ namespace Server.MirObjects.Monsters
             int distance = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
             int delay = distance * 50 + 750; //50 MS per Step
 
-            int rd = 4;
+            int rd = 5;
             if (HP < MaxHP / 2)
             {
-                rd = 3;
+                rd = 4;
             }
             else if (HP < MaxHP / 4)
             {
@@ -72,21 +72,21 @@ namespace Server.MirObjects.Monsters
                 if (ob.Race == ObjectType.Monster || ob.Race == ObjectType.Player)
                 {
                     if (!ob.IsAttackTarget(this)) continue;
-                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage, DefenceType.AC);
+                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage, DefenceType.MACAgility);
                     ActionList.Add(action);
                     //冰冻
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist)
+                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist&& RandomUtils.Next(100) < 30)
                     {
                         ob.ApplyPoison(new Poison
                         {
                             Owner = this,
-                            Duration = RandomUtils.Next(8, 15),
+                            Duration = RandomUtils.Next(5, 15),
                             PType = PoisonType.Slow,
                             Value = damage / 3,
                             TickSpeed = 1000
                         }, this);
                         //几率麻痹
-                        if (RandomUtils.Next(100) < 15)
+                        if (RandomUtils.Next(100) < 10)
                         {
                             ob.ApplyPoison(new Poison
                             {

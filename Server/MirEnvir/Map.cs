@@ -2448,21 +2448,22 @@ namespace Server.MirEnvir
 
                                                 tempOb.ChangeMP(-tempValue);
                                             }
-                                            //这里增加伤害,群体伤害，40%的真实伤害
+                                            //这里增加伤害,1倍的道术伤害吧。群体伤害，40%的真实伤害
                                             int dvalue = value * 4 / 10 + value/15*magic.Level;
+                                            dvalue = value;
                                             if (dvalue < 10)
                                             {
                                                 dvalue = 10;
                                             }
                                             if (!player.hasItemSk(ItemSkill.Taoist7))
                                             {
-                                                if (dvalue > 60)
+                                                if (dvalue > 100)
                                                 {
-                                                    dvalue = 60;
+                                                    dvalue = 100;
                                                 }
                                             }
 
-                                            target.Attacked(player, dvalue, DefenceType.Agility, false);
+                                            target.Attacked(player, dvalue, DefenceType.MAC, false);
                                             train = true;
                                         }
                                         break;
@@ -2880,10 +2881,10 @@ namespace Server.MirEnvir
             Monster = SMain.Envir.GetMonsterInfo(info.MonsterIndex);
             LoadRoutes();
             initRespawnRegion();
-            //这里设置下，最大重生时间不超过3个小时
+            //这里设置下，最大重生时间不超过3个小时,乱来，6个小时刷的怪才好争夺呢
             if (RespawnTime > 180)
             {
-                RespawnTime = 180;
+                //RespawnTime = 180;
             }
         }
 

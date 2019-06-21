@@ -8,8 +8,7 @@ namespace Server.MirObjects.Monsters
 {
     /// <summary>
     ///  冰宫战士
-    ///  3种攻击手段
-    ///  1.远程攻击
+    ///  2种攻击手段
     /// </summary>
     public class Monster406 : MonsterObject
     {

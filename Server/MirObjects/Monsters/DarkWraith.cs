@@ -89,14 +89,19 @@ namespace Server.MirObjects.Monsters
                 Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction,TargetID=Target.ObjectID, Location = CurrentLocation, Type = 0 });
                 DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.MAC);
                 ActionList.Add(action);
-                Target.ApplyPoison(new Poison
+                //减速
+                if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist && RandomUtils.Next(3) == 1)
                 {
-                    Owner = this,
-                    Duration = RandomUtils.Next(5, 10),
-                    PType = PoisonType.Slow,
-                    Value = damage / 3,
-                    TickSpeed = 1000
-                }, this);
+                    Target.ApplyPoison(new Poison
+                    {
+                        Owner = this,
+                        Duration = RandomUtils.Next(5, 10),
+                        PType = PoisonType.Slow,
+                        Value = damage / 3,
+                        TickSpeed = 1000
+                    }, this);
+                }
+                
             }
             ShockTime = 0;
             ActionTime = Envir.Time + 500;
