@@ -3430,7 +3430,14 @@ namespace Client.MirScenes.Dialogs
                 if (ArmorCell.Item != null)
                 {
                     RealItem = Functions.GetRealItem(ArmorCell.Item.Info, Level, Class, GameScene.ItemInfoList);
-                    Libraries.StateItems.Draw(RealItem.Image, new Point(DisplayLocation.X + 0, DisplayLocation.Y + -20), Color.White, true, 1F);
+                    if (ArmorCell.Item.n_Image > 0)
+                    {
+                        Libraries.StateItems.Draw(ArmorCell.Item.n_Image, new Point(DisplayLocation.X + 0, DisplayLocation.Y + -20), Color.White, true, 1F);
+                    }
+                    else
+                    {
+                        Libraries.StateItems.Draw(RealItem.Image, new Point(DisplayLocation.X + 0, DisplayLocation.Y + -20), Color.White, true, 1F);
+                    }
 
                     if (RealItem.Effect > 0)
                     {
@@ -3445,9 +3452,14 @@ namespace Client.MirScenes.Dialogs
                 if (WeaponCell.Item != null)
                 {
                     RealItem = Functions.GetRealItem(WeaponCell.Item.Info, Level, Class, GameScene.ItemInfoList);
-                    Libraries.StateItems.Draw(RealItem.Image, new Point(DisplayLocation.X, DisplayLocation.Y - 20),
-                    Color.White, true, 1F);
-
+                    if (WeaponCell.Item.n_Image > 0)
+                    {
+                        Libraries.StateItems.Draw(WeaponCell.Item.n_Image, new Point(DisplayLocation.X, DisplayLocation.Y - 20), Color.White, true, 1F);
+                    }
+                    else
+                    {
+                        Libraries.StateItems.Draw(RealItem.Image, new Point(DisplayLocation.X, DisplayLocation.Y - 20), Color.White, true, 1F);
+                    }
                 }
 
                 if (HelmetCell.Item != null)
