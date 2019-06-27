@@ -113,6 +113,8 @@ namespace Server
         public static List<long> OrbsDefList = new List<long>();
         public static List<long> OrbsDmgList = new List<long>();
 
+        public static List<string> stopIpList = new List<string>();
+
         //全局的爆率，经验倍率，刷怪倍数,技能熟练度的倍数
         //地图上也增加相应的配置
         public static float DropRate = 1F, ExpRate = 1F, MonsterRate=1.0F;
@@ -200,9 +202,9 @@ namespace Server
         public static int FishingMobSpawnChance = 1;
         public static string FishingMonster = "巨型多角虫";
 
-        //Mail Settings
-        public static bool MailAutoSendGold = false;
-        public static bool MailAutoSendItems = false;
+        //Mail Settings,邮件设置
+        public static bool MailAutoSendGold = true;
+        public static bool MailAutoSendItems = true;
         public static bool MailFreeWithStamp = true;
         public static uint MailCostPer1KGold = 100;
         public static uint MailItemInsurancePercentage = 5;
@@ -513,6 +515,7 @@ namespace Server
 
             LoadVersion();
             LoadEXP();
+            LoadStopIp();
             LoadBaseStats();
             LoadRandomItemStats();
             LoadMines();
@@ -709,8 +712,39 @@ namespace Server
                 exp = reader.ReadInt64("Exp", "Level" + i, exp);
                 LevelGoldExpList.Add(exp);
             }
+        }
 
-            
+
+        //加载禁止的IP
+        public static void LoadStopIp()
+        {
+            //过滤,禁止的IP
+            FileInfo fi = new FileInfo(ConfigPath + @".\stopIpList.ini");
+            if (fi.Exists)
+            {
+                stopIpList.Clear();
+                string[] lines = File.ReadAllLines(ConfigPath + @".\stopIpList.ini", EncodingType.GetType(ConfigPath + @".\stopIpList.ini"));
+                foreach (string strLine in lines)
+                {
+                    if (strLine == null || strLine.Trim().Length < 3 || strLine.StartsWith("#"))
+                    {
+                        continue;
+                    }
+                    stopIpList.Add(strLine);
+                }
+            }
+        }
+
+        public static bool ISStopIp(string ip)
+        {
+            foreach(string _ip in stopIpList)
+            {
+                if (ip.StartsWith(_ip))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         //这个是各职业的基础状态，基础属性，成长属性

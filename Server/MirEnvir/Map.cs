@@ -763,7 +763,7 @@ namespace Server.MirEnvir
             foreach(MapObject o in Objects[x, y])
             {
                 //排除NPC
-                if (o.Blocking && o.Race!= ObjectType.Merchant)
+                if (o.Blocking)
                 {
                     return false;
                 }

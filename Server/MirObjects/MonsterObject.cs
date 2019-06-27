@@ -570,7 +570,8 @@ namespace Server.MirObjects
         {
             get
             {
-                return !Dead && !InSafeZone;
+                //return !Dead && !InSafeZone;
+                return !Dead ;
                 //return false;
             }
         }
@@ -1370,8 +1371,16 @@ namespace Server.MirObjects
         public void PetRecall()
         {
             if (Master == null) return;
-            if (!Teleport(Master.CurrentMap, Master.Back))
+
+            if(Master.CurrentMap.EmptyPoint(Master.Back.X, Master.Back.Y))
+            {
+                Teleport(Master.CurrentMap, Master.Back);
+                return;
+            }
+            else
+            {
                 Teleport(Master.CurrentMap, Master.CurrentLocation);
+            }
         }
         protected virtual void CompleteAttack(IList<object> data)
         {
@@ -1494,17 +1503,25 @@ namespace Server.MirObjects
                     }
                         
                     //绿毒拉仇恨太猛了，看要不要改
+                    //前面3次，可以直接拉5秒。后面的每次毒最多拉2秒的样子。
                     if (poison.PType == PoisonType.Green || poison.PType == PoisonType.Bleeding)
                     {
                         if (EXPOwner == null || EXPOwner.Dead)
                         {
-                            EXPOwner = poison.Owner;
+                            if(poison.Owner!=null && poison.Owner.Race == ObjectType.Monster && poison.Owner.Master != null)
+                            {
+                                EXPOwner = poison.Owner.Master;
+                            }
+                            else
+                            {
+                                EXPOwner = poison.Owner;
+                            }
                             EXPOwnerTime = Envir.Time + EXPOwnerDelay;
                         }
                         else if (EXPOwner == poison.Owner)
                         {
                             //这里可以改成前面5下掉血才拉仇恨的
-                            EXPOwnerTime = Envir.Time + EXPOwnerDelay;
+                            //EXPOwnerTime = Envir.Time + EXPOwnerDelay;
                         }
                            
 
@@ -1682,6 +1699,7 @@ namespace Server.MirObjects
             //处理攻击目标，如果有的话
             ProcessTarget();
         }
+
         //怪物到处搜索
         protected virtual void ProcessSearch()
         {
@@ -2574,9 +2592,12 @@ namespace Server.MirObjects
                 if (Envir.Time > Master.BrownTime && Master.PKPoints < 200)
                     attacker.BrownTime = Envir.Time + Settings.Minute;
 
+            LastAttacker = attacker;
+            LastAttackedTime = Envir.Time + EXPOwnerDelay;
             if (EXPOwner == null || EXPOwner.Dead)
+            {
                 EXPOwner = attacker;
-
+            }
             if (EXPOwner == attacker)
             {
                 EXPOwnerTime = Envir.Time + EXPOwnerDelay;
@@ -2718,10 +2739,12 @@ namespace Server.MirObjects
 
             else if (attacker.Master != null)
             {
-                if (attacker.CurrentMap != attacker.Master.CurrentMap || !Functions.InRange(attacker.CurrentLocation, attacker.Master.CurrentLocation, Globals.DataRange))
+                if (attacker.CurrentMap != attacker.Master.CurrentMap || !Functions.InRange(attacker.CurrentLocation, attacker.Master.CurrentLocation, Globals.DataRange*3))
                     EXPOwner = null;
                 else
                 {
+                    LastAttacker = attacker.Master;
+                    LastAttackedTime = Envir.Time + EXPOwnerDelay;
 
                     if (EXPOwner == null || EXPOwner.Dead)
                         EXPOwner = attacker.Master;
@@ -2730,9 +2753,7 @@ namespace Server.MirObjects
                     {
                         EXPOwnerTime = Envir.Time + EXPOwnerDelay;
                     }
-                        
                 }
-
             }
 
             Broadcast(new S.ObjectStruck { ObjectID = ObjectID, AttackerID = attacker.ObjectID, Direction = Direction, Location = CurrentLocation });
@@ -2778,7 +2799,9 @@ namespace Server.MirObjects
         public override void ApplyPoison(Poison p, MapObject Caster = null, bool NoResist = false, bool ignoreDefence = true)
         {
             if (p.Owner != null && p.Owner.IsAttackTarget(this))
+            {
                 Target = p.Owner;
+            }
 
             if (Master != null && p.Owner != null && p.Owner.Race == ObjectType.Player && p.Owner != Master)
             {
@@ -2804,6 +2827,26 @@ namespace Server.MirObjects
                 {
                     return;
                 }
+            }
+
+            //怪物被中毒。在这里实现拉仇恨吧
+            if(p!=null && p.Owner!=null && p.Owner.Race==ObjectType.Monster && p.Owner.Master != null)
+            {
+                LastAttacker = p.Owner.Master;
+            }
+            else
+            {
+                LastAttacker = p.Owner;
+            }
+            LastAttackedTime = Envir.Time + EXPOwnerDelay;
+            if (EXPOwner == null || EXPOwner.Dead)
+            {
+                EXPOwner = LastAttacker;
+                EXPOwnerTime = Envir.Time + EXPOwnerDelay;
+            }
+            else if (EXPOwner == LastAttacker && LastAttacker!=null)
+            {
+                EXPOwnerTime = Envir.Time + EXPOwnerDelay;
             }
 
             for (int i = 0; i < PoisonList.Count; i++)

@@ -1993,6 +1993,7 @@ namespace Server.MirEnvir
                 c.Enqueue(new ServerPackets.Login { Result = 0 });
                 return;
             }
+       
 
             if (!AccountIDReg.IsMatch(p.AccountID))
             {
@@ -2049,6 +2050,9 @@ namespace Server.MirEnvir
                 c.Enqueue(new ServerPackets.Login { Result = 4 });
                 return;
             }
+
+         
+
             account.WrongPasswordCount = 0;
 
             lock (AccountLock)
@@ -2059,16 +2063,24 @@ namespace Server.MirEnvir
                 account.Connection = c;
             }
 
+            if (account.Connection!=null && Settings.ISStopIp(account.Connection.IPAddress))
+            {
+                SMain.EnqueueDebugging(account.Connection.IPAddress + ", ISStopIp.");
+                c.Enqueue(new ServerPackets.Login { Result = 4 });
+                return;
+            }
+
             c.Account = account;
             c.Stage = GameStage.Select;
 
             account.LastDate = Now;
             account.LastIP = c.IPAddress;
-
+            SMain.Enqueue("account Login:" + account.AccountID + ", User logged in.");
             SMain.Enqueue(account.Connection.SessionID + ", " + account.Connection.IPAddress + ", User logged in.");
             c.Enqueue(new ServerPackets.LoginSuccess { Characters = account.GetSelectInfo()});
             
         }
+
         public void NewCharacter(ClientPackets.NewCharacter p, MirConnection c, bool IsGm)
         {
             if (!Settings.AllowNewCharacter)
@@ -2076,6 +2088,23 @@ namespace Server.MirEnvir
                 c.Enqueue(new ServerPackets.NewCharacter { Result = 0 });
                 return;
             }
+            //名字不允许有空格
+            if(p.Name.IndexOf(' ') != -1)
+            {
+                c.Enqueue(new ServerPackets.NewCharacter { Result = 1 });
+                return;
+            }
+            if (p.Name.IndexOf('@') != -1)
+            {
+                c.Enqueue(new ServerPackets.NewCharacter { Result = 1 });
+                return;
+            }
+            if (p.Name.IndexOf('!') != -1)
+            {
+                c.Enqueue(new ServerPackets.NewCharacter { Result = 1 });
+                return;
+            }
+
 
             if (p.Name == null || p.Name.Length < Globals.MinCharacterNameLength || p.Name.Length > Globals.MaxCharacterNameLength)
             {
@@ -2134,7 +2163,8 @@ namespace Server.MirEnvir
 
                 c.Account.Characters.Add(info);
                 CharacterList.Add(info);
-
+                SMain.Enqueue("NewCharacter:" + p.Name + ", Account:"+ c.Account.AccountID);
+            
                 c.Enqueue(new ServerPackets.NewCharacterSuccess { CharInfo = info.ToSelectInfo() });
             }
         }
@@ -2156,7 +2186,7 @@ namespace Server.MirEnvir
             return false;
         }
 
-        private AccountInfo GetAccount(string accountID)
+        public AccountInfo GetAccount(string accountID)
         {
             for (int i = 0; i < AccountList.Count; i++)
                 if (String.Compare(AccountList[i].AccountID, accountID, StringComparison.OrdinalIgnoreCase) == 0)
@@ -2463,6 +2493,7 @@ namespace Server.MirEnvir
 
             return null;
         }
+
         public CharacterInfo GetCharacterInfo(string name)
         {
             for (int i = 0; i < CharacterList.Count; i++)

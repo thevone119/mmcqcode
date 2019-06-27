@@ -3105,6 +3105,7 @@ namespace Server.MirObjects
             };
             Info.Inventory.CopyTo(packet.Inventory, 0);
             Enqueue(packet);
+            RefreshBagWeight();
         }
 
         private void StartGameFailed()
@@ -3611,7 +3612,7 @@ namespace Server.MirObjects
         }
 
         //刷新背包负重
-        private void RefreshBagWeight()
+        public void RefreshBagWeight()
         {
             CurrentBagWeight = 0;
 
@@ -3756,16 +3757,31 @@ namespace Server.MirObjects
                 {
                     FastRun = true;
                 }
+                //这里做武器/衣服幻化
                 //SMain.Enqueue("SkillNeckBoost" + SkillNeckBoost+ "RealItem.Unique:"+ RealItem.Unique);
                 if (RealItem.Type == ItemType.Armour)
                 {
-                    Looks_Armour = RealItem.Shape;
+                    if (temp.n_Shape > 0)
+                    {
+                        Looks_Armour = temp.n_Shape;
+                    }
+                    else
+                    {
+                        Looks_Armour = RealItem.Shape;
+                    }
                     Looks_Wings = RealItem.Effect;
                 }
 
 				if (RealItem.Type == ItemType.Weapon)
 				{
-					Looks_Weapon = RealItem.Shape;
+                    if (temp.n_Shape > 0)
+                    {
+                        Looks_Weapon = temp.n_Shape;
+                    }
+                    else
+                    {
+                        Looks_Weapon = RealItem.Shape;
+                    }
 					Looks_WeaponEffect = RealItem.Effect;
 				}
 
@@ -4001,15 +4017,15 @@ namespace Server.MirObjects
                         MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 50);
                         Accuracy = (byte)Math.Min(byte.MaxValue, Agility + 1);
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
-                        HpDrainRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 1);
+                        CriticalRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 1);
                         break;
-                    case ItemSet.Sulgwan://黑暗套 5件套,暴击加1，准确加1，攻速加1
+                    case ItemSet.Sulgwan://黑暗套 3件套,暴击加2，准确加1，攻速加1
                         MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 3);
                         MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 3);
                         MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 70);
                         Agility = (byte)Math.Min(byte.MaxValue, Agility + 2);
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
-                        HpDrainRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 2);
+                        CriticalRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 2);
                         break;
                     case ItemSet.GaleWind://狂风套，加2点攻速
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 2);
@@ -4800,6 +4816,104 @@ namespace Server.MirObjects
                             CurrentMap.mapSProcess = new MonWar();
                         }
                         return;
+
+                    case "封停账号":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        AccountInfo account = Envir.GetAccount(parts[1]);
+                        if (account == null)
+                        {
+                            ReceiveChat(string.Format("找不到此账户 {0}", parts[1]), ChatType.System);
+                            return;
+                        }
+                        account.Banned = true;
+                        account.BanReason = "GM强制封停账号";
+                        account.ExpiryDate = DateTime.Now.AddYears(2);
+                        if (account.Connection != null)
+                        {
+                            account.Connection.SendDisconnect(4);
+                        }
+                        ReceiveChat(string.Format("已封停账号 {0}", parts[1]), ChatType.System);
+
+                        return;
+
+                    case "重载封IP":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        Settings.LoadStopIp();
+
+                        return;
+
+                    case "恢复角色":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        CharacterInfo characterhf = Envir.GetCharacterInfo(parts[1]);
+                        if (characterhf == null)
+                        {
+                            ReceiveChat(string.Format("找不到角色信息 {0}", parts[1]), ChatType.System);
+                        }
+                        characterhf.Deleted = false;
+                        ReceiveChat(string.Format("角色已恢复 {0}", parts[1]), ChatType.System);
+                        return;
+
+
+                    case "启用账号":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        AccountInfo account2 = Envir.GetAccount(parts[1]);
+                        if (account2 == null)
+                        {
+                            ReceiveChat(string.Format("找不到此账户 {0}", parts[1]), ChatType.System);
+                            return;
+                        }
+                        account2.Banned = false;
+                        ReceiveChat(string.Format("已启用账号 {0}", parts[1]), ChatType.System);
+
+
+                        return;
+
+                    case "玩家改名":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        if (parts.Length < 3)
+                        {
+                            ReceiveChat(string.Format("参数过少"), ChatType.System);
+                            return;
+                        }
+                        CharacterInfo character = Envir.GetCharacterInfo(parts[1]);
+                        if (character == null)
+                        {
+                            character = Envir.GetCharacterInfo(ulong.Parse(parts[1]));
+                        }
+                        CharacterInfo character2 = Envir.GetCharacterInfo(parts[2]);
+                        if (character == null)
+                        {
+                            ReceiveChat(string.Format("找不到此玩家 {0}", parts[1]), ChatType.System);
+                            return;
+                        }
+                        if (character2!= null)
+                        {
+                            ReceiveChat(string.Format("此名称已被占用 {0}", parts[2]), ChatType.System);
+                            return;
+                        }
+                        character.Name = parts[2];
+
+                        ReceiveChat(string.Format("{0} 玩家名称变更为 {1}", parts[1],parts[2]), ChatType.System);
+
+
+                        return;
+
+
                     case "封印能力":
                         if (!IsGM)
                         {
@@ -14633,6 +14747,7 @@ namespace Server.MirObjects
             Account.Gold -= gold;
             Enqueue(new S.LoseGold { Gold = gold });
         }
+        //捡取物品
         public void PickUp()
         {
             if (Dead)
@@ -19708,7 +19823,7 @@ namespace Server.MirObjects
             }
             if(message==null|| message.Length == 0)
             {
-                message = "邮件请在仓库内收取";
+                message = "邮件请在安全区收取";
             }
 
             bool hasStamp = false;
@@ -19816,25 +19931,16 @@ namespace Server.MirObjects
                 ReceiveChat("邮件必须在仓库收取.", ChatType.System);
                 return;
             }
-           
+
             if (!InSafeZone)
             {
-                //增加条件，不能在野外收取邮件
-                if (CurrentMap.NPCs == null || CurrentMap.NPCs.Count == 0)
+                if (CurrentMap != null && CurrentMap.Info!=null && CurrentMap.Info.SafeZones.Count==0)
                 {
-                    ReceiveChat("邮件必须在仓库收取.", ChatType.System);
+                    ReceiveChat("邮件请在安全区收取.", ChatType.System);
                     return;
                 }
-                //
-                foreach (NPCObject npc in CurrentMap.NPCs)
-                {
-                    if (!npc.HasKey(NPCObject.CollectParcelKey))
-                    {
-                        ReceiveChat("邮件必须在仓库收取.", ChatType.System);
-                        return;
-                    }
-                }
             }
+           
             
 
 
@@ -20588,16 +20694,18 @@ namespace Server.MirObjects
 
                 if (temp == null) continue;
                 bool Retrieve = false;//是否已归还
-                for (int i = 0; i < Info.Inventory.Length; i++)
+
+                for (int i = 6; i < Info.Inventory.Length; i++)
                 {
                     if (Info.Inventory[i] != null) continue;
-
                     RetrieveItemCollect(t, i);
                     Retrieve = true;
                     Info.ItemCollect[t] = null;
                     Enqueue(new S.DeleteItem { UniqueID = temp.UniqueID, Count = temp.Count });
                     break;
                 }
+
+
                 if (!Retrieve)
                 {
                     if (DropItem(temp, Settings.DropRange))
@@ -20704,8 +20812,8 @@ namespace Server.MirObjects
 
                 if (temps[0].Info.Grade == ItemGrade.Ancient)
                 {
-                    ReceiveChat("当前装备为远古时期遗留的先天秘宝，无法进行熔炼.", ChatType.System);
-                    return;
+                    //ReceiveChat("当前装备为远古时期遗留的先天秘宝，无法进行熔炼.", ChatType.System);
+                    //return;
                 }
 
                 if (temps[0].Info.Type == ItemType.Weapon)
@@ -21000,8 +21108,8 @@ namespace Server.MirObjects
                 }
                 if (Info.SaItemType == 4)
                 {
-                    lunhmap = Envir.GetMapByNameAndInstance("HELL00");
-                    if (lunhmap == null || !lunhmap.MapOpen|| Level<lunhmap.Info.minLevel)
+                    lunhmap = Envir.GetMapByNameAndInstance("R01");
+                    if (lunhmap == null || !lunhmap.MapOpen|| Level < lunhmap.Info.minLevel)
                     {
                         Info.SaItemType = 0;
                     }
@@ -21617,6 +21725,7 @@ namespace Server.MirObjects
                 if (RandomUtils.Next(1, 100) < Settings.RefineCritChance)
                 {
                     Info.CurrentRefine.RefineAdded = (byte)(Info.CurrentRefine.RefineAdded * Settings.RefineCritIncrease);
+
                     //Info.CurrentRefine.RefineTime++;
                 }
             }

@@ -493,6 +493,10 @@ namespace Server.MirObjects
                     if (parts.Length < 2) return;
                     acts.Add(new NPCActions(ActionType.GiveRandomItem, parts[1]));
                     break;
+                case "ONEKEYITEMSELL":
+                    //一键卖背包物品
+                    acts.Add(new NPCActions(ActionType.OneKeyItemSell));
+                    break;
                     
                 case "TAKEITEM":
                     if (parts.Length < 3) return;
@@ -2849,6 +2853,45 @@ namespace Server.MirObjects
                         }
                            
                         break;
+                    case ActionType.OneKeyItemSell:
+                        //一键卖背包物品
+                        uint givegold = 0;
+                        for (int t = 6; t < player.Info.Inventory.Length; t++)
+                        {
+                            if (player.Info.Inventory[t] == null) continue;
+                            UserItem sitem = player.Info.Inventory[t];
+                            if (sitem.Info.Bind.HasFlag(BindMode.DontSell))
+                            {
+                                continue;
+                            }
+                            if (sitem.RentalInformation != null && sitem.RentalInformation.BindingFlags.HasFlag(BindMode.DontSell))
+                            {
+                                continue;
+                            }
+                            //只卖装备，矿石，书籍等
+                            if ((sitem.Info.Type > ItemType.Nothing && sitem.Info.Type < ItemType.Stone)|| sitem.Info.Type == ItemType.Book|| sitem.Info.Type == ItemType.Ore)
+                            {
+                                givegold += sitem.SellPrice() ;
+                                SecondUserItem.add(sitem);
+                                NPCObject.hasBuy.Remove(sitem.UniqueID);
+                                player.Enqueue(new S.DeleteItem { UniqueID = sitem.UniqueID, Count = sitem.Count });
+                                player.Info.Inventory[t] = null;
+                            }
+                        }
+                        if (givegold > 0)
+                        {
+                            player.GainGold(givegold * 8 / 10);
+                            player.RefreshBagWeight();
+                            //刷新背包负重
+                            player.ReceiveChat($"一键卖物品获得金币：{givegold * 8 / 10}", ChatType.System);
+                        }
+                        else
+                        {
+                            player.ReceiveChat($"没有待出售物品", ChatType.System);
+                        }
+                        break;
+                        
+
                     case ActionType.TakeItem:
                         if (param.Count < 2 || !uint.TryParse(param[1], out count)) count = 1;
                         info = ItemInfo.getItem(param[0]);

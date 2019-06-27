@@ -83,8 +83,16 @@ namespace Server.MirNetwork
                         SMain.EnqueueDebugging(IPAddress + ", Maximum connections reached.");
                         conn.SendDisconnect(5);
                     }
+
+                    if (Settings.ISStopIp(IPAddress))
+                    {
+                        SMain.EnqueueDebugging(IPAddress + ", ISStopIp.");
+                        conn.SendDisconnect(5);
+                        return;
+                    }
                 }
             }
+           
 
             SMain.Enqueue(IPAddress + ", Connected.");
 
@@ -763,6 +771,21 @@ namespace Server.MirNetwork
                     SMain.Enqueue(SessionID + ", Disconnnected - Wrong Client Version.");
                     return;
                 }
+
+
+            if (Settings.ISStopIp(IPAddress))
+            {
+                Disconnecting = true;
+                List<byte> data = new List<byte>();
+
+                data.AddRange(new S.ClientVersion { Result = 0 }.GetPacketBytes());
+
+                BeginSend(data);
+                SoftDisconnect(10);
+                SMain.EnqueueDebugging(IPAddress + ", ISStopIp.");
+                SMain.Enqueue(SessionID + ", Disconnnected - Wrong Client Version.");
+                return;
+            }
 
             SMain.Enqueue(SessionID + ", " + IPAddress + ", Client version matched.");
             Enqueue(new S.ClientVersion { Result = 1 });

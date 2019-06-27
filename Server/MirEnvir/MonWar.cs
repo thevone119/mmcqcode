@@ -698,7 +698,7 @@ namespace Server.MirEnvir
             }
             if (mon.Name.Contains("[先锋]"))
             {
-                if (RandomUtils.Next(mcount1) >= 2)
+                if (RandomUtils.Next(300) >= 2)
                 {
                     return;
                 }

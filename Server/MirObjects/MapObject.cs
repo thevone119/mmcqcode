@@ -79,7 +79,7 @@ namespace Server.MirObjects
         //CriticalDamage:暴击伤害
         public byte MagicResist, PoisonResist, HealthRecovery, SpellRecovery, PoisonRecovery, CriticalRate, CriticalDamage, Holy, Freezing, PoisonAttack;
 
-        public long CellTime, BrownTime, PKPointTime, LastHitTime, EXPOwnerTime;
+        public long CellTime, BrownTime, PKPointTime, LastHitTime, LastAttackedTime, EXPOwnerTime;
         public Color NameColour = Color.White;
         //增加一个字段，可以更改人物，怪物名称颜色
         public Color ChangeNameColour = Color.White;
@@ -180,8 +180,8 @@ namespace Server.MirObjects
             }
 
         }
-        //主人，最后攻击人，经验拥有者，拥有者(怪物的经验归属，装备归属这个要调整下，否则道士的毒太厉害了)
-        public MapObject Master, LastHitter, EXPOwner, Owner;
+        //主人，最后攻击人，经验拥有者，拥有者(怪物的经验归属，装备归属这个要调整下，否则道士的毒太厉害了),LastAttack，最后攻击者，这个用于做经验归属哦
+        public MapObject Master, LastHitter, EXPOwner, Owner, LastAttacker;
         public long ExpireTime, OwnerTime, OperateTime;
         public int OperateDelay = 100;
 
@@ -263,7 +263,15 @@ namespace Server.MirObjects
 
                 if (EXPOwner != null && Envir.Time > EXPOwnerTime)
                 {
-                    EXPOwner = null;
+                    if (Envir.Time < LastAttackedTime + 5000)
+                    {
+                        EXPOwner = LastAttacker;
+                        EXPOwnerTime = EXPOwnerTime + 5000;
+                    }
+                    else
+                    {
+                        EXPOwner = null;
+                    }
                 }
 
                 for (int i = 0; i < ActionList.Count; i++)

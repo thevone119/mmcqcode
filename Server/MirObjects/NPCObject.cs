@@ -19,7 +19,7 @@ namespace Server.MirObjects
     public sealed class NPCObject : MapObject
     {
         //已经卖出的物品，这里记录下，避免买装备刷装备
-        private static Dictionary<ulong, byte> hasBuy = new Dictionary<ulong, byte>();
+        public static Dictionary<ulong, byte> hasBuy = new Dictionary<ulong, byte>();
 
         public override ObjectType Race
         {
@@ -48,6 +48,8 @@ namespace Server.MirObjects
             getRewards0 = "[@GETREWARDS0]",//获得奖励0(轮回奖励,根据排行获得相应的攻击属性加成)
             getRewards1 = "[@GETREWARDS1]",//获得奖励1
             getRewards2 = "[@GETREWARDS2]",//获得奖励1
+
+
 
             StorageKey = "[@STORAGE]",//存储物品
             ConsignKey = "[@CONSIGN]",//寄售
@@ -1976,6 +1978,7 @@ namespace Server.MirObjects
         CreditBuyGold,//元宝购买金币
         GoldBuyCredit,//金币购买元宝
         GiveRandomItem,//给与随机物品
+        OneKeyItemSell,//一件卖物品
 
     }
     public enum CheckType
