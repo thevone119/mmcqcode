@@ -1688,6 +1688,7 @@ public class UserItem
         if ((stat.LuckChance > 0) && (RandomUtils.Next(stat.LuckChance) == 0)) Luck = (sbyte)(RandomomRange(stat.LuckMaxStat - 1, stat.LuckStatChance) + 1);
         if ((stat.CurseChance > 0) && (RandomUtils.Next(100) <= stat.CurseChance)) Cursed = true;
 
+        
         if (ServerConfig.openMaxGem && Info.Type < ItemType.Stone && Info.Type > ItemType.Nothing)
         {
             MaxGem = Info.MinGem;
@@ -1795,4 +1796,79 @@ public class ExpireInfo
     {
         writer.Write(ExpiryDate.ToBinary());
     }
+}
+
+
+//契约兽,契约兽的玩法哦
+public class MyMonster
+{
+    public uint idx;//唯一索引
+
+    public int MonIndex;//怪物的ID
+    public ushort MonImage;//怪物的图片，客户端索引
+    public string MonName;//怪物名称
+    public string rMonName;//玩家重命名的怪物名称
+    public byte MonLevel;//怪物的等级，7个等级，类似宝宝等级
+    public int currExp;//怪物的当前等级经验
+    public int MaxExp;//怪物的当前等级最高经验
+    //怪物的灵性（潜能5-10之间）
+    public byte spiritual;
+
+    //怪物的成长属性
+    public byte MinAC, MaxAC, MinMAC, MaxMAC, MinDC, MaxDC, Accuracy, Agility;
+
+    public MyMonster()
+    {
+
+    }
+
+    //怪物数据读
+    public MyMonster(BinaryReader reader)
+    {
+        idx = reader.ReadUInt32();
+        MonIndex = reader.ReadInt32();
+        MonImage = reader.ReadUInt16();
+        MonName = reader.ReadString();
+        rMonName = reader.ReadString();
+
+        MonLevel = reader.ReadByte();
+        currExp = reader.ReadByte();
+        MaxExp = reader.ReadByte();
+
+        MinAC = reader.ReadByte();
+        MaxAC = reader.ReadByte();
+
+        MinMAC = reader.ReadByte();
+        MaxMAC = reader.ReadByte();
+
+        MinDC = reader.ReadByte();
+        MaxDC = reader.ReadByte();
+
+        Accuracy = reader.ReadByte();
+        Agility = reader.ReadByte();
+        spiritual = reader.ReadByte();
+    }
+
+    //怪物数据写
+    public void Save(BinaryWriter writer)
+    {
+        writer.Write(idx);
+        writer.Write(MonIndex);
+        writer.Write(MonImage);
+        writer.Write(MonName);
+        writer.Write(rMonName);
+        writer.Write(MonLevel);
+        writer.Write(currExp);
+        writer.Write(MaxExp);
+        writer.Write(MinAC);
+        writer.Write(MaxAC);
+        writer.Write(MinMAC);
+        writer.Write(MaxMAC);
+        writer.Write(MinDC);
+        writer.Write(MaxDC);
+        writer.Write(Accuracy);
+        writer.Write(Agility);
+        writer.Write(spiritual);
+    }
+
 }

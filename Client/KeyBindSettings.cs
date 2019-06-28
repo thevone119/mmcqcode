@@ -145,7 +145,8 @@ namespace Client
         DropView,
         TargetDead,//这个是挖肉么？
         Ranking,
-        AddGroupMember
+        AddGroupMember,
+        MyMonsters,
     }
     //自定义键，0：没有按住。1：必须按住，2：按不按都可以
     public class KeyBind
@@ -306,6 +307,8 @@ namespace Client
             InputKey = new KeyBind { function = KeybindOptions.Options, RequireAlt = 2, RequireShift = 2, RequireTilde = 2, RequireCtrl = 2, Key = Keys.F12 };
             Keylist.Add(InputKey);
             InputKey = new KeyBind { function = KeybindOptions.Options2, RequireAlt = 2, RequireShift = 2, RequireTilde = 2, RequireCtrl = 2, Key = Keys.O };
+            Keylist.Add(InputKey);
+            InputKey = new KeyBind { function = KeybindOptions.MyMonsters, RequireAlt = 2, RequireShift = 2, RequireTilde = 2, RequireCtrl = 2, Key = Keys.U };
             Keylist.Add(InputKey);
             InputKey = new KeyBind { function = KeybindOptions.Group, RequireAlt = 2, RequireShift = 2, RequireTilde = 2, RequireCtrl = 2, Key = Keys.P };
             Keylist.Add(InputKey);

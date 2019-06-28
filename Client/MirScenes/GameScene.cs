@@ -25,7 +25,6 @@ namespace Client.MirScenes
     /// <summary>
     /// 游戏的主界面
     /// CheckInput:循环做一些处理，如走路，跑步，自动行走，隔位刺杀等。
-    /// 
     /// </summary>
     public sealed class GameScene : MirScene
     {
@@ -75,6 +74,8 @@ namespace Client.MirScenes
         public OptionDialog OptionDialog;
         //加入外挂窗口,放到F12中
         public UserSetDialog UserSetDialog;
+        //契约兽系统
+        public MyMonstersDialogs MyMonstersDialogs;
 
         public MenuDialog MenuDialog;
         public NPCDialog NPCDialog;
@@ -236,6 +237,7 @@ namespace Client.MirScenes
             InspectDialog = new InspectDialog { Parent = this, Visible = false };
             OptionDialog = new OptionDialog { Parent = this, Visible = false };
             UserSetDialog = new UserSetDialog { Parent = this, Visible = false };
+            MyMonstersDialogs = new MyMonstersDialogs { Parent = this, Visible = false };
             MenuDialog = new MenuDialog { Parent = this, Visible = false };
             NPCDialog = new NPCDialog { Parent = this, Visible = false };
             NPCGoodsDialog = new NPCGoodsDialog { Parent = this, Visible = false };
@@ -505,6 +507,7 @@ namespace Client.MirScenes
                     CharacterDialog.Hide();
                     OptionDialog.Hide();
                     UserSetDialog.Hide();
+                    MyMonstersDialogs.Hide();
                     MenuDialog.Hide();
                     if (NPCDialog.Visible) NPCDialog.Hide();
                     HelpDialog.Hide();
@@ -549,6 +552,11 @@ namespace Client.MirScenes
                     if (!UserSetDialog.Visible) UserSetDialog.Show();
                     else UserSetDialog.Hide();
                     break;
+                case KeybindOptions.MyMonsters://U
+                    if (!MyMonstersDialogs.Visible) MyMonstersDialogs.Show();
+                    else MyMonstersDialogs.Hide();
+                    break;
+                    
                 case KeybindOptions.Options2:
                     if (!OptionDialog.Visible) OptionDialog.Show();
                     else OptionDialog.Hide();

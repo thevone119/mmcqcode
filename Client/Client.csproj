@@ -204,6 +204,7 @@
     <Compile Include="MirScenes\Dialogs\ChatNoticeDialog.cs" />
     <Compile Include="MirScenes\Dialogs\ChatOptionDialog.cs" />
     <Compile Include="MirScenes\Dialogs\FishingDialog.cs" />
+    <Compile Include="MirScenes\Dialogs\MyMonstersDialogs.cs" />
     <Compile Include="MirScenes\Dialogs\PlayerShopDialog.cs" />
     <Compile Include="MirScenes\Dialogs\RechargeDialog.cs" />
     <Compile Include="MirScenes\Dialogs\UserSetDialog.cs" />

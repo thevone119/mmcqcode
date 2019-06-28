@@ -568,6 +568,14 @@ namespace Client.MirGraphics
             return null;
         }
 
+        //当前的LIB总图像数
+        public int getImageCount()
+        {
+            if (!_initialized)
+                Initialize();
+            return _count;
+        }
+
         public Point GetOffSet(int index)
         {
             if (!_initialized) Initialize();
