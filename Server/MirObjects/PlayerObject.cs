@@ -1279,7 +1279,7 @@ namespace Server.MirObjects
             for (int i = PoisonList.Count - 1; i >= 0; i--)
             {
                 //加多一个判断，避免数组越界啊，这里有点坑的
-                if (Dead || PoisonList.Count == 0) return;
+                if (Dead || PoisonList.Count == 0 || i>= PoisonList.Count) return;
 
                 Poison poison = PoisonList[i];
 
@@ -1295,7 +1295,12 @@ namespace Server.MirObjects
                     poison.TickTime = Envir.Time + poison.TickSpeed;
 
                     if (poison.Time >= poison.Duration)
+                    {
                         PoisonList.RemoveAt(i);
+                        //这里直接返回
+                        continue;
+                    }
+                        
 
                     if (poison.PType == PoisonType.Green || poison.PType == PoisonType.Bleeding)
                     {
@@ -1667,6 +1672,12 @@ namespace Server.MirObjects
                     if (item.WeddingRing != -1)
                         continue;
 
+                    //绑定装备不会掉落
+                    if (item.SoulBoundId > 0)
+                    {
+                        continue;
+                    }
+
                     if (((killer == null) || ((killer != null) && (killer.Race != ObjectType.Player))))
                     {
                         if (item.Info.Bind.HasFlag(BindMode.BreakOnDeath))
@@ -1719,12 +1730,22 @@ namespace Server.MirObjects
    
                             ReceiveChat($"你死亡并且 {item.Info.FriendlyName} 已经归还给它的主人.", ChatType.Hint);
                             Report.ItemMailed("Death Dropped Rental Item", item, 1, 1);
-
+                            continue;
+                        }
+                        //爆东西，如果幻化的武器，衣服，不掉落，只爆
+                        if (item.n_Image > 0)
+                        {
+                            item.n_Image = 0;
+                            item.n_Shape = -1;
+                            item.n_Effect = 0;
+                            ReceiveChat($"你的装备 {item.FriendlyName} 在死亡中幻化损坏.", ChatType.System2);
+                            Enqueue(new S.RefreshItem { Item = item });
                             continue;
                         }
 
                         if (!DropItem(item, Settings.DropRange, true))
                             continue;
+                        
 
                         if (item.Info.GlobalDropNotify)
                             foreach (var player in Envir.Players)
@@ -1753,6 +1774,13 @@ namespace Server.MirObjects
 
                 if (item.WeddingRing != -1)
                     continue;
+
+
+                //绑定装备不会掉落
+                if (item.SoulBoundId > 0)
+                {
+                    continue;
+                }
 
                 if (item.Count > 1)
                 {
@@ -1793,6 +1821,17 @@ namespace Server.MirObjects
                         continue;
                     }
 
+                    //爆东西，如果幻化的武器，衣服，不掉落，只爆
+                    if (item.n_Image > 0)
+                    {
+                        item.n_Image = 0;
+                        item.n_Shape = -1;
+                        item.n_Effect = 0;
+                        ReceiveChat($"你的装备 {item.FriendlyName} 在死亡中幻化损坏.", ChatType.System2);
+                        Enqueue(new S.RefreshItem { Item = item });
+                        continue;
+                    }
+
                     if (!DropItem(item, Settings.DropRange, true))
                         continue;
 
@@ -1828,6 +1867,12 @@ namespace Server.MirObjects
                     // TODO: Check this.
                     if ((item.WeddingRing != -1))
                         continue;
+
+                    //绑定装备不会掉落
+                    if (item.SoulBoundId > 0)
+                    {
+                        continue;
+                    }
 
                     if (item.Info.Bind.HasFlag(BindMode.BreakOnDeath))
                     {
@@ -1872,8 +1917,21 @@ namespace Server.MirObjects
                             continue;
                         }
 
+                        //爆东西，如果幻化的武器，衣服，不掉落，只爆
+                        if (item.n_Image > 0)
+                        {
+                            item.n_Image = 0;
+                            item.n_Shape = -1;
+                            item.n_Effect = 0;
+                            ReceiveChat($"你的装备 {item.FriendlyName} 在死亡中幻化损坏.", ChatType.System2);
+                            Enqueue(new S.RefreshItem { Item = item });
+                            continue;
+                        }
+
                         if (!DropItem(item, Settings.DropRange, true))
                             continue;
+
+             
 
                         if (item.Info.GlobalDropNotify)
                             foreach (var player in Envir.Players)
@@ -1902,6 +1960,22 @@ namespace Server.MirObjects
 
                 if (item.WeddingRing != -1)
                     continue;
+
+                //绑定装备不会掉落
+                if (item.SoulBoundId > 0)
+                {
+                    continue;
+                }
+                //爆东西，如果幻化的武器，衣服，不掉落，只爆
+                if (item.n_Image > 0)
+                {
+                    item.n_Image = 0;
+                    item.n_Shape = -1;
+                    item.n_Effect = 0;
+                    ReceiveChat($"你的装备 {item.FriendlyName} 在死亡中幻化损坏.", ChatType.System2);
+                    Enqueue(new S.RefreshItem { Item = item });
+                    continue;
+                }
 
                 if (Envir.ReturnRentalItem(item, item.RentalInformation?.OwnerName, Info))
                 {
@@ -13515,6 +13589,100 @@ namespace Server.MirObjects
                                 }
                             }
                         }
+
+                        //徒弟召唤卷
+                        if (item.Info.Shape == 103)
+                        {
+                            if (Info.Mentor == 0)
+                            {
+                                ReceiveChat("你还没有徒弟.", ChatType.System);
+                                Enqueue(p);
+                                return;
+                            }
+
+                            if (Dead)
+                            {
+                                ReceiveChat("你不能传送，在你死的时候.", ChatType.System);
+                                Enqueue(p);
+                                return;
+                            }
+
+                            if (CurrentMap.Info.NoRecall)
+                            {
+                                ReceiveChat("此地图不允许传送", ChatType.System);
+                                Enqueue(p);
+                                return;
+                            }
+                            CharacterInfo Mentor = Envir.GetCharacterInfo(Info.Mentor);
+
+                            if (Mentor == null) return;
+
+                            PlayerObject player = Envir.GetPlayer(Mentor.Name);
+
+                            if (player == null)
+                            {
+                                ReceiveChat((string.Format("{0} 不在线.", Mentor.Name)), ChatType.System);
+                                Enqueue(p);
+                                return;
+                            }
+
+                            if (player.Dead)
+                            {
+                                ReceiveChat("你不能传送，对方已经死亡.", ChatType.System);
+                                Enqueue(p);
+                                return;
+                            }
+
+                           
+                           
+
+                            if ((Envir.Time < LastRecallTime) && (Envir.Time < player.LastRecallTime))
+                            {
+                                ReceiveChat(string.Format("你不能传送在 {0} 秒内", (LastRecallTime - Envir.Time) / 1000), ChatType.System);
+                                Enqueue(p);
+                                return;
+                            }
+
+                            if (player.Level < CurrentMap.Info.minLevel)
+                            {
+                                ReceiveChat($"对方等级低于{CurrentMap.Info.minLevel}级，无法传送到此地图", ChatType.System);
+                                Enqueue(p);
+                                return;
+                            }
+
+                            if (CurrentMap.Info.enterGold > 0)
+                            {
+                                if (Account.Gold < CurrentMap.Info.enterGold)
+                                {
+                                    ReceiveChat($"当前传送地图需要收取{CurrentMap.Info.enterGold}金币，您的金币不足", ChatType.System);
+                                    Enqueue(p);
+                                    return;
+                                }
+                                else
+                                {
+                                    LoseGold((uint)CurrentMap.Info.enterGold);
+                                    ReceiveChat($"当前传送地图需要收取{CurrentMap.Info.enterGold}金币，已从你账户中扣除", ChatType.System);
+                                }
+                            }
+
+                            LastRecallTime = Envir.Time + 60000;
+                            player.LastRecallTime = Envir.Time + 60000;
+
+                            if (item.CurrentDura >= 1000)
+                            {
+                                item.CurrentDura = (ushort)(item.CurrentDura - 1000);
+                                if (!player.Teleport(CurrentMap, Front))
+                                {
+                                    player.Teleport(CurrentMap, CurrentLocation);
+                                }
+                                if (item.CurrentDura >= 1000)
+                                {
+                                    Enqueue(new S.ItemRepaired { UniqueID = item.UniqueID, MaxDura = item.MaxDura, CurrentDura = item.CurrentDura });
+                                    Enqueue(p);
+                                    return;
+                                }
+                            }
+                        }
                     }
                     else
                     {
@@ -14406,7 +14574,41 @@ namespace Server.MirObjects
                         canUpgrade = false;
                     }
                     break;
+                case 12://品质，灵性清洗石
+                    if (tempTo.Info.Bind.HasFlag(BindMode.DontUpgrade) || tempTo.Info.Unique != SpecialItemMode.None)
+                    {
+                        Enqueue(p);
+                        return;
+                    }
+                    if (tempTo.RentalInformation != null && tempTo.RentalInformation.BindingFlags.HasFlag(BindMode.DontUpgrade))
+                    {
+                        Enqueue(p);
+                        return;
+                    }
+                    if (tempTo.quality <= 0)
+                    {
+                        ReceiveChat("当前装备无需清洗", ChatType.Hint);
+                        Enqueue(p);
+                        return;
+                    }
 
+                    tempTo.quality = 0;
+                    tempTo.spiritual = 0;
+                    canUpgrade = true;
+                    ReceiveChat("装备已清洗.", ChatType.Hint);
+                    Enqueue(new S.ItemUpgraded { Item = tempTo });
+                    if (tempFrom.Count > 1)
+                    {
+                        tempFrom.Count--;
+                        Enqueue(new S.RefreshItem { Item = tempFrom });
+                    }
+                    else {
+                        Info.Inventory[indexFrom] = null;
+                    }
+                    TradeUnlock();
+                    p.Success = true;
+                    Enqueue(p);
+                    return;
                 default:
                     Enqueue(p);
                     return;
@@ -14443,8 +14645,14 @@ namespace Server.MirObjects
                 Enqueue(new S.ItemUpgraded { Item = tempTo });
             }
 
-            if (tempFrom.Count > 1) tempFrom.Count--;
-            else Info.Inventory[indexFrom] = null;
+            if (tempFrom.Count > 1)
+            {
+                tempFrom.Count--;
+                Enqueue(new S.RefreshItem { Item = tempFrom });
+            }
+            else {
+                Info.Inventory[indexFrom] = null;
+            }
 
             Report.ItemCombined("CombineItem", tempFrom, tempTo, indexFrom, indexTo, MirGridType.Inventory);
 
@@ -22507,8 +22715,8 @@ namespace Server.MirObjects
 
                 if (Info.Class != Mentor.Info.Class)
                 {
-                    ReceiveChat("你只能同职业的人为师傅.", ChatType.System);
-                    return;
+                    //ReceiveChat("你只能同职业的人为师傅.", ChatType.System);
+                    //return;
                 }
                 if ((Info.Level + Settings.MentorLevelGap) > Mentor.Level)
                 {
@@ -22561,8 +22769,8 @@ namespace Server.MirObjects
                 }
                 if (Info.Class != Student.Info.Class)
                 {
-                    ReceiveChat("你只能指导同一个职业的人.", ChatType.System);
-                    return;
+                    //ReceiveChat("你只能指导同一个职业的人.", ChatType.System);
+                    //return;
                 }
                 if ((Info.Level - Settings.MentorLevelGap) < Student.Level)
                 {

@@ -4069,6 +4069,11 @@ namespace Client.MirScenes
             item.MaxGem = p.Item.MaxGem;
             item.GemCount = p.Item.GemCount;
 
+            //幻化
+            item.n_Image = p.Item.n_Image;
+            item.n_Shape = p.Item.n_Shape;
+            item.n_Effect = p.Item.n_Effect;
+
 
             GameScene.Scene.InventoryDialog.DisplayItemGridEffect(item.UniqueID, 0);
 

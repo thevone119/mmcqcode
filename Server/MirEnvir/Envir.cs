@@ -2367,7 +2367,7 @@ namespace Server.MirEnvir
             //第一个不算副本哈
             for(int i=1;i< list.Count; i++)
             {
-                if (list[i].InactiveCount > 5)
+                if (list[i].InactiveCount > 10 && list[i].Players.Count==0)
                 {
                     retm = list[i];
                     retm.Clear();

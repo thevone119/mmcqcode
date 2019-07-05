@@ -6578,7 +6578,7 @@ public class ServerConfig
     public static ExitGameType exitGameType = ExitGameType.noWait;
     public static bool NeedRidingMountAtt = false;//是否需要骑马才有属性加成
 
-    public static bool openMaxGem = true;//是否宝石上限
+    public static bool openMaxGem = false;//是否宝石上限
 
 
 

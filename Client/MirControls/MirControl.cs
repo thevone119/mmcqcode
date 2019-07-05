@@ -783,13 +783,36 @@ namespace Client.MirControls
             //这里和上面的重复了？
             CleanTime = CMain.Time + Settings.CleanDelay;
         }
+
         //这里XP黑屏
+        //这里有大问题啊
         protected void DrawChildControls()
         {
             if (Controls != null)
-                for (int i = 0; i < Controls.Count; i++)
-                    if (Controls[i] != null)
-                        Controls[i].Draw();
+            {
+                try
+                {
+                    foreach (MirControl control in Controls)
+                    {
+                        if (control == null)
+                        {
+                            continue;
+                        }
+                        try
+                        {
+                            control.Draw();
+                        }catch(Exception ex)
+                        {
+                            CMain.SaveError(ex.ToString());
+                        }
+                    }
+                }
+                catch(Exception ex)
+                {
+                    CMain.SaveError(ex.ToString());
+                    Controls = null;
+                }
+            }
         }
         //这里有时候会引起奔溃？
         protected virtual void DrawBorder()

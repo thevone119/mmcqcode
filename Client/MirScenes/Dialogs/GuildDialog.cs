@@ -1883,7 +1883,7 @@ namespace Client.MirScenes.Dialogs
         #region RankDialogCode
         public void NewRankRecieved(Rank New)
         {
-            int NewIndex = Ranks.Count > 1 ? Ranks.Count - 1 : 1;
+            int NewIndex = Ranks.Count > 0 ? Ranks.Count - 1 : 0;
             Ranks.Insert(NewIndex, New);
             Ranks[Ranks.Count - 1].Index = Ranks.Count - 1;
             RefreshMemberList();
