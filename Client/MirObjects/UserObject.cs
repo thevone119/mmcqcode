@@ -1010,6 +1010,18 @@ namespace Client.MirObjects
             return null;
         }
 
+        public ClientMagic GetMagic(String spellName)
+        {
+            for (int i = 0; i < Magics.Count; i++)
+            {
+                ClientMagic magic = Magics[i];
+                if (magic.Name != spellName) continue;
+                return magic;
+            }
+
+            return null;
+        }
+
 
         public void GetMaxGain(UserItem item)
         {

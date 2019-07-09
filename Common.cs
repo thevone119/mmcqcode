@@ -878,6 +878,7 @@ public enum ItemType : byte
     Transform = 37,//外观（时装吧）
     SkinWeapon = 38,//武器变幻
     SkinArmour = 39,//衣服变幻
+    MonsterDan = 40,//兽魂丹
 }
 //格子类型，就是各种交易框的类型咯？
 public enum MirGridType : byte
@@ -6051,7 +6052,7 @@ public class ItemSkillBean
             list.Add(new ItemSkillBean(ItemSkill.Taoist2, "骷髅阵", "强化骷髅，召唤出强化骷髅为你做战", RequiredClass.Taoist, 40, ItemGrade.None,1));
             list.Add(new ItemSkillBean(ItemSkill.Taoist4, "圣兽阵", "强化神兽，召唤出强化神兽为你做战", RequiredClass.Taoist,15, ItemGrade.HighLevel,2));
             list.Add(new ItemSkillBean(ItemSkill.Taoist5, "厚土阵", "魔，防技能魔防提升", RequiredClass.Taoist,15, ItemGrade.HighLevel,2));
-            list.Add(new ItemSkillBean(ItemSkill.Taoist7, "道尊阵", "施毒术/毒云伤害增加，瘟疫伤害增加", RequiredClass.Taoist,5, ItemGrade.Legendary,3));
+            list.Add(new ItemSkillBean(ItemSkill.Taoist7, "道尊阵", "施毒术/毒云/瘟疫伤害增加", RequiredClass.Taoist,5, ItemGrade.Legendary,3));
 
             list.Add(new ItemSkillBean(ItemSkill.Assassin1, "月隐阵", "增加月隐术隐身时间", RequiredClass.Assassin, 40, ItemGrade.None,1));
             list.Add(new ItemSkillBean(ItemSkill.Assassin2, "鬼灵阵", "鬼灵步在瞬移过程中对附近目标造成伤害", RequiredClass.Assassin, 40, ItemGrade.None,1));
@@ -6538,7 +6539,9 @@ public class NameChange
                 return "武器变幻";
             case ItemType.SkinArmour:
                 return "衣服变幻";
-
+            case ItemType.MonsterDan:
+                return "兽魂丹";
+                
         }
         return "";
     }
@@ -6578,7 +6581,7 @@ public class ServerConfig
     public static ExitGameType exitGameType = ExitGameType.noWait;
     public static bool NeedRidingMountAtt = false;//是否需要骑马才有属性加成
 
-    public static bool openMaxGem = false;//是否宝石上限
+    public static bool openMaxGem = true;//是否宝石上限
 
 
 

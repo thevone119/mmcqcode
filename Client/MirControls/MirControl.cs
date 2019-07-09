@@ -614,7 +614,7 @@ namespace Client.MirControls
             Moving = false;
             _movePoint = Point.Empty;
             //如果是可排序的，则放到最上面
-            if (Sort && Parent != null)
+            if (Sort && Parent != null&& Parent.Controls!=null)
             {
                 Parent.Controls.Remove(this);
                 Parent.Controls.Add(this);
@@ -790,27 +790,12 @@ namespace Client.MirControls
         {
             if (Controls != null)
             {
-                try
+                for (int i = 0; Controls!=null && i < Controls.Count; i++)
                 {
-                    foreach (MirControl control in Controls)
+                    if (Controls[i] != null)
                     {
-                        if (control == null)
-                        {
-                            continue;
-                        }
-                        try
-                        {
-                            control.Draw();
-                        }catch(Exception ex)
-                        {
-                            CMain.SaveError(ex.ToString());
-                        }
+                        Controls[i].Draw();
                     }
-                }
-                catch(Exception ex)
-                {
-                    CMain.SaveError(ex.ToString());
-                    Controls = null;
                 }
             }
         }

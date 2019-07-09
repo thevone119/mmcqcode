@@ -47,6 +47,7 @@ namespace Launcher
             this.SpeedLabel = new System.Windows.Forms.Label();
             this.InterfaceTimer = new System.Windows.Forms.Timer(this.components);
             this.Movement_panel = new System.Windows.Forms.Panel();
+            this.label3 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.Config_pb = new System.Windows.Forms.PictureBox();
             this.Close_pb = new System.Windows.Forms.PictureBox();
@@ -62,7 +63,7 @@ namespace Launcher
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.treeView1 = new System.Windows.Forms.TreeView();
-            this.label3 = new System.Windows.Forms.Label();
+            this.lab_version = new System.Windows.Forms.Label();
             this.Movement_panel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Config_pb)).BeginInit();
@@ -114,6 +115,7 @@ namespace Launcher
             // 
             this.Movement_panel.BackColor = System.Drawing.Color.Transparent;
             this.Movement_panel.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.Movement_panel.Controls.Add(this.lab_version);
             this.Movement_panel.Controls.Add(this.label3);
             this.Movement_panel.Controls.Add(this.pictureBox1);
             this.Movement_panel.Controls.Add(this.Config_pb);
@@ -126,6 +128,16 @@ namespace Launcher
             this.Movement_panel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Movement_panel_MouseClick);
             this.Movement_panel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Movement_panel_MouseMove);
             this.Movement_panel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.Movement_panel_MouseUp);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.label3.Location = new System.Drawing.Point(95, 12);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(197, 12);
+            this.label3.TabIndex = 34;
+            this.label3.Text = "安装使用问题请进Q群670847004咨询";
             // 
             // pictureBox1
             // 
@@ -328,15 +340,15 @@ namespace Launcher
             this.treeView1.Size = new System.Drawing.Size(224, 402);
             this.treeView1.TabIndex = 34;
             // 
-            // label3
+            // lab_version
             // 
-            this.label3.AutoSize = true;
-            this.label3.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.label3.Location = new System.Drawing.Point(95, 12);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(197, 12);
-            this.label3.TabIndex = 34;
-            this.label3.Text = "安装使用问题请进Q群670847004咨询";
+            this.lab_version.AutoSize = true;
+            this.lab_version.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.lab_version.Location = new System.Drawing.Point(609, 13);
+            this.lab_version.Name = "lab_version";
+            this.lab_version.Size = new System.Drawing.Size(41, 12);
+            this.lab_version.TabIndex = 35;
+            this.lab_version.Text = "版本号";
             // 
             // AMain
             // 
@@ -410,6 +422,7 @@ namespace Launcher
         private Label label2;
         private TreeView treeView1;
         private Label label3;
+        private Label lab_version;
     }
 }
 

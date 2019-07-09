@@ -2308,6 +2308,10 @@ namespace Server.MirObjects
                     drop5.Chance = 0.8;
                 }
                 minfo.Drops.Add(drop5);
+
+                //兽魂丹 1/3几率出
+                DropInfo drop6 = DropInfo.FromLine("副本_兽丹", String.Format("1/3 兽魂丹"));
+                minfo.Drops.Add(drop6);
                 //
                 minfo.Name = minfo.Name + "[" + "统领" + "]";
                 minfo.Level = 99;
@@ -3552,6 +3556,7 @@ namespace Server.MirObjects
                 if (AttackSpeed < 550) AttackSpeed = 550;
             }
             //if (AttackSpeed < 450) AttackSpeed = 450;
+            
         }
 
         //刷新等级属性数据
@@ -3682,6 +3687,7 @@ namespace Server.MirObjects
                 default:
                     break;
             }
+
 
         }
 
@@ -9313,8 +9319,13 @@ namespace Server.MirObjects
                 if (itemp != null)
                     pType = PoisonType.Red;
             }
-        
-            DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + delay, this, magic, magic.GetDamage(GetAttackPower(MinSC, MaxSC)), location, pType);
+            //上调瘟疫伤害
+            int Damage = magic.GetDamage(GetAttackPower(MinSC, MaxSC));
+            if (hasItemSk(ItemSkill.Taoist7))
+            {
+                Damage = Damage * 13 / 10;
+            }
+            DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + delay, this, magic, Damage, location, pType);
             CurrentMap.ActionList.Add(action);
             ConsumeItem(item, 1);
             if (itemp != null) ConsumeItem(itemp, 1);
@@ -14131,6 +14142,150 @@ namespace Server.MirObjects
             Enqueue(p);
             RefreshStats();
         }
+        /// <summary>
+        /// 针对其他的砸蛋
+        /// </summary>
+        /// <param name="fromID"></param>
+        /// <param name="toID"></param>
+        public void CombineOtherItem(ulong fromID, ulong toID)
+        {
+            S.CombineItem p = new S.CombineItem { IDFrom = fromID, IDTo = toID, Success = false };
+            UserItem[] array = Info.Inventory;//背包的物品
+            UserItem tempFrom = null;
+            UserItem tempTo = null;
+            int indexFrom = -1;
+            int indexTo = -1;
+            //死了不允许处理
+            if (Dead)
+            {
+                Enqueue(p);
+                return;
+            }
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i] == null || array[i].UniqueID != fromID) continue;
+                indexFrom = i;
+                tempFrom = array[i];
+                break;
+            }
+
+            if (tempFrom == null || indexFrom == -1)
+            {
+                Enqueue(p);
+                return;
+            }
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i] == null || array[i].UniqueID != toID) continue;
+                indexTo = i;
+                tempTo = array[i];
+                break;
+            }
+
+            if (tempTo == null || indexTo == -1)
+            {
+                Enqueue(p);
+                return;
+            }
+            //砸蛋，开兽丹
+            if(tempFrom.Info.Type == ItemType.Nothing && tempFrom.Info.Shape==11 && tempTo.Info.Type== ItemType.MonsterDan)
+            {
+                //判断兽丹是否有效
+                if (tempTo.src_mon_idx == 0)
+                {
+                    ReceiveChat("当前兽丹无效.", ChatType.Hint);
+                    Enqueue(p);
+                    return;
+                }
+
+                MonsterObject mob = MonsterObject.GetMonster(Envir.GetMonsterInfo(tempTo.src_mon_idx));
+                if (mob == null)
+                {
+                    ReceiveChat("当前兽丹对应的怪物无效.", ChatType.Hint);
+                    Enqueue(p);
+                    return;
+                }
+                //判断契约兽是否签约满了
+                int monIdx = -1;
+                for(int i=0;i< Info.MyMonsters.Length; i++)
+                {
+                    if (Info.MyMonsters[i] == null)
+                    {
+                        monIdx = i;
+                        break;
+                    }
+                }
+                if (monIdx == -1)
+                {
+                    ReceiveChat("您的契约兽已满，无法再次进行签约.", ChatType.Hint);
+                    Enqueue(p);
+                    return;
+                }
+
+
+                if (RandomUtils.Next(100) < tempFrom.Info.Strong)
+                {
+                    //成功
+                    if (tempFrom.Count > 1)
+                    {
+                        tempFrom.Count--;
+                        Enqueue(new S.RefreshItem { Item = tempFrom });
+                    }
+                    else {
+                        Info.Inventory[indexFrom] = null;
+                    }
+
+                    Info.Inventory[indexTo] = null;
+                    p.Destroy = true;
+
+                    Report.ItemCombined("CombineItem", tempFrom, tempTo, indexFrom, indexTo, MirGridType.Inventory);
+
+                    //item merged ok
+                    TradeUnlock();
+
+                    p.Success = true;
+                    Enqueue(p);
+                    ReceiveChat("签约灵兽成功.", ChatType.Hint);
+
+                    //签约灵兽
+
+
+
+
+                    return;
+                }
+                else
+                {
+                    //失败
+                    if (tempFrom.Count > 1)
+                    {
+                        tempFrom.Count--;
+                        Enqueue(new S.RefreshItem { Item = tempFrom });
+                    }
+                    else {
+                        Info.Inventory[indexFrom] = null;
+                    }
+
+                    Info.Inventory[indexTo] = null;
+                    p.Destroy = true;
+
+                    Report.ItemCombined("CombineItem", tempFrom, tempTo, indexFrom, indexTo, MirGridType.Inventory);
+
+                    //item merged ok
+                    TradeUnlock();
+
+                    p.Success = true;
+                    Enqueue(p);
+                    ReceiveChat("签约灵兽失败.", ChatType.System2);
+                    return;
+                }
+            }
+
+            //返回信息
+            Enqueue(p);
+        }
 
         //合并物品？
         //把背包的某个物品放到某个装备上。
@@ -14179,20 +14334,22 @@ namespace Server.MirObjects
                 Enqueue(p);
                 return;
             }
+
+            //必须使宝石类的才可以
+            if (tempFrom.Info.Type != ItemType.Gem)
+            {
+                CombineOtherItem(fromID,toID);
+                return;
+            }
+
             //必须使是装备才可以
             if ((byte)tempTo.Info.Type < 1 || (byte)tempTo.Info.Type > 11)
             {
-                Enqueue(p);
+                CombineOtherItem(fromID, toID);
                 return;
             }
 
             bool canRepair = false, canUpgrade = false;
-            //必须使宝石类的才可以
-            if (tempFrom.Info.Type != ItemType.Gem)
-            {
-                Enqueue(p);
-                return;
-            }
 
             switch (tempFrom.Info.Shape)
             {
@@ -14591,9 +14748,68 @@ namespace Server.MirObjects
                         Enqueue(p);
                         return;
                     }
+                    if (tempTo.Count >1 )
+                    {
+                        ReceiveChat("当前装备无法清洗", ChatType.Hint);
+                        Enqueue(p);
+                        return;
+                    }
 
                     tempTo.quality = 0;
                     tempTo.spiritual = 0;
+                    tempTo.samsaracount = 0;
+                    tempTo.samsaratype = 0;
+                    tempTo.SA_AC = 0;
+                    tempTo.SA_MAC = 0;
+                    tempTo.SA_DC = 0;
+                    tempTo.SA_MC = 0;
+                    tempTo.SA_SC = 0;
+                    canUpgrade = true;
+                    ReceiveChat("装备已清洗.", ChatType.Hint);
+                    Enqueue(new S.ItemUpgraded { Item = tempTo });
+                    if (tempFrom.Count > 1)
+                    {
+                        tempFrom.Count--;
+                        Enqueue(new S.RefreshItem { Item = tempFrom });
+                    }
+                    else {
+                        Info.Inventory[indexFrom] = null;
+                    }
+                    TradeUnlock();
+                    p.Success = true;
+                    Enqueue(p);
+                    return;
+                case 13://所有属性全部清洗
+                    if (tempTo.Info.Bind.HasFlag(BindMode.DontUpgrade) || tempTo.Info.Unique != SpecialItemMode.None)
+                    {
+                        Enqueue(p);
+                        return;
+                    }
+                    if (tempTo.RentalInformation != null && tempTo.RentalInformation.BindingFlags.HasFlag(BindMode.DontUpgrade))
+                    {
+                        Enqueue(p);
+                        return;
+                    }
+                    if (tempTo.Count > 1)
+                    {
+                        ReceiveChat("当前装备无法清洗", ChatType.Hint);
+                        Enqueue(p);
+                        return;
+                    }
+
+                    tempTo.quality = 0;
+                    tempTo.spiritual = 0;
+                    tempTo.samsaracount = 0;
+                    tempTo.samsaratype = 0;
+                    tempTo.SA_AC = 0;
+                    tempTo.SA_MAC = 0;
+                    tempTo.SA_DC = 0;
+                    tempTo.SA_MC = 0;
+                    tempTo.SA_SC = 0;
+                    tempTo.AC = tempTo.MAC = tempTo.DC = tempTo.MC = tempTo.SC = tempTo.Accuracy = tempTo.Agility = tempTo.HP = tempTo.MP = tempTo.Strong = tempTo.MagicResist = tempTo.PoisonResist = tempTo.HealthRecovery = tempTo.ManaRecovery = tempTo.PoisonRecovery = tempTo.CriticalRate = tempTo.CriticalDamage = tempTo.Freezing = tempTo.PoisonAttack = 0;
+                    tempTo.AttackSpeed = 0;
+                    tempTo.GemCount = 0;
+                    tempTo.RefineTime = 0;
                     canUpgrade = true;
                     ReceiveChat("装备已清洗.", ChatType.Hint);
                     Enqueue(new S.ItemUpgraded { Item = tempTo });

@@ -1154,7 +1154,41 @@ namespace Client.MirScenes
                     }
                 }
             }
-            
+
+            //自动技能1
+            if (CMain.Time > GameScene.UserSet.LastSkill1Time)
+            {
+                if (GameScene.UserSet.AutoSkill1Interval >= 1800)
+                {
+                    GameScene.UserSet.LastSkill1Time = CMain.Time + GameScene.UserSet.AutoSkill1Interval;
+                }
+                else
+                {
+                    GameScene.UserSet.LastSkill1Time = CMain.Time + 1800;
+                }
+                ClientMagic mag = User.GetMagic(GameScene.UserSet.AutoSkill1);
+                if (mag != null)
+                {
+                    UseSpell(mag);
+                }
+            }
+            //自动技能2
+            if (CMain.Time > GameScene.UserSet.LastSkill2Time)
+            {
+                if (GameScene.UserSet.AutoSkill2Interval >= 1800)
+                {
+                    GameScene.UserSet.LastSkill2Time = CMain.Time + GameScene.UserSet.AutoSkill2Interval;
+                }
+                else
+                {
+                    GameScene.UserSet.LastSkill2Time = CMain.Time + 1800;
+                }
+                ClientMagic mag = User.GetMagic(GameScene.UserSet.AutoSkill2);
+                if (mag != null)
+                {
+                    UseSpell(mag);
+                }
+            }
 
 
             //添加魔法盾处理,相当于半秒检测1次，判断buff是否存在
@@ -1188,6 +1222,20 @@ namespace Client.MirScenes
             if (GameScene.UserSet.OpenProtect)
             {
                 MirItemCell useCell = null;
+                //血量保护3卷轴
+                if (CMain.Time > GameScene.UserSet.LastHPUse3Time && GameScene.UserSet.HPUse3 != null && GameScene.UserSet.HPUse3.Length > 1 && GameScene.UserSet.HPLower3 > 0 && GameScene.UserSet.HPLower3 < 100)
+                {
+                    GameScene.UserSet.LastHPUse3Time = CMain.Time + 5000;
+                    if (User.HP * 1.0 / User.MaxHP < GameScene.UserSet.HPLower3 * 1.0 / 100)
+                    {
+                        useCell = getUseCell(ItemType.Scroll, GameScene.UserSet.HPUse3);
+                        if (useCell != null)
+                        {
+                            useCell.UseItem();
+                            return;
+                        }
+                    }
+                }
                 //血量保护1普通喝药
                 if (CMain.Time > GameScene.UserSet.LastHPUse1Time && GameScene.UserSet.HPUse1!=null && GameScene.UserSet.HPUse1.Length>1 && GameScene.UserSet.HPLower1>0 && GameScene.UserSet.HPLower1<100)
                 {
@@ -1198,6 +1246,22 @@ namespace Client.MirScenes
                         if (useCell != null)
                         {
                             useCell.UseItem();
+                            return;
+                        }
+                    }
+                }
+                //蓝量保护
+                if (CMain.Time > GameScene.UserSet.LastMPUse1Time && GameScene.UserSet.MPUse1 != null && GameScene.UserSet.MPUse1.Length > 1 && GameScene.UserSet.MPLower1 > 0 && GameScene.UserSet.MPLower1 < 100)
+                {
+                    GameScene.UserSet.LastMPUse1Time = CMain.Time + 2000;
+                    if (User.MP * 1.0 / User.MaxMP < GameScene.UserSet.MPLower1 * 1.0 / 100)
+                    {
+                        useCell = getUseCell(ItemType.Potion, GameScene.UserSet.MPUse1);
+
+                        if (useCell != null)
+                        {
+                            useCell.UseItem();
+                            return;
                         }
                     }
                 }
@@ -1211,36 +1275,12 @@ namespace Client.MirScenes
                         if (useCell != null)
                         {
                             useCell.UseItem();
+                            return;
                         }
                     }
                 }
-                //血量保护3卷轴
-                if (CMain.Time > GameScene.UserSet.LastHPUse3Time && GameScene.UserSet.HPUse3 != null && GameScene.UserSet.HPUse3.Length > 1 && GameScene.UserSet.HPLower3 > 0 && GameScene.UserSet.HPLower3 < 100)
-                {
-                    GameScene.UserSet.LastHPUse3Time = CMain.Time + 5000;
-                    if (User.HP * 1.0 / User.MaxHP < GameScene.UserSet.HPLower3 * 1.0 / 100)
-                    {
-                        useCell = getUseCell(ItemType.Scroll, GameScene.UserSet.HPUse3);
-                        if (useCell != null)
-                        {
-                            useCell.UseItem();
-                        }
-                    }
-                }
-                //蓝量保护
-                if (CMain.Time > GameScene.UserSet.LastMPUse1Time && GameScene.UserSet.MPUse1 != null && GameScene.UserSet.MPUse1.Length > 1 && GameScene.UserSet.MPLower1 > 0 && GameScene.UserSet.MPLower1 < 100)
-                {
-                    GameScene.UserSet.LastMPUse1Time = CMain.Time + 2000;
-                    if (User.MP*1.0 / User.MaxMP < GameScene.UserSet.MPLower1*1.0 / 100)
-                    {
-                        useCell = getUseCell(ItemType.Potion, GameScene.UserSet.MPUse1);
-                        
-                        if (useCell != null)
-                        {
-                            useCell.UseItem();
-                        }
-                    }
-                }
+    
+                
             }
 
             //自动捡物品处理

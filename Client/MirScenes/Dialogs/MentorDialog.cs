@@ -65,7 +65,7 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 PressedIndex = 116,
                 Sound = SoundList.ButtonA,
-                Hint = "Allow/Disallow Mentor Requests",
+                Hint = "允许/拒绝 师徒请求",
             };
             AllowButton.Click += (o, e) =>
             {

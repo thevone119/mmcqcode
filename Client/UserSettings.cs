@@ -47,7 +47,15 @@ namespace Client
         //开启切换则自动切换，不开启切换，则优先使用最近的毒
         public bool switchPoison = true;//切换红绿毒
 
+        //自动技能1
+        public string AutoSkill1 = "技能1";
+        public int AutoSkill1Interval = 5000;
+        public long LastSkill1Time = 0;//最后自动技能1时间
 
+        //自动技能2
+        public string AutoSkill2 = "技能2";
+        public int AutoSkill2Interval = 5000;
+        public long LastSkill2Time = 0;//最后自动技能2时间
 
         //自动体迅风
         public bool AutoHaste = true;
@@ -156,6 +164,12 @@ namespace Client
             FilterItem1 = Reader.ReadBoolean("UserSettings", "FilterItem1", FilterItem1);
             FilterItem2 = Reader.ReadBoolean("UserSettings", "FilterItem2", FilterItem2);
 
+            //自动技能1，2
+            AutoSkill1 = Reader.ReadString("UserSettings", "AutoSkill1", AutoSkill1);
+            AutoSkill2 = Reader.ReadString("UserSettings", "AutoSkill2", AutoSkill2);
+            AutoSkill1Interval = Reader.ReadInt32("UserSettings", "AutoSkill1Interval", AutoSkill1Interval);
+            AutoSkill2Interval = Reader.ReadInt32("UserSettings", "AutoSkill2Interval", AutoSkill2Interval);
+
 
             ShowMonName = Reader.ReadBoolean("UserSettings", "ShowMonName", ShowMonName);
             AutoFishing = Reader.ReadBoolean("UserSettings", "AutoFishing", AutoFishing);
@@ -197,7 +211,12 @@ namespace Client
             Reader.Write("UserSettings", "AutoHaste", AutoHaste);
             Reader.Write("UserSettings", "AutoFury", AutoFury);
             Reader.Write("UserSettings", "AutoLightBody", AutoLightBody);
-  
+            //
+            Reader.Write("UserSettings", "AutoSkill1", AutoSkill1);
+            Reader.Write("UserSettings", "AutoSkill2", AutoSkill2);
+            Reader.Write("UserSettings", "AutoSkill1Interval", AutoSkill1Interval);
+            Reader.Write("UserSettings", "AutoSkill2Interval", AutoSkill2Interval);
+
             Reader.Write("UserSettings", "OpenProtect", OpenProtect);
             Reader.Write("UserSettings", "AutoPickUp", AutoPickUp);
             Reader.Write("UserSettings", "FilterItem1", FilterItem1);

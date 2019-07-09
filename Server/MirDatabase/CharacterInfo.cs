@@ -80,6 +80,10 @@ namespace Server.MirDatabase
 
         public UserItem[] ItemCollect = new UserItem[10];//这个是收集的客户端提交上来的物品
 
+        //契约兽，10个契约兽
+        public MyMonster[] MyMonsters = new MyMonster[10];//10个契约兽
+
+
         public List<ItemRentalInformation> RentedItems = new List<ItemRentalInformation>();
         public List<ItemRentalInformation> RentedItemsToRemove = new List<ItemRentalInformation>();
         public bool HasRentedItem;
@@ -326,10 +330,14 @@ namespace Server.MirDatabase
                         }
                     }
                 }
-                
+
+                //契约兽
+                if (!read.IsDBNull(read.GetOrdinal("MyMonsters")))
+                {
+                    obj.MyMonsters = JsonConvert.DeserializeObject<MyMonster[]>(read.GetString(read.GetOrdinal("MyMonsters")));
+                }
                 
 
-                
                 //魔法技能
                 obj.Magics = JsonConvert.DeserializeObject<List<UserMagic>>(read.GetString(read.GetOrdinal("Magics")));
                 for (int i = 0; i < obj.Magics.Count; i++)
@@ -611,6 +619,9 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("fb2_addscore", fb2_addscore));
             
             lp.Add(new SQLiteParameter("killMon2", JsonConvert.SerializeObject(killMon2)));
+            //契约兽
+            lp.Add(new SQLiteParameter("MyMonsters", JsonConvert.SerializeObject(MyMonsters)));
+            
 
             //lp.Add(new SQLiteParameter("onlineTime", onlineTime));
             //lp.Add(new SQLiteParameter("onlineDay", onlineDay));

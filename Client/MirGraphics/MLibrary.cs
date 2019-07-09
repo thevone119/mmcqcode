@@ -555,7 +555,7 @@ namespace Client.MirGraphics
                 
                 mi.CreateTexture(_reader);
             }
-
+            mi.CleanTime = CMain.Time + Settings.CleanDelay;
             return true;
         }
 
@@ -924,6 +924,7 @@ namespace Client.MirGraphics
                 MaskY = reader.ReadInt16();
                 MaskLength = reader.ReadInt32();
             }
+            CleanTime = CMain.Time + Settings.CleanDelay;
         }
 
         public unsafe void CreateTexture(BinaryReader reader)

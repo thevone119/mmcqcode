@@ -1160,6 +1160,7 @@ namespace Server.MirObjects
                             item.src_mon = this.Name;
                             item.src_kill = EXPOwner.Name;
                             item.src_map = CurrentMap.getTitle();
+                            item.src_mon_idx = Info.Index;
                         }
                         if (!DropItem(item)) return;
                     }

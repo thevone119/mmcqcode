@@ -4466,7 +4466,6 @@ namespace Client.MirObjects
                     //猫妖将军，狂暴
                     if (Stage == 1 && CurrentAction != MirAction.Dead)
                     {
-                        
                         Libraries.Monsters[(ushort)Monster.GeneralJinmYo].DrawBlend(529 , DrawLocation, Color.White, true);
                     }
                     break;

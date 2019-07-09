@@ -472,8 +472,14 @@ namespace Client.MirGraphics
             Sprite.Flush();
         }
         //清理，只清理超过时间的
+        //这里清理好像会有问题
         public static void Clean()
         {
+            if (!Settings.isClean)
+            {
+                //清理，释放资源猫洞的有问题？妈的
+                return;
+            }
             for (int i = TextureList.Count - 1; i >= 0; i--)
             {
                 MImage m = TextureList[i];

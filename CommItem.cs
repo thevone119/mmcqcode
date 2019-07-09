@@ -908,6 +908,7 @@ public class UserItem
     public string src_kill = "";//击杀
     public string src_map = "";//地图
     public string src_mon = "";//怪物
+    public int src_mon_idx;//怪物的idx;
 
     //增加4个武器自带技能(其实只用到3个吧)
     public ItemSkill sk1, sk2, sk3, sk4;
@@ -1802,23 +1803,80 @@ public class ExpireInfo
 //契约兽,契约兽的玩法哦
 public class MyMonster
 {
-    public uint idx;//唯一索引
+    public ulong idx;//唯一索引
 
     public int MonIndex;//怪物的ID
     public ushort MonImage;//怪物的图片，客户端索引
     public string MonName;//怪物名称
     public string rMonName;//玩家重命名的怪物名称
-    public byte MonLevel;//怪物的等级，7个等级，类似宝宝等级
-    public int currExp;//怪物的当前等级经验
-    public int MaxExp;//怪物的当前等级最高经验
-    //怪物的灵性（潜能5-10之间）
-    public byte spiritual;
+
+    //怪物的等级，采用玩家的等级，经验
+    //和玩家一起战斗，获得玩家经验的2倍
+    //吃装备，获得玩家经验的3倍
+    public byte MonLevel;
+
+    public ulong totalExp;//怪物的累计经验
+    //怪物的灵性（潜能4-10之间）,成长属性（5-10）
+    public byte spiritual,LevelUp;
 
     //怪物的成长属性
     public byte MinAC, MaxAC, MinMAC, MaxMAC, MinDC, MaxDC, Accuracy, Agility;
 
     public MyMonster()
     {
+
+    }
+
+
+
+
+    //契约一个灵兽
+    public MyMonster(int MonIndex, ushort MonImage, string MonName)
+    {
+        idx = (ulong)UniqueKeyHelper.UniqueNext();
+        this.MonIndex = MonIndex;
+        this.MonImage = MonImage;
+        this.MonName = MonName;
+        //等级（1-40级，随机，每10级，潜能降1）
+        MonLevel = (byte)RandomUtils.Next(1, 50);
+        spiritual = 7;
+        if (MonLevel > 20)
+        {
+            spiritual = 6;
+        }
+        else if(MonLevel > 30)
+        {
+            spiritual = 5;
+        }
+        else if (MonLevel > 40)
+        {
+            spiritual = 4;
+        }
+        //潜能（6-10左右的潜能）,100个中有1个是10的。
+        for (int i = 0; i < 3; i++)
+        {
+            if (RandomUtils.Next(100) < 33)
+            {
+                spiritual++;
+            }
+            else
+            {
+                break;
+            }
+        }
+        //成长（5-10），100个中有1个是10的
+        LevelUp = 5;
+        for (int i = 0; i < 4; i++)
+        {
+            if (RandomUtils.Next(100) < 50)
+            {
+                LevelUp++;
+            }
+            else
+            {
+                break;
+            }
+        }
 
     }
 
@@ -1832,8 +1890,8 @@ public class MyMonster
         rMonName = reader.ReadString();
 
         MonLevel = reader.ReadByte();
-        currExp = reader.ReadByte();
-        MaxExp = reader.ReadByte();
+
+        totalExp = reader.ReadUInt64();
 
         MinAC = reader.ReadByte();
         MaxAC = reader.ReadByte();
@@ -1847,6 +1905,7 @@ public class MyMonster
         Accuracy = reader.ReadByte();
         Agility = reader.ReadByte();
         spiritual = reader.ReadByte();
+        LevelUp = reader.ReadByte();
     }
 
     //怪物数据写
@@ -1858,8 +1917,7 @@ public class MyMonster
         writer.Write(MonName);
         writer.Write(rMonName);
         writer.Write(MonLevel);
-        writer.Write(currExp);
-        writer.Write(MaxExp);
+        writer.Write(totalExp);
         writer.Write(MinAC);
         writer.Write(MaxAC);
         writer.Write(MinMAC);
@@ -1869,6 +1927,7 @@ public class MyMonster
         writer.Write(Accuracy);
         writer.Write(Agility);
         writer.Write(spiritual);
+        writer.Write(LevelUp);
     }
 
 }

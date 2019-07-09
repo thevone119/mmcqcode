@@ -35,6 +35,13 @@ namespace Client.MirScenes.Dialogs
         public MirTextBox HPLower1Text, HPLower2Text, HPLower3Text, HPUse1Text, HPUse2Text, HPUse3Text, MPLower1Text, MPUse1Text;
         //文字框
         public MirLabel HP11,HP12,HP21,HP22,HP31,HP32,MP11,MP12;
+
+        //自动技能文字框
+        public MirLabel AutoSkill1Lab, AutoSkill2Lab, AutoSkill1IntervalLab, AutoSkill2IntervalLab;
+        //自动技能名称，间隔
+        public MirTextBox AutoSkill1Text, AutoSkill2Text, AutoSkill1IntervalText, AutoSkill2IntervalText;
+
+
         //物品分页
         public MirCheckBox AutoPickUpBox;
         public MirCheckBox FilterItem1Box;
@@ -306,8 +313,98 @@ namespace Client.MirScenes.Dialogs
             {
                 changeData();
             };
+            //第三列
+            top = 70;
+            left += 80;
+            int _left3 = left;
+            AutoSkill1Lab = new MirLabel
+            {
+                Text = "自动",
+                Parent = this,
+                Size = new Size(30, 17),
+                Location = new Point(left, top),
+                DrawFormat = TextFormatFlags.Left
+            };
+            left += 35;
+            AutoSkill1Text = new MirTextBox
+                     {
+                         BackColour = Color.Green,
+                         ForeColour = Color.White,
+                         Parent = this,
+                         Size = new Size(60, 17),
+                         Location = new Point(left, top),
+                         Font = new Font(Settings.FontName, 9F),
+                         MaxLength = 5,
+                         CanLoseFocus = true,
+                     };
+            left += 65;
 
-            
+            AutoSkill1IntervalLab = new MirLabel
+            {
+                Text = "间隔",
+                Parent = this,
+                Size = new Size(30, 17),
+                Location = new Point(left, top),
+                DrawFormat = TextFormatFlags.Left 
+            };
+            left += 35;
+            AutoSkill1IntervalText = new MirTextBox
+            {
+                BackColour = Color.Green,
+                ForeColour = Color.White,
+                Parent = this,
+                Size = new Size(40, 17),
+                Location = new Point(left, top),
+                Font = new Font(Settings.FontName, 9F),
+                MaxLength = 5,
+                CanLoseFocus = true,
+            };
+            top += 30;
+            left = _left3;
+            AutoSkill2Lab = new MirLabel
+            {
+                Text = "自动",
+                Parent = this,
+                Size = new Size(30, 17),
+                Location = new Point(left, top),
+                DrawFormat = TextFormatFlags.Left 
+            };
+            left += 35;
+            AutoSkill2Text = new MirTextBox
+            {
+                BackColour = Color.Green,
+                ForeColour = Color.White,
+                Parent = this,
+                Size = new Size(60, 17),
+                Location = new Point(left, top),
+                Font = new Font(Settings.FontName, 9F),
+                MaxLength = 5,
+                CanLoseFocus = true,
+            };
+            left += 65;
+
+            AutoSkill2IntervalLab = new MirLabel
+            {
+                Text = "间隔",
+                Parent = this,
+                Size = new Size(30, 17),
+                Location = new Point(left, top),
+                DrawFormat = TextFormatFlags.Left 
+            };
+            left += 35;
+            AutoSkill2IntervalText = new MirTextBox
+            {
+                BackColour = Color.Green,
+                ForeColour = Color.White,
+                Parent = this,
+                Size = new Size(40, 17),
+                Location = new Point(left, top),
+                Font = new Font(Settings.FontName, 9F),
+                MaxLength = 5,
+                CanLoseFocus = true,
+            };
+
+
             //4.物品
             left = 50;
             top = 70;
@@ -566,6 +663,12 @@ namespace Client.MirScenes.Dialogs
             MPLower1Text.Text= GameScene.UserSet.MPLower1 + "";
             MPUse1Text.Text = GameScene.UserSet.MPUse1 + "";
 
+            AutoSkill1Text.Text = GameScene.UserSet.AutoSkill1 + "";
+            AutoSkill2Text.Text = GameScene.UserSet.AutoSkill2 + "";
+
+            AutoSkill1IntervalText.Text = GameScene.UserSet.AutoSkill1Interval + "";
+            AutoSkill2IntervalText.Text = GameScene.UserSet.AutoSkill2Interval + "";
+
             //初始物品数据
             ItemAll = GameScene.UserSet.PickUpList;
         }
@@ -598,10 +701,37 @@ namespace Client.MirScenes.Dialogs
             byte.TryParse(HPLower2Text.Text, out GameScene.UserSet.HPLower2);
             byte.TryParse(HPLower3Text.Text, out GameScene.UserSet.HPLower3);
             byte.TryParse(MPLower1Text.Text, out GameScene.UserSet.MPLower1);
+
+
             GameScene.UserSet.HPUse1 = HPUse1Text.Text;
             GameScene.UserSet.HPUse2 = HPUse2Text.Text;
             GameScene.UserSet.HPUse3 = HPUse3Text.Text;
             GameScene.UserSet.MPUse1 = MPUse1Text.Text;
+
+
+            GameScene.UserSet.AutoSkill1 = AutoSkill1Text.Text;
+            GameScene.UserSet.AutoSkill2 = AutoSkill2Text.Text;
+
+            int.TryParse(AutoSkill1IntervalText.Text, out GameScene.UserSet.AutoSkill1Interval);
+            int.TryParse(AutoSkill2IntervalText.Text, out GameScene.UserSet.AutoSkill2Interval);
+            if (GameScene.UserSet.AutoSkill1Interval < 1800)
+            {
+                GameScene.UserSet.AutoSkill1Interval = 1800;
+            }
+            if (GameScene.UserSet.AutoSkill1Interval > 600000)
+            {
+                GameScene.UserSet.AutoSkill1Interval = 600000;
+            }
+
+            if (GameScene.UserSet.AutoSkill2Interval < 1800)
+            {
+                GameScene.UserSet.AutoSkill2Interval = 1800;
+            }
+            if (GameScene.UserSet.AutoSkill2Interval > 600000)
+            {
+                GameScene.UserSet.AutoSkill2Interval = 600000;
+            }
+
             //物品选择
             for (int i = StartIndex; i < StartIndex + 12 && i < ItemAll.Count; i++)
             {
@@ -699,6 +829,17 @@ namespace Client.MirScenes.Dialogs
             AutoFuryBox.Visible = visible;
             switchPoisonBox.Visible = visible;
             tx_df.Visible = visible;
+            //自动技能
+            AutoSkill1Lab.Visible = visible;
+            AutoSkill2Lab.Visible = visible;
+            AutoSkill1IntervalLab.Visible = visible;
+            AutoSkill2IntervalLab.Visible = visible;
+            AutoSkill1Text.Visible = visible;
+            AutoSkill2Text.Visible = visible;
+            AutoSkill1IntervalText.Visible = visible;
+            AutoSkill2IntervalText.Visible = visible;
+
+
             if (visible)
             {
                 ClassButton.Index = tabPressedIndex;

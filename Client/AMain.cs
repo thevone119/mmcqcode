@@ -624,6 +624,7 @@ namespace Launcher
             {
                 Directory.CreateDirectory(Settings.P_Client + "download");
             }
+            lab_version.Text = "当前版本号:" + Settings.clientVersion;
 
             //Launch_pb.Enabled = false;
             ProgressCurrent_pb.Width = 5;
