@@ -2309,9 +2309,12 @@ namespace Server.MirObjects
                 }
                 minfo.Drops.Add(drop5);
 
-                //兽魂丹 1/3几率出
-                DropInfo drop6 = DropInfo.FromLine("副本_兽丹", String.Format("1/3 兽魂丹"));
-                minfo.Drops.Add(drop6);
+                //兽魂丹 1/2几率出
+                if (minfo.CanTame)
+                {
+                    DropInfo drop6 = DropInfo.FromLine("副本_兽丹", String.Format("1/2 兽魂丹"));
+                    minfo.Drops.Add(drop6);
+                }
                 //
                 minfo.Name = minfo.Name + "[" + "统领" + "]";
                 minfo.Level = 99;
@@ -3016,7 +3019,8 @@ namespace Server.MirObjects
             GetMail();
             GetFriends();
             GetRelationship();
-            
+            GetMyMonsters();
+
             if ((Info.Mentor != 0) && (Info.MentorDate.AddDays(Settings.MentorLength) < DateTime.Now))
                 MentorBreak();
             else
@@ -14142,6 +14146,17 @@ namespace Server.MirObjects
             Enqueue(p);
             RefreshStats();
         }
+
+        //玩家对契约兽的操作
+        public void MyMonsterOperation(ulong monidx, byte operation, string parameter1, string parameter2)
+        {
+            if (operation == 1)
+            {
+
+            }
+
+        }
+
         /// <summary>
         /// 针对其他的砸蛋
         /// </summary>
@@ -14244,14 +14259,13 @@ namespace Server.MirObjects
 
                     //item merged ok
                     TradeUnlock();
+                    //签约灵兽
+                    Info.MyMonsters[monIdx] = new MyMonster(monIdx, (ushort)mob.Info.Image, mob.Name);
 
                     p.Success = true;
                     Enqueue(p);
+                    GetMyMonsters();
                     ReceiveChat("签约灵兽成功.", ChatType.Hint);
-
-                    //签约灵兽
-
-
 
 
                     return;
@@ -22749,6 +22763,13 @@ namespace Server.MirObjects
             GetRelationship(false);
             DivorceProposal.GetRelationship(false);
             DivorceProposal = null;
+        }
+
+        //更新契约兽
+        public void GetMyMonsters()
+        {
+            S.MyMonstersPackets monpacket = new S.MyMonstersPackets { MyMonsters = Info.MyMonsters };
+            Enqueue(monpacket);
         }
 
         public void GetRelationship(bool CheckOnline = true)

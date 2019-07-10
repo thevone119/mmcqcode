@@ -59,6 +59,10 @@ namespace Client.MirObjects
         public List<EquipmentSlot> MirSet = new List<EquipmentSlot>();
 
         public List<ClientIntelligentCreature> IntelligentCreatures = new List<ClientIntelligentCreature>();//IntelligentCreature
+
+        //契约兽，10个契约兽
+        public MyMonster[] MyMonsters = new MyMonster[10];//10个契约兽
+
         public IntelligentCreatureType SummonedCreatureType = IntelligentCreatureType.None;//IntelligentCreature
         public bool CreatureSummoned;//IntelligentCreature
         public int PearlCount = 0;

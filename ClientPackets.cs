@@ -2072,6 +2072,36 @@ namespace ClientPackets
             writer.Write(Stamped);
         }
     }
+
+    //契约兽的操作
+    public sealed class MyMonsterOperation : Packet//MyMonsterOperation
+    {
+        public override short Index { get { return (short)ClientPacketIds.MyMonsterOperation; } }
+
+        public ulong monidx;//契约兽的ID
+        public byte operation;//操作 1:改名 2：召唤 3：释放，解雇，4：转移
+
+        public string parameter1 = string.Empty;
+        public string parameter2 = string.Empty;
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            monidx = reader.ReadUInt64();
+            operation = reader.ReadByte();
+            parameter1 = reader.ReadString();
+            parameter2 = reader.ReadString();
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(monidx);
+            writer.Write(operation);
+            writer.Write(parameter1);
+            writer.Write(parameter2);
+        }
+    }
+
+    
     //
     public sealed class UpdateIntelligentCreature : Packet//IntelligentCreature
     {

@@ -678,6 +678,12 @@ namespace Server.MirNetwork
                 case (short)ClientPacketIds.MagicParameter:
                     MagicParameter((C.MagicParameter)p);
                     break;
+
+
+                case (short)ClientPacketIds.MyMonsterOperation:
+                    MyMonsterOperation((C.MyMonsterOperation)p);
+                    break;
+
                 default:
                     SMain.Enqueue(string.Format("Invalid packet received. Index : {0}", p.Index));
                     break;
@@ -927,6 +933,12 @@ namespace Server.MirNetwork
             Player.MagicParameter = p.Parameter;
         }
 
+        private void MyMonsterOperation(C.MyMonsterOperation p)
+        {
+            if (Stage != GameStage.Game) return;
+
+            Player.MyMonsterOperation(p.monidx, p.operation, p.parameter1, p.parameter2);
+        }
         
 
         private void StartGame(C.StartGame p)

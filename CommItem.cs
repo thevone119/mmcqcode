@@ -1807,24 +1807,118 @@ public class MyMonster
 
     public int MonIndex;//怪物的ID
     public ushort MonImage;//怪物的图片，客户端索引
-    public string MonName;//怪物名称
-    public string rMonName;//玩家重命名的怪物名称
+    public string MonName = String.Empty;//怪物名称
+    public string rMonName = String.Empty;//玩家重命名的怪物名称
 
-    //怪物的等级，采用玩家的等级，经验
+    //怪物的等级，采用和玩家的等级经验差不多
     //和玩家一起战斗，获得玩家经验的2倍
     //吃装备，获得玩家经验的3倍
     public byte MonLevel;
 
+    public ulong currExp;//当前等级累计经验
+    public ulong maxExp;//当前等级要求经验
+
     public ulong totalExp;//怪物的累计经验
-    //怪物的灵性（潜能4-10之间）,成长属性（5-10）
-    public byte spiritual,LevelUp;
+    //怪物的3维，
+    //spiritual:根骨（体质）：影响属性成长，攻击，防御，等成长
+    //LevelUp:体质（成长）：影响等级成长，经验吸收
+    //clever:悟性：影响技能领悟
+    public byte spiritual,LevelUp, clever;
+
+    //宝宝领悟的技能
+    public byte skill1, skill2;
+    //宝宝领悟的技能名称
+    public string skillname1 = String.Empty, skillname2 = String.Empty;
 
     //怪物的成长属性
     public byte MinAC, MaxAC, MinMAC, MaxMAC, MinDC, MaxDC, Accuracy, Agility;
 
+    
+
+
     public MyMonster()
     {
 
+    }
+
+    //计算数据
+    public void initData()
+    {
+
+    }
+
+    public string getName()
+    {
+        if(rMonName==string.Empty|| rMonName==null|| rMonName.Length < 2)
+        {
+            return rMonName;
+        }
+        return rMonName;
+    }
+
+    //根据累计经验计算等级
+    public byte GetExplevel(long expCount)
+    {
+        long _expCount = 0;
+        for (int i = 1; i <= 300; i++)
+        {
+            long levelExp = GetLevelExp((byte)i); 
+            if (expCount>= _expCount && expCount< _expCount+ levelExp)
+            {
+                return (byte)i;
+            }
+            _expCount += levelExp;
+        }
+
+        return 1;
+    }
+
+
+    //获取等级累计经验
+    public long GetLevelExpCount(byte level)
+    {
+        long expCount = 0;
+        for (int i = 1; i < level; i++)
+        {
+            expCount += GetLevelExp((byte)i);
+        }
+        return expCount;
+    }
+
+    //根据等级计算经验
+    public long GetLevelExp(byte level)
+    {
+        long exp = 5000;
+        for (int i = 1; i < level; i++)
+        {
+            exp = exp * 120 / 100;
+        }
+        //格式整数
+        if (exp >= 1000 && exp < 10000)
+        {
+            exp = exp / 100 * 100;
+        }
+        if (exp >= 10000 && exp < 100000)
+        {
+            exp = exp / 1000 * 1000;
+        }
+        if (exp >= 100000 && exp < 1000000)
+        {
+            exp = exp / 10000 * 10000;
+        }
+        if (exp >= 1000000 && exp < 10000000)
+        {
+            exp = exp / 100000 * 100000;
+        }
+        if (exp >= 10000000)
+        {
+            exp = exp / 1000000 * 1000000;
+        }
+        if (exp > 100000000)
+        {
+            exp = 100000000;
+        }
+        return exp;
     }
 
 
@@ -1839,6 +1933,8 @@ public class MyMonster
         this.MonName = MonName;
         //等级（1-40级，随机，每10级，潜能降1）
         MonLevel = (byte)RandomUtils.Next(1, 50);
+        totalExp = (ulong)GetLevelExpCount(MonLevel);
+
         spiritual = 7;
         if (MonLevel > 20)
         {
@@ -1883,7 +1979,7 @@ public class MyMonster
     //怪物数据读
     public MyMonster(BinaryReader reader)
     {
-        idx = reader.ReadUInt32();
+        idx = reader.ReadUInt64();
         MonIndex = reader.ReadInt32();
         MonImage = reader.ReadUInt16();
         MonName = reader.ReadString();
@@ -1891,7 +1987,9 @@ public class MyMonster
 
         MonLevel = reader.ReadByte();
 
-        totalExp = reader.ReadUInt64();
+        currExp = reader.ReadUInt64();
+        maxExp = reader.ReadUInt64();
+
 
         MinAC = reader.ReadByte();
         MaxAC = reader.ReadByte();
@@ -1904,8 +2002,12 @@ public class MyMonster
 
         Accuracy = reader.ReadByte();
         Agility = reader.ReadByte();
+
         spiritual = reader.ReadByte();
         LevelUp = reader.ReadByte();
+        clever = reader.ReadByte();
+        skillname1 = reader.ReadString();
+        skillname2 = reader.ReadString();
     }
 
     //怪物数据写
@@ -1917,7 +2019,8 @@ public class MyMonster
         writer.Write(MonName);
         writer.Write(rMonName);
         writer.Write(MonLevel);
-        writer.Write(totalExp);
+        writer.Write(currExp);
+        writer.Write(maxExp);
         writer.Write(MinAC);
         writer.Write(MaxAC);
         writer.Write(MinMAC);
@@ -1928,6 +2031,9 @@ public class MyMonster
         writer.Write(Agility);
         writer.Write(spiritual);
         writer.Write(LevelUp);
+        writer.Write(clever);
+        writer.Write(skillname1);
+        writer.Write(skillname2);
     }
 
 }

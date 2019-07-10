@@ -1636,7 +1636,8 @@ public enum ServerPacketIds : short
     NPCConsignDoulbe,
     ObjectMonsterChange,
     BlizzardStopTime,
-
+    MyMonstersPackets,
+    MyMonstersExpUpdate,
 }
 
 public enum ClientPacketIds : short
@@ -1789,6 +1790,7 @@ public enum ClientPacketIds : short
     ItemCollectCancel,//物品收集，取消
     ConfirmItemCollect,//确认收集物品
     MagicParameter,//魔法参数，魔法释放的前置
+    MyMonsterOperation,//契约兽操作
 }
 
 public enum ConquestType : byte
@@ -4225,6 +4227,9 @@ public abstract class Packet
                 return new C.ConfirmItemCollect();
             case (short)ClientPacketIds.MagicParameter:
                 return new C.MagicParameter();
+            case (short)ClientPacketIds.MyMonsterOperation:
+                return new C.MyMonsterOperation();
+                
             default:
                 return null;
         }
@@ -4508,7 +4513,11 @@ public abstract class Packet
                 return new S.ObjectMonsterChange();
             case (short)ServerPacketIds.BlizzardStopTime:
                 return new S.BlizzardStopTime();
-
+            case (short)ServerPacketIds.MyMonstersPackets:
+                return new S.MyMonstersPackets();
+            case (short)ServerPacketIds.MyMonstersExpUpdate:
+                return new S.MyMonstersExpUpdate();
+                
             case (short)ServerPacketIds.ConsignItem:
                 return new S.ConsignItem();
             case (short)ServerPacketIds.MarketFail:

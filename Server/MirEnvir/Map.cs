@@ -2958,7 +2958,12 @@ namespace Server.MirEnvir
         //怪物的产生
         public bool Spawn()
         {
-            MonsterObject ob = MonsterObject.GetMonster(Monster);
+            if (Monster == null)
+            {
+                return true;
+            }
+            //重新加载一次怪物，这样可以随时变更爆率哦
+            MonsterObject ob = MonsterObject.GetMonster(SMain.Envir.GetMonsterInfo(Monster.Index));
             if (ob == null|| Locs.Count==0) return true;
             bool isSpawn = false;
             //5次随机重生，如果5次都没有随机到点，则从列表中取点

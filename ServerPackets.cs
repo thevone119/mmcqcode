@@ -724,6 +724,92 @@ namespace ServerPackets
         }
     }
 
+    /// <summary>
+    /// 我的契约兽信息返回
+    /// 返回所有的契约兽
+    /// </summary>
+    public sealed class MyMonstersPackets : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.MyMonstersPackets; }
+        }
+
+        public MyMonster[] MyMonsters;//10个契约兽
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            if (reader.ReadBoolean())
+            {
+                MyMonsters = new MyMonster[reader.ReadInt32()];
+                for (int i = 0; i < MyMonsters.Length; i++)
+                {
+                    if (!reader.ReadBoolean()) continue;
+                    MyMonsters[i] = new MyMonster(reader);
+                }
+            }
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(MyMonsters != null);
+            if (MyMonsters != null)
+            {
+                writer.Write(MyMonsters.Length);
+                for (int i = 0; i < MyMonsters.Length; i++)
+                {
+                    writer.Write(MyMonsters[i] != null);
+                    if (MyMonsters[i] == null) continue;
+
+                    MyMonsters[i].Save(writer);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 契约兽信息更新，更新经验
+    /// </summary>
+    public sealed class MyMonstersExpUpdate : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.MyMonstersExpUpdate; }
+        }
+
+        public ulong monidx;//契约兽的ID
+        public byte MonLevel;
+
+        public ulong currExp;//当前等级累计经验
+        public ulong maxExp;//当前等级要求经验
+
+
+
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            monidx = reader.ReadUInt64();
+            MonLevel = reader.ReadByte();
+            currExp = reader.ReadUInt64();
+            maxExp = reader.ReadUInt64();
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(monidx);
+            writer.Write(MonLevel);
+            writer.Write(currExp);
+            writer.Write(maxExp);
+        }
+
+
+    }
+
+    
+
+
+
+
     //返回用户的最新的背包,刷新用户背包的时候返回最新的背包信息
     public sealed class UserInventory : Packet
     {

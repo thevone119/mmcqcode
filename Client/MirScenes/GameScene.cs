@@ -2048,6 +2048,15 @@ namespace Client.MirScenes
                 case (short)ServerPacketIds.NewIntelligentCreature:
                     NewIntelligentCreature((S.NewIntelligentCreature)p);
                     break;
+                case (short)ServerPacketIds.MyMonstersPackets:
+                    UpdateMyMonsters((S.MyMonstersPackets)p);
+                    break;
+                case (short)ServerPacketIds.MyMonstersExpUpdate:
+                    MyMonstersExpUpdate((S.MyMonstersExpUpdate)p);
+                    break;
+                    
+
+
                 case (short)ServerPacketIds.UpdateIntelligentCreatureList:
                     UpdateIntelligentCreatureList((S.UpdateIntelligentCreatureList)p);
                     break;
@@ -5928,6 +5937,34 @@ namespace Client.MirScenes
                 messageBox.Show();
             }
         }
+
+        //更新契约兽
+        private void UpdateMyMonsters(S.MyMonstersPackets p)
+        {
+            User.MyMonsters = p.MyMonsters;
+            MyMonstersDialogs.Update();
+        }
+        //更新契约兽的等级，经验
+        private void MyMonstersExpUpdate(S.MyMonstersExpUpdate p)
+        {
+            if (User.MyMonsters == null)
+            {
+                return;
+            }
+            for(int i=0;i< User.MyMonsters.Length; i++)
+            {
+                if (User.MyMonsters[i]==null|| User.MyMonsters[i].idx!=p.monidx)
+                {
+                    continue;
+                }
+                User.MyMonsters[i].MonLevel = p.MonLevel;
+                User.MyMonsters[i].currExp = p.currExp;
+                User.MyMonsters[i].maxExp = p.maxExp;
+            }
+        }
+
+        
+
         //
         private void NewIntelligentCreature(S.NewIntelligentCreature p)
         {

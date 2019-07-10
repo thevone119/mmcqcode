@@ -911,7 +911,10 @@ namespace Client.MirScenes.Dialogs
             if (pet == null) return;
             if (PetType == IntelligentCreatureType.None || PetType != pet.PetType) setnew = true;//force new
 
-            if (setnew) SetButtonInfo(pet);
+            if (setnew)
+            {
+                SetButtonInfo(pet);
+            }
             else
             {
                 NameLabel.Text = pet.CustomName.ToString();
