@@ -490,7 +490,11 @@ namespace Server.MirObjects
                 {
                     try
                     {
-                        Info.Pets.Add(new PetInfo(pet) { Time = Envir.Time });
+                        //契约兽不保存哦
+                        if(pet.PType!= PetType.MyMonster)
+                        {
+                            Info.Pets.Add(new PetInfo(pet) { Time = Envir.Time });
+                        }
 
                         Envir.MonsterCount--;
                         pet.CurrentMap.MonsterCount--;
@@ -505,7 +509,10 @@ namespace Server.MirObjects
                 }
             }
             Pets.Clear();
-            
+
+         
+
+
             for (int i = 0; i < Info.Magics.Count; i++)
             {
                 if (Envir.Time < (Info.Magics[i].CastTime + Info.Magics[i].GetDelay()))
@@ -782,6 +789,8 @@ namespace Server.MirObjects
                     MonsterObject pet = Pets[i];
                     if (pet.Dead) Pets.Remove(pet);
                 }
+
+  
 
                 ProcessBuffs();
                 ProcessInfiniteBuffs();
@@ -1599,6 +1608,8 @@ namespace Server.MirObjects
                 if (Pets[i].Dead) continue;
                 Pets[i].Die();
             }
+
+            
 
             if (MagicShield)
             {
@@ -2638,6 +2649,9 @@ namespace Server.MirObjects
                 if (monster.CurrentMap == CurrentMap && Functions.InRange(monster.CurrentLocation, CurrentLocation, Globals.DataRange) && !monster.Dead)
                     monster.PetExp(amount);
             }
+
+
+            
 
             if (MyGuild != null)
                 MyGuild.GainExp(amount);
@@ -8528,8 +8542,13 @@ namespace Server.MirObjects
                 }
                 return;
             }
+
+
             //驯服数量大于技能等级+2（最多驯服5个）
-            if (Pets.Count(t => !t.Dead) >= magic.Level + 2) return;
+            if(getPetCount(PetType.Common)>= magic.Level + 2)
+            {
+                return;
+            }
             //驯服几率
             int rate = (int)(target.HP / 100);
             if (rate > 15)
@@ -8562,6 +8581,13 @@ namespace Server.MirObjects
                 target.Die();
                 return;
             }
+            //契约兽不能召唤
+            if (target.PType != PetType.Common)
+            {
+                return;
+            }
+
+
             if (target.Master != null)
             {
                 target.SetHP(target.MaxHP / 10);
@@ -8588,6 +8614,30 @@ namespace Server.MirObjects
 
             target.Broadcast(new S.ObjectName { ObjectID = target.ObjectID, Name = target.Name });
         }
+
+        //计算当前拥有的宠物数量
+        public byte getPetCount(PetType ptype)
+        {
+            byte count = 0;
+            if (Pets == null)
+            {
+                return 0;
+            }
+            foreach(MonsterObject p in Pets)
+            {
+                if (p.Dead)
+                {
+                    continue;
+                }
+                if(ptype!= PetType.All && ptype != p.PType)
+                {
+                    continue;
+                }
+                count++;
+            }
+            return count;
+        }
+
         private void HellFire(UserMagic magic)
         {
             int damage = magic.GetDamage(GetAttackPower(MinMC, MaxMC));
@@ -8891,8 +8941,11 @@ namespace Server.MirObjects
                 monster.ActionList.Add(new DelayedAction(DelayedType.Recall, Envir.Time + 500));
                 return;
             }
-
-            if (Pets.Where(x => x.Race == ObjectType.Monster).Count() > 1) return;
+            if (getPetCount(PetType.Common) > 1)
+            {
+                return;
+            }
+            //if (Pets.Where(x => x.Race == ObjectType.Monster).Count() > 1) return;
 
             UserItem item = GetAmulet(1);
             if (item == null) return;
@@ -8956,8 +9009,11 @@ namespace Server.MirObjects
                 monster.ActionList.Add(new DelayedAction(DelayedType.Recall, Envir.Time + 500));
                 return;
             }
-
-            if (Pets.Where(x => x.Race == ObjectType.Monster).Count() > 1) return;
+            if (getPetCount(PetType.Common) > 1)
+            {
+                return;
+            }
+            //if (Pets.Where(x => x.Race == ObjectType.Monster).Count() > 1) return;
 
             UserItem item = GetAmulet(5);
             if (item == null) return;
@@ -9210,8 +9266,11 @@ namespace Server.MirObjects
                 monster.ActionList.Add(new DelayedAction(DelayedType.Recall, Envir.Time + 500));
                 return;
             }
-
-            if (Pets.Where(x => x.Race == ObjectType.Monster).Count() > 1) return;
+            if (getPetCount(PetType.Common) > 1)
+            {
+                return;
+            }
+            //if (Pets.Where(x => x.Race == ObjectType.Monster).Count() > 1) return;
 
             UserItem item = GetAmulet(2);
             if (item == null) return;
@@ -10882,9 +10941,14 @@ namespace Server.MirObjects
                 case Spell.PetEnhancer:
                     value = (int)data[1];
                     target = (MonsterObject)data[2];
-
-                    int dcInc = 2 + target.Level * 2;
-                    int acInc = 4 + target.Level;
+                    //血龙水，针对契约兽的效果减半
+                    ushort tLevel = target.Level;
+                    if (target.PType == PetType.MyMonster)
+                    {
+                        tLevel = (ushort)(tLevel / 2);
+                    }
+                    int dcInc = 2 + tLevel * 2;
+                    int acInc = 4 + tLevel;
 
                     target.AddBuff(new Buff { Type = BuffType.PetEnhancer, Caster = this, ExpireTime = Envir.Time + value * 1000, Values = new int[] { dcInc, acInc }, Visible = true });
                     LevelMagic(magic);
@@ -11171,8 +11235,11 @@ namespace Server.MirObjects
                         monster.Target = target;
                         return;
                     }
-
-                    if (Pets.Where(x => x.Race == ObjectType.Monster).Count() > 1) return;
+                    if (getPetCount(PetType.Common) > 1)
+                    {
+                        return;
+                    }
+                    //if (Pets.Where(x => x.Race == ObjectType.Monster).Count() > 1) return;
 
                     //left it in for future summon amulets
                     //UserItem item = GetAmulet(5);
@@ -14148,12 +14215,363 @@ namespace Server.MirObjects
         }
 
         //玩家对契约兽的操作
+        //操作 1:改名 2：召唤 3：释放，解雇，4：转移 5：喂养
         public void MyMonsterOperation(ulong monidx, byte operation, string parameter1, string parameter2)
         {
+            if (Dead)
+            {
+                return;
+            }
+            if (Info.MyMonsters == null)
+            {
+                ReceiveChat("找不到该契约兽.", ChatType.Hint);
+                return;
+            }
+            MyMonster mon = null;
+            for (int i = 0; i < Info.MyMonsters.Length; i++)
+            {
+                if (Info.MyMonsters[i] == null || Info.MyMonsters[i].idx!= monidx)
+                {
+                    continue;
+                }
+                mon = Info.MyMonsters[i];
+            }
+            if (mon == null)
+            {
+                ReceiveChat("找不到该契约兽.", ChatType.Hint);
+                return;
+            }
+
+            //改名
             if (operation == 1)
             {
+                if(parameter1==null|| parameter1.Length<2|| parameter1.Length > 6)
+                {
+                    ReceiveChat("契约兽名称不符合规则（2-6个字的名称）.", ChatType.Hint);
+                    GetMyMonsters();
+                    return;
+                }
+                //判断是否有契约兽改名卡
+                bool haska = false;
+                for (int i = 0; i < Info.Inventory.Length; i++)
+                {
+                    if (Info.Inventory[i]!=null && Info.Inventory[i].Name == "契约兽改名卡")
+                    {
+                        Enqueue(new S.DeleteItem { UniqueID = Info.Inventory[i].UniqueID, Count = 1 });
+                        Info.Inventory[i] = null;
+                        haska = true;
+                        break;
+                    }
+                }
+                if (!haska)
+                {
+                    ReceiveChat("没有【契约兽改名卡】无法改名.", ChatType.Hint);
+                    GetMyMonsters();
+                    return;
+                }
+                //item merged ok
+                RefreshBagWeight();
+                mon.rMonName = parameter1;
+                ReceiveChat("契约兽名字已变更，下次召唤生效.", ChatType.Hint);
+                GetMyMonsters();
+            }
+
+            //召唤
+            if (operation == 2)
+            {
+                if (mon.callTime <= 0)
+                {
+                    ReceiveChat($"[{mon.getName()}]  体力不足，无法出战...", ChatType.System);
+                    return;
+                }
+                int mcount = 1;
+                if (Level >= 50)
+                {
+                    mcount = 2;
+                }
+                if (Level >= 60)
+                {
+                    mcount = 3;
+                }
+                if (Level >= 63)
+                {
+                    mcount = 4;
+                }
+
+                if (getPetCount(PetType.MyMonster) >= mcount)
+                {
+                    ReceiveChat($"当前等级最多召唤{mcount}个契约兽.", ChatType.Hint);
+                    return;
+                }
+                //同一个契约兽，只能召唤一个
+                foreach(MonsterObject pet in Pets)
+                {
+                    if (pet == null || pet.Dead || pet.myMonster == null)
+                    {
+                        continue;
+                    }
+                    if (pet.myMonster.idx == mon.idx)
+                    {
+                        ReceiveChat("同一个契约兽只能召唤一个.", ChatType.Hint);
+                        return;
+                    }
+                }
+
+
+                MonsterInfo _info = Envir.GetMonsterInfo(mon.MonIndex);
+                if (_info == null)
+                {
+                    ReceiveChat("找不到当前契约兽.", ChatType.Hint);
+                    return;
+                }
+                
+                MonsterInfo minfo = _info.Clone();
+                //各种属性设置
+                minfo.Name = mon.getName();
+
+                minfo.Level = mon.MonLevel;
+                minfo.HP = minfo.HP + mon.HP;
+                minfo.MinAC = (ushort)(minfo.MinAC + mon.MinAC);
+                minfo.MaxAC = (ushort)(minfo.MaxAC + mon.MaxAC);
+                minfo.MinMAC = (ushort)(minfo.MinMAC + mon.MinMAC);
+                minfo.MaxMAC = (ushort)(minfo.MaxMAC + mon.MaxMAC);
+                //
+                minfo.MinDC = (ushort)(minfo.MinDC + mon.MinDC);
+                minfo.MaxDC = (ushort)(minfo.MaxDC + mon.MaxDC);
+                //
+                minfo.Accuracy = (byte)(minfo.Accuracy + mon.Accuracy);
+                minfo.Agility = (byte)(minfo.Agility + mon.Agility);
+                //攻速
+                int AttackSpeed = minfo.AttackSpeed;
+                if (AttackSpeed < 500)
+                {
+                    AttackSpeed = 500;
+                }
+                if (AttackSpeed > 3000)
+                {
+                    AttackSpeed = 3000;
+                }
+                minfo.AttackSpeed = (ushort)AttackSpeed;
+                //移速
+                int MoveSpeed = minfo.MoveSpeed;
+                if (MoveSpeed < 500)
+                {
+                    MoveSpeed = 500;
+                }
+                if (MoveSpeed > 3000)
+                {
+                    MoveSpeed = 3000;
+                }
+                minfo.MoveSpeed = (ushort)MoveSpeed;
+
+
+
+                MonsterObject monster = MonsterObject.GetMonster(minfo);
+
+                monster.PetLevel = (byte)(mon.MonLevel/10);
+                monster.MaxPetLevel = monster.PetLevel;
+                monster.Master = this;
+                monster.PType = PetType.MyMonster;
+                monster.myMonster = mon;
+
+                monster.ActionTime = Envir.Time + 1000;
+                monster.RefreshNameColour(false);
+
+                if (CurrentMap.ValidPoint(Front))
+                {
+                    monster.Spawn(CurrentMap, Front);
+                }
+                else
+                {
+                    monster.Spawn(CurrentMap, CurrentLocation);
+                }
+                Pets.Add(monster);
+                mon.callTime--;
+                GetMyMonsters();
+            }
+
+            //解雇
+            if (operation == 3)
+            {
+                //如果已存在契约兽，则契约兽死亡
+                foreach (MonsterObject pet in Pets)
+                {
+                    if (pet == null || pet.Dead || pet.myMonster == null)
+                    {
+                        continue;
+                    }
+                    if (pet.myMonster.idx == mon.idx)
+                    {
+                        pet.Die();
+                    }
+                }
+
+                for (int i = 0; i < Info.MyMonsters.Length; i++)
+                {
+                    if (Info.MyMonsters[i] == null || Info.MyMonsters[i].idx != monidx)
+                    {
+                        continue;
+                    }
+                    Info.MyMonsters[i]=null;
+                }
+                GetMyMonsters();
+            }
+
+
+            //转赠送
+            if (operation == 4)
+            {
+                //1.判断玩家是否在线
+                PlayerObject p = Envir.GetPlayer(parameter1);
+                if (p == null || p.Dead)
+                {
+                    ReceiveChat($"玩家 {parameter1} 不在线.", ChatType.Hint);
+                    return;
+                }
+
+                int kaidx = -1;
+                //2.判断是否有契约兽改名卡
+                for (int i = 0; i < Info.Inventory.Length; i++)
+                {
+                    if (Info.Inventory[i] != null && Info.Inventory[i].Name == "契约兽转赠卡")
+                    {
+                        kaidx = i;
+                        break;
+                    }
+                }
+                if (kaidx==-1)
+                {
+                    ReceiveChat("没有【契约兽转赠卡】无法转赠.", ChatType.Hint);
+                    return;
+                }
+                //3.判断玩家是否有位置
+                //判断契约兽是否签约满了
+                int monIdx = -1;
+                for (int i = 0; i < p.Info.MyMonsters.Length; i++)
+                {
+                    if (p.Info.MyMonsters[i] == null)
+                    {
+                        monIdx = i;
+                        break;
+                    }
+                }
+                if (monIdx == -1)
+                {
+                    ReceiveChat($"玩家 {parameter1 }的契约兽已满，无法转赠.", ChatType.Hint);
+                    return;
+                }
+
+                //如果契约兽已经召唤，则契约兽死亡
+                foreach (MonsterObject pet in Pets)
+                {
+                    if (pet == null || pet.Dead || pet.myMonster == null)
+                    {
+                        continue;
+                    }
+                    if (pet.myMonster.idx == mon.idx)
+                    {
+                        pet.Die();
+                    }
+                }
+
+                //删除卡
+                Enqueue(new S.DeleteItem { UniqueID = Info.Inventory[kaidx].UniqueID, Count = 1 });
+                Info.Inventory[kaidx] = null;
+                //删除契约兽
+                for (int i = 0; i < Info.MyMonsters.Length; i++)
+                {
+                    if (Info.MyMonsters[i] == null || Info.MyMonsters[i].idx != monidx)
+                    {
+                        continue;
+                    }
+                    p.Info.MyMonsters[i] = Info.MyMonsters[i].Clone();
+                    Info.MyMonsters[i] = null;
+                }
+                GetMyMonsters();
+                p.GetMyMonsters();
+                
+                ReceiveChat($"契约兽 {mon.MonName} 已赠送给玩家 {parameter1} .", ChatType.Hint);
+                p.ReceiveChat($"收到来自玩家 {Name} 赠送的契约兽  {mon.MonName} .", ChatType.Hint);
 
             }
+
+            //喂食
+            if (operation == 5)
+            {
+                ulong itemid = ulong.Parse(parameter1);
+                //
+                UserItem temp = null;
+                int index = -1;
+                for (int i = 0; i < Info.Inventory.Length; i++)
+                {
+                    temp = Info.Inventory[i];
+                    if (temp == null || temp.UniqueID != itemid) continue;
+                    index = i;
+                    break;
+                }
+                if (index == -1)
+                {
+                    ReceiveChat("当前物品不存在，请刷新背包.", ChatType.System2);
+                    //Enqueue(p);
+                    return;
+                }
+                bool canEat = false;
+
+                //吃装备
+                //只吃比自己低10级的装备
+                //如果装备不是要去等级的，就可以吃，否则只吃比自己低10级的装备了
+                if (temp.Info.Type >= ItemType.Weapon && temp.Info.Type <= ItemType.Stone)
+                {
+                    if (temp.Info.eatLevel < mon.MonLevel - 10)
+                    {
+                        ReceiveChat($"[{mon.getName()}] 此物品太低级了，我可吃不下.", ChatType.System);
+                        return;
+                    }
+                    else
+                    {
+                        canEat = true;
+                        //吃装备，双倍的经验获得
+                        mon.PetExp(temp.Info.Price*2);
+                        //删除背包物品
+                        S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
+                        Info.Inventory[index] = null;
+                        RefreshBagWeight();
+                        Enqueue(p);
+                        //只更新经验
+                        S.MyMonstersExpUpdate exp = new S.MyMonstersExpUpdate { monidx = mon.idx, MonLevel = mon.MonLevel, currExp = mon.currExp , maxExp =mon.maxExp};
+                        Enqueue(exp);
+                        return;
+                    }
+                }
+                //
+                if (temp.Info.Name == "灵兽仙桃")
+                {
+                    if (mon.callTime > 100)
+                    {
+                        ReceiveChat($"[{mon.getName()}]  主人，我已吃饱了，吃不下了...", ChatType.System);
+                        return;
+                    }
+                    mon.callTime += (byte)temp.Count;
+                    canEat = true;
+                }
+
+
+                if (!canEat)
+                {
+                    ReceiveChat($"[{mon.getName()}]  这是什么啊...不吃...不吃...", ChatType.System);
+                    return;
+                }
+                else
+                {
+                    S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
+                    Info.Inventory[index] = null;
+                    RefreshBagWeight();
+                    Enqueue(p);
+                }
+                GetMyMonsters();
+            }
+
+
 
         }
 
@@ -14260,7 +14678,7 @@ namespace Server.MirObjects
                     //item merged ok
                     TradeUnlock();
                     //签约灵兽
-                    Info.MyMonsters[monIdx] = new MyMonster(monIdx, (ushort)mob.Info.Image, mob.Name);
+                    Info.MyMonsters[monIdx] = new MyMonster(tempTo.src_mon_idx, (ushort)mob.Info.Image, mob.Name);
 
                     p.Success = true;
                     Enqueue(p);
@@ -20707,7 +21125,7 @@ namespace Server.MirObjects
                 }
                 for (int i = (releasedPets.Count - 1); i >= 0; i--)//start with largest value
                 {
-                    ReceiveChat((string.Format("生物 {0} 已过期.", Info.IntelligentCreatures[releasedPets[i]].CustomName)), ChatType.System);
+                    ReceiveChat((string.Format("宠物 {0} 已过期.", Info.IntelligentCreatures[releasedPets[i]].CustomName)), ChatType.System);
                     ReleaseIntelligentCreature(Info.IntelligentCreatures[releasedPets[i]].PetType, false);//release creature
                 }
 
@@ -22768,6 +23186,9 @@ namespace Server.MirObjects
         //更新契约兽
         public void GetMyMonsters()
         {
+            //这里做个处理，排序处理，前面的不能为空哦
+
+
             S.MyMonstersPackets monpacket = new S.MyMonstersPackets { MyMonsters = Info.MyMonsters };
             Enqueue(monpacket);
         }

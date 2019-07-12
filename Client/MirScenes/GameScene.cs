@@ -6226,7 +6226,14 @@ namespace Client.MirScenes
             };
 
             if (HoverItem.RefineAdded > 0)
-            nameLabel.Text = "(*)" + nameLabel.Text;
+            {
+                nameLabel.Text = "(*)" + nameLabel.Text;
+            }
+            if (HoverItem.n_Image > 0)
+            {
+                nameLabel.Text =  nameLabel.Text+"(幻化)";
+            }
+            
 
             ItemLabel.Size = new Size(Math.Max(ItemLabel.Size.Width, nameLabel.DisplayRectangle.Right + 4),
                 Math.Max(ItemLabel.Size.Height, nameLabel.DisplayRectangle.Bottom));
@@ -10443,6 +10450,7 @@ namespace Client.MirScenes
                     break;
             }
         }
+
         //鼠标按下事件处理
         private static void OnMouseDown(object sender, MouseEventArgs e)
         {
@@ -10469,17 +10477,24 @@ namespace Client.MirScenes
                     GameScene.SelectedCell = null;
                     return;
                 }
+                //丢弃物品后直接消失
                 if (cell.Item.Count == 1)
                 {
-                    MirMessageBox messageBox = new MirMessageBox(string.Format("你确定要丢弃 {0} 吗?", cell.Item.FriendlyName), MirMessageBoxButtons.YesNo);
-
-                    messageBox.YesButton.Click += (o, a) =>
+                    if (cell.Item.Info.Bind.HasFlag(BindMode.DestroyOnDrop))
+                    {
+                        MirMessageBox messageBox = new MirMessageBox(string.Format("当前物品丢弃后消失，你确定要丢弃 {0} 吗?", cell.Item.FriendlyName), MirMessageBoxButtons.YesNo);
+                        messageBox.YesButton.Click += (o, a) =>
+                        {
+                            Network.Enqueue(new C.DropItem { UniqueID = cell.Item.UniqueID, Count = 1 });
+                            cell.Locked = true;
+                        };
+                        messageBox.Show();
+                    }
+                    else
                     {
                         Network.Enqueue(new C.DropItem { UniqueID = cell.Item.UniqueID, Count = 1 });
-
                         cell.Locked = true;
-                    };
-                    messageBox.Show();
+                    }
                 }
                 else
                 {

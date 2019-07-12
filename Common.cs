@@ -986,6 +986,18 @@ public enum PetMode : byte
     AttackOnly = 2,
     None = 3,
 }
+
+
+//宠物类型
+[Obfuscation(Feature = "renaming", Exclude = true)]
+public enum PetType : byte
+{
+    Common = 0,//普通，法师召唤的，道士召唤的宝宝
+    CreaturePet = 1,//非战斗宠物
+    MyMonster = 2,//契约兽
+
+    All=11,//包括所有
+}
 //毒药类型
 [Flags]
 [Obfuscation(Feature = "renaming", Exclude = true)]

@@ -2079,7 +2079,7 @@ namespace ClientPackets
         public override short Index { get { return (short)ClientPacketIds.MyMonsterOperation; } }
 
         public ulong monidx;//契约兽的ID
-        public byte operation;//操作 1:改名 2：召唤 3：释放，解雇，4：转移
+        public byte operation;//操作 1:改名 2：召唤 3：释放，解雇，4：转移 5:喂食物
 
         public string parameter1 = string.Empty;
         public string parameter2 = string.Empty;

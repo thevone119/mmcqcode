@@ -480,6 +480,7 @@ namespace Server.MirObjects
                 base.AMode = value;
             }
         }
+
         public override sealed PetMode PMode
         {
             get
@@ -491,6 +492,22 @@ namespace Server.MirObjects
                 base.PMode = value;
             }
         }
+
+        public override sealed PetType PType
+        {
+            get
+            {
+                return base.PType;
+            }
+            set
+            {
+                base.PType = value;
+            }
+        }
+
+        //契约兽
+        public MyMonster myMonster;
+
 
         public override uint Health
         {

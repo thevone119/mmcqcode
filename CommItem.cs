@@ -100,8 +100,8 @@ public class ItemInfo
     public byte MinMaterial, MaxMaterial;
 
     public byte MinGem, MaxGem;//物品可砸最大宝玉，小
-    
 
+    public byte eatLevel;//装备回收，吃装备的等级
 
     public bool IsConsumable
     {
@@ -454,6 +454,8 @@ public class ItemInfo
             obj.MaxMaterial = read.GetByte(read.GetOrdinal("MaxMaterial"));
             obj.MinGem = read.GetByte(read.GetOrdinal("MinGem"));
             obj.MaxGem = read.GetByte(read.GetOrdinal("MaxGem"));
+            obj.eatLevel = read.GetByte(read.GetOrdinal("eatLevel"));
+            
             DBObjectUtils.updateObjState(obj, obj.Index);
             
             _listAll.Add(obj);
@@ -1815,6 +1817,9 @@ public class MyMonster
     //吃装备，获得玩家经验的3倍
     public byte MonLevel;
 
+    //体力
+    public byte callTime;
+
     public ulong currExp;//当前等级累计经验
     public ulong maxExp;//当前等级要求经验
 
@@ -1831,7 +1836,12 @@ public class MyMonster
     public string skillname1 = String.Empty, skillname2 = String.Empty;
 
     //怪物的成长属性
-    public byte MinAC, MaxAC, MinMAC, MaxMAC, MinDC, MaxDC, Accuracy, Agility;
+    public ushort MinAC, MaxAC, MinMAC, MaxMAC, MinDC, MaxDC, Accuracy, Agility;
+
+    //血量，不传到客户端
+    public uint HP;
+
+
 
     
 
@@ -1851,7 +1861,7 @@ public class MyMonster
     {
         if(rMonName==string.Empty|| rMonName==null|| rMonName.Length < 2)
         {
-            return rMonName;
+            return MonName;
         }
         return rMonName;
     }
@@ -1922,7 +1932,11 @@ public class MyMonster
     }
 
 
+    //获得经验进行成长
+    public void PetExp(uint amount)
+    {
 
+    }
 
     //契约一个灵兽
     public MyMonster(int MonIndex, ushort MonImage, string MonName)
@@ -1986,22 +2000,23 @@ public class MyMonster
         rMonName = reader.ReadString();
 
         MonLevel = reader.ReadByte();
+        callTime = reader.ReadByte();
 
         currExp = reader.ReadUInt64();
         maxExp = reader.ReadUInt64();
 
 
-        MinAC = reader.ReadByte();
-        MaxAC = reader.ReadByte();
+        MinAC = reader.ReadUInt16();
+        MaxAC = reader.ReadUInt16();
 
-        MinMAC = reader.ReadByte();
-        MaxMAC = reader.ReadByte();
+        MinMAC = reader.ReadUInt16();
+        MaxMAC = reader.ReadUInt16();
 
-        MinDC = reader.ReadByte();
-        MaxDC = reader.ReadByte();
+        MinDC = reader.ReadUInt16();
+        MaxDC = reader.ReadUInt16();
 
-        Accuracy = reader.ReadByte();
-        Agility = reader.ReadByte();
+        Accuracy = reader.ReadUInt16();
+        Agility = reader.ReadUInt16();
 
         spiritual = reader.ReadByte();
         LevelUp = reader.ReadByte();
@@ -2019,6 +2034,7 @@ public class MyMonster
         writer.Write(MonName);
         writer.Write(rMonName);
         writer.Write(MonLevel);
+        writer.Write(callTime);
         writer.Write(currExp);
         writer.Write(maxExp);
         writer.Write(MinAC);
@@ -2035,5 +2051,14 @@ public class MyMonster
         writer.Write(skillname1);
         writer.Write(skillname2);
     }
+
+    //副本克隆
+    public MyMonster Clone()
+    {
+        //采用JSON的方式进行全克隆
+        MyMonster mon = JsonConvert.DeserializeObject<MyMonster>(JsonConvert.SerializeObject(this));
+        return mon;
+    }
+
 
 }

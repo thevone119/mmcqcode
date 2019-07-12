@@ -1586,6 +1586,7 @@ namespace ServerPackets
             writer.Write(Success);
         }
     }
+
     //使用物品
     public sealed class UseItem : Packet
     {

@@ -185,6 +185,10 @@ namespace Server.MirObjects
         public long ExpireTime, OwnerTime, OperateTime;
         public int OperateDelay = 100;
 
+
+
+
+        //宠物，召唤兽
         public List<MonsterObject> Pets = new List<MonsterObject>();
         public List<Buff> Buffs = new List<Buff>();
 
@@ -196,6 +200,10 @@ namespace Server.MirObjects
         public virtual AttackMode AMode { get; set; }
 
         public virtual PetMode PMode { get; set; }
+        
+        //宠物类型
+        public virtual PetType PType { get; set; }
+
         public bool InSafeZone;
         //防御率，伤害率
         public float ArmourRate, DamageRate; //recieved not given 未赋值

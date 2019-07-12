@@ -107,8 +107,12 @@ namespace Server
         //Game(游戏设置)
         public static List<long> ExperienceList = new List<long>();
 
-        //等级怪物经验列表
+        //等级金币经验比值
         public static List<long> LevelGoldExpList = new List<long>();
+
+        //契约兽的升级经验
+        public static List<long> MyMonstersExpList = new List<long>();
+
         public static List<long> OrbsExpList = new List<long>();
         public static List<long> OrbsDefList = new List<long>();
         public static List<long> OrbsDmgList = new List<long>();
@@ -712,6 +716,17 @@ namespace Server
                 exp = reader.ReadInt64("Exp", "Level" + i, exp);
                 LevelGoldExpList.Add(exp);
             }
+
+            //契约兽的等级经验
+            exp = 10000;
+            reader = new InIReader(ConfigPath + @".\MyMonstersExpList.ini");
+            for (int i = 1; i <= 100; i++)
+            {
+                exp = reader.ReadInt64("Exp", "Level" + i, exp);
+                MyMonstersExpList.Add(exp);
+            }
+
+            
         }
 
 
