@@ -49,6 +49,8 @@ namespace Launcher
         //是否需要启动外部更新程序
         private bool RestartUpdateExe = false;
 
+        private List<FileInfo> FileList = new List<FileInfo>();
+
         public AMain()
         {
             InitializeComponent();
@@ -121,7 +123,12 @@ namespace Launcher
                 //判断客户端文件是否更新成功，如果更新失败，则启用外部更新哦
                 if (!clientIsNew())
                 {
-                    RestartUpdateExe = true;
+                    FileList.Clear();
+                    GetAllFiles(new DirectoryInfo(Settings.P_Client + "download/"));
+                    if (FileList.Count > 0)
+                    {
+                        RestartUpdateExe = true;
+                    }
                 }
 
                 //刷新服务器列表
@@ -645,6 +652,22 @@ namespace Launcher
                 Compressed = (int)info.Length,
                 Creation = info.LastWriteTime
             };
+        }
+
+        //获取所有的文件
+        public List<FileInfo> GetAllFiles(DirectoryInfo dir)
+        {
+            FileInfo[] allFile = dir.GetFiles();
+            foreach (FileInfo fi in allFile)
+            {
+                FileList.Add(fi);
+            }
+            DirectoryInfo[] allDir = dir.GetDirectories();
+            foreach (DirectoryInfo d in allDir)
+            {
+                GetAllFiles(d);
+            }
+            return FileList;
         }
 
         private void AMain_Load(object sender, EventArgs e)

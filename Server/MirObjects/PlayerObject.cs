@@ -14625,42 +14625,97 @@ namespace Server.MirObjects
                     return;
                 }
 
+                //重置成长
+                //吞噬本体兽丹进行重置属性
+                if (temp.Info.Name == "兽魂丹" && mon.MonIndex == temp.src_mon_idx)
+                {
+                    MonsterObject mob = MonsterObject.GetMonster(Envir.GetMonsterInfo(temp.src_mon_idx));
+                    if (mob == null || mob.Info == null)
+                    {
+                        ReceiveChat("当前兽丹无效.", ChatType.System2);
+                        return;
+                    }
+
+                    mon.RestartUp(mob.Info.UpChance);
+
+                    ReceiveChat($"[{mon.getName()}] 已获得成长属性重置", ChatType.System2);
+                    MyMonsterUtils.RefreshMyMonLevelStats(mon, null);
+
+                    S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
+                    Info.Inventory[index] = null;
+                    RefreshBagWeight();
+                    Enqueue(p);
+                    GetMyMonsters();
+                    return;
+                }
+
+                //重置成长
+                if (temp.Info.Name == "灵兽洗髓丹")
+                {
+                    MonsterInfo mobinfo = Envir.GetMonsterInfo(mon.MonIndex);
+                    if (mobinfo == null )
+                    {
+                        ReceiveChat("当前契约兽无效.", ChatType.System2);
+                        return;
+                    }
+
+                    mon.RestartUp(mobinfo.UpChance);
+
+                    ReceiveChat($"[{mon.getName()}] 已获得成长属性重置", ChatType.System2);
+                    MyMonsterUtils.RefreshMyMonLevelStats(mon, null);
+
+                    S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
+                    Info.Inventory[index] = null;
+                    RefreshBagWeight();
+                    Enqueue(p);
+                    GetMyMonsters();
+                    return;
+                }
+
+
                 //进化
                 if (temp.Info.Name == "兽魂丹")
                 {
                     if (mon.callTime < 30)
                     {
-                        ReceiveChat($"[{mon.getName()}]  体力不足，无法吞食此兽丹进行进化", ChatType.System);
+                        ReceiveChat($"[{mon.getName()}]  体力不足，无法吞食此兽丹进行进化,进化需要30体力", ChatType.System);
                         return;
                     }
                     //判断兽丹是否有效
                     if (temp.src_mon_idx == 0)
                     {
-                        ReceiveChat("当前兽丹无效.", ChatType.Hint);
-                        return;
-                    }
-                    if(mon.UpMonIndex == temp.src_mon_idx)
-                    {
-                        ReceiveChat("当前兽丹已进化过，无需重复进化.", ChatType.Hint);
+                        ReceiveChat("当前兽丹无效.", ChatType.System2);
                         return;
                     }
 
+                    if(mon.UpMonIndex == temp.src_mon_idx)
+                    {
+                        ReceiveChat("当前兽丹已进化过，无需重复进化.", ChatType.System2);
+                        return;
+                    }
+
+   
                     MonsterObject mob = MonsterObject.GetMonster(Envir.GetMonsterInfo(temp.src_mon_idx));
                     if (mob == null|| mob.Info==null)
                     {
-                        ReceiveChat("当前兽丹无效.", ChatType.Hint);
+                        ReceiveChat("当前兽丹无效.", ChatType.System2);
                         return;
                     }
 
+
                     if (!mob.Info.CanTame)
                     {
-                        ReceiveChat("当前兽丹无效.", ChatType.Hint);
+                        ReceiveChat("当前兽丹无效.", ChatType.System2);
                         return;
                     }
+
+
+
                     mon.callTime = mon.callTime - 30;
                     mon.UpMonIndex = temp.src_mon_idx;
                     mon.UpMonName = mob.Name;
 
+                    MyMonsterUtils.RefreshMyMonLevelStats(mon, null);
                     ReceiveChat($"当前契约兽已进化为 {mob.Name}", ChatType.Hint);
 
                     S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };

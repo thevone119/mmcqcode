@@ -76,6 +76,8 @@ namespace Client.MirScenes
         public UserSetDialog UserSetDialog;
         //契约兽系统
         public MyMonstersDialogs MyMonstersDialogs;
+        //契约兽系统
+        public MyMonstersViewDialogs MyMonstersViewDialogs;
 
         public MenuDialog MenuDialog;
         public NPCDialog NPCDialog;
@@ -238,6 +240,8 @@ namespace Client.MirScenes
             OptionDialog = new OptionDialog { Parent = this, Visible = false };
             UserSetDialog = new UserSetDialog { Parent = this, Visible = false };
             MyMonstersDialogs = new MyMonstersDialogs { Parent = this, Visible = false };
+            MyMonstersViewDialogs = new MyMonstersViewDialogs { Parent = this, Visible = false };
+            
             MenuDialog = new MenuDialog { Parent = this, Visible = false };
             NPCDialog = new NPCDialog { Parent = this, Visible = false };
             NPCGoodsDialog = new NPCGoodsDialog { Parent = this, Visible = false };
@@ -508,6 +512,7 @@ namespace Client.MirScenes
                     OptionDialog.Hide();
                     UserSetDialog.Hide();
                     MyMonstersDialogs.Hide();
+                    MyMonstersViewDialogs.Hide();
                     MenuDialog.Hide();
                     if (NPCDialog.Visible) NPCDialog.Hide();
                     HelpDialog.Hide();

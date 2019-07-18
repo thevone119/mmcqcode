@@ -30,21 +30,32 @@ namespace Server.MirObjects.Monsters
         protected override void RefreshBase()
         {
             MaxHP = 1500;
-            MinAC = Master.MinAC;
-            MaxAC = Master.MaxAC;
-            MinMAC = Master.MinMAC;
-            MaxMAC = Master.MaxMAC;
-            MinDC = Master.MinDC;
-            MaxDC = Master.MaxDC;
-            MinMC = Master.MinMC;
-            MaxMC = Master.MaxMC;
-            MinSC = Master.MinSC;
-            MaxSC = Master.MaxSC;
-            Accuracy = Master.Accuracy;
-            Agility = Master.Agility;
-
+            if (Master != null)
+            {
+                MinAC = Master.MinAC;
+                MaxAC = Master.MaxAC;
+                MinMAC = Master.MinMAC;
+                MaxMAC = Master.MaxMAC;
+                MinDC = Master.MinDC;
+                MaxDC = Master.MaxDC;
+                MinMC = Master.MinMC;
+                MaxMC = Master.MaxMC;
+                MinSC = Master.MinSC;
+                MaxSC = Master.MaxSC;
+                Accuracy = Master.Accuracy;
+                Agility = Master.Agility;
+                AttackSpeed = Master.ASpeed;
+            }
+            else
+            {
+                MinAC = 10;
+                MaxAC = 10;
+                MinMAC = 10;
+                MaxMAC = 10;
+                MinDC = 10;
+                MaxDC = 50;
+            }
             MoveSpeed = 100;
-            AttackSpeed = Master.ASpeed;
         }
 
         public override void RefreshAll()
@@ -169,7 +180,7 @@ namespace Server.MirObjects.Monsters
             {
                 if (isStrengthen && ((PlayerObject)Master).hasItemSk(ItemSkill.Assassin5))
                 {
-                    maxDamage = maxDamage * 15 / 10;
+                    maxDamage = 750;
                 }
                 if (Envir.Time > ExplosionTime) Die();
             }

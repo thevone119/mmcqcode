@@ -1849,20 +1849,28 @@ public class MyMonster
     //宝宝领悟的技能名称
     public string skillname1 = String.Empty, skillname2 = String.Empty;
 
+    //准确Accuracy
+    //敏捷Agility
+    //原本怪物的属性
+    public ushort sMinAC, sMaxAC, sMinMAC, sMaxMAC, sMinDC, sMaxDC, sAccuracy, sAgility;
+
     //怪物的成长属性
-    public ushort MinAC, MaxAC, MinMAC, MaxMAC, MinDC, MaxDC, Accuracy, Agility;
+    public ushort uMinAC, uMaxAC, uMinMAC, uMaxMAC, uMinDC, uMaxDC, uAccuracy, uAgility;
 
-    //原本怪物的属性哦
-    public ushort SMinAC, SMaxAC, SMinMAC, SMaxMAC, SMinDC, SMaxDC, SAccuracy, SAgility;
+    //怪物的最终属性
+    public ushort tMinAC, tMaxAC, tMinMAC, tMaxMAC, tMinDC, tMaxDC, tAccuracy, tAgility;
 
 
 
-    //血量，不传到客户端
-    public uint HP;
+    //血量
+    public uint sHP,uHP,tHP;
 
 
     //体力
     public int callTime;
+
+    //重置次数
+    public int RestartUpTime;
 
     //吞噬的技能判断
     public int DevDay = -1;
@@ -1907,15 +1915,24 @@ public class MyMonster
     }
 
     //重载成长系数
-    public void RestartUp(byte UpChance)
+    public void RestartUp(int UpChance)
     {
+        RestartUpTime++;
+
+        int addChance = RestartUpTime/2 ;
+        if (addChance > 8)
+        {
+            addChance = 8;
+        }
+
+        UpChance += addChance;
         if (UpChance < 20)
         {
             UpChance = 20;
         }
-        if (UpChance > 35)
+        if (UpChance > 40)
         {
-            UpChance = 35;
+            UpChance = 40;
         }
         AcUp = 5;
         MacUp = 5;
@@ -2004,6 +2021,12 @@ public class MyMonster
         return true;
     }
 
+
+    public double getAllUp()
+    {
+        return (AcUp + MacUp + DcUp) / 30.0;
+    }
+
     //是否可以召唤
     public bool canCall()
     {
@@ -2079,30 +2102,38 @@ public class MyMonster
         currExp = reader.ReadInt64();
         maxExp = reader.ReadInt64();
 
+        //本体
+        sHP = reader.ReadUInt32();
+        sMinAC = reader.ReadUInt16();
+        sMaxAC = reader.ReadUInt16();
+        sMinMAC = reader.ReadUInt16();
+        sMaxMAC = reader.ReadUInt16();
+        sMinDC = reader.ReadUInt16();
+        sMaxDC = reader.ReadUInt16();
+        sAccuracy = reader.ReadUInt16();
+        sAgility = reader.ReadUInt16();
+        //成长
+        uHP = reader.ReadUInt32();
+        uMinAC = reader.ReadUInt16();
+        uMaxAC = reader.ReadUInt16();
+        uMinMAC = reader.ReadUInt16();
+        uMaxMAC = reader.ReadUInt16();
+        uMinDC = reader.ReadUInt16();
+        uMaxDC = reader.ReadUInt16();
+        uAccuracy = reader.ReadUInt16();
+        uAgility = reader.ReadUInt16();
+        //最终
+        tHP = reader.ReadUInt32();
+        tMinAC = reader.ReadUInt16();
+        tMaxAC = reader.ReadUInt16();
+        tMinMAC = reader.ReadUInt16();
+        tMaxMAC = reader.ReadUInt16();
+        tMinDC = reader.ReadUInt16();
+        tMaxDC = reader.ReadUInt16();
+        tAccuracy = reader.ReadUInt16();
+        tAgility = reader.ReadUInt16();
 
-        MinAC = reader.ReadUInt16();
-        MaxAC = reader.ReadUInt16();
 
-        MinMAC = reader.ReadUInt16();
-        MaxMAC = reader.ReadUInt16();
-
-        MinDC = reader.ReadUInt16();
-        MaxDC = reader.ReadUInt16();
-
-        Accuracy = reader.ReadUInt16();
-        Agility = reader.ReadUInt16();
-
-        SMinAC = reader.ReadUInt16();
-        SMaxAC = reader.ReadUInt16();
-
-        SMinMAC = reader.ReadUInt16();
-        SMaxMAC = reader.ReadUInt16();
-
-        SMinDC = reader.ReadUInt16();
-        SMaxDC = reader.ReadUInt16();
-
-        SAccuracy = reader.ReadUInt16();
-        SAgility = reader.ReadUInt16();
 
         AcUp = reader.ReadByte();
         MacUp = reader.ReadByte();
@@ -2124,23 +2155,37 @@ public class MyMonster
         writer.Write(callTime);
         writer.Write(currExp);
         writer.Write(maxExp);
-        writer.Write(MinAC);
-        writer.Write(MaxAC);
-        writer.Write(MinMAC);
-        writer.Write(MaxMAC);
-        writer.Write(MinDC);
-        writer.Write(MaxDC);
-        writer.Write(Accuracy);
-        writer.Write(Agility);
+        //本体
+        writer.Write(sHP);
+        writer.Write(sMinAC);
+        writer.Write(sMaxAC);
+        writer.Write(sMinMAC);
+        writer.Write(sMaxMAC);
+        writer.Write(sMinDC);
+        writer.Write(sMaxDC);
+        writer.Write(sAccuracy);
+        writer.Write(sAgility);
+        //成长
+        writer.Write(uHP);
+        writer.Write(uMinAC);
+        writer.Write(uMaxAC);
+        writer.Write(uMinMAC);
+        writer.Write(uMaxMAC);
+        writer.Write(uMinDC);
+        writer.Write(uMaxDC);
+        writer.Write(uAccuracy);
+        writer.Write(uAgility);
+        //最终
+        writer.Write(tHP);
+        writer.Write(tMinAC);
+        writer.Write(tMaxAC);
+        writer.Write(tMinMAC);
+        writer.Write(tMaxMAC);
+        writer.Write(tMinDC);
+        writer.Write(tMaxDC);
+        writer.Write(tAccuracy);
+        writer.Write(tAgility);
 
-        writer.Write(SMinAC);
-        writer.Write(SMaxAC);
-        writer.Write(SMinMAC);
-        writer.Write(SMaxMAC);
-        writer.Write(SMinDC);
-        writer.Write(SMaxDC);
-        writer.Write(SAccuracy);
-        writer.Write(SAgility);
 
         writer.Write(AcUp);
         writer.Write(MacUp);
