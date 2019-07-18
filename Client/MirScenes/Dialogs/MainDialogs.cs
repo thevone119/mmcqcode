@@ -4330,7 +4330,7 @@ namespace Client.MirScenes.Dialogs
             {
 
             };
-
+            //这里改下，改成契约兽
             IntelligentCreatureButton = new MirButton
             {
                 Index = 431,
@@ -4339,13 +4339,13 @@ namespace Client.MirScenes.Dialogs
                 Parent = this,
                 Library = Libraries.Prguse2,
                 Location = new Point(3, 126),
-                Hint = "伙伴 (" + CMain.InputKeys.GetKey(KeybindOptions.Creature) + ")"
+                Hint = "契约兽 (" + CMain.InputKeys.GetKey(KeybindOptions.MyMonsters) + ")"
             };
             IntelligentCreatureButton.Click += (o, e) =>
             {
-                if (GameScene.Scene.IntelligentCreatureDialog.Visible)
-                    GameScene.Scene.IntelligentCreatureDialog.Hide();
-                else GameScene.Scene.IntelligentCreatureDialog.Show();
+                if (GameScene.Scene.MyMonstersDialogs.Visible)
+                    GameScene.Scene.MyMonstersDialogs.Hide();
+                else GameScene.Scene.MyMonstersDialogs.Show();
             };
             RideButton = new MirButton
             {
@@ -4427,7 +4427,7 @@ namespace Client.MirScenes.Dialogs
                 Library = Libraries.Prguse,
                 Location = new Point(3, 221),
                 Visible = true,
-                Hint = "关系 (" + CMain.InputKeys.GetKey(KeybindOptions.Relationship) + ")"
+                Hint = "夫妻 (" + CMain.InputKeys.GetKey(KeybindOptions.Relationship) + ")"
             };
             RelationshipButton.Click += (o, e) =>
             {

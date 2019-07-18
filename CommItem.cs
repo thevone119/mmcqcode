@@ -1469,7 +1469,18 @@ public class UserItem
         return cost * 2;
     }
 
-   
+    //是否装备
+    public bool isEquip()
+    {
+        if (Info.Type >= ItemType.Weapon && Info.Type <= ItemType.Stone && Info.Type!= ItemType.Amulet)
+        {
+            return true;
+        }
+        return false;
+    }
+
+
+
 
     public uint AwakeningPrice()
     {
@@ -1805,11 +1816,14 @@ public class ExpireInfo
 //契约兽,契约兽的玩法哦
 public class MyMonster
 {
+
     public ulong idx;//唯一索引
 
     public int MonIndex;//怪物的ID
+    public int UpMonIndex;//进化怪物的ID
     public ushort MonImage;//怪物的图片，客户端索引
     public string MonName = String.Empty;//怪物名称
+    public string UpMonName = String.Empty;//进化怪物的名称
     public string rMonName = String.Empty;//玩家重命名的怪物名称
 
     //怪物的等级，采用和玩家的等级经验差不多
@@ -1817,33 +1831,50 @@ public class MyMonster
     //吃装备，获得玩家经验的3倍
     public byte MonLevel;
 
-    //体力
-    public byte callTime;
 
-    public ulong currExp;//当前等级累计经验
-    public ulong maxExp;//当前等级要求经验
 
-    public ulong totalExp;//怪物的累计经验
-    //怪物的3维，
-    //spiritual:根骨（体质）：影响属性成长，攻击，防御，等成长
-    //LevelUp:体质（成长）：影响等级成长，经验吸收
-    //clever:悟性：影响技能领悟
-    public byte spiritual,LevelUp, clever;
+    public long currExp;//当前等级累计经验
+    public long maxExp;//当前等级要求经验
+
+    //
+    //怪物的3维成长系数
+    //AcUp:防御成长
+    //MacUp:魔御成长
+    //DcUp:攻击成长
+    //3维加起来最高30
+    public byte AcUp,MacUp,DcUp;
 
     //宝宝领悟的技能
-    public byte skill1, skill2;
+    public MyMonSkill skill1, skill2;
     //宝宝领悟的技能名称
     public string skillname1 = String.Empty, skillname2 = String.Empty;
 
     //怪物的成长属性
     public ushort MinAC, MaxAC, MinMAC, MaxMAC, MinDC, MaxDC, Accuracy, Agility;
 
+    //原本怪物的属性哦
+    public ushort SMinAC, SMaxAC, SMinMAC, SMaxMAC, SMinDC, SMaxDC, SAccuracy, SAgility;
+
+
+
     //血量，不传到客户端
     public uint HP;
 
 
+    //体力
+    public int callTime;
 
-    
+    //吞噬的技能判断
+    public int DevDay = -1;
+    public int DevMoney = 0;
+
+    //最后召唤时间()
+    //契约兽每次召唤后2小时内下线/掉线，重复召唤2次内不消耗体力
+    public long lastRecallTime = 0;
+    public int lastRecallCount = 0;
+
+
+
 
 
     public MyMonster()
@@ -1851,11 +1882,20 @@ public class MyMonster
 
     }
 
-    //计算数据
-    public void initData()
+    public bool hasMonSk(MyMonSkill skill)
     {
-
+        if(skill1== skill)
+        {
+            return true;
+        }
+        if(skill2== skill)
+        {
+            return true;
+        }
+        return false;
     }
+
+  
 
     public string getName()
     {
@@ -1866,128 +1906,160 @@ public class MyMonster
         return rMonName;
     }
 
-    //根据累计经验计算等级
-    public byte GetExplevel(long expCount)
+    //重载成长系数
+    public void RestartUp(byte UpChance)
     {
-        long _expCount = 0;
-        for (int i = 1; i <= 300; i++)
+        if (UpChance < 20)
         {
-            long levelExp = GetLevelExp((byte)i); 
-            if (expCount>= _expCount && expCount< _expCount+ levelExp)
+            UpChance = 20;
+        }
+        if (UpChance > 35)
+        {
+            UpChance = 35;
+        }
+        AcUp = 5;
+        MacUp = 5;
+        DcUp = 5;
+
+        //100个里有1个是10的。
+        //潜能（6-10左右的潜能）。
+        for (int i = 0; i < 5; i++)
+        {
+            if (RandomUtils.Next(100) < UpChance)
             {
-                return (byte)i;
+                AcUp++;
+                if (AcUp >= 10)
+                {
+                    break;
+                }
             }
-            _expCount += levelExp;
+            else
+            {
+                break;
+            }
+        }
+        //潜能（6-10左右的潜能）。
+        for (int i = 0; i < 5; i++)
+        {
+            if (RandomUtils.Next(100) < UpChance)
+            {
+                MacUp++;
+                if (MacUp >= 10)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+        //潜能（6-10左右的潜能）。
+        for (int i = 0; i < 5; i++)
+        {
+            if (RandomUtils.Next(100) < UpChance)
+            {
+                DcUp++;
+                if (DcUp >= 10)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                break;
+            }
         }
 
-        return 1;
     }
 
-
-    //获取等级累计经验
-    public long GetLevelExpCount(byte level)
+    //某个契约兽是否可以吞噬
+    //吞噬金币上限限制
+    public bool canDevour(int money)
     {
-        long expCount = 0;
-        for (int i = 1; i < level; i++)
+        //可吞噬金币量,按等级计算，60级每天可以吞噬200万
+        int AllAdd = (ushort)(MonLevel / 5 + MonLevel / 10) + MonLevel;
+        int maxMoney = AllAdd * 30000;
+
+        if (money > maxMoney)
         {
-            expCount += GetLevelExp((byte)i);
+            return false;
         }
-        return expCount;
+
+        int n_day = DateTime.Now.DayOfYear;
+        if(DevDay == n_day)
+        {
+            if(DevMoney + money> maxMoney)
+            {
+                return false;
+            }
+            DevMoney += money;
+        }
+        else
+        {
+            DevDay = n_day;
+            DevMoney = money;
+        }
+        
+        return true;
     }
 
-    //根据等级计算经验
-    public long GetLevelExp(byte level)
+    //是否可以召唤
+    public bool canCall()
     {
-        long exp = 5000;
-        for (int i = 1; i < level; i++)
+        long currtime = UniqueKeyHelper.TotalMilliseconds();
+        //首次/大于3小时，召唤，消耗体力
+        if (lastRecallTime == 0 || (currtime > lastRecallTime + 1000 * 60 * 60 * 3) || lastRecallCount > 2)
         {
-            exp = exp * 120 / 100;
+            if (callTime <= 0)
+            {
+                return false;
+            }
+            return true;
         }
-        //格式整数
-        if (exp >= 1000 && exp < 10000)
-        {
-            exp = exp / 100 * 100;
-        }
-        if (exp >= 10000 && exp < 100000)
-        {
-            exp = exp / 1000 * 1000;
-        }
-        if (exp >= 100000 && exp < 1000000)
-        {
-            exp = exp / 10000 * 10000;
-        }
-        if (exp >= 1000000 && exp < 10000000)
-        {
-            exp = exp / 100000 * 100000;
-        }
-        if (exp >= 10000000)
-        {
-            exp = exp / 1000000 * 1000000;
-        }
-        if (exp > 100000000)
-        {
-            exp = 100000000;
-        }
-        return exp;
+        return true;
     }
 
-
-    //获得经验进行成长
-    public void PetExp(uint amount)
+    //召唤
+    public bool ReCall()
     {
+        long currtime = UniqueKeyHelper.TotalMilliseconds();
+        //首次/大于2小时，召唤，消耗体力
+        if (lastRecallTime == 0 || (currtime > lastRecallTime + 1000 * 60 * 60 * 3) || lastRecallCount > 2)
+        {
+            if(callTime <= 0)
+            {
+                return false;
+            }
+            lastRecallTime = currtime;
+            lastRecallCount=1;
+            callTime--;
+            return true;
+        }
+        lastRecallCount++;
+        return true;
+    }
 
+    //契约兽死亡，调用这个方法，重置一些属性
+    public void Die()
+    {
+        lastRecallTime = 0;
+        lastRecallCount = 0;
     }
 
     //契约一个灵兽
-    public MyMonster(int MonIndex, ushort MonImage, string MonName)
+    public MyMonster(int MonIndex, ushort MonImage, string MonName,byte UpChance)
     {
         idx = (ulong)UniqueKeyHelper.UniqueNext();
         this.MonIndex = MonIndex;
         this.MonImage = MonImage;
         this.MonName = MonName;
-        //等级（1-40级，随机，每10级，潜能降1）
-        MonLevel = (byte)RandomUtils.Next(1, 50);
-        totalExp = (ulong)GetLevelExpCount(MonLevel);
 
-        spiritual = 7;
-        if (MonLevel > 20)
-        {
-            spiritual = 6;
-        }
-        else if(MonLevel > 30)
-        {
-            spiritual = 5;
-        }
-        else if (MonLevel > 40)
-        {
-            spiritual = 4;
-        }
-        //潜能（6-10左右的潜能）,100个中有1个是10的。
-        for (int i = 0; i < 3; i++)
-        {
-            if (RandomUtils.Next(100) < 33)
-            {
-                spiritual++;
-            }
-            else
-            {
-                break;
-            }
-        }
-        //成长（5-10），100个中有1个是10的
-        LevelUp = 5;
-        for (int i = 0; i < 4; i++)
-        {
-            if (RandomUtils.Next(100) < 50)
-            {
-                LevelUp++;
-            }
-            else
-            {
-                break;
-            }
-        }
+        MonLevel = (byte)RandomUtils.Next(1, 31);
+        callTime = (byte)RandomUtils.Next(1, 10);
 
+        RestartUp(UpChance);
+   
     }
 
     //怪物数据读
@@ -1998,12 +2070,14 @@ public class MyMonster
         MonImage = reader.ReadUInt16();
         MonName = reader.ReadString();
         rMonName = reader.ReadString();
+        UpMonName = reader.ReadString();
+        
 
         MonLevel = reader.ReadByte();
-        callTime = reader.ReadByte();
+        callTime = reader.ReadInt32();
 
-        currExp = reader.ReadUInt64();
-        maxExp = reader.ReadUInt64();
+        currExp = reader.ReadInt64();
+        maxExp = reader.ReadInt64();
 
 
         MinAC = reader.ReadUInt16();
@@ -2018,9 +2092,21 @@ public class MyMonster
         Accuracy = reader.ReadUInt16();
         Agility = reader.ReadUInt16();
 
-        spiritual = reader.ReadByte();
-        LevelUp = reader.ReadByte();
-        clever = reader.ReadByte();
+        SMinAC = reader.ReadUInt16();
+        SMaxAC = reader.ReadUInt16();
+
+        SMinMAC = reader.ReadUInt16();
+        SMaxMAC = reader.ReadUInt16();
+
+        SMinDC = reader.ReadUInt16();
+        SMaxDC = reader.ReadUInt16();
+
+        SAccuracy = reader.ReadUInt16();
+        SAgility = reader.ReadUInt16();
+
+        AcUp = reader.ReadByte();
+        MacUp = reader.ReadByte();
+        DcUp = reader.ReadByte();
         skillname1 = reader.ReadString();
         skillname2 = reader.ReadString();
     }
@@ -2033,6 +2119,7 @@ public class MyMonster
         writer.Write(MonImage);
         writer.Write(MonName);
         writer.Write(rMonName);
+        writer.Write(UpMonName);
         writer.Write(MonLevel);
         writer.Write(callTime);
         writer.Write(currExp);
@@ -2045,9 +2132,19 @@ public class MyMonster
         writer.Write(MaxDC);
         writer.Write(Accuracy);
         writer.Write(Agility);
-        writer.Write(spiritual);
-        writer.Write(LevelUp);
-        writer.Write(clever);
+
+        writer.Write(SMinAC);
+        writer.Write(SMaxAC);
+        writer.Write(SMinMAC);
+        writer.Write(SMaxMAC);
+        writer.Write(SMinDC);
+        writer.Write(SMaxDC);
+        writer.Write(SAccuracy);
+        writer.Write(SAgility);
+
+        writer.Write(AcUp);
+        writer.Write(MacUp);
+        writer.Write(DcUp);
         writer.Write(skillname1);
         writer.Write(skillname2);
     }

@@ -62,7 +62,7 @@ namespace Server.MirObjects.Monsters
         {
             int damage = GetAttackPower(MinDC, MaxDC);
             if (damage == 0) return;
-            damage = damage * 2;
+            //damage = damage * 2;
             int delay = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation) * 50 + 500;
 
             List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, distance);

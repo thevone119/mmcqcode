@@ -14,7 +14,7 @@ using System.Security.Cryptography;
 using Newtonsoft.Json;
 using System.Drawing;
 using System.Collections.Specialized;
-
+using System.Net.NetworkInformation;
 
 /// <summary>
 /// 日志处理类，正式发布后，关闭日志输出
@@ -1483,6 +1483,10 @@ public class OSystem
     private string OSystemName;
     private static string version;
 
+    //-1:未知 1：XP 2:非XP
+    private static int isxp = -1; 
+
+
     public void setOSystemName(string oSystemName)
     {
         this.OSystemName = oSystemName;
@@ -1497,12 +1501,22 @@ public class OSystem
         }
         return version;
     }
+
     //是否XP系统
     public static bool isXP()
     {
-        string v = GetOSystem();
-        if (v != null || v.IndexOf(".") == -1 && v.StartsWith("5."))
-        {
+        if (isxp == -1) {
+            string v = GetOSystem();
+            if (v != null && v.IndexOf(".") != -1 && v.StartsWith("5."))
+            {
+                isxp = 1;
+            }
+            else
+            {
+                isxp = 2;
+            }
+        }
+        if (isxp == 1) {
             return true;
         }
         return false;
@@ -1537,5 +1551,52 @@ public class OSystem
                 break;
         }
     }
+
+    /// <summary>
+    /// 返回电脑的MAC地址
+    /// </summary>
+    /// <returns>The MAC address.</returns>
+    public static string GetMacAddress()
+    {
+        try
+        {
+            string macAddresses = string.Empty;
+            foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (nic.OperationalStatus == OperationalStatus.Up)
+                {
+                    macAddresses += nic.GetPhysicalAddress().ToString();
+                    break;
+                }
+            }
+            return macAddresses;
+        }catch(Exception ex)
+        {
+
+        }
+        return "";
+    }
+
+    /// <summary>
+    /// "00-00-00-00-00-00";
+    /// 判断是否物理地址
+    /// </summary>
+    /// <param name="mac"></param>
+    /// <returns></returns>
+    public static bool isMacAddress(string mac)
+    {
+        if (mac == null || mac.Length<10)
+        {
+            return false;
+        }
+        string nmac = mac.Replace("00","");
+        
+        if (nmac==null|| nmac.Length < 8)
+        {
+            return false;
+        }
+        return true;
+    }
+
 }
 

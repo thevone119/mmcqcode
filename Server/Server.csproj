@@ -475,6 +475,7 @@
     <Compile Include="MirObjects\Monsters\WoomaTaurus.cs" />
     <Compile Include="MirObjects\Monsters\ZumaMonster.cs" />
     <Compile Include="MirObjects\Monsters\ZumaTaurus.cs" />
+    <Compile Include="MirObjects\MyMonsterUtils.cs" />
     <Compile Include="MirObjects\NPCObject.cs" />
     <Compile Include="MirObjects\NPCPage.cs" />
     <Compile Include="MirObjects\NPCSegment.cs" />

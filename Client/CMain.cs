@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading;
 using System.Windows.Forms;
+using System.Runtime.ExceptionServices;
 using Client.MirControls;
 using Client.MirGraphics;
 using Client.MirNetwork;
@@ -133,6 +134,7 @@ namespace Client
         }
 
         //空闲执行，应该是没有消息需要处理为空闲
+        [HandleProcessCorruptedStateExceptions]
         private static void Application_Idle(object sender, EventArgs e)
         {
             try
@@ -364,23 +366,30 @@ namespace Client
                 }
             }
             else
+            {
                 _fps++;
+            }
             //网络数据处理
             Network.Process();
 
             //场景处理
             if (MirScene.ActiveScene != null)
+            {
                 MirScene.ActiveScene.Process();
-
-       
-           
+            }
+               
             //动画要一直更新么
             for (int i = 0; i < MirAnimatedControl.Animations.Count; i++)
+            {
                 MirAnimatedControl.Animations[i].UpdateOffSet();
+            }
+               
 
             for (int i = 0; i < MirAnimatedButton.Animations.Count; i++)
+            {
                 MirAnimatedButton.Animations[i].UpdateOffSet();
-
+            }
+                
             //这个是鼠标移动到物体，菜单上显示的提示信息
             CreateHintLabel();
             //FPS等信息输出
@@ -670,18 +679,29 @@ namespace Client
                 Application_Idle(sender, e);
             }
             //在这里输出日志
-            StringBuilder sb = new StringBuilder();
-            while (!ErrorLog.IsEmpty)
+
+            //如果是多个窗口，这个有问题,抓下异常吧
+            try
             {
-                string message;
-                if (!ErrorLog.TryDequeue(out message)) continue;
-                sb.Append(message);
+                StringBuilder sb = new StringBuilder();
+                while (!ErrorLog.IsEmpty)
+                {
+                    string message;
+                    if (!ErrorLog.TryDequeue(out message)) continue;
+                    sb.Append(message);
+                }
+                if (sb.Length > 0)
+                {
+                    string fn = DateTime.Now.Date.ToString("yyyy-MM-dd")+MapControl.User != null ? MapControl.User.Name : "";
+                    File.AppendAllText(@".\Config\Error" + "(" + fn + ").txt", sb.ToString());
+                    sb.Clear();
+                }
             }
-            if (sb.Length > 0)
+            catch(Exception ex)
             {
-                File.AppendAllText(@".\Config\Error" + "(" + DateTime.Now.Date.ToString("yyyy-MM-dd") + ").txt", sb.ToString());
-                sb.Clear();
+
             }
+         
         }
         
         private void ErrorLogSaveThread()

@@ -334,7 +334,7 @@ namespace Client.MirScenes.Dialogs
                          Size = new Size(60, 17),
                          Location = new Point(left, top),
                          Font = new Font(Settings.FontName, 9F),
-                         MaxLength = 5,
+                         MaxLength = 6,
                          CanLoseFocus = true,
                      };
             left += 65;
@@ -353,10 +353,10 @@ namespace Client.MirScenes.Dialogs
                 BackColour = Color.Green,
                 ForeColour = Color.White,
                 Parent = this,
-                Size = new Size(40, 17),
+                Size = new Size(50, 17),
                 Location = new Point(left, top),
                 Font = new Font(Settings.FontName, 9F),
-                MaxLength = 5,
+                MaxLength = 6,
                 CanLoseFocus = true,
             };
             top += 30;
@@ -378,7 +378,7 @@ namespace Client.MirScenes.Dialogs
                 Size = new Size(60, 17),
                 Location = new Point(left, top),
                 Font = new Font(Settings.FontName, 9F),
-                MaxLength = 5,
+                MaxLength = 6,
                 CanLoseFocus = true,
             };
             left += 65;
@@ -397,10 +397,10 @@ namespace Client.MirScenes.Dialogs
                 BackColour = Color.Green,
                 ForeColour = Color.White,
                 Parent = this,
-                Size = new Size(40, 17),
+                Size = new Size(50, 17),
                 Location = new Point(left, top),
                 Font = new Font(Settings.FontName, 9F),
-                MaxLength = 5,
+                MaxLength = 6,
                 CanLoseFocus = true,
             };
 

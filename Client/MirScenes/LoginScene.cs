@@ -329,6 +329,11 @@ namespace Client.MirScenes
                     _login.PasswordTextBox.Text = string.Empty;
                     _login.PasswordTextBox.SetFocus();
                     break;
+                case 5:
+                    MirMessageBox.Show("服务器端限制登录.");
+                    _login.PasswordTextBox.Text = string.Empty;
+                    _login.PasswordTextBox.SetFocus();
+                    break;
             }
         }
         private void Login(S.LoginBanned p)
@@ -543,7 +548,7 @@ namespace Client.MirScenes
             private void Login()
             {
                 OKButton.Enabled = false;
-                Network.Enqueue(new C.Login { AccountID = AccountIDTextBox.Text, Password = PasswordTextBox.Text });
+                Network.Enqueue(new C.Login { AccountID = AccountIDTextBox.Text, Password = PasswordTextBox.Text, ClientInfo=OSystem.GetMacAddress() });
             }
 
             public void Hide()

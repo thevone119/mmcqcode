@@ -4,6 +4,7 @@ using S = ServerPackets;
 namespace Server.MirObjects.Monsters
 {
     //这个是精灵，月灵
+    //一直跟随玩家，比较烦人哦
     public class HolyDeva : MonsterObject
     {
         public long FearTime;
@@ -53,7 +54,7 @@ namespace Server.MirObjects.Monsters
         protected override void ProcessTarget()
         {
             if (Target == null || !CanAttack) return;
-
+            //跟随主人？我靠
             if (Master != null)
                 MoveTo(Master.CurrentLocation);
 

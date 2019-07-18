@@ -780,8 +780,8 @@ namespace ServerPackets
         public ulong monidx;//契约兽的ID
         public byte MonLevel;
 
-        public ulong currExp;//当前等级累计经验
-        public ulong maxExp;//当前等级要求经验
+        public long currExp;//当前等级累计经验
+        public long maxExp;//当前等级要求经验
 
 
 
@@ -790,8 +790,8 @@ namespace ServerPackets
         {
             monidx = reader.ReadUInt64();
             MonLevel = reader.ReadByte();
-            currExp = reader.ReadUInt64();
-            maxExp = reader.ReadUInt64();
+            currExp = reader.ReadInt64();
+            maxExp = reader.ReadInt64();
         }
 
         protected override void WritePacket(BinaryWriter writer)

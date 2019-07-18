@@ -115,6 +115,8 @@ namespace ClientPackets
             writer.Write(NewPassword);
         }
     }
+
+    //这里做一些登录限制，限制客户端的物理地址
     public sealed class Login : Packet
     {
         public override short Index
@@ -124,16 +126,20 @@ namespace ClientPackets
 
         public string AccountID = string.Empty;
         public string Password = string.Empty;
+        //这里传入客户端信息
+        public string ClientInfo = string.Empty;
 
         protected override void ReadPacket(BinaryReader reader)
         {
             AccountID = reader.ReadString();
             Password = reader.ReadString();
+            ClientInfo = reader.ReadString();
         }
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(AccountID);
             writer.Write(Password);
+            writer.Write(ClientInfo);
         }
     }
     public sealed class NewCharacter : Packet

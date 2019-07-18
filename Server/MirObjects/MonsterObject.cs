@@ -419,6 +419,17 @@ namespace Server.MirObjects
         public MonsterInfo Info;
         public MapRespawn Respawn;
 
+        public long LastMonSkillTime;//最后检测时间
+        //是否具有某个契约兽技能
+        public bool hasMonSk(MyMonSkill sk)
+        {
+            if (myMonster == null)
+            {
+                return false;
+            }
+            return myMonster.hasMonSk(sk);
+        }
+
         //允许更改怪物名称
         private string _name = null;
         public override string Name
@@ -925,7 +936,10 @@ namespace Server.MirObjects
         }
         public virtual void ChangeHP(int amount)
         {
-
+            if (amount == 0)
+            {
+                return;
+            }
             uint value = (uint)Math.Max(uint.MinValue, Math.Min(MaxHP, HP + amount));
 
             if (value == HP) return;
@@ -1006,6 +1020,11 @@ namespace Server.MirObjects
                 if (IsCopy && CurrentMap != null && CurrentMap.mapSProcess != null)
                 {
                     CurrentMap.mapSProcess.monDie(this);
+                }
+                //契约兽的死亡方法
+                if (myMonster != null)
+                {
+                    myMonster.Die();
                 }
 
 
@@ -1271,6 +1290,7 @@ namespace Server.MirObjects
                 ProcessRegen();
                 ProcessPoison();
 
+                ProcessMonSkill();
             }
             catch (Exception e)
             {
@@ -1282,6 +1302,107 @@ namespace Server.MirObjects
             HealthChanged = false;
             
             BroadcastHealthChange();*/
+        }
+
+        /// <summary>
+        /// 怪物技能处理
+        /// </summary>
+        private void ProcessMonSkill()
+        {
+            if (myMonster == null || Dead)
+            {
+                return;
+            }
+            if (Envir.Time < LastMonSkillTime)
+            {
+                return;
+            }
+            if (InSafeZone)
+            {
+                return;
+            }
+            LastMonSkillTime = Envir.Time + 1000;
+
+            //天雷阵
+            if (hasMonSk(MyMonSkill.MyMonSK7) && RandomUtils.Next(100) < 20)
+            {
+                int value = GetAttackPower(MinDC, MaxDC);
+                value += Level * 2;
+                LastMonSkillTime = Envir.Time + 3000;
+                CurrentMap.Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.GreatFoxThunder }, CurrentLocation);
+                //Broadcast(new S.ObjectEffect { ObjectID = this.ObjectID, Effect = SpellEffect.GreatFoxThunder });
+                List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
+                foreach (MapObject ob in list)
+                {
+                    if (ob == null)
+                    {
+                        continue;
+                    }
+                    if (ob.Race != ObjectType.Monster)
+                    {
+                        continue;
+                    }
+                    byte mon_ai = ((MonsterObject)ob).Info.AI;
+
+                    if (mon_ai == 6 || mon_ai == 58 || mon_ai == 57)
+                    {
+                        continue;
+                    }
+
+                    if (!ob.IsAttackTarget(this))
+                    {
+                        continue;
+                    }
+                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 500, ob, value, DefenceType.MAC, false);
+                    ActionList.Add(action);
+                }
+                return;
+            }
+            //毒雨
+            if (hasMonSk(MyMonSkill.MyMonSK8) && RandomUtils.Next(100) < 20)
+            {
+                int value = GetAttackPower(MinDC, MaxDC);
+                value += Level * 2;
+                //伤害比天雷弱一些
+                //value = value;
+                LastMonSkillTime = Envir.Time + 3500;
+                CurrentMap.Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.PoisonRain }, CurrentLocation);
+                //Broadcast(new S.ObjectEffect { ObjectID = this.ObjectID, Effect = SpellEffect.GreatFoxThunder });
+                List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 4);
+                foreach (MapObject ob in list)
+                {
+                    if (ob == null)
+                    {
+                        continue;
+                    }
+                    if (ob.Race != ObjectType.Monster)
+                    {
+                        continue;
+                    }
+                    byte mon_ai = ((MonsterObject)ob).Info.AI;
+
+                    if (mon_ai == 6 || mon_ai == 58 || mon_ai == 57)
+                    {
+                        continue;
+                    }
+
+                    if (!ob.IsAttackTarget(this))
+                    {
+                        continue;
+                    }
+                    DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + 1000, ob, value*30/100, DefenceType.MAC, false);
+                    ActionList.Add(action);
+                    DelayedAction action2 = new DelayedAction(DelayedType.Damage, Envir.Time + 2000, ob, value*50/100, DefenceType.MAC, false);
+                    ActionList.Add(action);
+                    DelayedAction action3 = new DelayedAction(DelayedType.Damage, Envir.Time + 3000, ob, value*70/100, DefenceType.MAC, false);
+                    ActionList.Add(action);
+
+                    ob.ApplyPoison(new Poison { Owner = this, Duration = value / 5, PType = PoisonType.Green, Value = value / 20, TickSpeed = 2000 }, this);
+                }
+                return;
+            }
+            
+
         }
 
         //这个是干嘛的，设置操作的时间？
@@ -1703,7 +1824,7 @@ namespace Server.MirObjects
             {
                 if ((Master.PMode == PetMode.Both || Master.PMode == PetMode.MoveOnly))
                 {
-                    if (!Functions.InRange(CurrentLocation, Master.CurrentLocation, Globals.DataRange) || CurrentMap != Master.CurrentMap)
+                    if (!Functions.InRange(CurrentLocation, Master.CurrentLocation, Globals.DataRange*2) || CurrentMap != Master.CurrentMap)
                         PetRecall();
                 }
 
@@ -2664,7 +2785,7 @@ namespace Server.MirObjects
                 {
                     CharacterInfo Mentee = Envir.GetCharacterInfo(attacker.Info.Mentor);
                     PlayerObject player = Envir.GetPlayer(Mentee.Name);
-                    if (player.CurrentMap == attacker.CurrentMap && Functions.InRange(player.CurrentLocation, attacker.CurrentLocation, Globals.DataRange) && !player.Dead)
+                    if (player.CurrentMap == attacker.CurrentMap && Functions.InRange(player.CurrentLocation, attacker.CurrentLocation, Globals.DataRange*2) && !player.Dead)
                     {
                         damage += ((damage / 100) * Settings.MentorDamageBoost);
                     }
@@ -2753,8 +2874,9 @@ namespace Server.MirObjects
             }
 
             if (attacker.Info.AI == 6 || attacker.Info.AI == 58)
+            {
                 EXPOwner = null;
-
+            }
             else if (attacker.Master != null)
             {
                 if (attacker.CurrentMap != attacker.Master.CurrentMap || !Functions.InRange(attacker.CurrentLocation, attacker.Master.CurrentLocation, Globals.DataRange*3))
@@ -3559,6 +3681,12 @@ namespace Server.MirObjects
         //逐级加5，就是7级就是35+10，就是要杀45个怪
         public void PetExp(uint amount)
         {
+            //契约兽,这种契约兽获得的经验少
+            if (myMonster != null)
+            {
+                MyMonExp((uint)(amount*1.5));
+            }
+
             if (PetLevel >= MaxPetLevel) return;
             //
             //if (Info.Name == Settings.SkeletonName || Info.Name == Settings.ShinsuName || Info.Name == Settings.AngelName)
@@ -3567,7 +3695,7 @@ namespace Server.MirObjects
             //每个怪都增加1点经验
             PetExperience++;
             int needExperience = PetLevel * 5 + 10;
-            if(PetExperience< needExperience)
+            if (PetExperience < needExperience)
             {
                 return;
             }
@@ -3578,12 +3706,26 @@ namespace Server.MirObjects
             RefreshAll();
             OperateTime = 0;
             BroadcastHealthChange();
+            return;
         }
+
+        //契约兽获得经验
+        public void MyMonExp(uint amount)
+        {
+            if (myMonster == null || Master == null || Master.Dead || Master.Race != ObjectType.Player)
+            {
+                return;
+            }
+            MyMonsterUtils.MyMonExp(myMonster, amount, (PlayerObject)Master, this);
+        }
+
         public override void Despawn()
         {
             SlaveList.Clear();
             base.Despawn();
         }
+
+        
 
     }
 
@@ -3591,6 +3733,7 @@ namespace Server.MirObjects
     /// 采用怪物对象包裹器，包裹怪物
     /// 这里只记录简单的怪物的位置，血量，仇恨等个性东西，其他的都用具体的怪物属性
     /// 采用怪物属性引用的方式，避免大量刷怪占用的内存属性
+    /// 作废
     /// </summary>
     public class MonsterObjectInstance
     {

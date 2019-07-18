@@ -97,7 +97,7 @@ namespace Server.MirObjects.Monsters
                 if(stage!= _stage)
                 {
                     _stage = stage;
-                    //Broadcast(GetInfo());
+                    Broadcast(GetInfo());
                 }
             }
             base.ProcessAI();
@@ -253,7 +253,7 @@ namespace Server.MirObjects.Monsters
                 Skeleton = Harvested,
                 Poison = CurrentPoison,
                 Hidden = Hidden,
-                ExtraByte = 0,
+                ExtraByte = _stage,
             };
         }
     

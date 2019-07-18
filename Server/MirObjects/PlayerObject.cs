@@ -886,6 +886,10 @@ namespace Server.MirObjects
         /// </summary>
         private void ProcessItemSkill()
         {
+            if (Dead)
+            {
+                return;
+            }
             if (Envir.Time < LastItemSkillTime)
             {
                 return;
@@ -1517,6 +1521,10 @@ namespace Server.MirObjects
         public void ChangeHP(int amount)
         {
             //if (amount < 0) amount = (int)(amount * PoisonRate);
+            if (amount == 0)
+            {
+                return;
+            }
 
             if (HasProtectionRing && MP > 0 && amount < 0)
             {
@@ -2166,7 +2174,7 @@ namespace Server.MirObjects
             }
 
             //
-            if (mon.MaxHP < 100)
+            if (mon.MaxHP < 100 && !mon.Info.CanTame)
             {
                 return;
             }
@@ -2324,6 +2332,7 @@ namespace Server.MirObjects
                 if (minfo.CanTame)
                 {
                     DropInfo drop6 = DropInfo.FromLine("副本_兽丹", String.Format("1/2 兽魂丹"));
+                    drop6.Chance = 0.5+ killlev / 100.0;
                     minfo.Drops.Add(drop6);
                 }
                 //
@@ -2545,7 +2554,7 @@ namespace Server.MirObjects
                 {
                     PlayerObject player = GroupMembers[i];
 
-                    if (Functions.InRange(player.CurrentLocation, CurrentLocation, Globals.DataRange))
+                    if (Functions.InRange(player.CurrentLocation, CurrentLocation, Globals.DataRange * 2))
                     {
                         sumLevel += player.Level;
                         nearCount++;
@@ -2558,7 +2567,7 @@ namespace Server.MirObjects
                 {
                     PlayerObject player = GroupMembers[i];
                     if (player.CurrentMap == CurrentMap &&
-                        Functions.InRange(player.CurrentLocation, CurrentLocation, Globals.DataRange) && !player.Dead)
+                        Functions.InRange(player.CurrentLocation, CurrentLocation, Globals.DataRange * 2) && !player.Dead)
                     {
                         player.GainExp((uint)((float)expPoint * partyExpRate[nearCount - 1] * (float)player.Level / (float)sumLevel));
                     }
@@ -2646,7 +2655,7 @@ namespace Server.MirObjects
             for (int i = 0; i < Pets.Count; i++)
             {
                 MonsterObject monster = Pets[i];
-                if (monster.CurrentMap == CurrentMap && Functions.InRange(monster.CurrentLocation, CurrentLocation, Globals.DataRange) && !monster.Dead)
+                if (monster.CurrentMap == CurrentMap && Functions.InRange(monster.CurrentLocation, CurrentLocation, Globals.DataRange * 2) && !monster.Dead)
                     monster.PetExp(amount);
             }
 
@@ -3033,6 +3042,11 @@ namespace Server.MirObjects
             GetMail();
             GetFriends();
             GetRelationship();
+
+            foreach(MyMonster myMon in Info.MyMonsters)
+            {
+                MyMonsterUtils.RefreshMyMonLevelStats(myMon, null);
+            }
             GetMyMonsters();
 
             if ((Info.Mentor != 0) && (Info.MentorDate.AddDays(Settings.MentorLength) < DateTime.Now))
@@ -6002,6 +6016,37 @@ namespace Server.MirObjects
                         else
                             ReceiveChat("拒绝交易", ChatType.System);
                         break;
+                    case "MAKEITEMSRC"://物品的来源
+                        if ((!IsGM && !Settings.TestServer) || parts.Length < 2) return;
+
+                        ItemInfo makeitemInfo = ItemInfo.getItem(parts[1]);
+                        if (makeitemInfo == null) return;
+                        item = makeitemInfo.CreateDropItem();
+                        int src_mon_idx = 0;
+
+                        if (parts.Length >= 3 )
+                        {
+                            int.TryParse(parts[2], out src_mon_idx);
+                        }
+
+
+                        MonsterObject mob = MonsterObject.GetMonster(Envir.GetMonsterInfo(src_mon_idx));
+                        if (mob == null)
+                        {
+                            return;
+                        }
+
+                        item.src_time = Envir.Now.ToBinary();
+                        item.src_mon = mob.Name;
+                        item.src_kill = "未知";
+                        item.src_map = CurrentMap.getTitle();
+                        item.src_mon_idx = src_mon_idx;
+            
+                        if (!CanGainItem(item, false)) return;
+                        GainItem(item);
+
+                        ReceiveChat(string.Format("{0} x{1} 被创建.", makeitemInfo.Name, 1), ChatType.System);
+                        break;
 
                     case "TRIGGER":
                         if (!IsGM) return;
@@ -6416,8 +6461,9 @@ namespace Server.MirObjects
                                     ReceiveChat(string.Format("Level : {0}, X : {1}, Y : {2}", monOb.Level, monOb.CurrentLocation.X, monOb.CurrentLocation.Y), ChatType.System2);
                                     ReceiveChat(string.Format("HP : {0}, MinDC : {1}, MaxDC : {2},MinMC:{3},MaxMC:{4}", monOb.HP, monOb.MinDC, monOb.MaxDC, monOb.MinMC, monOb.MaxMC), ChatType.System2);
                                     ReceiveChat(string.Format("MoveSpeed : {0}, AttackSpeed : {1}", monOb.MoveSpeed, monOb.AttackSpeed), ChatType.System2);
-                                    
-                              
+                                    ReceiveChat(string.Format("MinAC : {0}, MaxAC : {1},MinMAC:{2},MaxMAC:{3}", monOb.MinAC, monOb.MaxAC, monOb.MinMAC, monOb.MaxMAC), ChatType.System2);
+                                    ReceiveChat(string.Format("Accuracy : {0}, Agility : {1}", monOb.Accuracy, monOb.Agility), ChatType.System2);
+
                                     break;
                                 case ObjectType.Merchant:
                                     NPCObject npcOb = (NPCObject)ob;
@@ -6831,6 +6877,7 @@ namespace Server.MirObjects
             Enqueue(new S.UserLocation { Direction = Direction, Location = CurrentLocation });
         }
         //采集？
+        //挖东西
         public void Harvest(MirDirection dir)
         {
             if (!CanMove)
@@ -8636,6 +8683,27 @@ namespace Server.MirObjects
                 count++;
             }
             return count;
+        }
+
+        //是否具有某个契约兽技能
+        public bool hasMonSk(MyMonSkill sk)
+        {
+            if (Pets == null)
+            {
+                return false;
+            }
+            foreach (MonsterObject p in Pets)
+            {
+                if (p.Dead)
+                {
+                    continue;
+                }
+                if (p.hasMonSk(sk))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void HellFire(UserMagic magic)
@@ -12072,29 +12140,32 @@ namespace Server.MirObjects
                 BroadcastDamageIndicator(DamageType.Miss);
                 return 0;
             }
-                int armour = 0;
+            //
+            
 
-                for (int i = 0; i < Buffs.Count; i++)
+            int armour = 0;
+
+            for (int i = 0; i < Buffs.Count; i++)
+            {
+                switch (Buffs[i].Type)
                 {
-                    switch (Buffs[i].Type)
-                    {
-                        case BuffType.MoonLight:
-                        case BuffType.DarkBody:
-                            Buffs[i].ExpireTime = 0;
-                            break;
-                        case BuffType.EnergyShield:
-                            int rate = Buffs[i].Values[0];
+                    case BuffType.MoonLight:
+                    case BuffType.DarkBody:
+                        Buffs[i].ExpireTime = 0;
+                        break;
+                    case BuffType.EnergyShield:
+                        int rate = Buffs[i].Values[0];
 
-                            if (RandomUtils.Next(rate) == 0)
-                            {
-                            if (HP + ( (ushort)Buffs[i].Values[1] ) >= MaxHP)
-                                    SetHP(MaxHP);
-                                else
-                                    ChangeHP(Buffs[i].Values[1]);
-                            }
-                            break;
-                    }
+                        if (RandomUtils.Next(rate) == 0)
+                        {
+                        if (HP + ( (ushort)Buffs[i].Values[1] ) >= MaxHP)
+                                SetHP(MaxHP);
+                            else
+                                ChangeHP(Buffs[i].Values[1]);
+                        }
+                        break;
                 }
+            }
 
             switch (type)
             {
@@ -12247,8 +12318,33 @@ namespace Server.MirObjects
 
             BroadcastDamageIndicator(DamageType.Hit, armour - damage);
 
-            ChangeHP(armour - damage);
-            return damage - armour;
+            //
+            int loseHp = damage - armour;
+            if (loseHp < 0)
+            {
+                return 0;
+            }
+            //契约兽承受伤害
+            if (Pets != null)
+            {
+                foreach (MonsterObject p in Pets)
+                {
+                    if (p.Dead)
+                    {
+                        continue;
+                    }
+                    if (p.hasMonSk(MyMonSkill.MyMonSK1))
+                    {
+                        int mhp = loseHp * 25 / 100;
+                        p.ChangeHP(-(mhp));
+                        loseHp = loseHp - mhp;
+                        break;
+                    }
+                }
+            }
+
+            ChangeHP(-loseHp);
+            return loseHp;
         }
         public override int Attacked(MonsterObject attacker, int damage, DefenceType type = DefenceType.ACAgility)
         {
@@ -12385,8 +12481,34 @@ namespace Server.MirObjects
 
             BroadcastDamageIndicator(DamageType.Hit, armour - damage);
 
-            ChangeHP(armour - damage);
-            return damage - armour;
+
+            //
+            int loseHp = damage - armour;
+            if (loseHp < 0)
+            {
+                return 0;
+            }
+            //契约兽承受伤害
+            if (Pets != null)
+            {
+                foreach (MonsterObject p in Pets)
+                {
+                    if (p.Dead)
+                    {
+                        continue;
+                    }
+                    if (p.hasMonSk(MyMonSkill.MyMonSK1))
+                    {
+                        int mhp = loseHp * 30 / 100;
+                        p.ChangeHP(-(mhp));
+                        loseHp = loseHp - mhp;
+                        break;
+                    }
+                }
+            }
+            
+            ChangeHP(-loseHp);
+            return loseHp;
         }
         public override int Struck(int damage, DefenceType type = DefenceType.ACAgility)
         {
@@ -14272,18 +14394,28 @@ namespace Server.MirObjects
                 //item merged ok
                 RefreshBagWeight();
                 mon.rMonName = parameter1;
+
                 ReceiveChat("契约兽名字已变更，下次召唤生效.", ChatType.Hint);
                 GetMyMonsters();
             }
 
-            //召唤
+            //召唤，这里改下
             if (operation == 2)
             {
-                if (mon.callTime <= 0)
+                //同一个契约兽，只能召唤一个
+                foreach (MonsterObject pet in Pets)
                 {
-                    ReceiveChat($"[{mon.getName()}]  体力不足，无法出战...", ChatType.System);
-                    return;
+                    if (pet == null || pet.Dead || pet.myMonster == null)
+                    {
+                        continue;
+                    }
+                    if (pet.myMonster.idx == mon.idx)
+                    {
+                        pet.PetRecall();
+                        return;
+                    }
                 }
+
                 int mcount = 1;
                 if (Level >= 50)
                 {
@@ -14303,20 +14435,6 @@ namespace Server.MirObjects
                     ReceiveChat($"当前等级最多召唤{mcount}个契约兽.", ChatType.Hint);
                     return;
                 }
-                //同一个契约兽，只能召唤一个
-                foreach(MonsterObject pet in Pets)
-                {
-                    if (pet == null || pet.Dead || pet.myMonster == null)
-                    {
-                        continue;
-                    }
-                    if (pet.myMonster.idx == mon.idx)
-                    {
-                        ReceiveChat("同一个契约兽只能召唤一个.", ChatType.Hint);
-                        return;
-                    }
-                }
-
 
                 MonsterInfo _info = Envir.GetMonsterInfo(mon.MonIndex);
                 if (_info == null)
@@ -14324,57 +14442,31 @@ namespace Server.MirObjects
                     ReceiveChat("找不到当前契约兽.", ChatType.Hint);
                     return;
                 }
-                
+
+                if (!mon.ReCall())
+                {
+                    ReceiveChat($"[{mon.getName()}]  体力不足，无法出战...", ChatType.System);
+                    return;
+                }
+
                 MonsterInfo minfo = _info.Clone();
-                //各种属性设置
-                minfo.Name = mon.getName();
-
-                minfo.Level = mon.MonLevel;
-                minfo.HP = minfo.HP + mon.HP;
-                minfo.MinAC = (ushort)(minfo.MinAC + mon.MinAC);
-                minfo.MaxAC = (ushort)(minfo.MaxAC + mon.MaxAC);
-                minfo.MinMAC = (ushort)(minfo.MinMAC + mon.MinMAC);
-                minfo.MaxMAC = (ushort)(minfo.MaxMAC + mon.MaxMAC);
-                //
-                minfo.MinDC = (ushort)(minfo.MinDC + mon.MinDC);
-                minfo.MaxDC = (ushort)(minfo.MaxDC + mon.MaxDC);
-                //
-                minfo.Accuracy = (byte)(minfo.Accuracy + mon.Accuracy);
-                minfo.Agility = (byte)(minfo.Agility + mon.Agility);
-                //攻速
-                int AttackSpeed = minfo.AttackSpeed;
-                if (AttackSpeed < 500)
-                {
-                    AttackSpeed = 500;
-                }
-                if (AttackSpeed > 3000)
-                {
-                    AttackSpeed = 3000;
-                }
-                minfo.AttackSpeed = (ushort)AttackSpeed;
-                //移速
-                int MoveSpeed = minfo.MoveSpeed;
-                if (MoveSpeed < 500)
-                {
-                    MoveSpeed = 500;
-                }
-                if (MoveSpeed > 3000)
-                {
-                    MoveSpeed = 3000;
-                }
-                minfo.MoveSpeed = (ushort)MoveSpeed;
-
-
-
                 MonsterObject monster = MonsterObject.GetMonster(minfo);
-
-                monster.PetLevel = (byte)(mon.MonLevel/10);
-                monster.MaxPetLevel = monster.PetLevel;
+                monster.PetLevel = (byte)(mon.MonLevel/10+1);
+                if (monster.PetLevel > 7)
+                {
+                    monster.PetLevel = 7;
+                }
+                monster.MaxPetLevel = (byte)(mon.MonLevel / 10 + 1);
+                if (monster.MaxPetLevel > 7)
+                {
+                    monster.MaxPetLevel = 7;
+                }
                 monster.Master = this;
                 monster.PType = PetType.MyMonster;
                 monster.myMonster = mon;
-
+               
                 monster.ActionTime = Envir.Time + 1000;
+                MyMonsterUtils.RefreshMyMonLevelStats(mon, monster);
                 monster.RefreshNameColour(false);
 
                 if (CurrentMap.ValidPoint(Front))
@@ -14386,7 +14478,6 @@ namespace Server.MirObjects
                     monster.Spawn(CurrentMap, CurrentLocation);
                 }
                 Pets.Add(monster);
-                mon.callTime--;
                 GetMyMonsters();
             }
 
@@ -14484,7 +14575,7 @@ namespace Server.MirObjects
                     {
                         continue;
                     }
-                    p.Info.MyMonsters[i] = Info.MyMonsters[i].Clone();
+                    p.Info.MyMonsters[monIdx] = Info.MyMonsters[i].Clone();
                     Info.MyMonsters[i] = null;
                 }
                 GetMyMonsters();
@@ -14515,60 +14606,215 @@ namespace Server.MirObjects
                     //Enqueue(p);
                     return;
                 }
-                bool canEat = false;
+         
+                //灵兽仙桃
+                if (temp.Info.Name == "灵兽仙桃")
+                {
+                    if (mon.callTime > mon.MonLevel * 5)
+                    {
+                        ReceiveChat($"[{mon.getName()}]  主人，我已吃饱了，吃不下了.当前等级体力上限{mon.MonLevel * 3}", ChatType.System);
+                        return;
+                    }
+                    mon.callTime += (byte)temp.Count;
+
+                    S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
+                    Info.Inventory[index] = null;
+                    RefreshBagWeight();
+                    Enqueue(p);
+                    GetMyMonsters();
+                    return;
+                }
+
+                //进化
+                if (temp.Info.Name == "兽魂丹")
+                {
+                    if (mon.callTime < 30)
+                    {
+                        ReceiveChat($"[{mon.getName()}]  体力不足，无法吞食此兽丹进行进化", ChatType.System);
+                        return;
+                    }
+                    //判断兽丹是否有效
+                    if (temp.src_mon_idx == 0)
+                    {
+                        ReceiveChat("当前兽丹无效.", ChatType.Hint);
+                        return;
+                    }
+                    if(mon.UpMonIndex == temp.src_mon_idx)
+                    {
+                        ReceiveChat("当前兽丹已进化过，无需重复进化.", ChatType.Hint);
+                        return;
+                    }
+
+                    MonsterObject mob = MonsterObject.GetMonster(Envir.GetMonsterInfo(temp.src_mon_idx));
+                    if (mob == null|| mob.Info==null)
+                    {
+                        ReceiveChat("当前兽丹无效.", ChatType.Hint);
+                        return;
+                    }
+
+                    if (!mob.Info.CanTame)
+                    {
+                        ReceiveChat("当前兽丹无效.", ChatType.Hint);
+                        return;
+                    }
+                    mon.callTime = mon.callTime - 30;
+                    mon.UpMonIndex = temp.src_mon_idx;
+                    mon.UpMonName = mob.Name;
+
+                    ReceiveChat($"当前契约兽已进化为 {mob.Name}", ChatType.Hint);
+
+                    S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
+                    Info.Inventory[index] = null;
+                    RefreshBagWeight();
+                    Enqueue(p);
+                    GetMyMonsters();
+                    return;
+                }
+
+                //领悟技能
+                if (temp.Info.Name.StartsWith("书页残卷"))
+                {
+                    byte monlevel = 0;
+                    string levelname = "初级技能";
+                    int callTime = 0;
+                    if (temp.Count == 2)
+                    {
+                        monlevel = 40;
+                        callTime = 1;
+                        levelname = "初级技能";
+                    }
+                    if (temp.Count == 5)
+                    {
+                        monlevel = 45;
+                        callTime = 2;
+                        levelname = "中级技能";
+                    }
+                    if (temp.Count == 10)
+                    {
+                        monlevel = 50;
+                        callTime = 3;
+                        levelname = "高级技能";
+                    }
+                    if (monlevel == 0)
+                    {
+                        ReceiveChat($"[{mon.getName()}] 我只吃2/5/10几种数量的书页，分别领悟初/中/高级技能.", ChatType.System);
+                        return;
+                    }
+
+                    if (mon.MonLevel < monlevel)
+                    {
+                        ReceiveChat($"[{mon.getName()}] 我需要{monlevel}级才能领悟{levelname}哦.", ChatType.System);
+                        return;
+                    }
+
+                    if (mon.callTime < callTime)
+                    {
+                        ReceiveChat($"[{mon.getName()}] 体力不足，读不下书哦.给点仙桃我吃吧...", ChatType.System);
+                        return;
+                    }
+                    mon.callTime -= callTime;
+
+                    MyMonSkillBean sk = MyMonSkillBean.RefreshSkill(monlevel, mon.skill1);
+                    if (sk == null)
+                    {
+                        ReceiveChat($"[{mon.getName()}] 技能领悟失败.", ChatType.System);
+                        return;
+                    }
+                    mon.skill1 = sk.skid;
+                    mon.skillname1 = sk.skname;
+                    ReceiveChat($"[{mon.getName()}] 我已成功领悟技能[{sk.skname}].", ChatType.System);
+                    MyMonsterUtils.RefreshMyMonLevelStats(mon, null);
+                    //如果契约兽已经召唤，则更新契约兽
+                    if (Pets != null)
+                    {
+                        //查找玩家的宠物，看有没此契约兽
+                        for (int i = 0; i < Pets.Count; i++)
+                        {
+                            MonsterObject pet = Pets[i];
+                            if (pet == null || pet.Dead || pet.myMonster == null || pet.myMonster.idx != mon.idx)
+                            {
+                                continue;
+                            }
+                            MyMonsterUtils.RefreshMyMonLevelStats(mon, pet);
+                        }
+                    }
+                   
+                    //删除背包物品
+                    S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
+                    Info.Inventory[index] = null;
+                    RefreshBagWeight();
+                    Enqueue(p);
+                    GetMyMonsters();
+                    return;
+                }
+
+
+                //吞噬万物，除了书页
+                if (mon.hasMonSk(MyMonSkill.MyMonSK6))
+                {
+                    //吃装备，3倍的经验获得
+                    uint exp = temp.Info.Price * temp.Count * 3;
+                    exp = exp * (uint)Settings.LevelGoldExpList[mon.MonLevel];
+
+                    MyMonsterUtils.MyMonExp(mon, exp, this, null);
+                    //删除背包物品
+                    S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
+                    Info.Inventory[index] = null;
+                    RefreshBagWeight();
+                    Enqueue(p);
+
+                    //这里给主人增加经验/金币
+                    if (mon.canDevour((int)temp.Info.Price))
+                    {
+                        uint pexp = temp.Info.Price / 2;
+                        if (pexp > 10000 * 10)
+                        {
+                            pexp = 10000 * 10;
+                        }
+
+                        pexp = pexp * (uint)Settings.LevelGoldExpList[Level]* temp.Count;
+                        GainExp(pexp);
+                    }
+                    else
+                    {
+                        WinGold(temp.SellPrice()/2);
+                    }
+                    return;
+                }
 
                 //吃装备
                 //只吃比自己低10级的装备
                 //如果装备不是要去等级的，就可以吃，否则只吃比自己低10级的装备了
-                if (temp.Info.Type >= ItemType.Weapon && temp.Info.Type <= ItemType.Stone)
+                if (temp.isEquip())
                 {
-                    if (temp.Info.eatLevel < mon.MonLevel - 10)
+                    if (mon.MonLevel >= Level + 3)
+                    {
+                        ReceiveChat($"[{mon.getName()}] 主人你的等级太低了，我已无法成长，你要快点升级啊.", ChatType.System);
+                        return;
+                    }
+                    if (temp.Info.eatLevel < mon.MonLevel - 15)
                     {
                         ReceiveChat($"[{mon.getName()}] 此物品太低级了，我可吃不下.", ChatType.System);
                         return;
                     }
                     else
                     {
-                        canEat = true;
                         //吃装备，双倍的经验获得
-                        mon.PetExp(temp.Info.Price*2);
+                        uint exp = temp.Info.Price * temp.Count * 3;
+                        exp = exp * (uint)Settings.LevelGoldExpList[Level];
+
+                        MyMonsterUtils.MyMonExp(mon, exp,this,null);
                         //删除背包物品
                         S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
                         Info.Inventory[index] = null;
                         RefreshBagWeight();
                         Enqueue(p);
-                        //只更新经验
-                        S.MyMonstersExpUpdate exp = new S.MyMonstersExpUpdate { monidx = mon.idx, MonLevel = mon.MonLevel, currExp = mon.currExp , maxExp =mon.maxExp};
-                        Enqueue(exp);
                         return;
                     }
                 }
-                //
-                if (temp.Info.Name == "灵兽仙桃")
-                {
-                    if (mon.callTime > 100)
-                    {
-                        ReceiveChat($"[{mon.getName()}]  主人，我已吃饱了，吃不下了...", ChatType.System);
-                        return;
-                    }
-                    mon.callTime += (byte)temp.Count;
-                    canEat = true;
-                }
 
-
-                if (!canEat)
-                {
-                    ReceiveChat($"[{mon.getName()}]  这是什么啊...不吃...不吃...", ChatType.System);
-                    return;
-                }
-                else
-                {
-                    S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
-                    Info.Inventory[index] = null;
-                    RefreshBagWeight();
-                    Enqueue(p);
-                }
-                GetMyMonsters();
+                ReceiveChat($"[{mon.getName()}] 这是什么啊,不吃...不吃...", ChatType.System);
+                return;
             }
 
 
@@ -14640,6 +14886,13 @@ namespace Server.MirObjects
                     Enqueue(p);
                     return;
                 }
+                if (!mob.Info.CanTame)
+                {
+                    ReceiveChat("当前兽丹对应的怪物无效.", ChatType.Hint);
+                    Enqueue(p);
+                    return;
+                }
+
                 //判断契约兽是否签约满了
                 int monIdx = -1;
                 for(int i=0;i< Info.MyMonsters.Length; i++)
@@ -14678,7 +14931,9 @@ namespace Server.MirObjects
                     //item merged ok
                     TradeUnlock();
                     //签约灵兽
-                    Info.MyMonsters[monIdx] = new MyMonster(tempTo.src_mon_idx, (ushort)mob.Info.Image, mob.Name);
+                    Info.MyMonsters[monIdx] = new MyMonster(tempTo.src_mon_idx, (ushort)mob.Info.Image, mob.Name, mob.Info.UpChance);
+                    //重置契约兽各种属性
+                    MyMonsterUtils.RefreshMyMonLevelStats(Info.MyMonsters[monIdx], null);
 
                     p.Success = true;
                     Enqueue(p);
@@ -22029,8 +22284,8 @@ namespace Server.MirObjects
                 }
                 if (Level > maxLevel && Level < 55)
                 {
-                    ReceiveChat(String.Format("您的等级过高，目前高于{0}级不能使用回收功能，请支援下新人吧...", maxLevel), ChatType.System);
-                    return;
+                    //ReceiveChat(String.Format("您的等级过高，目前高于{0}级不能使用回收功能，请支援下新人吧...", maxLevel), ChatType.System);
+                    //return;
                 }
                 //可回收装备列表
                 string[] groupnames222 = new string[] { "武器26", "武器29", "武器30", "墨龙武器", "武器36", "武器40", "终极武器1", "武器45","武器46","武器50",
@@ -22040,7 +22295,7 @@ namespace Server.MirObjects
                      "宝石1","宝石2","宝石3","宝石4","宝石5","特殊宝石",
                 };
                 string[] groupnames = new string[] { 
-                    "祖玛首饰","武器30"
+                    "祖玛首饰","武器30","赤月首饰","狐狸首饰","魔神首饰","首饰50","首饰55"
                 };
                 int cancount = 0;
                 string erroritem = "";
@@ -22129,6 +22384,7 @@ namespace Server.MirObjects
                     }
                 }
 
+
                 p.Success = true;
                 Enqueue(p);
                 for (int t = 0; t < Info.ItemCollect.Length; t++)
@@ -22143,9 +22399,22 @@ namespace Server.MirObjects
                     {
                         exp = exp * temp.quality;
                     }
+
                     if (isset)
                     {
                         exp = exp * 2;
+                    }
+                    else
+                    {
+                        //玩家等级超过装备等级5，每级减少10%经验获得，超过15级，基本就没经验了
+                        if (this.Level > temp.Info.eatLevel+5)
+                        {
+                            //int expPoint;
+                            //如果玩家等级大于怪物等级10级，则逐级递减经验，直到大于怪物25级，就基本没经验了.
+                            //expPoint = (int)exp - (int)Math.Round(Math.Max(exp / 10, 1) * ((double)Level - (temp.Info.eatLevel + 5)));
+                            //if (expPoint <= 0) expPoint = 1;
+                            //exp = (uint)expPoint;
+                        }
                     }
                     GainExp(exp);
                     //移除装备
@@ -23187,8 +23456,6 @@ namespace Server.MirObjects
         public void GetMyMonsters()
         {
             //这里做个处理，排序处理，前面的不能为空哦
-
-
             S.MyMonstersPackets monpacket = new S.MyMonstersPackets { MyMonsters = Info.MyMonsters };
             Enqueue(monpacket);
         }

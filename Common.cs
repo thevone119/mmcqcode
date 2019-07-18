@@ -1317,6 +1317,7 @@ public enum SpellEffect : byte
     GreatFoxThunder,//悲月的雷电特效
     Focus,//基本箭法，聚集，焦点，噬血等
     FlameRound,//火焰环绕
+    PoisonRain,//毒雨
 }
 
 public enum BuffType : byte
@@ -6303,6 +6304,112 @@ public class ItemSkillBean
 }
 
 
+//契约兽技能
+[Flags]
+[Obfuscation(Feature = "renaming", Exclude = true)]
+public enum MyMonSkill : byte
+{
+    None = 0,
+    MyMonSK1 = 1,//战
+    MyMonSK2 = 2,//战
+    MyMonSK3 = 3,//战
+    MyMonSK4 = 4,//战
+    MyMonSK5 = 5,//战
+    MyMonSK6 = 6,//战
+    MyMonSK7 = 7,//战
+    MyMonSK8 = 8,//战
+}
+
+//契约兽技能
+public class MyMonSkillBean
+{
+    public MyMonSkill skid;//技能ID
+    public string skname;//技能名称
+    public string skmemo;//技能描述
+    public int change;//几率
+    public byte MonLevel;//怪物等级要求
+
+
+    public static List<MyMonSkillBean> list = new List<MyMonSkillBean>();
+
+    public MyMonSkillBean(MyMonSkill skid, string skname, string skmemo, int change,  byte MonLevel)
+    {
+        this.skid = skid;
+        this.skname = skname;
+        this.skmemo = skmemo;
+        this.change = change;
+        this.MonLevel = MonLevel;
+    }
+
+    public static void init()
+    {
+        if (list == null || list.Count == 0)
+        {
+            list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK1, "护主", "主人受到的伤害部分转接给契约兽", 160, 40));
+            list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK2, "金刚", "大幅提升双抗，降低攻击", 320, 40));
+            list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK3, "兽血", "血量提升，血量恢复提升", 320, 40));
+            list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK4, "狂暴", "攻速，移速提升", 160, 45));
+            list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK5, "矫捷", "敏捷，准确提升", 160, 45));
+            list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK6, "吞噬", "吞噬万物，转化为经验反馈给主人", 30, 45));
+            list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK7, "天雷", "几率触发天雷对契约兽身旁怪物造成雷电攻击", 20, 50));
+            list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK8, "毒雨", "几率触发毒雨对契约兽身旁怪物造成毒雨攻击", 8, 50));
+        }
+    }
+
+    public static MyMonSkillBean get(MyMonSkill skid)
+    {
+        init();
+        foreach (MyMonSkillBean k in list)
+        {
+            if (k.skid == skid)
+            {
+                return k;
+            }
+        }
+        return null;
+    }
+
+    //刷武器的阵法
+    //刷前2阵法
+    public static MyMonSkillBean RefreshSkill(byte MonLevel, MyMonSkill ExcSkill)
+    {
+        init();
+        List<MyMonSkillBean> listc = new List<MyMonSkillBean>();
+        foreach (MyMonSkillBean sk in list)
+        {
+            //级别限制
+            if (sk.MonLevel > MonLevel)
+            {
+                continue;
+            }
+            if(sk.skid == ExcSkill)
+            {
+                continue;
+            }
+            listc.Add(sk);
+        }
+
+        //随机取一次
+        int count = 0;
+        foreach (MyMonSkillBean sk in listc)
+        {
+            count += sk.change;
+        }
+        int rd = RandomUtils.Next(count);
+        count = 0;
+        foreach (MyMonSkillBean sk in listc)
+        {
+            count += sk.change;
+            if (rd < count)
+            {
+                return sk;
+            }
+        }
+        return null;
+        
+    }
+}
+
 /// <summary>
 /// 玩家称号处理
 /// </summary>
@@ -6604,8 +6711,8 @@ public class ServerConfig
 
     public static bool openMaxGem = true;//是否宝石上限
 
-
-
+    //版本号，通过版本号传送客户端数据，版本号不同的可以兼容数据传送
+    public static int Version = 100;
 
 
 }

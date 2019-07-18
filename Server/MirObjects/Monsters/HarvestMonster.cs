@@ -88,6 +88,24 @@ namespace Server.MirObjects.Monsters
                     if (item.Info.Type == ItemType.Meat)
                         item.CurrentDura = (ushort)Math.Max(0, item.CurrentDura + Quality);
 
+                    //增加物品的来源
+                    if (EXPOwner != null && ditem.StackSize == 1)
+                    {
+                        item.src_time = Envir.Now.ToBinary();
+                        item.src_mon = this.Name;
+                        item.src_kill = EXPOwner.Name;
+                        item.src_map = CurrentMap.getTitle();
+                        item.src_mon_idx = Info.Index;
+                    }
+                    //挖取的时候可能已经没有击杀者了
+                    if (EXPOwner == null && ditem.StackSize == 1)
+                    {
+                        item.src_time = Envir.Now.ToBinary();
+                        item.src_mon = this.Name;
+                        item.src_kill = "未知";
+                        item.src_map = CurrentMap.getTitle();
+                        item.src_mon_idx = Info.Index;
+                    }
                     _drops.Add(item);
                 }
             }

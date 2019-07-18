@@ -7,6 +7,7 @@ using Client.MirControls;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 using Blend = Microsoft.DirectX.Direct3D.Blend;
+using System.Runtime.ExceptionServices;
 
 namespace Client.MirGraphics
 {
@@ -132,10 +133,8 @@ namespace Client.MirGraphics
             }
             if (System.IO.File.Exists(shaderGrayScalePath))
             {
-                MirLog.debug("grayscale.ps");
                 using (var gs = ShaderLoader.FromFile(shaderGrayScalePath, null, ShaderFlags.None))
                     GrayScalePixelShader = new PixelShader(Device, gs);
-               
             }
             if (System.IO.File.Exists(shaderMagicPath))
             {
@@ -380,7 +379,8 @@ namespace Client.MirGraphics
             Opacity = opacity;
             Sprite.Flush();
         }
-        //混合模式
+
+        //混合模式,这里也经验异常？我靠
         public static void SetBlend(bool value, float rate = 1F, BlendMode mode = BlendMode.NORMAL)
         {
             if (value == Blending && BlendingRate == rate && BlendingMode == mode) return;
@@ -415,9 +415,11 @@ namespace Client.MirGraphics
                                                                 (byte)(255 * BlendingRate), (byte)(255 * BlendingRate));
             }
             else
+            {
                 Sprite.Begin(SpriteFlags.AlphaBlend);
-
+            }
             Device.SetRenderTarget(0, CurrentSurface);
+         
         }
 
         public static void SetNormal(float blend, Color tintcolor)
@@ -473,6 +475,8 @@ namespace Client.MirGraphics
         }
         //清理，只清理超过时间的
         //这里清理好像会有问题
+        //异常捕获
+        [HandleProcessCorruptedStateExceptions]
         public static void Clean()
         {
             if (!Settings.isClean)
@@ -480,40 +484,48 @@ namespace Client.MirGraphics
                 //清理，释放资源猫洞的有问题？妈的
                 return;
             }
-            for (int i = TextureList.Count - 1; i >= 0; i--)
+            try
             {
-                MImage m = TextureList[i];
-
-                if (m == null)
+                for (int i = TextureList.Count - 1; i >= 0; i--)
                 {
+                    MImage m = TextureList[i];
+
+                    if (m == null)
+                    {
+                        TextureList.RemoveAt(i);
+                        continue;
+                    }
+
+                    if (CMain.Time <= m.CleanTime) continue;
+
+
                     TextureList.RemoveAt(i);
-                    continue;
+                    if (m.Image != null && !m.Image.Disposed)
+                    {
+                        m.Image.Dispose();
+                    }
                 }
 
-                if (CMain.Time <= m.CleanTime) continue;
-
-
-                TextureList.RemoveAt(i);
-                if (m.Image != null && !m.Image.Disposed)
+                for (int i = ControlList.Count - 1; i >= 0; i--)
                 {
-                    m.Image.Dispose();
+                    MirControl c = ControlList[i];
+
+                    if (c == null)
+                    {
+                        ControlList.RemoveAt(i);
+                        continue;
+                    }
+
+                    if (CMain.Time <= c.CleanTime) continue;
+
+                    c.DisposeTexture();
                 }
             }
-
-            for (int i = ControlList.Count - 1; i >= 0; i--)
+            catch(Exception ex)
             {
-                MirControl c = ControlList[i];
-
-                if (c == null)
-                {
-                    ControlList.RemoveAt(i);
-                    continue;
-                }
-
-                if (CMain.Time <= c.CleanTime) continue;
-
-                c.DisposeTexture();
+                CMain.SaveError(ex.ToString());
             }
+            
         }
         //清理 所有
         private static void CleanUp()

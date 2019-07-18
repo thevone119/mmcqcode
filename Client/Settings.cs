@@ -8,8 +8,8 @@ namespace Client
 {
     class Settings
     {
-        public static string clientVersion = "2.2.6";
-        public const long CleanDelay = 1000*60*10;//10分钟清理一次
+        public static string clientVersion = "2.3.0";
+        public const long CleanDelay = 1000*60*10;//15分钟清理一次
         public const bool isClean = true;//是否定期清理
         public static int ScreenWidth = 800, ScreenHeight = 600;
         private static InIReader Reader = new InIReader(@".\Config\Mir2Config.ini");

@@ -27,7 +27,7 @@ namespace Launcher
 
         public string errorMsg = null;
 
-        public List<FileInformation> OldList;
+        public List<FileInformation> OldList;//这个是最新的服务器文件，为什么叫Old,我靠
         public Queue<FileInformation> DownloadList;
 
         //不用这个计算时间了，间隔统一是500毫秒，用这个计算即可
@@ -46,7 +46,8 @@ namespace Launcher
         //是否需要重启,如果更新了当前客户端的exe,则需要重启
         private bool Restart = false;
 
-        
+        //是否需要启动外部更新程序
+        private bool RestartUpdateExe = false;
 
         public AMain()
         {
@@ -117,6 +118,12 @@ namespace Launcher
 
                 _fileCount = DownloadList.Count;
                 DownloadAll();
+                //判断客户端文件是否更新成功，如果更新失败，则启用外部更新哦
+                if (!clientIsNew())
+                {
+                    RestartUpdateExe = true;
+                }
+
                 //刷新服务器列表
                 ServerList.Load();
                 RefreshServer = false;
@@ -261,6 +268,32 @@ namespace Launcher
                 DownloadList.Enqueue(old);
                 _totalBytes += old.Length;
             }
+        }
+
+        //客户端文件是否是最新的
+        public bool clientIsNew()
+        {
+            if (OldList == null)
+            {
+                return true;
+            }
+            if (!File.Exists(Settings.P_Client + "Client.exe"))
+            {
+                return false;
+            }
+            for (int i = 0; i < OldList.Count; i++)
+            {
+                if ((OldList[i].FileName.EndsWith("Client.exe", StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    FileInformation info = GetFileInformation(Settings.P_Client + OldList[i].FileName);
+                    //针对客户端程序，多加一个时间判断，如果是新的文件则不处理
+                    if (info != null && (info.Creation < OldList[i].Creation && OldList[i].Length != info.Length))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         //新的下载文件处理
@@ -867,6 +900,12 @@ namespace Launcher
                     {
                         CleanFiles = false;
                         ShowMessage("你的客户端已清理.");
+                    }
+
+                    if (RestartUpdateExe)
+                    {
+                        Process.Start(Settings.P_Client + "ClientUpdate.exe");
+                        Close();
                     }
 
                     if (Restart)

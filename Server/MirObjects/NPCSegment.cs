@@ -2868,10 +2868,14 @@ namespace Server.MirObjects
                             {
                                 continue;
                             }
+                            if(sitem.Info.Type == ItemType.Amulet)
+                            {
+                                continue;
+                            }
                             //只卖装备，矿石，书籍等
                             if ((sitem.Info.Type > ItemType.Nothing && sitem.Info.Type < ItemType.Stone)|| sitem.Info.Type == ItemType.Book|| sitem.Info.Type == ItemType.Ore)
                             {
-                                givegold += sitem.SellPrice() ;
+                                givegold += sitem.SellPrice()/2 ;
                                 SecondUserItem.add(sitem);
                                 NPCObject.hasBuy.Remove(sitem.UniqueID);
                                 player.Enqueue(new S.DeleteItem { UniqueID = sitem.UniqueID, Count = sitem.Count });

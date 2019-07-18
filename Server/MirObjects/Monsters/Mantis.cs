@@ -36,7 +36,7 @@ namespace Server.MirObjects.Monsters
             if (RandomUtils.Next(4)==1)
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0 });
-                DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage*2, DefenceType.ACAgility);
+                DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage*3/2, DefenceType.ACAgility);
                 ActionList.Add(action);
             }
             else

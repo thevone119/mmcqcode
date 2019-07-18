@@ -229,7 +229,7 @@ namespace Server
 
         //Marriage Settings，结婚设置
         public static int LoverEXPBonus = 10;//爱人的经验增加，组队后可以增加10%经验
-        public static int MarriageCooldown = 3;//离婚后再结婚的时间限制
+        public static int MarriageCooldown = 1;//离婚后再结婚的时间限制
         public static bool WeddingRingRecall = true;//允许夫妻传送
         public static int MarriageLevelRequired = 18;//结婚等级要求
         public static int ReplaceWedRingCost = 125;//打造结婚戒指的费率125%
@@ -237,7 +237,7 @@ namespace Server
         //Mentor Settings 师徒系统
         public static byte MentorLevelGap = 10;//师徒等级差
         public static bool MentorSkillBoost = true;//师徒的技能促进，有老师的，学技能更快
-        public static byte MentorLength = 3;//导师的冷却时间，天数，就是解除师徒后，多少天才可以重新寻找徒弟
+        public static byte MentorLength = 1;//导师的冷却时间，天数，就是解除师徒后，多少天才可以重新寻找徒弟
         public static byte MentorDamageBoost = 10;//伤害增强
         public static byte MentorExpBoost = 10;//经验增强
         public static byte MenteeExpBank = 1;//经验存储

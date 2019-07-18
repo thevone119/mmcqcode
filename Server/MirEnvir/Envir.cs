@@ -2050,8 +2050,23 @@ namespace Server.MirEnvir
                 c.Enqueue(new ServerPackets.Login { Result = 4 });
                 return;
             }
+            //限制IP
+            if (account.Connection != null && Settings.ISStopIp(account.Connection.IPAddress))
+            {
+                SMain.EnqueueDebugging(account.Connection.IPAddress + ", ISStopIp.");
+                c.Enqueue(new ServerPackets.Login { Result = 5 });
+                return;
+            }
 
-         
+            //MAC最大数限制
+            if (p.ClientInfo != null && OSystem.isMacAddress(p.ClientInfo))
+            {
+                SMain.EnqueueDebugging(p.ClientInfo + ", MAC is max stop.");
+                //c.Enqueue(new ServerPackets.Login { Result = 5 });
+                //return;
+            }
+
+
 
             account.WrongPasswordCount = 0;
 
@@ -2063,12 +2078,6 @@ namespace Server.MirEnvir
                 account.Connection = c;
             }
 
-            if (account.Connection!=null && Settings.ISStopIp(account.Connection.IPAddress))
-            {
-                SMain.EnqueueDebugging(account.Connection.IPAddress + ", ISStopIp.");
-                c.Enqueue(new ServerPackets.Login { Result = 4 });
-                return;
-            }
 
             c.Account = account;
             c.Stage = GameStage.Select;

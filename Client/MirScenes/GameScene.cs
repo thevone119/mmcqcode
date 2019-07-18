@@ -4313,6 +4313,10 @@ namespace Client.MirScenes
                         ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.GreatFoxSpirit], 355 , 20, 2000, ob));
                         SoundManager.PlaySound(((ushort)Monster.GreatFoxSpirit * 10) + 1);
                         break;
+                    case SpellEffect.PoisonRain://毒雨效果
+                        ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.ShellFighter], 776, 30, 3000, ob));
+                        SoundManager.PlaySound(((ushort)Monster.ShellFighter * 10) + 1);
+                        break;
                     case SpellEffect.Focus://基础箭法的集中特效
                         ob.Effects.Add(new Effect(Libraries.Magic3, 2730, 10, 1000, ob));
                         SoundManager.PlaySound(20000 + 121 * 10 + 5);
@@ -6231,7 +6235,7 @@ namespace Client.MirScenes
             }
             if (HoverItem.n_Image > 0)
             {
-                nameLabel.Text =  nameLabel.Text+"(幻化)";
+                nameLabel.Text =  nameLabel.Text+ " ❊ 幻化";
             }
             
 
@@ -10494,6 +10498,9 @@ namespace Client.MirScenes
                     {
                         Network.Enqueue(new C.DropItem { UniqueID = cell.Item.UniqueID, Count = 1 });
                         cell.Locked = true;
+                        GameScene.SelectedCell = null;
+                        InputDelay = CMain.Time + 200;
+                        return;
                     }
                 }
                 else

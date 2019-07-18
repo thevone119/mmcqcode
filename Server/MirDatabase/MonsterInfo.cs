@@ -60,7 +60,7 @@ namespace Server.MirDatabase
 
         public int PoisonImmune = 0;//毒免类型
 
-
+        public byte UpChance = 30;//成长几率
 
         public MonsterInfo()
         {
@@ -136,10 +136,17 @@ namespace Server.MirDatabase
                 obj.CanMove = read.GetBoolean(read.GetOrdinal("CanMove"));
                 obj.PoisonImmune = read.GetInt32(read.GetOrdinal("PoisonImmune"));
                 
+
                 if (!read.IsDBNull(read.GetOrdinal("bosstype")))
                 {
                     obj.bosstype = read.GetByte(read.GetOrdinal("bosstype"));
                 }
+
+                if (!read.IsDBNull(read.GetOrdinal("UpChance")))
+                {
+                    obj.UpChance = read.GetByte(read.GetOrdinal("UpChance"));
+                }
+                
 
                 DBObjectUtils.updateObjState(obj, obj.Index);
                 list.Add(obj);

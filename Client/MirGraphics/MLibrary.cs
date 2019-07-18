@@ -498,6 +498,11 @@ namespace Client.MirGraphics
             _fileName = Path.ChangeExtension(filename, Extention);
         }
 
+        public string getFileNam()
+        {
+            return _fileName;
+        }
+
         public void Initialize()
         {
             int CurrentVersion = 0;
@@ -636,10 +641,10 @@ namespace Client.MirGraphics
 
         public void Draw(int index, int x, int y)
         {
-            if (x >= Settings.ScreenWidth || y >= Settings.ScreenHeight)
+            if (!CheckImage(index))
                 return;
 
-            if (!CheckImage(index))
+            if (x >= Settings.ScreenWidth || y >= Settings.ScreenHeight)
                 return;
 
             MImage mi = _images[index];
@@ -647,9 +652,7 @@ namespace Client.MirGraphics
             if (x + mi.Width < 0 || y + mi.Height < 0)
                 return;
 
-
             DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, new PointF(x, y), Color.White);
-            mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
         public void Draw(int index, Point point, Color colour, bool offSet = false)
         {
@@ -663,11 +666,7 @@ namespace Client.MirGraphics
             if (point.X >= Settings.ScreenWidth || point.Y >= Settings.ScreenHeight || point.X + mi.Width < 0 || point.Y + mi.Height < 0)
                 return;
 
-
-
             DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, point, colour);
-
-            mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
 
 
@@ -689,7 +688,6 @@ namespace Client.MirGraphics
 
             DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, point, colour);
             DXManager.SetOpacity(oldOpacity);
-            mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
 
         public void DrawBlend(int index, Point point, Color colour, bool offSet = false, float rate = 1)
@@ -710,7 +708,7 @@ namespace Client.MirGraphics
             DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, point, colour);
 
             DXManager.SetBlend(oldBlend);
-            mi.CleanTime = CMain.Time + Settings.CleanDelay;
+
         }
         public void Draw(int index, Rectangle section, Point point, Color colour, bool offSet)
         {
@@ -732,7 +730,7 @@ namespace Client.MirGraphics
                 section.Height -= section.Bottom - mi.Height;
 
             DXManager.Sprite.Draw2D(mi.Image, section, section.Size, point, colour);
-            mi.CleanTime = CMain.Time + Settings.CleanDelay;
+
         }
         public void Draw(int index, Rectangle section, Point point, Color colour, float opacity)
         {
@@ -757,7 +755,7 @@ namespace Client.MirGraphics
             DXManager.Sprite.Draw2D(mi.Image, section, section.Size, point, colour);
 
             DXManager.SetOpacity(oldOpacity);
-            mi.CleanTime = CMain.Time + Settings.CleanDelay;
+
         }
         public void Draw(int index, Point point, Size size, Color colour)
         {
@@ -770,7 +768,7 @@ namespace Client.MirGraphics
                 return;
 
             DXManager.Sprite.Draw2D(mi.Image, new Rectangle(Point.Empty, new Size(mi.Width, mi.Height)), size, point, colour);
-            mi.CleanTime = CMain.Time + Settings.CleanDelay;
+
         }
 
         public void DrawTinted(int index, Point point, Color colour, Color Tint, bool offSet = false)
@@ -791,17 +789,15 @@ namespace Client.MirGraphics
                 DXManager.Sprite.Draw2D(mi.MaskImage, Point.Empty, 0, point, Tint);
             }
 
-            mi.CleanTime = CMain.Time + Settings.CleanDelay;
         }
 
         public void DrawUp(int index, int x, int y)
         {
-            if (x >= Settings.ScreenWidth)
-                return;
-
             if (!CheckImage(index))
                 return;
 
+            if (x >= Settings.ScreenWidth)
+                return;
             MImage mi = _images[index];
             y -= mi.Height;
             if (y >= Settings.ScreenHeight)
@@ -811,7 +807,7 @@ namespace Client.MirGraphics
 
 
             DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, new PointF(x, y), Color.White);
-            mi.CleanTime = CMain.Time + Settings.CleanDelay;
+
         }
         public void DrawUpBlend(int index, Point point)
         {
@@ -832,7 +828,7 @@ namespace Client.MirGraphics
             DXManager.Sprite.Draw2D(mi.Image, Point.Empty, 0, point, Color.White);
 
             DXManager.SetBlend(oldBlend);
-            mi.CleanTime = CMain.Time + Settings.CleanDelay;
+
         }
 
         //public bool VisiblePixel(int index, Point point, bool accurate)

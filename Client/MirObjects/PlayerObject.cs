@@ -4974,6 +4974,7 @@ namespace Client.MirObjects
             }
         }
 
+        //这里有个很坑爹的异常，客户端异常退出
         public override void DrawEffects(bool effectsEnabled)
         {
             for (int i = 0; i < Effects.Count; i++)
