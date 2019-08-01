@@ -459,6 +459,12 @@ namespace Client.MirObjects
                     DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 20)), Color.Orange);
                     poisoncount++;
                 }
+                if (Poison.HasFlag(PoisonType.DelayedBomb))
+                {
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground7, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 7 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 21)), Color.Black);
+                    DXManager.Sprite.Draw2D(DXManager.PoisonDotBackground, Point.Empty, 0, new PointF((int)(DisplayRectangle.X + 8 + (poisoncount * 5)), (int)(DisplayRectangle.Y - 20)), Color.Orange);
+                    poisoncount++;
+                }
             }
         }
 

@@ -4322,6 +4322,10 @@ namespace Client.MirScenes
                         ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.ShellFighter], 776, 30, 3000, ob));
                         SoundManager.PlaySound(((ushort)Monster.ShellFighter * 10) + 1);
                         break;
+                    case SpellEffect.DelayedBomb://自爆效果，爆炸效果（契约兽的自爆）
+                        ob.Effects.Add(new Effect(Libraries.MyMagic, 90, 8, 1600, ob));
+                        SoundManager.PlaySound(20000 + 138 * 10+2);
+                        break;
                     case SpellEffect.Focus://基础箭法的集中特效
                         ob.Effects.Add(new Effect(Libraries.Magic3, 2730, 10, 1000, ob));
                         SoundManager.PlaySound(20000 + 121 * 10 + 5);
@@ -9869,6 +9873,7 @@ namespace Client.MirScenes
 
             CleanTime = CMain.Time + Settings.CleanDelay;
         }
+        //地板，这个对地图进行一个处理吧，否则如果地图出错，会影响到别的东西
         //画地面
         private void DrawFloor()
         {
@@ -9887,9 +9892,12 @@ namespace Client.MirScenes
 
             int index;
             int drawY, drawX;
-
+            //画背景
+            //这里判断下，是否有背景是重复的，冲突的？
+            //
             for (int y = User.Movement.Y - ViewRangeY; y <= User.Movement.Y + ViewRangeY; y++)
             {
+                
                 if (y <= 0 || y % 2 == 1) continue;
                 if (y >= Height) break;
                 drawY = (y - User.Movement.Y + OffSetY) * CellHeight + User.OffSetMove.Y; //Moving OffSet
@@ -9898,13 +9906,17 @@ namespace Client.MirScenes
                 {
                     if (x <= 0 || x % 2 == 1) continue;
                     if (x >= Width) break;
+                    if (FileName.IndexOf("SP00") != -1 && (x <= 2||x>=Width-2))
+                    {
+                        continue;
+                    }
                     drawX = (x - User.Movement.X + OffSetX) * CellWidth - OffSetX + User.OffSetMove.X; //Moving OffSet
                     if ((M2CellInfo[x, y].BackImage == 0) || (M2CellInfo[x, y].BackIndex == -1)) continue;
                     index = (M2CellInfo[x, y].BackImage & 0x1FFFF) - 1;
                     Libraries.MapLibs[M2CellInfo[x, y].BackIndex].Draw(index, drawX, drawY);
                 }
             }
-
+            //画中间
             for (int y = User.Movement.Y - ViewRangeY; y <= User.Movement.Y + ViewRangeY + 5; y++)
             {
                 if (y <= 0) continue;
@@ -9915,20 +9927,34 @@ namespace Client.MirScenes
                 {
                     if (x < 0) continue;
                     if (x >= Width) break;
+                    if (FileName.IndexOf("SP00") != -1 && (x <= 2 || x >= Width - 2))
+                    {
+                        continue;
+                    }
                     drawX = (x - User.Movement.X + OffSetX) * CellWidth - OffSetX + User.OffSetMove.X; //Moving OffSet
 
                     index = M2CellInfo[x, y].MiddleImage - 1;
 
                     if ((index < 0) || (M2CellInfo[x, y].MiddleIndex == -1)) continue;
+
+           
                     if (M2CellInfo[x, y].MiddleIndex > 199)
                     {//mir3 mid layer is same level as front layer not real middle + it cant draw index -1 so 2 birds in one stone :p
                         Size s = Libraries.MapLibs[M2CellInfo[x, y].MiddleIndex].GetSize(index);
 
                         if (s.Width != CellWidth || s.Height != CellHeight) continue;
                     }
+                    else
+                    {
+                        //自行添加的判断
+                        //Size s = Libraries.MapLibs[M2CellInfo[x, y].MiddleIndex].GetSize(index);
+
+                        //if (s.Width != CellWidth || s.Height != CellHeight) continue;
+                    }
                     Libraries.MapLibs[M2CellInfo[x, y].MiddleIndex].Draw(index, drawX, drawY);
                 }
             }
+            //画
             for (int y = User.Movement.Y - ViewRangeY; y <= User.Movement.Y + ViewRangeY + 5; y++)
             {
                 if (y <= 0) continue;
@@ -9939,6 +9965,10 @@ namespace Client.MirScenes
                 {
                     if (x < 0) continue;
                     if (x >= Width) break;
+                    if (FileName.IndexOf("SP00") != -1 && (x <= 2 || x >= Width - 2))
+                    {
+                        continue;
+                    }
                     drawX = (x - User.Movement.X + OffSetX) * CellWidth - OffSetX + User.OffSetMove.X; //Moving OffSet
 
                     index = (M2CellInfo[x, y].FrontImage & 0x7FFF) - 1;
@@ -9947,6 +9977,8 @@ namespace Client.MirScenes
                     if (fileIndex == -1) continue;
                     Size s = Libraries.MapLibs[fileIndex].GetSize(index);
                     if (fileIndex == 200) continue; //fixes random bad spots on old school 4.map
+
+                   
                     if (M2CellInfo[x, y].DoorIndex > 0)
                     {
                         Door DoorInfo = GetDoor(M2CellInfo[x, y].DoorIndex);
@@ -9995,7 +10027,7 @@ namespace Client.MirScenes
                 Libraries.Background.Draw(21, 0, 0); //village entrance
             }
         }
-        //画各种对象
+        //画各种对象,建筑物等
         private void DrawObjects()
         {
             for (int y = User.Movement.Y - ViewRangeY; y <= User.Movement.Y + ViewRangeY + 25; y++)
@@ -10006,6 +10038,10 @@ namespace Client.MirScenes
                 {
                     if (x < 0) continue;
                     if (x >= Width) break;
+                    if (FileName.IndexOf("SP00") != -1 && (x <= 2 || x >= Width - 2))
+                    {
+                        continue;
+                    }
                     M2CellInfo[x, y].DrawDeadObjects();
                 }
             }
@@ -10020,6 +10056,10 @@ namespace Client.MirScenes
                 {
                     if (x < 0) continue;
                     if (x >= Width) break;
+                    if (FileName.IndexOf("SP00") != -1 && (x <= 2 || x >= Width - 2))
+                    {
+                        continue;
+                    }
                     int drawX = (x - User.Movement.X + OffSetX) * CellWidth - OffSetX + User.OffSetMove.X;
                     int index;
                     byte animation;
@@ -10139,6 +10179,10 @@ namespace Client.MirScenes
                 {
                     if (x < 0) continue;
                     if (x >= Width) break;
+                    if (FileName.IndexOf("SP00") != -1 && (x <= 2 || x >= Width - 2))
+                    {
+                        continue;
+                    }
                     M2CellInfo[x, y].DrawObjects();
                 }
             }

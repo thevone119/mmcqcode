@@ -51,10 +51,20 @@ namespace Client.MirObjects
         public int FrameIndex, FrameInterval, EffectFrameIndex, EffectFrameInterval, SlowFrameIndex;
         public byte SkipFrameUpdate = 0;
 
+        //武器
+        //0-100,战法道
+        //100-200刺客
+        //200-300弓手
+        //>=1000  战法道
         public bool HasClassWeapon
         {
             get
             {
+                if (Weapon >= 1000)
+                {
+                    return Class == MirClass.Wizard || Class == MirClass.Warrior || Class == MirClass.Taoist;
+                }
+
                 switch (Weapon / 100)
                 {
                     default:
@@ -372,7 +382,7 @@ namespace Client.MirObjects
 
                 switch (Class)
                 {
-                    #region Archer
+                    #region Archer 弓箭手
                     case MirClass.Archer:
 
                         #region WeaponType
@@ -493,7 +503,7 @@ namespace Client.MirObjects
                     #endregion
 
 
-                    #region Assassin
+                    #region Assassin 刺客
                     case MirClass.Assassin:
 
                         #region WeaponType
@@ -630,11 +640,18 @@ namespace Client.MirObjects
                         #region Armours
                         BodyLibrary = Armour < Libraries.CArmours.Length ? Libraries.CArmours[Armour] : Libraries.CArmours[0];
                         HairLibrary = Hair < Libraries.CHair.Length ? Libraries.CHair[Hair] : null;
-						#endregion
+                        #endregion
 
-						#region Weapons
-
-						if (Weapon >= 0)
+                        #region Weapons 武器库
+                        if (Weapon >= 1000)
+                        {
+                            WeaponLibrary1 = ( Weapon-1000 ) < Libraries.CWeapons.Length ? Libraries.CWeapons[(Weapon - 1000)] : null;
+                            if (WeaponEffect > 0)
+                                WeaponEffectLibrary1 = WeaponEffect < Libraries.CWeaponEffect.Length ? Libraries.CWeaponEffect[WeaponEffect] : null;
+                            else
+                                WeaponEffectLibrary1 = null;
+                        }
+						else if (Weapon >= 0)
 						{
 							WeaponLibrary1 = Weapon < Libraries.CWeapons.Length ? Libraries.CWeapons[Weapon] : null;
 							if (WeaponEffect > 0)
@@ -907,6 +924,8 @@ namespace Client.MirObjects
                 if (Poison.HasFlag(PoisonType.Paralysis) || Poison.HasFlag(PoisonType.LRParalysis))
                     DrawColour = Color.Gray;
                 if (Poison.HasFlag(PoisonType.DelayedExplosion))
+                    DrawColour = Color.Orange;
+                if (Poison.HasFlag(PoisonType.DelayedBomb))
                     DrawColour = Color.Orange;
             }
 

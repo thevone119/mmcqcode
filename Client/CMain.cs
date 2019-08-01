@@ -674,7 +674,7 @@ namespace Client
         //每2秒执行一次，避免窗口最小化的时候卡帧
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if(Timer.ElapsedMilliseconds - Time > 1000)
+            if(Timer.ElapsedMilliseconds - Time > 3000)
             {
                 Application_Idle(sender, e);
             }
@@ -692,7 +692,7 @@ namespace Client
                 }
                 if (sb.Length > 0)
                 {
-                    string fn = DateTime.Now.Date.ToString("yyyy-MM-dd")+MapControl.User != null ? MapControl.User.Name : "";
+                    string fn = DateTime.Now.Date.ToString("yyyy-MM-dd")+ (MapControl.User != null ? MapControl.User.Name : "");
                     File.AppendAllText(@".\Config\Error" + "(" + fn + ").txt", sb.ToString());
                     sb.Clear();
                 }

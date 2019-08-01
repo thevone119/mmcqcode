@@ -1280,6 +1280,8 @@ namespace Client.MirObjects
                 DrawColour = Color.Gray;
             if (Poison.HasFlag(PoisonType.DelayedExplosion))
                 DrawColour = Color.Orange;
+            if (Poison.HasFlag(PoisonType.DelayedBomb))
+                DrawColour = Color.Orange;
             if (colour != DrawColour) GameScene.Scene.MapControl.TextureValid = false;
         }
 

@@ -174,6 +174,14 @@ namespace Client.MirObjects
                     FrameCount = 8;
                     Blend = true;
                     break;
+                case Spell.EmptyDoor://虚空，虚空之门,地狱之门，一个圆圈的门
+                    BodyLibrary = Libraries.MyMagic;
+                    DrawFrame = 1;
+                    FrameInterval = 120;
+                    FrameCount = 9;
+                    Light = 3;
+                    Blend = true;
+                    break;
             }
 
 

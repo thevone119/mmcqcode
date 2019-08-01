@@ -5,6 +5,11 @@ using Microsoft.DirectX.DirectSound;
 
 namespace Client.MirSounds
 {
+    /// <summary>
+    /// 游戏音效系统
+    /// 
+    /// idx>20000 怪物音效
+    /// </summary>
     static class SoundManager
     {
         public static Device Device;

@@ -29,6 +29,7 @@ namespace Client.MirGraphics
             Magic3 = new MLibrary(Settings.DataPath + "Magic3"),
             Effect = new MLibrary(Settings.DataPath + "Effect"),
             MagicC = new MLibrary(Settings.DataPath + "MagicC"),
+            MyMagic = new MLibrary(Settings.DataPath + "MyMagic"),
             GuildSkill = new MLibrary(Settings.DataPath + "GuildSkill"),
             MyUi = new MLibrary(Settings.DataPath + "myui");
         public static readonly MLibrary
@@ -48,18 +49,27 @@ namespace Client.MirGraphics
             StateItems = new MLibrary(Settings.DataPath + "StateItem"),
             FloorItems = new MLibrary(Settings.DataPath + "DNItems");
 
+
+        //Items2
+        public static readonly MLibrary
+            Items2 = new MLibrary(Settings.DataPath + "Items2"),
+            StateItems2 = new MLibrary(Settings.DataPath + "StateItem2"),
+            FloorItems2 = new MLibrary(Settings.DataPath + "DNItems2");
+
         //Deco
         public static readonly MLibrary
             Deco = new MLibrary(Settings.DataPath + "Deco");
 
         public static readonly MLibrary[] CArmours = new MLibrary[42],
-                                          CWeapons = new MLibrary[60],
+                                          CWeapons = new MLibrary[110],
                                           CWeaponEffect = new MLibrary[67],
                                           CHair = new MLibrary[9],
-                                          CHumEffect = new MLibrary[6],
-                                          AArmours = new MLibrary[17],
-                                          AWeaponsL = new MLibrary[20],
-                                          AWeaponsR = new MLibrary[20],
+                                          CHumEffect = new MLibrary[10],
+                                          AArmours = new MLibrary[26],
+                                          AWeaponsL = new MLibrary[40],
+                                          AWeaponsLGlow = new MLibrary[40],
+                                          AWeaponsR = new MLibrary[40],
+                                          AWeaponsRGlow = new MLibrary[40],
                                           AHair = new MLibrary[9],
                                           AHumEffect = new MLibrary[3],
                                           ARArmours = new MLibrary[17],
@@ -74,8 +84,8 @@ namespace Client.MirGraphics
                                           NPCs = new MLibrary[400],
                                           Fishing = new MLibrary[2],
                                           Pets = new MLibrary[14],
-                                          Transform = new MLibrary[28],
-                                          TransformMounts = new MLibrary[28],
+                                          Transform = new MLibrary[40],
+                                          TransformMounts = new MLibrary[40],
                                           TransformEffect = new MLibrary[2],
                                           TransformWeaponEffect = new MLibrary[1];
 
@@ -97,7 +107,7 @@ namespace Client.MirGraphics
             for (int i = 0; i < CHumEffect.Length; i++)
                 CHumEffect[i] = new MLibrary(Settings.CHumEffectPath + i.ToString("00"));
 
-            //Assassin
+            //Assassin,刺客
             for (int i = 0; i < AArmours.Length; i++)
                 AArmours[i] = new MLibrary(Settings.AArmourPath + i.ToString("00"));
 
@@ -107,13 +117,21 @@ namespace Client.MirGraphics
             for (int i = 0; i < AWeaponsL.Length; i++)
                 AWeaponsL[i] = new MLibrary(Settings.AWeaponPath + i.ToString("00") + " L");
 
+            for (int i = 0; i < AWeaponsLGlow.Length; i++)
+                AWeaponsLGlow[i] = new MLibrary(Settings.AWeaponPath + i.ToString("00") + " LGlow");
+            
+
             for (int i = 0; i < AWeaponsR.Length; i++)
                 AWeaponsR[i] = new MLibrary(Settings.AWeaponPath + i.ToString("00") + " R");
+
+            for (int i = 0; i < AWeaponsRGlow.Length; i++)
+                AWeaponsRGlow[i] = new MLibrary(Settings.AWeaponPath + i.ToString("00") + " RGlow");
+
 
             for (int i = 0; i < AHumEffect.Length; i++)
                 AHumEffect[i] = new MLibrary(Settings.AHumEffectPath + i.ToString("00"));
 
-            //Archer
+            //Archer弓手
             for (int i = 0; i < ARArmours.Length; i++)
                 ARArmours[i] = new MLibrary(Settings.ARArmourPath + i.ToString("00"));
 
@@ -170,7 +188,7 @@ namespace Client.MirGraphics
             MapLibs[0] = new MLibrary(Settings.DataPath + "Map\\WemadeMir2\\Tiles");
             MapLibs[1] = new MLibrary(Settings.DataPath + "Map\\WemadeMir2\\Smtiles");
             MapLibs[2] = new MLibrary(Settings.DataPath + "Map\\WemadeMir2\\Objects");
-            for (int i = 2; i < 24; i++)
+            for (int i = 2; i < 27; i++)
             {
                 MapLibs[i + 1] = new MLibrary(Settings.DataPath + "Map\\WemadeMir2\\Objects" + i.ToString());
             }
@@ -288,6 +306,8 @@ namespace Client.MirGraphics
             Progress++;
             MagicC.Initialize();
             Progress++;
+            MyMagic.Initialize();
+            Progress++;
 
             Effect.Initialize();
             Progress++;
@@ -308,6 +328,22 @@ namespace Client.MirGraphics
             Progress++;
             FloorItems.Initialize();
             Progress++;
+
+            Items2.Initialize();
+            Progress++;
+            StateItems2.Initialize();
+            Progress++;
+            FloorItems2.Initialize();
+            Progress++;
+
+            //这里对物品进行扩展库处理
+            Items.maxIdx = 10000;
+            Items.nextLib = Items2;
+            StateItems.maxIdx = 10000;
+            StateItems.nextLib = StateItems2;
+            FloorItems.maxIdx = 10000;
+            FloorItems.nextLib = FloorItems2;
+
 
             for (int i = 0; i < MapLibs.Length; i++)
             {
@@ -478,6 +514,11 @@ namespace Client.MirGraphics
     //修改下这个，让它支持网络图像？
     //目前的参数是2个，一个是filename，表示图像文件路径，一个是index,表示图像在文件中的位置
     //修改这个类，支持微端，支持在线下载更新,这个实现比较简单了
+    //这个做加密处理
+    //如果版本等于12-19.就位置重置为
+
+    //这里要做多个文件并列的处理哦，比如针对物品，可能有2-3个物品文件，例如 items items2 items3
+    //这样每个可以设置相隔1万。
     public sealed class MLibrary
     {
         private const string Extention = ".Lib";
@@ -492,6 +533,10 @@ namespace Client.MirGraphics
 
         private BinaryReader _reader;
         private FileStream _fStream;
+
+        //扩展支持下个库
+        public int maxIdx;//最大的IDX，如果大于这个数，则查找下一个lib
+        public MLibrary nextLib;
 
         public MLibrary(string filename)
         {
@@ -512,23 +557,39 @@ namespace Client.MirGraphics
                 return;
             try
             {
-
                 _fStream = new FileStream(_fileName, FileMode.Open, FileAccess.Read);
                 _reader = new BinaryReader(_fStream);
+
                 CurrentVersion = _reader.ReadInt32();
-                if (CurrentVersion != LibVersion)
+                if (CurrentVersion >= 11 && CurrentVersion <= 20)
                 {
-                    //cant use a directx based error popup cause it could be the lib file containing the interface is invalid :(
-                    System.Windows.Forms.MessageBox.Show("Wrong version, expecting lib version: " + LibVersion.ToString() + " found version: " + CurrentVersion.ToString() + ".", _fileName, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error, System.Windows.Forms.MessageBoxDefaultButton.Button1);
-                    System.Windows.Forms.Application.Exit();
-                    return;
+
                 }
+                else
+                {
+                    if (CurrentVersion != LibVersion)
+                    {
+                        //cant use a directx based error popup cause it could be the lib file containing the interface is invalid :(
+                        System.Windows.Forms.MessageBox.Show("Wrong version, expecting lib version: " + LibVersion.ToString() + " found version: " + CurrentVersion.ToString() + ".", _fileName, System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error, System.Windows.Forms.MessageBoxDefaultButton.Button1);
+                        System.Windows.Forms.Application.Exit();
+                        return;
+                    }
+                }
+                
                 _count = _reader.ReadInt32();
                 _images = new MImage[_count];
                 _indexList = new int[_count];
-
+                //加密偏移
+                int px = 0;
+                if (CurrentVersion >= 11 && CurrentVersion <= 20)
+                {
+                    px = ((CurrentVersion - 10) * (CurrentVersion - 10)) + 5 + CurrentVersion;
+                }
+                //这个做个位置转换，进行简单的加密处理？
                 for (int i = 0; i < _count; i++)
-                    _indexList[i] = _reader.ReadInt32();
+                {
+                    _indexList[i] = _reader.ReadInt32() - px;
+                }
             }
             catch (Exception)
             {
@@ -566,6 +627,10 @@ namespace Client.MirGraphics
 
         public MImage getImage(int index)
         {
+            if(maxIdx > 0 && index >= maxIdx && nextLib!=null)
+            {
+                return nextLib.getImage(index- maxIdx);
+            }
             if (CheckImage(index))
             {
                 return _images[index];
@@ -585,6 +650,11 @@ namespace Client.MirGraphics
         {
             if (!_initialized) Initialize();
 
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                return nextLib.GetOffSet(index - maxIdx);
+            }
+
             if (_images == null || index < 0 || index >= _images.Length)
                 return Point.Empty;
 
@@ -599,6 +669,11 @@ namespace Client.MirGraphics
         public Size GetSize(int index)
         {
             if (!_initialized) Initialize();
+
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                return nextLib.GetSize(index - maxIdx);
+            }
             if (_images == null || index < 0 || index >= _images.Length)
                 return Size.Empty;
 
@@ -615,6 +690,10 @@ namespace Client.MirGraphics
             if (!_initialized)
                 Initialize();
 
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                return nextLib.GetTrueSize(index - maxIdx);
+            }
             if (_images == null || index < 0 || index >= _images.Length)
                 return Size.Empty;
 
@@ -641,6 +720,12 @@ namespace Client.MirGraphics
 
         public void Draw(int index, int x, int y)
         {
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                nextLib.Draw(index - maxIdx,x,y);
+                return;
+            }
+
             if (!CheckImage(index))
                 return;
 
@@ -656,6 +741,12 @@ namespace Client.MirGraphics
         }
         public void Draw(int index, Point point, Color colour, bool offSet = false)
         {
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                nextLib.Draw(index - maxIdx, point, colour, offSet);
+                return;
+            }
+
             if (!CheckImage(index))
                 return;
 
@@ -673,6 +764,12 @@ namespace Client.MirGraphics
 
         public void Draw(int index, Point point, Color colour, bool offSet, float opacity)
         {
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                nextLib.Draw(index - maxIdx, point, colour, offSet, opacity);
+                return;
+            }
+
             if (!CheckImage(index))
                 return;
 
@@ -692,6 +789,12 @@ namespace Client.MirGraphics
 
         public void DrawBlend(int index, Point point, Color colour, bool offSet = false, float rate = 1)
         {
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                nextLib.DrawBlend(index - maxIdx, point, colour, offSet, rate);
+                return;
+            }
+
             if (!CheckImage(index))
                 return;
 
@@ -712,6 +815,12 @@ namespace Client.MirGraphics
         }
         public void Draw(int index, Rectangle section, Point point, Color colour, bool offSet)
         {
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                nextLib.Draw(index - maxIdx, section, point, colour, offSet);
+                return;
+            }
+
             if (!CheckImage(index))
                 return;
 
@@ -734,6 +843,12 @@ namespace Client.MirGraphics
         }
         public void Draw(int index, Rectangle section, Point point, Color colour, float opacity)
         {
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                nextLib.Draw(index - maxIdx, section, point, colour, opacity);
+                return;
+            }
+
             if (!CheckImage(index))
                 return;
 
@@ -759,6 +874,12 @@ namespace Client.MirGraphics
         }
         public void Draw(int index, Point point, Size size, Color colour)
         {
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                nextLib.Draw(index - maxIdx, point, size, colour);
+                return;
+            }
+
             if (!CheckImage(index))
                 return;
 
@@ -773,6 +894,12 @@ namespace Client.MirGraphics
 
         public void DrawTinted(int index, Point point, Color colour, Color Tint, bool offSet = false)
         {
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                nextLib.DrawTinted(index - maxIdx, point, colour, Tint, offSet);
+                return;
+            }
+
             if (!CheckImage(index))
                 return;
 
@@ -793,6 +920,12 @@ namespace Client.MirGraphics
 
         public void DrawUp(int index, int x, int y)
         {
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                nextLib.DrawUp(index - maxIdx, x, y);
+                return;
+            }
+
             if (!CheckImage(index))
                 return;
 
@@ -811,6 +944,12 @@ namespace Client.MirGraphics
         }
         public void DrawUpBlend(int index, Point point)
         {
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                nextLib.DrawUpBlend(index - maxIdx, point);
+                return;
+            }
+
             if (!CheckImage(index))
                 return;
 
@@ -857,6 +996,11 @@ namespace Client.MirGraphics
 
         public bool VisiblePixel(int index, Point point, bool accuate)
         {
+            if (maxIdx > 0 && index >= maxIdx && nextLib != null)
+            {
+                return nextLib.VisiblePixel(index - maxIdx, point, accuate);
+            }
+
             if (!CheckImage(index))
                 return false;
 

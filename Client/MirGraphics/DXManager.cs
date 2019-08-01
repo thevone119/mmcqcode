@@ -500,6 +500,7 @@ namespace Client.MirGraphics
 
 
                     TextureList.RemoveAt(i);
+
                     if (m.Image != null && !m.Image.Disposed)
                     {
                         m.Image.Dispose();

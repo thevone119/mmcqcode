@@ -657,18 +657,18 @@ namespace Client.MirObjects
                     case ItemSet.Paeok://贝玉套-改成3件套了 5件套,暴击加1，准确加1，攻速加1
                         MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 2);
                         MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 2);
-                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 30);
-                        Accuracy = (byte)Math.Min(byte.MaxValue, Agility + 1);
+                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 50);
+                        Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + 1);
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
-                        HpDrainRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 1);
+                        CriticalRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 1);
                         break;
-                    case ItemSet.Sulgwan://黑暗套 5件套,暴击加1，准确加1，攻速加1
+                    case ItemSet.Sulgwan://黑暗套 3件套,暴击加2，准确加1，攻速加1
                         MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 3);
                         MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 3);
-                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 50);
+                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 70);
                         Agility = (byte)Math.Min(byte.MaxValue, Agility + 2);
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
-                        HpDrainRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 2);
+                        CriticalRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 2);
                         break;
 
                     case ItemSet.GaleWind://狂风套，加2点攻速

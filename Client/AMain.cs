@@ -267,6 +267,11 @@ namespace Launcher
                     DownloadList.Enqueue(old);
                     _totalBytes += old.Length;
                 }
+                if (info == null)
+                {
+                    DownloadList.Enqueue(old);
+                    _totalBytes += old.Length;
+                }
                 return;
             }
             //不是exe,则判断长度
