@@ -94,6 +94,8 @@ namespace Server
         public static bool openLevelExpSup = false;//是否开启等级经验补偿
 
         public static bool openGroupWar = false;//是否开启战役
+        public static bool openMaxGem = true;//是否开启宝石上限
+        
 
 
 
@@ -178,10 +180,11 @@ namespace Server
                              SnakeTotemName = "召唤图腾",
                              SnakesName = "鬼魅蛇",
                              SnowWolfName = "雪原冰狼";
-        //这几个是技能的Sell,对应技能的的Spell（byte）
+        //这几个是技能的Sell,对应技能的的Spell（byte），这些是零时技能
         public static string HealRing = "Healing",
                              FireRing = "FireBall",
                              ParalysisRing = "Paralysis",
+                             EmptyDoor = "EmptyDoor",
                              BlinkSkill = "Blink";
         //PK回到那个地图，红名回到哪里
         public static string PKTownMapName = "3";

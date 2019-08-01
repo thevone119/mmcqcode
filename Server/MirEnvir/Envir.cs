@@ -165,6 +165,8 @@ namespace Server.MirEnvir
         //累计元宝，充值元宝数
         public uint AddCredit = 0;
 
+        public Dictionary<string, long> allcontrol = new Dictionary<string, long>();
+
         //静态加载一些规则，正则
         static Envir()
         {
@@ -497,13 +499,16 @@ namespace Server.MirEnvir
                             }
                         }
 
+                        //10秒一次哦
                         //这几个不知道干嘛的，每10秒进行重生处理？
                         if (Time >= SpawnTime)
                         {
                             SpawnTime = Time + (Settings.Second * 10);//technicaly this limits the respawn tick code to a minimum of 10 second each but lets assume it's not meant to be this accurate
                             SMain.Envir.RespawnTick.Process();
+                            //活动 处理
+                            activityProcess();
                         }
-
+              
                         //   if (Players.Count == 0) Thread.Sleep(1);
                         //   GC.Collect();
 
@@ -554,6 +559,26 @@ namespace Server.MirEnvir
             }
             _thread = null;
 
+        }
+        //活动处理，10秒一次哦
+        private void activityProcess()
+        {
+            //活动1
+            //每周5晚9点进行 兽潮活动, 超过15人就开，不到就不开
+            if (Now.DayOfWeek == DayOfWeek.Friday && Now.Hour==21 && Now.Minute==0 && PlayerCount >= 15)
+            {
+                string key = "ACTIVITY_MONWAR_5_"+ Now.DayOfYear;
+                if (!allcontrol.ContainsKey(key))
+                {
+                    allcontrol[key] = 1;
+                    //土城
+                    Map map = GetMapByNameAndInstance("3");
+                    if (map.mapSProcess == null)
+                    {
+                        map.mapSProcess = new MonWar();
+                    }
+                }
+            }
         }
         //线程调用
         private void ThreadLoop(MobThread Info)

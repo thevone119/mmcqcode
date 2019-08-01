@@ -1516,7 +1516,9 @@ namespace Server.MirObjects
         //ÊÇ·ñ×èµ²
         public override bool Blocking
         {
-            get { return Visible ; }
+            get {
+                return Visible;
+            }
         }
 
 

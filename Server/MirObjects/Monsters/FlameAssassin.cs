@@ -25,10 +25,15 @@ namespace Server.MirObjects.Monsters
             {
                 if (RandomUtils.Next(Settings.PoisonResistWeight) >= target.PoisonResist)
                 {
+                    int Duration = GetAttackPower(MinMC, MaxMC);
+                    if (Duration > 15)
+                    {
+                        Duration = 15;
+                    }
                     target.ApplyPoison(new Poison
                     {
                         Owner = this,
-                        Duration = GetAttackPower(MinMC, MaxMC),
+                        Duration = Duration,
                         PType = PoisonType.Slow,
                         TickSpeed = 1000,
                     }, this);

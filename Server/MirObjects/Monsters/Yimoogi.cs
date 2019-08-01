@@ -197,7 +197,12 @@ namespace Server.MirObjects.Monsters
         {
             ActionTime = Envir.Time + 300;
             AttackTime = Envir.Time + AttackSpeed;
-            MonsterInfo minfo = Envir.GetMonsterInfo(Name).Clone();
+            MonsterInfo _minfo = Envir.GetMonsterInfo(Name);
+            if (_minfo == null)
+            {
+                return;
+            }
+            MonsterInfo minfo = _minfo.Clone();
             MonsterObject mob = GetMonster(minfo);
 
             if (mob == null)

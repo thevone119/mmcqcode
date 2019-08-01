@@ -23,6 +23,8 @@ namespace Server
 
         private static long lastBackUpTime = 0;//最后数据备份时间
 
+        private static long cleanLogTime = 0;//清理日志的时间
+
         public SMain()
         {
                 InitializeComponent();
@@ -176,6 +178,61 @@ namespace Server
             {
                 Enqueue(ex);
             }
+
+            //清理日志功能,每天早上8点清理
+            try
+            {
+                cleanLogTime++;
+                if (cleanLogTime > 60 * 20 && Envir.Now.Hour ==8)
+                {
+                    cleanLogTime = - 60 * 60;
+                    //超过15天的全删除
+                    string[] fileNames = Directory.GetFiles(@".\Reports", "*.txt", SearchOption.AllDirectories);
+                    string fileName;
+                    for (int i = 0; i < fileNames.Length; i++)
+                    {
+                        fileName = fileNames[i];
+                        try
+                        {
+                            //超过15天的全删除
+                            if (File.GetLastWriteTime(fileName) < DateTime.Now.AddDays(-20))
+                            {
+                                File.Delete(fileName);
+                                continue;
+                            }
+                        }
+                        catch (Exception ex2)
+                        {
+                            Enqueue(ex2);
+                        }
+                    }
+
+                    //超过15天的全删除
+                    string[] fileNames2 = Directory.GetFiles(@".\logs", "*.txt", SearchOption.AllDirectories);
+                    for (int i = 0; i < fileNames2.Length; i++)
+                    {
+                        fileName = fileNames2[i];
+                        try
+                        {
+                            //超过15天的全删除
+                            if (File.GetLastWriteTime(fileName) < DateTime.Now.AddDays(-20))
+                            {
+                                File.Delete(fileName);
+                                continue;
+                            }
+                        }
+                        catch (Exception ex2)
+                        {
+                            Enqueue(ex2);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Enqueue(ex);
+            }
+            
         }
         //刷新在线用户视图
         //这个如果用户比较多，可能比较消耗性能，最好是10秒内只允许更新一次？

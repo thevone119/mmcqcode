@@ -31,7 +31,7 @@ namespace Server.MirObjects
         public long LastRecallTime, LastRevivalTime, LastTeleportTime, LastProbeTime, MenteeEXP;
         public long LastOnlineTimeCheck;//最后检测时间
         public long LastItemSkillTime, LastSkillComm4,LastSkillComm5, LastSkillComm7;//最后检测时间
-        
+
 
 
         public short Looks_Armour = 0, Looks_Weapon = -1, Looks_WeaponEffect = 0;
@@ -491,7 +491,7 @@ namespace Server.MirObjects
                     try
                     {
                         //契约兽不保存哦
-                        if(pet.PType!= PetType.MyMonster)
+                        if(pet.PType == PetType.Common)
                         {
                             Info.Pets.Add(new PetInfo(pet) { Time = Envir.Time });
                         }
@@ -844,6 +844,7 @@ namespace Server.MirObjects
             }
             catch(Exception ex)
             {
+                
                 SMain.Enqueue(ex);
             }
         }
@@ -2432,7 +2433,7 @@ namespace Server.MirObjects
             {
                 return;
             }
-            int change = 10+ Info.SaItem.samsaracount * 10;
+            int change = 10 + Info.SaItem.samsaracount * 12;
             bool hassam = false;
             for (int i = 0; i < Info.Equipment.Length; i++)
             {
@@ -3777,8 +3778,9 @@ namespace Server.MirObjects
             sk3 = 0;
             sk4 = 0;
             skCount = 0;
+            //这2个是零时技能
             var skillsToAdd = new List<string>();
-            var skillsToRemove = new List<string> { Settings.HealRing, Settings.FireRing, Settings.BlinkSkill };
+            var skillsToRemove = new List<string> { Settings.HealRing, Settings.FireRing, Settings.BlinkSkill  };
             short Macrate = 0, Acrate = 0, HPrate = 0, MPrate = 0;
             ItemSets.Clear();
             MirSet.Clear();
@@ -3881,7 +3883,16 @@ namespace Server.MirObjects
                     {
                         Looks_Armour = RealItem.Shape;
                     }
-                    Looks_Wings = RealItem.Effect;
+
+                    if (temp.n_Effect > 0)
+                    {
+                        Looks_Wings = temp.n_Effect;
+                    }
+                    else
+                    {
+                        Looks_Wings = RealItem.Effect;
+                    }
+           
                 }
 
 				if (RealItem.Type == ItemType.Weapon)
@@ -3894,10 +3905,17 @@ namespace Server.MirObjects
                     {
                         Looks_Weapon = RealItem.Shape;
                     }
-					Looks_WeaponEffect = RealItem.Effect;
+                    if (temp.n_Effect > 0)
+                    {
+                        Looks_WeaponEffect = temp.n_Effect;
+                    }
+                    else
+                    {
+                        Looks_WeaponEffect = RealItem.Effect;
+                    }
 				}
-
-				if (RealItem.Type == ItemType.Mount)
+              
+                if (RealItem.Type == ItemType.Mount)
                 {
                     MountType = RealItem.Shape;
                     //RealItem.Effect;
@@ -4127,7 +4145,7 @@ namespace Server.MirObjects
                         MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 2);
                         MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 2);
                         MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 50);
-                        Accuracy = (byte)Math.Min(byte.MaxValue, Agility + 1);
+                        Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + 1);
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
                         CriticalRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 1);
                         break;
@@ -5777,13 +5795,21 @@ namespace Server.MirObjects
                         if (!IsGM) return;
                         //重新加载所有怪物数据
                         List<MonsterInfo>  listn = MonsterInfo.loadAll();
-                        Envir.MonsterInfoList.Clear();
-                        Envir.MonsterInfoList = listn;
+                        Dictionary<int, MonsterInfo> dicmon = new Dictionary<int, MonsterInfo>();
+                        foreach (var t in listn)
+                        {
+                            dicmon.Add(t.Index, t);
+                        }
+
                         foreach (var t in Envir.MonsterInfoList)
                         {
-                            t.LoadDrops();
-                            t.LoadCommonDrops();
+                            if (dicmon.ContainsKey(t.Index)){
+                                t.dropText = dicmon[t.Index].dropText;
+                                t.LoadDrops();
+                                t.LoadCommonDrops();
+                            }
                         }
+     
                         ReceiveChat("爆率已重载.", ChatType.Hint);
                         break;
 
@@ -5887,7 +5913,7 @@ namespace Server.MirObjects
                         break;
                     case "GIVESKILL":
                         if ((!IsGM && !Settings.TestServer) || parts.Length < 3) return;
-
+                        //@GIVESKILL 162 1
                         byte spellLevel = 0;
 
                         player = this;
@@ -6943,7 +6969,7 @@ namespace Server.MirObjects
 
             Point location = Functions.PointMove(CurrentLocation, dir, 1);
             //这里改下，否则可能穿人
-            if (!CurrentMap.EmptyPoint(location.X, location.Y))
+            if (!CurrentMap.ValidPoint(location.X, location.Y))
             {
                 Enqueue(new S.UserLocation { Direction = Direction, Location = CurrentLocation });
                 return;
@@ -6969,7 +6995,11 @@ namespace Server.MirObjects
                         if (!NPC.Visible || !NPC.VisibleLog[Info.Index]) continue;
                     }
                     else
-                        if (!ob.Blocking || ob.CellTime >= Envir.Time) continue;
+                    {
+                        //if (!ob.Blocking || ob.CellTime >= Envir.Time) continue;
+                        if (!ob.Blocking) continue;
+                    }
+                       
 
                     Enqueue(new S.UserLocation { Direction = Direction, Location = CurrentLocation });
                     return;
@@ -7107,7 +7137,7 @@ namespace Server.MirObjects
             {
                 location = Functions.PointMove(CurrentLocation, dir, j);
                 //这里改下，跑步要阻挡，否则可能穿人
-                if (!CurrentMap.EmptyPoint(location.X, location.Y))
+                if (!CurrentMap.ValidPoint(location.X, location.Y))
                 {
                     Enqueue(new S.UserLocation { Direction = Direction, Location = CurrentLocation });
                     return;
@@ -7131,8 +7161,10 @@ namespace Server.MirObjects
                             if (!NPC.Visible || !NPC.VisibleLog[Info.Index]) continue;
                         }
                         else
-                            if (!ob.Blocking || ob.CellTime >= Envir.Time) continue;
-
+                        {
+                            //if (!ob.Blocking || ob.CellTime >= Envir.Time) continue;
+                            if (!ob.Blocking) continue;
+                        }
                         Enqueue(new S.UserLocation { Direction = Direction, Location = CurrentLocation });
                         return;
                     }
@@ -8286,7 +8318,12 @@ namespace Server.MirObjects
                 case Spell.FixedMove://定点移动，类似闪现
                     FixedMove(magic, location, out cast);
                     break;
-
+                case Spell.EmptyDoor://虚空，虚空之门,地狱之门，一个圆圈的门
+                    EmptyDoor(magic, location, out cast);
+                    break;
+                case Spell.MyMonsterBomb://契约兽自爆
+                    MyMonsterBomb(magic, location, out cast);
+                    break;
                 default:
                     cast = false;
                     break;
@@ -8554,6 +8591,12 @@ namespace Server.MirObjects
         {
             if (target == null || !target.IsAttackTarget(this)) return;
 
+            //契约兽不能召唤
+            if (target.PType != PetType.Common)
+            {
+                return;
+            }
+
             if (RandomUtils.Next(4 - magic.Level) > 0)
             {
                 if (RandomUtils.Next(2) == 0) LevelMagic(magic);
@@ -8628,11 +8671,7 @@ namespace Server.MirObjects
                 target.Die();
                 return;
             }
-            //契约兽不能召唤
-            if (target.PType != PetType.Common)
-            {
-                return;
-            }
+
 
 
             if (target.Master != null)
@@ -10546,6 +10585,109 @@ namespace Server.MirObjects
             LevelMagic(magic);
         }
 
+
+
+        //虚空，虚空之门,地狱之门，一个圆圈的门
+        private void EmptyDoor(UserMagic magic, Point location, out bool cast)
+        {
+            cast = false;
+            //1.查找所有的契约兽，看契约兽是否拥有此技能
+            MonsterObject _pet = null;
+            foreach (MonsterObject pet in Pets)
+            {
+                if(pet.PType!= PetType.MyMonster)
+                {
+                    continue;
+                }
+                if (!pet.hasMonSk(MyMonSkill.MyMonSK9))
+                {
+                    continue;
+                }
+                _pet = pet;
+            }
+            if (_pet == null|| _pet.Dead)
+            {
+                ReceiveChat("没有召唤相关契约兽，无法释放此技能.", ChatType.System);
+                return;
+            }
+            if (_pet == null || _pet.myMonster==null|| _pet.myMonster.callTime<=0)
+            {
+                ReceiveChat("契约兽体力不足，无法释放此技能.", ChatType.System);
+                return;
+            }
+            if(_pet.CurrentMap!= CurrentMap)
+            {
+                ReceiveChat("契约兽距离过远，无法释放此技能.", ChatType.System);
+                return;
+            }
+            //扣除体力，刷新契约兽数据,几率消耗体力
+            if(RandomUtils.Next(100)< 30){
+                _pet.myMonster.callTime--;
+                GetMyMonsters();
+            }
+           
+            Point loc = _pet.Back;
+            if (!CurrentMap.ValidPoint(loc))
+            {
+                loc = _pet.CurrentLocation;
+            }
+
+            //虚空之门，每4秒释放一个怪物，最多释放8个怪物
+            int damage = 5 + magic.Level;
+  
+            DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time + 500, this, magic, damage, loc, _pet.myMonster);
+            CurrentMap.ActionList.Add(action);
+            cast = true;
+        }
+
+
+        //契约兽自爆
+        private void MyMonsterBomb(UserMagic magic, Point location, out bool cast)
+        {
+            cast = false;
+            //1.查找所有的契约兽，看契约兽是否拥有此技能
+            MonsterObject _pet = null;
+            foreach (MonsterObject pet in Pets)
+            {
+                if (pet.PType != PetType.MyMonster || pet.myMonster==null)
+                {
+                    continue;
+                }
+                if (!pet.hasMonSk(MyMonSkill.MyMonSK11))
+                {
+                    continue;
+                }
+                _pet = pet;
+            }
+            if (_pet == null || _pet.Dead)
+            {
+                ReceiveChat("没有召唤相关契约兽，无法释放此技能.", ChatType.System);
+                return;
+            }
+            if (_pet.CurrentMap != CurrentMap)
+            {
+                ReceiveChat("契约兽距离过远，无法释放此技能.", ChatType.System);
+                return;
+            }
+
+            //计算伤害(契约兽攻击+技能等级)
+            int value = (int)(_pet.HP * (magic.Level+8)/10.0);
+
+            _pet.ApplyPoison(new Poison
+            {
+                Duration = RandomUtils.Next(3,7),
+                Owner = this,
+                PType = PoisonType.DelayedBomb,
+                TickSpeed = 1000,
+                Value = value + RandomUtils.Next(10, 20),
+            }, this);
+            _pet.Broadcast(new S.ObjectEffect { ObjectID = _pet.ObjectID, Effect = SpellEffect.DelayedExplosion, EffectType = 2 });
+            //Broadcast(new S.ObjectEffect { ObjectID = _pet.ObjectID, Effect = SpellEffect.DelayedExplosion, EffectType = 1 });
+
+            cast = true;
+        }
+
+
         #endregion
 
         private void CheckSneakRadius()
@@ -12078,7 +12220,7 @@ namespace Server.MirObjects
         }
         public override bool IsFriendlyTarget(PlayerObject ally)
         {
-            if (ally == this) return true;
+            if (ally == this|| ally==null) return true;
             //加入战场攻击模式
             if (WGroup != WarGroup.None)
             {
@@ -14049,8 +14191,18 @@ namespace Server.MirObjects
                         ReceiveChat($"没有武器，无法对武器进行形态变幻", ChatType.System);
                         return;
                     }
-                    Info.Equipment[(int)EquipmentSlot.Weapon].n_Image = item.Info.Image;
-                    Info.Equipment[(int)EquipmentSlot.Weapon].n_Shape = item.Info.Shape;
+                    if (item.Info.Image > 0)
+                    {
+                        Info.Equipment[(int)EquipmentSlot.Weapon].n_Image = item.Info.Image;
+                    }
+                    if (item.Info.Shape > -1)
+                    {
+                        Info.Equipment[(int)EquipmentSlot.Weapon].n_Shape = item.Info.Shape;
+                    }
+                    if (item.Info.Effect > 0)
+                    {
+                        Info.Equipment[(int)EquipmentSlot.Weapon].n_Effect = item.Info.Effect;
+                    }
                     Enqueue(new S.RefreshItem { Item = Info.Equipment[(int)EquipmentSlot.Weapon] });
                     //AddBuff(new Buff { Type = BuffType.Transform, Caster = this, ExpireTime = Envir.Time + tTime * 1000, Values = new int[] { tType, item.Info.MinAC, item.Info.MaxAC, item.Info.MinMAC, item.Info.MaxMAC, item.Info.MinDC, item.Info.MaxDC, item.Info.MinMC, item.Info.MaxMC, item.Info.MinSC, item.Info.MaxSC, item.Info.Luck } });
                     break;
@@ -14062,8 +14214,18 @@ namespace Server.MirObjects
                         ReceiveChat($"没有衣服，无法对衣服进行形态变幻", ChatType.System);
                         return;
                     }
-                    Info.Equipment[(int)EquipmentSlot.Armour].n_Image = item.Info.Image;
-                    Info.Equipment[(int)EquipmentSlot.Armour].n_Shape = item.Info.Shape;
+                    if (item.Info.Image > 0)
+                    {
+                        Info.Equipment[(int)EquipmentSlot.Armour].n_Image = item.Info.Image;
+                    }
+                    if (item.Info.Shape > 0)
+                    {
+                        Info.Equipment[(int)EquipmentSlot.Armour].n_Shape = item.Info.Shape;
+                    }
+                    if (item.Info.Effect > 0)
+                    {
+                        Info.Equipment[(int)EquipmentSlot.Armour].n_Effect = item.Info.Effect;
+                    }
                     Enqueue(new S.RefreshItem { Item = Info.Equipment[(int)EquipmentSlot.Armour] });
                     //AddBuff(new Buff { Type = BuffType.Transform, Caster = this, ExpireTime = Envir.Time + tTime * 1000, Values = new int[] { tType, item.Info.MinAC, item.Info.MaxAC, item.Info.MinMAC, item.Info.MaxMAC, item.Info.MinDC, item.Info.MaxDC, item.Info.MinMC, item.Info.MaxMC, item.Info.MinSC, item.Info.MaxSC, item.Info.Luck } });
                     break;
@@ -14429,6 +14591,10 @@ namespace Server.MirObjects
                 {
                     mcount = 4;
                 }
+                if (Level >= 65)
+                {
+                    mcount = 5;
+                }
 
                 if (getPetCount(PetType.MyMonster) >= mcount)
                 {
@@ -14726,7 +14892,7 @@ namespace Server.MirObjects
                     return;
                 }
 
-                //领悟技能
+                //领悟技能1
                 if (temp.Info.Name.StartsWith("书页残卷"))
                 {
                     byte monlevel = 0;
@@ -14769,7 +14935,7 @@ namespace Server.MirObjects
                     }
                     mon.callTime -= callTime;
 
-                    MyMonSkillBean sk = MyMonSkillBean.RefreshSkill(monlevel, mon.skill1);
+                    MyMonSkillBean sk = MyMonSkillBean.RefreshSkill(monlevel, mon.skill1, mon.skill2);
                     if (sk == null)
                     {
                         ReceiveChat($"[{mon.getName()}] 技能领悟失败.", ChatType.System);
@@ -14794,6 +14960,73 @@ namespace Server.MirObjects
                         }
                     }
                    
+                    //删除背包物品
+                    S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
+                    Info.Inventory[index] = null;
+                    RefreshBagWeight();
+                    Enqueue(p);
+                    GetMyMonsters();
+                    return;
+                }
+
+                //领悟技能2
+                if (temp.Info.Name == "灵兽开智丹")
+                {
+                    byte monlevel = 55;
+
+                    if (mon.MonLevel < monlevel)
+                    {
+                        ReceiveChat($"[{mon.getName()}] 我需要{monlevel}级才能开启第二智力哦.", ChatType.System);
+                        return;
+                    }
+                    if (mon.skill1 <= 0)
+                    {
+                        ReceiveChat($"[{mon.getName()}] 我第一技能还没领悟呢，先给我吃点书页积累些智力吧.", ChatType.System);
+                        return;
+                    }
+                    //首次开启第2技能，有成功率
+                    if (mon.skill2 <= 0)
+                    {
+                        if (RandomUtils.Next(100) > temp.Info.Strong)
+                        {
+                            //删除背包物品
+                            S.DeleteItem pt = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
+                            Info.Inventory[index] = null;
+                            RefreshBagWeight();
+                            Enqueue(pt);
+                            ReceiveChat($"[{mon.getName()}] 主人，我太笨了，无法领悟第二技能呢，再给我吃一些开智丹吧.", ChatType.System);
+                            return;
+                        }
+                    }
+
+                   
+
+
+                    MyMonSkillBean sk = MyMonSkillBean.RefreshSkill(monlevel, mon.skill1, mon.skill2);
+                    if (sk == null)
+                    {
+                        ReceiveChat($"[{mon.getName()}] 技能领悟失败.", ChatType.System);
+                        return;
+                    }
+                    mon.skill2 = sk.skid;
+                    mon.skillname2 = sk.skname;
+                    ReceiveChat($"[{mon.getName()}] 我已成功领悟技能[{sk.skname}].", ChatType.System);
+                    MyMonsterUtils.RefreshMyMonLevelStats(mon, null);
+                    //如果契约兽已经召唤，则更新契约兽
+                    if (Pets != null)
+                    {
+                        //查找玩家的宠物，看有没此契约兽
+                        for (int i = 0; i < Pets.Count; i++)
+                        {
+                            MonsterObject pet = Pets[i];
+                            if (pet == null || pet.Dead || pet.myMonster == null || pet.myMonster.idx != mon.idx)
+                            {
+                                continue;
+                            }
+                            MyMonsterUtils.RefreshMyMonLevelStats(mon, pet);
+                        }
+                    }
+
                     //删除背包物品
                     S.DeleteItem p = new S.DeleteItem { UniqueID = itemid, Count = temp.Count };
                     Info.Inventory[index] = null;

@@ -108,10 +108,15 @@ namespace Server.MirObjects.Monsters
             {
                 if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist)
                 {
+                    int Duration = RandomUtils.Next(MaxMC);
+                    if (Duration > 30)
+                    {
+                        Duration = 30;
+                    }
                     Target.ApplyPoison(new Poison
                     {
                         Owner = this,
-                        Duration = RandomUtils.Next(MaxMC),
+                        Duration = Duration,
                         PType = PoisonType.Stun,
                         Value = damage,
                         TickSpeed = 1000

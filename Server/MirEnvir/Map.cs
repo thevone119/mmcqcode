@@ -1674,6 +1674,96 @@ namespace Server.MirEnvir
 
                 #endregion
 
+
+
+                #region EmptyDoor 虚空之门
+
+                case Spell.EmptyDoor:
+                    value = (int)data[2];
+                    location = (Point)data[3];
+                    MyMonster _myMonster = (MyMonster)data[4];
+
+                    player.LevelMagic(magic);
+
+                    if (ValidPoint(location))
+                    {
+                        //cell = GetCell(location);
+                        bool cast = true;
+                        if (Objects[location.X, location.Y] != null)
+                        {
+                            for (int o = 0; o < Objects[location.X, location.Y].Count; o++)
+                            {
+                                MapObject target = Objects[location.X, location.Y][o];
+                                if (target.Race != ObjectType.Spell || ((SpellObject)target).Spell != Spell.EmptyDoor) continue;
+
+                                cast = false;
+                                break;
+                            }
+                        }
+
+                        if (cast)
+                        {
+                            SpellObject ob = new SpellObject
+                            {
+                                Spell = Spell.EmptyDoor,
+                                Value = value,
+                                ExpireTime = Envir.Time + value * 4000,
+                                TickSpeed = 4000,
+                                Caster = player,
+                                Level = magic.Level,
+                                CurrentLocation = location,
+                                CurrentMap = this,
+                                myMon = _myMonster,
+                            };
+                            AddObject(ob);
+                            ob.Spawned();
+                        }
+                    }
+
+                    break;
+
+                #endregion
+
+                #region MyMonsterBomb 契约兽自爆
+
+                case Spell.MyMonsterBomb:
+                    value = (int)data[2];
+                    location = (Point)data[3];
+                    player.LevelMagic(magic);
+                    List<MapObject> tagets = getMapObjects(location.X, location.Y,3);
+                    foreach(MapObject ob in tagets)
+                    {
+                        if (ob == null || !ob.IsAttackTarget(player))
+                        {
+                            continue;
+                        }
+                        int dvalue = value;
+                        //玩家的伤害减少
+                        if (ob.Race == ObjectType.Player)
+                        {
+                            dvalue = (int)(ob.MaxHealth * (5 + magic.Level) / 10);
+                        }
+                        
+                        //如果是BOSS，伤害减半
+                        if (ob.MaxHealth > 10000)
+                        {
+                            dvalue = dvalue * 7 / 10;
+                        }
+
+                        //根据距离计算伤害，最靠近的伤害最高
+                        int dis = Functions.MaxDistance(location,ob.CurrentLocation);
+                        dis = 12 - dis*2;
+                        if (dis < 1)
+                        {
+                            dis = 1;
+                        }
+                        dvalue = (int)(dvalue * dis  / 10.0);
+                        ob.Attacked(player, dvalue, DefenceType.MAC, false);
+                    }
+                    break;
+
+                #endregion
+
                 #region HeavenlySword
 
                 case Spell.HeavenlySword:
@@ -2963,7 +3053,7 @@ namespace Server.MirEnvir
                 return true;
             }
             //重新加载一次怪物，这样可以随时变更爆率哦
-            MonsterObject ob = MonsterObject.GetMonster(SMain.Envir.GetMonsterInfo(Monster.Index));
+            MonsterObject ob = MonsterObject.GetMonster(Monster);
             if (ob == null|| Locs.Count==0) return true;
             bool isSpawn = false;
             //5次随机重生，如果5次都没有随机到点，则从列表中取点
@@ -3005,7 +3095,7 @@ namespace Server.MirEnvir
         public void RandomSpawn()
         {
             //2000分之1,10倍爆率
-            if (RandomUtils.Next(1000) == 1&& Info.Count > 1 && Monster.HP<5000)
+            if (RandomUtils.Next(1100) == 1)
             {
                 //SMain.Enqueue("刷新紫色精英怪："+ Monster.Name+",在："+Map.getTitle());
                 //先复制怪物info
@@ -3041,14 +3131,23 @@ namespace Server.MirEnvir
                     drop5.Chance = 0.5;
                 }
                 minfo.Drops.Add(drop5);
-
+                //兽魂丹 1/3几率出
+                if (minfo.CanTame)
+                {
+                    DropInfo drop6 = DropInfo.FromLine("副本_兽丹", String.Format("1/3 兽魂丹"));
+                    minfo.Drops.Add(drop6);
+                }
                 minfo.Name = minfo.Name + "[" + "变异" + "]";
                 minfo.Level = (ushort)(minfo.Level + 10);
                 minfo.HP = (uint)(minfo.HP * 2 + 100);
-                minfo.MaxAC = (ushort)(minfo.MaxAC * 4 / 3);
-                minfo.MaxMAC = (ushort)(minfo.MaxAC * 4 / 3);
-                minfo.MaxDC = (ushort)(minfo.MaxDC * 15 / 10);//1.5倍的基础攻击
-                minfo.MaxMC = (ushort)(minfo.MaxMC * 15 / 10);//1.5倍的基础攻击
+                minfo.MinAC = (ushort)(minfo.MaxAC * 2);
+                minfo.MaxAC = (ushort)(minfo.MaxAC * 2);
+                minfo.MinMAC = (ushort)(minfo.MaxAC * 2);
+                minfo.MaxMAC = (ushort)(minfo.MaxAC * 2);
+                minfo.MinDC = (ushort)(minfo.MinDC * 2);//2倍的基础攻击
+                minfo.MinMC = (ushort)(minfo.MinMC * 2);//2倍的基础攻击
+                minfo.MaxDC = (ushort)(minfo.MaxDC * 2);//2倍的基础攻击
+                minfo.MaxMC = (ushort)(minfo.MaxMC * 2);//2倍的基础攻击
                 int AttackSpeed = minfo.AttackSpeed - 300 ;
 
                 if (minfo.AttackSpeed < 500)

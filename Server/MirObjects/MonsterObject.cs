@@ -1277,8 +1277,15 @@ namespace Server.MirObjects
                     return;
                 }
 
+
+                //宠物叛变
                 if (Master != null && TameTime > 0 && Envir.Time >= TameTime)
                 {
+                    if(PType == PetType.TempMonster)
+                    {
+                        Die();
+                        return;
+                    }
                     Master.Pets.Remove(this);
                     Master = null;
                     Broadcast(new S.ObjectName { ObjectID = ObjectID, Name = Name });
@@ -1309,9 +1316,25 @@ namespace Server.MirObjects
         /// </summary>
         private void ProcessMonSkill()
         {
-            if (myMonster == null || Dead)
+            if (myMonster == null)
             {
                 return;
+            }
+  
+            LastMonSkillTime = Envir.Time + 1000;
+            //契约兽的主动技能
+
+
+            if (Dead)
+            {
+                //如果已经死亡，则删除玩家的零时技能
+                return;
+            }
+            else
+            {
+                //没有死亡，则添加零时技能
+
+
             }
             if (Envir.Time < LastMonSkillTime)
             {
@@ -1321,7 +1344,7 @@ namespace Server.MirObjects
             {
                 return;
             }
-            LastMonSkillTime = Envir.Time + 1000;
+
 
             //天雷阵
             if (hasMonSk(MyMonSkill.MyMonSK7) && RandomUtils.Next(100) < 20)
@@ -1690,6 +1713,22 @@ namespace Server.MirObjects
                             continue;
                         }
                     }
+
+                    //自爆
+                    if (poison.PType == PoisonType.DelayedBomb && poison.Time >= poison.Duration)
+                    {
+                        PoisonList.RemoveAt(i);
+                        Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.DelayedBomb, EffectType = 0 });
+                        //范围伤害
+                        if (poison.Owner!=null && poison.Owner.Race == ObjectType.Player)
+                        {
+                            PlayerObject caster = (PlayerObject)poison.Owner;
+                            DelayedAction action = new DelayedAction(DelayedType.Magic, Envir.Time+700, poison.Owner, caster.GetMagic(Spell.MyMonsterBomb), poison.Value, this.CurrentLocation);
+                            CurrentMap.ActionList.Add(action);
+                        }
+                        Die();
+                        return;
+                    }
                 }
                 //中毒护甲减半？
                 switch (poison.PType)
@@ -1824,7 +1863,7 @@ namespace Server.MirObjects
             {
                 if ((Master.PMode == PetMode.Both || Master.PMode == PetMode.MoveOnly))
                 {
-                    if (!Functions.InRange(CurrentLocation, Master.CurrentLocation, Globals.DataRange*2) || CurrentMap != Master.CurrentMap)
+                    if (!Functions.InRange(CurrentLocation, Master.CurrentLocation, Globals.DataRange) || CurrentMap != Master.CurrentMap)
                         PetRecall();
                 }
 

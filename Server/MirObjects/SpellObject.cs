@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Server.MirEnvir;
 using S = ServerPackets;
+using Server.MirDatabase;
 
 namespace Server.MirObjects
 {
@@ -32,11 +33,14 @@ namespace Server.MirObjects
         }
 
         public long TickTime, StartTime;
-        public PlayerObject Caster;
+        public PlayerObject Caster;//施法者，技能释放者
         public int Value, TickSpeed;
         public Spell Spell;
         public Point CastLocation;
         public bool Show, Decoration;
+
+        //EmptyDoor虚空之门，契约兽的技能，传入契约兽参数哦
+        public MyMonster myMon;
 
         //ExplosiveTrap
         public bool DetonatedTrap;
@@ -54,55 +58,64 @@ namespace Server.MirObjects
             get { throw new NotSupportedException(); }
         }
 
-
+        //这里做个try,catch
         public override void Process()
         {
-            if (Decoration) return;
-
-            if (Caster != null && Caster.Node == null) Caster = null;
-
-            if (Envir.Time > ExpireTime || ((Spell == Spell.FireWall || Spell == Spell.Portal || Spell == Spell.ExplosiveTrap || Spell == Spell.Reincarnation) && Caster == null) || (Spell == Spell.TrapHexagon && Target != null) || (Spell == Spell.Trap && Target != null))
+            try
             {
-                if (Spell == Spell.TrapHexagon && Target != null || Spell == Spell.Trap && Target != null)
-                {
-                    MonsterObject ob = (MonsterObject)Target;
+                if (Decoration) return;
 
-                    if (Envir.Time < ExpireTime && ob.ShockTime != 0) return;
+                if (Caster != null && Caster.Node == null) Caster = null;
+
+                if (Envir.Time > ExpireTime || ((Spell == Spell.FireWall || Spell == Spell.Portal || Spell == Spell.ExplosiveTrap || Spell == Spell.Reincarnation) && Caster == null) || (Spell == Spell.TrapHexagon && Target != null) || (Spell == Spell.Trap && Target != null))
+                {
+                    if (Spell == Spell.TrapHexagon && Target != null || Spell == Spell.Trap && Target != null)
+                    {
+                        MonsterObject ob = (MonsterObject)Target;
+
+                        if (Envir.Time < ExpireTime && ob.ShockTime != 0) return;
+                    }
+
+                    if (Spell == Spell.Reincarnation && Caster != null)
+                    {
+                        Caster.ReincarnationReady = true;
+                        Caster.ReincarnationExpireTime = Envir.Time + 6000;
+                    }
+
+                    CurrentMap.RemoveObject(this);
+                    Despawn();
+                    return;
                 }
 
-                if (Spell == Spell.Reincarnation && Caster != null)
+                if (Spell == Spell.Reincarnation && !Caster.ActiveReincarnation)
                 {
-                    Caster.ReincarnationReady = true;
-                    Caster.ReincarnationExpireTime = Envir.Time + 6000;
+                    CurrentMap.RemoveObject(this);
+                    Despawn();
+                    return;
+                }
+                //烈火陷阱，离开10格范围，自动失效
+                if (Spell == Spell.ExplosiveTrap && FindObject(Caster.ObjectID, 10) == null && Caster != null)
+                {
+                    CurrentMap.RemoveObject(this);
+                    Despawn();
+                    return;
                 }
 
-                CurrentMap.RemoveObject(this);
-                Despawn();
-                return;
-            }
+                if (Envir.Time < TickTime) return;
+                TickTime = Envir.Time + TickSpeed;
 
-            if (Spell == Spell.Reincarnation && !Caster.ActiveReincarnation)
+                //Cell cell = CurrentMap.GetCell(CurrentLocation);
+                for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
+                    ProcessSpell(CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i]);
+                //
+                if ((Spell == Spell.MapLava) || (Spell == Spell.MapLightning)) Value = 0;
+            }
+            catch(Exception ex)
             {
-                CurrentMap.RemoveObject(this);
-                Despawn();
-                return;
+                SMain.Enqueue(Name + " error");
+                SMain.Enqueue(ex);
             }
-            //烈火陷阱，离开10格范围，自动失效
-            if (Spell == Spell.ExplosiveTrap && FindObject(Caster.ObjectID, 10) == null && Caster != null)
-            {
-                CurrentMap.RemoveObject(this);
-                Despawn();
-                return;
-            }
-
-            if (Envir.Time < TickTime) return;
-            TickTime = Envir.Time + TickSpeed;
-
-            //Cell cell = CurrentMap.GetCell(CurrentLocation);
-            for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
-                ProcessSpell(CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i]);
-            //
-            if ((Spell == Spell.MapLava) || (Spell == Spell.MapLightning)) Value = 0;
+            
         }
         public void ProcessSpell(MapObject ob)
         {
@@ -237,6 +250,73 @@ namespace Server.MirObjects
                     if(ob.Race == ObjectType.Monster && ob.Master == null) return;
                     //这里要有伤害啊
                     ob.Struck(Value, DefenceType.MAC);
+                    break;
+                case Spell.EmptyDoor://虚空之门，召唤怪物
+                    if (ob != this) return;
+                    if (ob.Dead) return;
+                    if (Caster == null|| myMon==null)
+                    {
+                        return;
+                    }
+                    MonsterInfo minfo = MyMonsterUtils.RandomMonster(myMon.MonLevel-20,myMon.MonLevel+50, -1);
+
+                    minfo.Name = "虚空生物";
+                    minfo.Level = myMon.MonLevel;
+
+                    double upall = (7 + Level) / 10.0;
+
+                    minfo.HP = (uint)(myMon.tHP* upall);
+                   
+                    minfo.MinAC = (ushort)(myMon.tMinAC* upall);
+                    minfo.MaxAC = (ushort)(myMon.tMaxAC* upall);
+                    minfo.MinMAC = (ushort)(myMon.tMinMAC* upall);
+                    minfo.MaxMAC = (ushort)(myMon.tMaxMAC* upall);
+
+                    //
+                    minfo.MinDC = myMon.tMinDC;
+                    minfo.MaxDC = myMon.tMaxDC;
+                    //
+                    minfo.Accuracy = (byte)(myMon.tAccuracy);
+                    minfo.Agility = (byte)(myMon.tAgility);
+
+                    //移速翻倍
+                    int MoveSpeed = minfo.MoveSpeed;
+                    //
+                    MoveSpeed = (int)(MoveSpeed * 0.5);
+                    if (MoveSpeed < 300)
+                    {
+                        MoveSpeed = 300;
+                    }
+                    if (MoveSpeed > 3000)
+                    {
+                        MoveSpeed = 3000;
+                    }
+                    minfo.MoveSpeed = (ushort)MoveSpeed;
+
+
+                    MonsterObject monster = MonsterObject.GetMonster(minfo);
+                   
+                    monster.Master = Caster;
+                    monster.PType = PetType.TempMonster;
+                    //monster.myMonster = mon;
+                    monster.ActionTime = Envir.Time + 1000;
+                    //monster.Target = Caster.Target;
+                    monster.PetLevel = (byte)Level;
+                    monster.MaxPetLevel = (byte)Level;
+                    //存活5分钟左右
+                    monster.TameTime = Envir.Time + 1000 * RandomUtils.Next(280,320);
+                    monster.RefreshNameColour(false);
+
+                    if (CurrentMap.ValidPoint(Front))
+                    {
+                        monster.Spawn(CurrentMap, Front);
+                    }
+                    else
+                    {
+                        monster.Spawn(CurrentMap, CurrentLocation);
+                    }
+                    Caster.Pets.Add(monster);
+    
                     break;
                 case Spell.MapQuake1:
                 case Spell.MapQuake2:
