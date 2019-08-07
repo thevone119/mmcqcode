@@ -32,7 +32,7 @@ namespace Server.MirObjects.Monsters
             int damage = GetAttackPower(MinDC, MaxDC);
             int distance = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
             int delay = distance * 50 + 350; //50 MS per Step
-            if (RandomUtils.Next(100) < 65)
+            if (RandomUtils.Next(100) < 70)
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction,  Location = CurrentLocation, Type = 0 });
                 DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.ACAgility);

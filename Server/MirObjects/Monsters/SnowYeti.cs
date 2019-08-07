@@ -41,7 +41,7 @@ namespace Server.MirObjects.Monsters
             int rd = RandomUtils.Next(100);
             if (distance <= 2)
             {
-                if (rd < 65)
+                if (rd < 70)
                 {
                     attType = 0;
                 }
@@ -65,7 +65,7 @@ namespace Server.MirObjects.Monsters
             if (attType == 1)
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
-                DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage*2, DefenceType.AC);
+                DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage*3/2, DefenceType.AC);
                 ActionList.Add(action);
             }
             //带流血效果

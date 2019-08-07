@@ -718,8 +718,54 @@ namespace Server.MirObjects
                 }
             }
         }
+
+        //处理任务
         private void ParseQuests(IList<string> lines)
         {
+            uint _npcIndex = 0, _finishNpcIndex = 0;
+            //采用数据库中的映射
+            foreach (QuestInfo info in SMain.Envir.QuestInfoList)
+            {
+                if (info == null)
+                {
+                    continue;
+                }
+
+                if (info.NpcIndex > 0 && info._finishNpcIndex > 0)
+                {
+                    continue;
+                }
+                _npcIndex = 0;
+                _finishNpcIndex =0;
+
+                if (info.AcceptNpcIdx > 0 && info.AcceptNpcIdx== Info.Index)
+                {
+                    _npcIndex = ObjectID;
+                }
+                if (info.SubmitNpcIdx > 0 && info.SubmitNpcIdx == Info.Index)
+                {
+                    _finishNpcIndex = ObjectID;
+                }
+                if(_npcIndex==0 && _finishNpcIndex == 0)
+                {
+                    continue;
+                }
+                if (_npcIndex > 0)
+                {
+                    info.NpcIndex = _npcIndex;
+                }
+                if (_finishNpcIndex > 0)
+                {
+                    info._finishNpcIndex = _finishNpcIndex;
+                }
+
+                if (Quests.All(x => x != info))
+                {
+                    Quests.Add(info);
+                }
+            }
+
+
             for (int i = 0; i < lines.Count; i++)
             {
                 if (!lines[i].ToUpper().StartsWith(QuestKey)) continue;
@@ -728,7 +774,7 @@ namespace Server.MirObjects
                 {
                     if (lines[i].StartsWith("[")) return;
                     if (String.IsNullOrEmpty(lines[i])) continue;
-
+    
                     int index;
 
                     int.TryParse(lines[i], out index);
@@ -737,6 +783,7 @@ namespace Server.MirObjects
 
                     QuestInfo info = SMain.Envir.GetQuestInfo(Math.Abs(index));
 
+                   
                     if (info == null) return;
 
                     if (index > 0)
@@ -1981,6 +2028,7 @@ namespace Server.MirObjects
         GoldBuyCredit,//金币购买元宝
         GiveRandomItem,//给与随机物品
         OneKeyItemSell,//一件卖物品
+        RecoveryItemExp,//回收装备经验
 
     }
     public enum CheckType
@@ -2026,6 +2074,7 @@ namespace Server.MirObjects
         CheckPermission,
         ConquestAvailable,
         ConquestOwner,
-        CheckGuildNameList
+        CheckGuildNameList,
+        CheckItems
     }
 }

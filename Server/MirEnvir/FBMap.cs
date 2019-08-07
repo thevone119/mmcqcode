@@ -265,6 +265,8 @@ namespace Server.MirEnvir
                     //1.设置小怪的血量
                     //_minfo.Level = 99;
                     _minfo.CanTame = false;
+                    _minfo.CanTreaty = false;
+                    
                     _minfo.ViewRange = (byte)(_minfo.ViewRange + 3);
                     _minfo.HP = (uint)(level * 50);//基础血量
                     _minfo.HP = (ushort)(_minfo.HP + _minfo.HP * fb_level * Level_increase / 100);//成长血量
@@ -363,6 +365,7 @@ namespace Server.MirEnvir
                     //_minfo.Level = 99;
                     _minfo.ViewRange = (byte)(_minfo.ViewRange + 3);
                     _minfo.CanTame = false;
+                    _minfo.CanTreaty = false;
                     _minfo.HP = (uint)(level * 300);//基础血量
                     _minfo.HP = (ushort)(_minfo.HP + _minfo.HP * fb_level * Level_increase / 100);//成长血量
                     //2.小怪的防御（根据等级）

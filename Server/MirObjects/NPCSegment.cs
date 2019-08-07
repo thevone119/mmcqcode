@@ -157,7 +157,15 @@ namespace Server.MirObjects
 
                     CheckList.Add(new NPCChecks(CheckType.CheckItem, parts[1], tempString, tempString2));
                     break;
+                case "CHECKITEMS":
+                    if (parts.Length < 2) return;
 
+                    tempString = parts.Length < 3 ? "1" : parts[2];
+                    tempString2 = parts.Length > 3 ? parts[3] : "";
+
+                    CheckList.Add(new NPCChecks(CheckType.CheckItems, parts[1]));
+                    break;
+                    
                 case "CHECKGENDER":
                     if (parts.Length < 2) return;
 
@@ -497,7 +505,10 @@ namespace Server.MirObjects
                     //一键卖背包物品
                     acts.Add(new NPCActions(ActionType.OneKeyItemSell));
                     break;
-                    
+                case "RECOVERYITEMEXP":
+                    //回收某件装备
+                    acts.Add(new NPCActions(ActionType.RecoveryItemExp, parts[1]));
+                    break;
                 case "TAKEITEM":
                     if (parts.Length < 3) return;
 
@@ -1997,6 +2008,28 @@ namespace Server.MirObjects
                             failed = true;
                         break;
 
+                  case CheckType.CheckItems:
+                        string[] its2 = param[0].Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                        foreach(string its in its2)
+                        {
+                            if(its==null|| its.Length <= 0)
+                            {
+                                continue;
+                            }
+                            bool hasitem = false;
+                            foreach (var item in player.Info.Inventory.Where(item => item != null && item.Info.Name.Equals(its)))
+                            {
+                                hasitem = true;
+                                break;
+                            }
+                            if (!hasitem)
+                            {
+                                failed = true;
+                                break;
+                            }
+                        }
+                        break;
+
                     case CheckType.CheckGender:
                         MirGender gender;
 
@@ -2932,6 +2965,32 @@ namespace Server.MirObjects
                                 player.Info.Inventory[j] = null;
                             else
                                 item.Count -= count;
+                            break;
+                        }
+                        player.RefreshStats();
+                        break;
+
+                    case ActionType.RecoveryItemExp:
+                        info = ItemInfo.getItem(param[0]);
+                        if (info == null)
+                        {
+                            SMain.Enqueue(string.Format("Failed to get ItemInfo: {0}, Page: {1}", param[0], Key));
+                            break;
+                        }
+
+                        for (int j = 0; j < player.Info.Inventory.Length; j++)
+                        {
+                            UserItem item = player.Info.Inventory[j];
+                            if (item == null) continue;
+                            if (item.Info != info) continue;
+
+                            uint exp = item.Info.Price  * item.Count*2;
+                            exp = exp * (uint)Settings.LevelGoldExpList[player.Level];
+
+                            player.Enqueue(new S.DeleteItem { UniqueID = item.UniqueID, Count = item.Count });
+                            player.Info.Inventory[j] = null;
+
+                            player.GainExp(exp);
                             break;
                         }
                         player.RefreshStats();

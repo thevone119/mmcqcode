@@ -546,10 +546,11 @@ namespace Server.MirEnvir
         {
             try
             {
+                byte[] fileBytes = new byte[2];
                 string fileName = Path.Combine(Settings.MapPath, Info.FileName + ".map");
                 if (File.Exists(fileName))
                 {
-                    byte[] fileBytes = File.ReadAllBytes(fileName);
+                    fileBytes = File.ReadAllBytes(fileName);
                     switch(FindType(fileBytes))
                     {
                         case 0:
@@ -3132,7 +3133,7 @@ namespace Server.MirEnvir
                 }
                 minfo.Drops.Add(drop5);
                 //兽魂丹 1/3几率出
-                if (minfo.CanTame)
+                if (minfo.CanTreaty)
                 {
                     DropInfo drop6 = DropInfo.FromLine("副本_兽丹", String.Format("1/3 兽魂丹"));
                     minfo.Drops.Add(drop6);

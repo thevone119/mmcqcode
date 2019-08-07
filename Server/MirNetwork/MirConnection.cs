@@ -77,22 +77,13 @@ namespace Server.MirNetwork
                 if (conn.IPAddress == IPAddress && conn.Connected)
                 {
                     connCount++;
-
                     if (connCount >= Settings.MaxIP)
                     {
                         SMain.EnqueueDebugging(IPAddress + ", Maximum connections reached.");
                         conn.SendDisconnect(5);
                     }
-
-                    if (Settings.ISStopIp(IPAddress))
-                    {
-                        SMain.EnqueueDebugging(IPAddress + ", ISStopIp.");
-                        conn.SendDisconnect(5);
-                        return;
-                    }
                 }
             }
-           
 
             SMain.Enqueue(IPAddress + ", Connected.");
 

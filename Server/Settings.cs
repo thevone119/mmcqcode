@@ -94,8 +94,10 @@ namespace Server
         public static bool openLevelExpSup = false;//是否开启等级经验补偿
 
         public static bool openGroupWar = false;//是否开启战役
-        public static bool openMaxGem = true;//是否开启宝石上限
-        
+
+        public static bool openTaskQuest = false;//是否开启任务系统
+
+        //public static bool openSaBaKe = false;//是否沙巴克战役
 
 
 
@@ -268,7 +270,7 @@ namespace Server
                     MagicResistWeight = 20,//最大的魔法命中，与魔法躲避相对应
                     MaxPoisonResist = 10,//最大中毒躲避，10点，50%
                     PoisonResistWeight = 20,//中毒几率,权重？
-                    MaxCriticalRate = 5,//最大暴击率，5点 25%
+                    MaxCriticalRate = 8,//最大暴击率，5点 40%
                     CriticalRateWeight = 5,//暴击几率的权重，比如用户当前5点暴击，那么乘这个，就是25%的暴击几率
                     MaxCriticalDamage = 10,//最大暴击伤害 10点，每点10%暴击伤害
                     CriticalDamageWeight = 100,//暴击伤害的权重，比如有5点暴击伤害，那么处于权重*10，那么就是双倍伤害了
@@ -361,8 +363,10 @@ namespace Server
             GameMasterEffect = Reader.ReadBoolean("Optional", "GameMasterEffect", GameMasterEffect);
             openLevelExpSup = Reader.ReadBoolean("Optional", "openLevelExpSup", openLevelExpSup);
             openGroupWar = Reader.ReadBoolean("Optional", "openGroupWar", openGroupWar);
-
+            openTaskQuest = Reader.ReadBoolean("Optional", "openTaskQuest", openTaskQuest);
             
+
+
 
             //Database
             SaveDelay = Reader.ReadInt32("Database", "SaveDelay", SaveDelay);

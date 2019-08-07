@@ -40,8 +40,8 @@ namespace Server.MirDatabase
         public uint Experience;
         //怪物的掉落物品
         public List<DropInfo> Drops = new List<DropInfo>();
-        //驯服，推动，AutoRev:自动发送血量变化 ,Undead不死系(不能圣言，不能召唤，地狱雷光效果很差),CanMove是否可以移动
-        public bool CanTame = true, CanPush = true, AutoRev = true, Undead = false, CanMove=true;
+        //驯服，推动，AutoRev:自动发送血量变化 ,Undead不死系(不能圣言，不能召唤，地狱雷光效果很差),CanMove是否可以移动,CanTreaty是否可契约
+        public bool CanTame = true, CanPush = true, AutoRev = true, Undead = false, CanMove=true, CanTreaty = true;
 
         //非数据库字段，是否有重生脚本(比如重生提醒？)
         public bool HasSpawnScript;
@@ -131,6 +131,8 @@ namespace Server.MirDatabase
                 obj.Experience = (ushort)read.GetInt32(read.GetOrdinal("Experience"));
                 obj.CanPush = read.GetBoolean(read.GetOrdinal("CanPush"));
                 obj.CanTame = read.GetBoolean(read.GetOrdinal("CanTame"));
+                obj.CanTreaty = read.GetBoolean(read.GetOrdinal("CanTreaty"));
+                
                 obj.AutoRev = read.GetBoolean(read.GetOrdinal("AutoRev"));
                 obj.Undead = read.GetBoolean(read.GetOrdinal("Undead"));
                 obj.CanMove = read.GetBoolean(read.GetOrdinal("CanMove"));

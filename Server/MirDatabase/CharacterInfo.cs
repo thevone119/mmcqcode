@@ -106,6 +106,7 @@ namespace Server.MirDatabase
 
         public List<QuestProgressInfo> CurrentQuests = new List<QuestProgressInfo>();
         public List<int> CompletedQuests = new List<int>();
+
         //这个是各种标志位，主要做任务标识的
         public bool[] Flags = new bool[Globals.FlagIndexCount];
         //账号信息
@@ -399,6 +400,10 @@ namespace Server.MirDatabase
               
                 obj.PearlCount = read.GetInt32(read.GetOrdinal("PearlCount"));
                 obj.CompletedQuests = JsonConvert.DeserializeObject<List<int>>(read.GetString(read.GetOrdinal("CompletedQuests")));
+
+           
+               
+                
                 //武器升级物品
                 obj.CurrentRefine = JsonConvert.DeserializeObject<UserItem>(read.GetString(read.GetOrdinal("CurrentRefine")));
                 if (obj.CurrentRefine != null)
@@ -581,6 +586,8 @@ namespace Server.MirDatabase
             
             lp.Add(new SQLiteParameter("PearlCount", PearlCount));
             lp.Add(new SQLiteParameter("CompletedQuests", JsonConvert.SerializeObject(CompletedQuests)));
+      
+            
 
             lp.Add(new SQLiteParameter("CurrentRefine", JsonConvert.SerializeObject(CurrentRefine)));
 

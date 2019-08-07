@@ -60,6 +60,9 @@ namespace Server.MirDatabase
 
         public bool CanFastRun = false;
 
+        public bool DrawAnimation = true;
+        
+
         //实例包裹
         //[JsonIgnore]
         //public InstanceInfo Instance;
@@ -137,6 +140,8 @@ namespace Server.MirDatabase
                 obj.UseGold = read.GetInt32(read.GetOrdinal("UseGold"));
                 obj.UseCredit = read.GetInt32(read.GetOrdinal("UseCredit"));
                 obj.CanFastRun = read.GetBoolean(read.GetOrdinal("CanFastRun"));
+                obj.DrawAnimation = read.GetBoolean(read.GetOrdinal("DrawAnimation"));
+                
                 //最小进入等级，针对夫妻卷，时空卷做的限制
                 obj.minLevel = read.GetInt32(read.GetOrdinal("minLevel"));
                 obj.enterGold = read.GetInt32(read.GetOrdinal("enterGold"));

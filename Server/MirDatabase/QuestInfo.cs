@@ -20,7 +20,12 @@ namespace Server.MirDatabase
         public uint NpcIndex;
         //public NPCInfo NpcInfo;
 
-        private uint _finishNpcIndex;
+        //接收任务的NPC的ID
+        public int AcceptNpcIdx;
+        //提交任务的NPC的ID
+        public int SubmitNpcIdx;
+
+        public uint _finishNpcIndex;
 
         public uint FinishNpcIndex
         {
@@ -31,31 +36,48 @@ namespace Server.MirDatabase
         public string 
             Name = string.Empty, 
             Group = string.Empty, 
-            FileName = string.Empty, 
+            FileName = string.Empty,
+            FileText = string.Empty,
             GotoMessage = string.Empty, 
             KillMessage = string.Empty, 
             ItemMessage = string.Empty,
             FlagMessage = string.Empty;
 
+        //描述（对话框描述）
         public List<string> Description = new List<string>();
+        //任务描述
         public List<string> TaskDescription = new List<string>(); 
+        //任务完成描述
         public List<string> CompletionDescription = new List<string>(); 
 
-        public int RequiredMinLevel, RequiredMaxLevel, RequiredQuest;
+        //任务的最小等级，最大等级
+        public int RequiredMinLevel, RequiredMaxLevel;
+
+        //RequiredQuest：之前的任务，就是之前是否完成了某个任务，才可以做这个任务，如果之前没有做这个任务，那么就不能做当前的人任务
+        //依赖任务，要求的任务
+        public int RequiredQuest;
         public RequiredClass RequiredClass = RequiredClass.None;
 
         public QuestType Type;
 
+        //托运物品
         public List<QuestItemTask> CarryItems = new List<QuestItemTask>(); 
-
+        //杀怪任务
         public List<QuestKillTask> KillTasks = new List<QuestKillTask>();
+        //获得物品任务
         public List<QuestItemTask> ItemTasks = new List<QuestItemTask>();
+        //任务标记
         public List<QuestFlagTask> FlagTasks = new List<QuestFlagTask>();
 
-        public uint GoldReward;
-        public uint ExpReward;
-        public uint CreditReward;
+        public uint GoldReward;//金币奖励
+        public uint ExpReward;//经验奖励
+        public uint CreditReward;//元宝奖励
+
+
+
+        //固定奖励物品
         public List<QuestItemReward> FixedRewards = new List<QuestItemReward>();
+        //选择奖励物品（多选1）
         public List<QuestItemReward> SelectRewards = new List<QuestItemReward>();
 
         private Regex _regexMessage = new Regex("\"([^\"]*)\"");
@@ -71,7 +93,10 @@ namespace Server.MirDatabase
         {
             List<QuestInfo> list = new List<QuestInfo>();
             DbDataReader read = MirConfigDB.ExecuteReader("select * from QuestInfo where isdel=0");
-
+            if (!Settings.openTaskQuest)
+            {
+                return list;
+            }
             while (read.Read())
             {
                 QuestInfo obj = new QuestInfo();
@@ -91,6 +116,9 @@ namespace Server.MirDatabase
                 
                 obj.RequiredMinLevel = read.GetInt32(read.GetOrdinal("RequiredMinLevel"));
                 obj.RequiredMaxLevel = read.GetInt32(read.GetOrdinal("RequiredMaxLevel"));
+                obj.AcceptNpcIdx = read.GetInt32(read.GetOrdinal("AcceptNpcIdx"));
+                obj.SubmitNpcIdx = read.GetInt32(read.GetOrdinal("SubmitNpcIdx"));
+
 
                 if (obj.RequiredMaxLevel == 0) obj.RequiredMaxLevel = ushort.MaxValue;
 
@@ -102,6 +130,7 @@ namespace Server.MirDatabase
                 obj.KillMessage = read.GetString(read.GetOrdinal("KillMessage"));
                 obj.ItemMessage = read.GetString(read.GetOrdinal("ItemMessage"));
                 obj.FlagMessage = read.GetString(read.GetOrdinal("FlagMessage"));
+                obj.FileText = read.GetString(read.GetOrdinal("FileText"));
                 //加载脚本
                 obj.LoadInfo();
                 
@@ -203,7 +232,14 @@ namespace Server.MirDatabase
         //任务脚本
         public void LoadInfo(bool clear = false)
         {
+            List<string> lines = null;
             if (clear) ClearInfo();
+            if(FileText!=null&& FileText.Length > 10)
+            {
+                lines = FileText.Split(new string[] { "\n" }, StringSplitOptions.None).ToList();
+                ParseFile(lines);
+                return;
+            }
 
             if (!Directory.Exists(Settings.QuestPath)) return;
 
@@ -211,7 +247,7 @@ namespace Server.MirDatabase
 
             if (File.Exists(fileName))
             {
-                List<string> lines = File.ReadAllLines(fileName).ToList();
+                lines = File.ReadAllLines(fileName).ToList();
 
                 ParseFile(lines);
             }

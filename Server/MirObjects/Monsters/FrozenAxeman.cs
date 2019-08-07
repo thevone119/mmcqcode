@@ -39,10 +39,10 @@ namespace Server.MirObjects.Monsters
             int distance = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
             int delay = distance * 50 + 750; //50 MS per Step
             int rd = RandomUtils.Next(100);
-            if (rd < 60)
+            if (rd < 70)
             {
                 attType = 0;
-            }else if(rd < 80)
+            }else if(rd < 85)
             {
                 attType = 1;
             }
@@ -60,7 +60,7 @@ namespace Server.MirObjects.Monsters
             if (attType == 1)
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
-                DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage*2, DefenceType.AC);
+                DelayedAction action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage*3/2, DefenceType.AC);
                 ActionList.Add(action);
             }
             //盾击，击退

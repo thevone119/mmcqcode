@@ -565,7 +565,7 @@ namespace Server.MirEnvir
         {
             //活动1
             //每周5晚9点进行 兽潮活动, 超过15人就开，不到就不开
-            if (Now.DayOfWeek == DayOfWeek.Friday && Now.Hour==21 && Now.Minute==0 && PlayerCount >= 15)
+            if (this.MaxLevel >= 50 && Now.DayOfWeek == DayOfWeek.Friday && Now.Hour==21 && Now.Minute==0 && PlayerCount >= 15)
             {
                 string key = "ACTIVITY_MONWAR_5_"+ Now.DayOfYear;
                 if (!allcontrol.ContainsKey(key))
@@ -733,11 +733,17 @@ namespace Server.MirEnvir
                 }
             }
             //每分钟检测是否占领？行会攻城，占领10秒？
+            //大于45级，才会开启沙巴克争夺战役
             if (Time >= conquestTime)
             {
                 conquestTime = Time + (Settings.Second * 10);
-                for (int i = 0; i < Conquests.Count; i++)
-                    Conquests[i].Process();
+                if (MaxLevel >= 45)
+                {
+                    for (int i = 0; i < Conquests.Count; i++)
+                    {
+                        Conquests[i].Process();
+                    }
+                }
             }
             //每5分钟执行的都放这里吧
             if (Time >= rentalItemsTime)
@@ -1857,8 +1863,20 @@ namespace Server.MirEnvir
             try
             {
                 TcpClient tempTcpClient = _listener.EndAcceptTcpClient(result);
+            
+                //针对部分禁止的IP，这里直接不连接
+                string IPAddress = tempTcpClient.Client.RemoteEndPoint.ToString().Split(':')[0];
+                if (Settings.ISStopIp(IPAddress))
+                {
+                    tempTcpClient.Close();
+                    SMain.EnqueueDebugging(IPAddress + ", ISStopIp，connection.....");
+                    return;
+                }
+
                 lock (Connections)
+                {
                     Connections.Add(new MirConnection(++_sessionID, tempTcpClient));
+                }
             }
             catch (Exception ex)
             {
@@ -2086,7 +2104,7 @@ namespace Server.MirEnvir
             //MAC最大数限制
             if (p.ClientInfo != null && OSystem.isMacAddress(p.ClientInfo))
             {
-                SMain.EnqueueDebugging(p.ClientInfo + ", MAC is max stop.");
+                SMain.EnqueueDebugging("p.AccountID:"+ p.AccountID+",MAC:"+p.ClientInfo + ", MAC is max stop.");
                 //c.Enqueue(new ServerPackets.Login { Result = 5 });
                 //return;
             }
@@ -2110,7 +2128,7 @@ namespace Server.MirEnvir
             account.LastDate = Now;
             account.LastIP = c.IPAddress;
             SMain.Enqueue("account Login:" + account.AccountID + ", User logged in.");
-            SMain.Enqueue(account.Connection.SessionID + ", " + account.Connection.IPAddress + ", User logged in.");
+            SMain.Enqueue(account.Connection.SessionID + ", " + account.Connection.IPAddress + ",MAC:" + p.ClientInfo  + ", User logged in.");
             c.Enqueue(new ServerPackets.LoginSuccess { Characters = account.GetSelectInfo()});
             
         }
@@ -2722,8 +2740,14 @@ namespace Server.MirEnvir
             return true;
         }
 
+        //清楚每日重复做的任务，从玩家的任务列表中清除
         private void ClearDailyQuests(CharacterInfo info)
         {
+            //0点才清空啊。其他时间，重启不会清空
+            if (Now.Hour != 0)
+            {
+                return;
+            }
             foreach (var quest in QuestInfoList)
             {
                 if (quest.Type != QuestType.Daily) continue;

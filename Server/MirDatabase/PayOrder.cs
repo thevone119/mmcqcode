@@ -166,6 +166,7 @@ namespace Server.MirEnvir
                                     SMain.Envir.AccountList[i].Credit += addCredit;
 
                                     SMain.Envir.AccountList[i].RechargeGold += p.price;
+                                    SMain.Envir.AccountList[i].RechargeCredit += addCredit;
 
                                     SMain.EnqueueDebugging(SMain.Envir.AccountList[i].AccountID +" 充值元宝：" + addCredit);
                                     SMain.EnqueueDebugging(SMain.Envir.AccountList[i].UserName + " 充值元宝：" + addCredit);

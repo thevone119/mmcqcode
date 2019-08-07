@@ -27,7 +27,7 @@ namespace Server.MirObjects.Monsters
             ActionTime = Envir.Time + 300;
             AttackTime = Envir.Time + AttackSpeed;
 
-            if (RandomUtils.Next(4) > 0)
+            if (RandomUtils.Next(5) > 0)
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0 });
 
@@ -69,7 +69,7 @@ namespace Server.MirObjects.Monsters
                                         if (!target.IsAttackTarget(this)) continue;
                                         if (RandomUtils.Next(Settings.MagicResistWeight) < target.MagicResist) continue;
 
-                                        target.ApplyPoison(new Poison { PType = PoisonType.Red, Duration = RandomUtils.Next(GetAttackPower(MinSC, MaxSC) / 2), TickSpeed = 1000 }, this);
+                                        target.ApplyPoison(new Poison { PType = PoisonType.Red, Duration = RandomUtils.Next(10,30), TickSpeed = 1000 }, this);
                                     }
                                     break;
                             }

@@ -56,6 +56,7 @@ namespace Server.MirObjects.Monsters
                 HP = this.HP,
                 Image = Monster.EvilMirBody,
                 CanTame = false,
+                CanTreaty = false,
                 CanPush = false,
                 AutoRev = false
             };        

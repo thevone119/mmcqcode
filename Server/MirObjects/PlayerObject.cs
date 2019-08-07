@@ -644,7 +644,6 @@ namespace Server.MirObjects
 
                 AddItem(info.CreateFreshItem());
             }
-
         }
 
         public long GetDelayTime(long original)
@@ -2175,7 +2174,7 @@ namespace Server.MirObjects
             }
 
             //
-            if (mon.MaxHP < 100 && !mon.Info.CanTame)
+            if (mon.MaxHP < 100 && !mon.Info.CanTreaty)
             {
                 return;
             }
@@ -2330,7 +2329,7 @@ namespace Server.MirObjects
                 minfo.Drops.Add(drop5);
 
                 //兽魂丹 1/2几率出
-                if (minfo.CanTame)
+                if (minfo.CanTreaty)
                 {
                     DropInfo drop6 = DropInfo.FromLine("副本_兽丹", String.Format("1/2 兽魂丹"));
                     drop6.Chance = 0.5+ killlev / 100.0;
@@ -2889,6 +2888,8 @@ namespace Server.MirObjects
                 CheckItemInfo(item.Slots[i].Info);
             }
         }
+
+        //把任务都发送到客户端，让客户端自行处理?
         public void CheckQuestInfo(QuestInfo info)
         {
             if (Connection.SentQuestInfo.Contains(info)) return;
@@ -3282,6 +3283,7 @@ namespace Server.MirObjects
                 MapDarkLight = CurrentMap.Info.MapDarkLight,
                 Music = CurrentMap.Info.Music,
                 CanFastRun = CurrentMap.Info.CanFastRun,
+                DrawAnimation = CurrentMap.Info.DrawAnimation,
                 SafeZones = CurrentMap.Info.SafeZones
             });
 
@@ -3338,7 +3340,9 @@ namespace Server.MirObjects
                 Direction = Direction,
                 MapDarkLight = CurrentMap.Info.MapDarkLight,
                 Music = CurrentMap.Info.Music,
+                DrawAnimation = CurrentMap.Info.DrawAnimation,
                 CanFastRun = CurrentMap.Info.CanFastRun
+            
             });
 
             GetObjects();
@@ -3445,6 +3449,7 @@ namespace Server.MirObjects
                 MapDarkLight = CurrentMap.Info.MapDarkLight,
                 Music = CurrentMap.Info.Music,
                 CanFastRun = CurrentMap.Info.CanFastRun,
+                DrawAnimation = CurrentMap.Info.DrawAnimation,
                 SafeZones = CurrentMap.Info.SafeZones
             });
         }
@@ -11887,6 +11892,7 @@ namespace Server.MirObjects
                 Direction = Direction,
                 MapDarkLight = CurrentMap.Info.MapDarkLight,
                 Music = CurrentMap.Info.Music,
+                DrawAnimation = CurrentMap.Info.DrawAnimation,
                 CanFastRun = CurrentMap.Info.CanFastRun,
                 SafeZones = CurrentMap.Info.SafeZones
             });
@@ -11948,6 +11954,7 @@ namespace Server.MirObjects
                 Direction = Direction,
                 MapDarkLight = CurrentMap.Info.MapDarkLight,
                 Music = CurrentMap.Info.Music,
+                DrawAnimation = CurrentMap.Info.DrawAnimation,
                 CanFastRun = CurrentMap.Info.CanFastRun,
                 SafeZones = CurrentMap.Info.SafeZones
             });
@@ -14869,7 +14876,7 @@ namespace Server.MirObjects
                     }
 
 
-                    if (!mob.Info.CanTame)
+                    if (!mob.Info.CanTreaty)
                     {
                         ReceiveChat("当前兽丹无效.", ChatType.System2);
                         return;
@@ -14935,7 +14942,7 @@ namespace Server.MirObjects
                     }
                     mon.callTime -= callTime;
 
-                    MyMonSkillBean sk = MyMonSkillBean.RefreshSkill(monlevel, mon.skill1, mon.skill2);
+                    MyMonSkillBean sk = MyMonSkillBean.RefreshSkill(monlevel, mon.skill1, mon.skill2, mon.skCount);
                     if (sk == null)
                     {
                         ReceiveChat($"[{mon.getName()}] 技能领悟失败.", ChatType.System);
@@ -14943,6 +14950,7 @@ namespace Server.MirObjects
                     }
                     mon.skill1 = sk.skid;
                     mon.skillname1 = sk.skname;
+                    mon.skCount++;
                     ReceiveChat($"[{mon.getName()}] 我已成功领悟技能[{sk.skname}].", ChatType.System);
                     MyMonsterUtils.RefreshMyMonLevelStats(mon, null);
                     //如果契约兽已经召唤，则更新契约兽
@@ -15002,7 +15010,7 @@ namespace Server.MirObjects
                    
 
 
-                    MyMonSkillBean sk = MyMonSkillBean.RefreshSkill(monlevel, mon.skill1, mon.skill2);
+                    MyMonSkillBean sk = MyMonSkillBean.RefreshSkill(monlevel, mon.skill1, mon.skill2, mon.skCount);
                     if (sk == null)
                     {
                         ReceiveChat($"[{mon.getName()}] 技能领悟失败.", ChatType.System);
@@ -15010,6 +15018,7 @@ namespace Server.MirObjects
                     }
                     mon.skill2 = sk.skid;
                     mon.skillname2 = sk.skname;
+                    mon.skCount++;
                     ReceiveChat($"[{mon.getName()}] 我已成功领悟技能[{sk.skname}].", ChatType.System);
                     MyMonsterUtils.RefreshMyMonLevelStats(mon, null);
                     //如果契约兽已经召唤，则更新契约兽
@@ -15174,7 +15183,7 @@ namespace Server.MirObjects
                     Enqueue(p);
                     return;
                 }
-                if (!mob.Info.CanTame)
+                if (!mob.Info.CanTreaty)
                 {
                     ReceiveChat("当前兽丹对应的怪物无效.", ChatType.Hint);
                     Enqueue(p);
@@ -20775,7 +20784,7 @@ namespace Server.MirObjects
         #endregion
 
         #region Quests
-
+        //接受任务
         public void AcceptQuest(int index)
         {
             bool canAccept = true;
@@ -20813,6 +20822,7 @@ namespace Server.MirObjects
                 return;
             }
 
+            //检查以前的链接任务是否已完成
             //check previous chained quests have been completed
             QuestInfo tempInfo = info;
             while (tempInfo != null && tempInfo.RequiredQuest != 0)
@@ -20832,6 +20842,7 @@ namespace Server.MirObjects
                 return;
             }
 
+            //给玩家任务道具，让玩家进行押运之类的。
             if (info.CarryItems.Count > 0)
             {
                 foreach (QuestItemTask carryItem in info.CarryItems)
@@ -20873,7 +20884,7 @@ namespace Server.MirObjects
 
             CallDefaultNPC(DefaultNPCType.OnAcceptQuest, index);
         }
-
+        //完成某个任务
         public void FinishQuest(int questIndex, int selectedItemIndex = -1)
         {
             QuestProgressInfo quest = CurrentQuests.FirstOrDefault(e => e.Info.Index == questIndex);
@@ -20948,10 +20959,10 @@ namespace Server.MirObjects
 
             if (!CanGainItems(rewardItems.ToArray()))
             {
-                ReceiveChat("包满时不能交任务.", ChatType.System);
+                ReceiveChat("背包满时不能交任务.", ChatType.System);
                 return;
             }
-
+            //可以无限重复做的任务，不放入完成列表
             if (quest.Info.Type != QuestType.Repeatable)
             {
                 Info.CompletedQuests.Add(quest.Index);
@@ -20987,6 +20998,7 @@ namespace Server.MirObjects
 
             CallDefaultNPC(DefaultNPCType.OnFinishQuest, questIndex);
         }
+        //放弃任务
         public void AbandonQuest(int questIndex)
         {
             QuestProgressInfo quest = CurrentQuests.FirstOrDefault(e => e.Info.Index == questIndex);
@@ -20998,6 +21010,7 @@ namespace Server.MirObjects
 
             RecalculateQuestBag();
         }
+        //共享任务
         public void ShareQuest(int questIndex)
         {
             bool shared = false;
@@ -21082,7 +21095,7 @@ namespace Server.MirObjects
                     GainQuestItem(item);
                     quest.ProcessItem(Info.QuestInventory);
 
-                    Enqueue(new S.SendOutputMessage { Message = string.Format("You found {0}.", item.FriendlyName), Type = OutputMessageType.Quest });
+                    Enqueue(new S.SendOutputMessage { Message = string.Format("你已找到 {0}.", item.FriendlyName), Type = OutputMessageType.Quest });
 
                     SendUpdateQuest(quest, QuestState.Update);
 
@@ -22576,15 +22589,7 @@ namespace Server.MirObjects
                     //return;
                 }
                 //可回收装备列表
-                string[] groupnames222 = new string[] { "武器26", "武器29", "武器30", "墨龙武器", "武器36", "武器40", "终极武器1", "武器45","武器46","武器50",
-                    "沃玛首饰","祖玛首饰","赤月首饰","狐狸首饰","魔神首饰","首饰50","首饰55","特殊首饰0",
-                     "盔甲3","盔甲40","盔甲42","盔甲44","盔甲46","盔甲48","盔甲50",
-                     "鞋带2","鞋带3","鞋带40","鞋带50","鞋带60",
-                     "宝石1","宝石2","宝石3","宝石4","宝石5","特殊宝石",
-                };
-                string[] groupnames = new string[] { 
-                    "祖玛首饰","武器30","赤月首饰","狐狸首饰","魔神首饰","首饰50","首饰55"
-                };
+
                 int cancount = 0;
                 string erroritem = "";
                 for (int t = 0; t < Info.ItemCollect.Length; t++)
@@ -22601,22 +22606,16 @@ namespace Server.MirObjects
                     {
                         //canRecovery = true;
                     }
+                    //1.必须是装备，2.装备等级大于等于30级，3.装备等级和玩家等级匹配
+                    if (temp.isEquip() && temp.Info.eatLevel>=30 )
+                    {
+                        canRecovery = true;
+                    }
 
                     if (temp.Info.RequiredAmount > 30)
                     {
                         //canRecovery = true;
                     }
-
-                    foreach (string groupn in groupnames)
-                    {
-                        if (temp.Info.GroupName == groupn)
-                        {
-                            canRecovery = true;
-
-                            break;
-                        }
-                    }
-
                     if (!canRecovery)
                     {
                         erroritem += temp.Name + ",";
@@ -22632,46 +22631,7 @@ namespace Server.MirObjects
                     ReceiveChat(erroritem, ChatType.System);
                     return;
                 }
-                //判断是否沃玛3件套
-
-                //判断是否祖玛3件套
-                bool isset = false;//是否套装
-                string[] items ={ "力量戒指;骑士手镯;绿色项链" , "紫碧罗;龙之手镯;恶魔铃铛", "泰坦戒指;三眼手镯;灵魂项链" };
-                if (cancount == 3)
-                {
-                   for (int i=0;i< items.Length; i++)
-                   {
-                        bool hastao = true;
-                        string[] ls = items[i].Split(';');
-                        for(int j=0;j< ls.Length; j++)
-                        {
-                            bool has = false;
-                            for (int t = 0; t < Info.ItemCollect.Length; t++)
-                            {
-                                UserItem temp = Info.ItemCollect[t];
-                                if (temp == null)
-                                {
-                                    continue;
-                                }
-                                if (temp.Name.Equals(ls[j])){
-                                    has = true;
-                                    break;
-                                }
-                            }
-
-                            if (!has)
-                            {
-                                hastao = false;
-                                break;
-                            }
-                        }
-                        if (hastao)
-                        {
-                            isset = true;
-                        }
-                    }
-                }
-
+               
 
                 p.Success = true;
                 Enqueue(p);
@@ -22679,7 +22639,7 @@ namespace Server.MirObjects
                 {
                     UserItem temp = Info.ItemCollect[t];
                     if (temp == null) continue;
-                    uint exp = temp.Info.Price  * temp.Count;
+                    uint exp = temp.Info.Price * temp.Count;
                     exp = exp * (uint)Settings.LevelGoldExpList[Level];
 
                     //品质影响回收
@@ -22688,22 +22648,6 @@ namespace Server.MirObjects
                         exp = exp * temp.quality;
                     }
 
-                    if (isset)
-                    {
-                        exp = exp * 2;
-                    }
-                    else
-                    {
-                        //玩家等级超过装备等级5，每级减少10%经验获得，超过15级，基本就没经验了
-                        if (this.Level > temp.Info.eatLevel+5)
-                        {
-                            //int expPoint;
-                            //如果玩家等级大于怪物等级10级，则逐级递减经验，直到大于怪物25级，就基本没经验了.
-                            //expPoint = (int)exp - (int)Math.Round(Math.Max(exp / 10, 1) * ((double)Level - (temp.Info.eatLevel + 5)));
-                            //if (expPoint <= 0) expPoint = 1;
-                            //exp = (uint)expPoint;
-                        }
-                    }
                     GainExp(exp);
                     //移除装备
                     Info.ItemCollect[t] = null;

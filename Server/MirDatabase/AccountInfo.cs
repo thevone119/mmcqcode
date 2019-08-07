@@ -52,7 +52,8 @@ namespace Server.MirDatabase
         public uint Gold=1000;//金币,金币是账号上的金币，多角色共享，开始金币，1000
         public uint Credit;//积分，信用,也可称作元宝
 
-        public uint RechargeGold;//累计充值金额
+        public uint RechargeGold;//累计充值金额(元)
+        public uint RechargeCredit;//累计充值元宝数（）
 
         [JsonIgnore]
         public ListViewItem ListItem;
@@ -123,6 +124,7 @@ namespace Server.MirDatabase
                 obj.AdminAccount = read.GetBoolean(read.GetOrdinal("AdminAccount"));
 
                 obj.RechargeGold = (uint)read.GetInt32(read.GetOrdinal("RechargeGold"));
+                obj.RechargeCredit = (uint)read.GetInt32(read.GetOrdinal("RechargeCredit"));
                 
 
                 obj.Storage = JsonConvert.DeserializeObject<UserItem[]>(read.GetString(read.GetOrdinal("Storage")));
@@ -173,6 +175,7 @@ namespace Server.MirDatabase
             lp.Add(new SQLiteParameter("AdminAccount", AdminAccount));
             lp.Add(new SQLiteParameter("Storage", JsonConvert.SerializeObject(Storage)));
             lp.Add(new SQLiteParameter("RechargeGold", JsonConvert.SerializeObject(RechargeGold)));
+            lp.Add(new SQLiteParameter("RechargeCredit", JsonConvert.SerializeObject(RechargeCredit)));
             
             //新增
             if (state == 1)
