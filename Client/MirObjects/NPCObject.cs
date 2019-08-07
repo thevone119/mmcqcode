@@ -45,6 +45,7 @@ namespace Client.MirObjects
             }
         }
 
+        //NPC的任务列表
         public List<ClientQuestInfo> Quests;
 
 
@@ -63,7 +64,7 @@ namespace Client.MirObjects
             GameScene.Scene.MapControl.AddObject(this);
 
             Quests = GameScene.QuestInfoList.Where(c => c.NPCIndex == ObjectID).ToList();
-
+ 
             Image = info.Image;
             Colour = info.Colour;
 
@@ -671,6 +672,7 @@ namespace Client.MirObjects
         {
             List<ClientQuestProgress> quests = new List<ClientQuestProgress>();
 
+            //1.当前进行的任务里，未完成的任务
             foreach (ClientQuestProgress q in User.CurrentQuests.Where(q => !User.CompletedQuests.Contains(q.QuestInfo.Index)))
             {
                 if (q.QuestInfo.FinishNPCIndex == ObjectID)

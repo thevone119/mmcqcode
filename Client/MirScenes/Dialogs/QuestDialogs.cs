@@ -333,7 +333,7 @@ namespace Client.MirScenes.Dialogs
 
         public void RefreshInterface()
         {
-            _availableQuestLabel.Text = string.Format("List: {0}", Quests.Count);
+            _availableQuestLabel.Text = string.Format("列表: {0}", Quests.Count);
 
             int maxIndex = Quests.Count - Rows.Length;
 
@@ -594,7 +594,7 @@ namespace Client.MirScenes.Dialogs
             };
             _cancelButton.Click += (o, e) =>
             {
-                MirMessageBox messageBox = new MirMessageBox("Are you sure you want to cancel this quest?", MirMessageBoxButtons.YesNo);
+                MirMessageBox messageBox = new MirMessageBox("你确定放弃任务么?", MirMessageBoxButtons.YesNo);
 
                 messageBox.YesButton.Click += (o1, a) =>
                 {
@@ -1051,7 +1051,7 @@ namespace Client.MirScenes.Dialogs
         public Font Font = new Font(Settings.FontName, 8F);
         public List<string> CurrentLines = new List<string>();
 
-        private const string TaskTitle = "Tasks", ProgressTitle = "Progress";
+        private const string TaskTitle = "任务", ProgressTitle = "进度";
 
         public QuestMessage(MirButton scrollUpButton, MirButton scrollDownButton, MirButton positionBar, int lineCount, bool displayProgress = false)
         {
@@ -1196,6 +1196,8 @@ namespace Client.MirScenes.Dialogs
             }
 
             NewText(CurrentLines);
+
+
         }
 
         private void AdjustDescription()
@@ -1413,9 +1415,9 @@ namespace Client.MirScenes.Dialogs
             {
                 creditXOffset -= 90;
             }
-
+            //元宝奖励
             if (quest.RewardCredit > 0)
-                Libraries.Prguse.Draw(2447, DisplayLocation.X + 190 + creditXOffset, DisplayLocation.Y + 2);
+                Libraries.MyUi.Draw(51, DisplayLocation.X + 190 + creditXOffset, DisplayLocation.Y + 2);
 
             Libraries.Title.Draw(17, DisplayLocation.X + 20, DisplayLocation.Y + 66);
         }

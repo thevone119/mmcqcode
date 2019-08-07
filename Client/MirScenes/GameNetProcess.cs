@@ -27,7 +27,8 @@ namespace Client.MirScenes
         {
             if (Scene.MapControl != null && !Scene.MapControl.IsDisposed)
                 Scene.MapControl.Dispose();
-            Scene.MapControl = new MapControl { FileName = Path.Combine(Settings.MapPath, p.FileName + ".map"), Title = p.Title, MiniMap = p.MiniMap, BigMap = p.BigMap, Lights = p.Lights, Lightning = p.Lightning, Fire = p.Fire, MapDarkLight = p.MapDarkLight, Music = p.Music, SafeZones=p.SafeZones };
+            Scene.MapControl = new MapControl { FileName = Path.Combine(Settings.MapPath, p.FileName + ".map"), Title = p.Title, MiniMap = p.MiniMap, BigMap = p.BigMap, Lights = p.Lights, Lightning = p.Lightning, Fire = p.Fire, MapDarkLight = p.MapDarkLight, Music = p.Music, SafeZones=p.SafeZones, CanFastRun = p.CanFastRun, DrawAnimation = p.DrawAnimation };
+            MirLog.info("DrawAnimation:"+ Scene.MapControl.DrawAnimation);
             Scene.MapControl.LoadMap();
             Scene.InsertControl(0, Scene.MapControl);
         }

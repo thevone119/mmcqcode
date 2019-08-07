@@ -152,6 +152,7 @@ namespace Client.MirScenes
         public static List<ItemInfo> ItemInfoList = new List<ItemInfo>();
         public static List<UserId> UserIdList = new List<UserId>();
         public static List<ChatItem> ChatItemList = new List<ChatItem>();
+        //所有的任务列表
         public static List<ClientQuestInfo> QuestInfoList = new List<ClientQuestInfo>();
         public static List<GameShopItem> GameShopInfoList = new List<GameShopItem>();
         public static List<ClientRecipeInfo> RecipeInfoList = new List<ClientRecipeInfo>();
@@ -2156,12 +2157,12 @@ namespace Client.MirScenes
         {
             if (MapControl != null && !MapControl.IsDisposed)
                 MapControl.Dispose();
-            MapControl = new MapControl { FileName = Path.Combine(Settings.MapPath, p.FileName + ".map"), Title = p.Title, MiniMap = p.MiniMap, BigMap = p.BigMap, Lights = p.Lights, Lightning = p.Lightning, Fire = p.Fire, MapDarkLight = p.MapDarkLight, Music = p.Music, SafeZones=p.SafeZones, CanFastRun=p.CanFastRun };
+            MapControl = new MapControl { FileName = Path.Combine(Settings.MapPath, p.FileName + ".map"), Title = p.Title, MiniMap = p.MiniMap, BigMap = p.BigMap, Lights = p.Lights, Lightning = p.Lightning, Fire = p.Fire, MapDarkLight = p.MapDarkLight, Music = p.Music, SafeZones=p.SafeZones, CanFastRun=p.CanFastRun, DrawAnimation=p.DrawAnimation };
             if (User != null)
             {
                 User.FastRun = MapControl.CanFastRun;
             }
-          
+        
             MapControl.LoadMap();
             InsertControl(0, MapControl);
         }
@@ -3712,6 +3713,7 @@ namespace Client.MirScenes
             MapControl.Music = p.Music;
             MapControl.SafeZones = p.SafeZones;
             MapControl.CanFastRun = p.CanFastRun;
+            MapControl.DrawAnimation = p.DrawAnimation;
             if (User != null)
             {
                 User.FastRun = MapControl.CanFastRun;
@@ -9503,6 +9505,8 @@ namespace Client.MirScenes
         public ushort MiniMap, BigMap, Music, SetMusic;
         //当前地图是否可以免助跑
         public bool CanFastRun;
+        //当前地图是否支持动画，部分地图动画有BUG
+        public bool DrawAnimation=true;
         //增加安全区
         //安全区域
         public List<SafeZoneInfo> SafeZones = new List<SafeZoneInfo>();
@@ -9890,30 +9894,29 @@ namespace Client.MirScenes
             DXManager.SetSurface(_floorSurface);
             DXManager.Device.Clear(ClearFlags.Target, Color.Empty, 0, 0); //Color.Black
 
-            int index;
+            int index, libIndex;
             int drawY, drawX;
             //画背景
             //这里判断下，是否有背景是重复的，冲突的？
             //
             for (int y = User.Movement.Y - ViewRangeY; y <= User.Movement.Y + ViewRangeY; y++)
             {
-                
-                if (y <= 0 || y % 2 == 1) continue;
+                if (y<0||y % 2 != 0) continue;
                 if (y >= Height) break;
                 drawY = (y - User.Movement.Y + OffSetY) * CellHeight + User.OffSetMove.Y; //Moving OffSet
 
                 for (int x = User.Movement.X - ViewRangeX; x <= User.Movement.X + ViewRangeX; x++)
                 {
-                    if (x <= 0 || x % 2 == 1) continue;
+                    if (x<0||x % 2 != 0) continue;
                     if (x >= Width) break;
-                    if (FileName.IndexOf("SP00") != -1 && (x <= 2||x>=Width-2))
-                    {
-                        continue;
-                    }
                     drawX = (x - User.Movement.X + OffSetX) * CellWidth - OffSetX + User.OffSetMove.X; //Moving OffSet
-                    if ((M2CellInfo[x, y].BackImage == 0) || (M2CellInfo[x, y].BackIndex == -1)) continue;
-                    index = (M2CellInfo[x, y].BackImage & 0x1FFFF) - 1;
-                    Libraries.MapLibs[M2CellInfo[x, y].BackIndex].Draw(index, drawX, drawY);
+                    //if ((M2CellInfo[x, y].BackImage == 0) || (M2CellInfo[x, y].BackIndex == -1)) continue;
+                    //index = (M2CellInfo[x, y].BackImage & 0x1FFFF) - 1;
+                    index = (M2CellInfo[x, y].BackImage & 0x1FFFFFFF) - 1;
+                    libIndex = M2CellInfo[x, y].BackIndex;
+                    if (libIndex < 0 || libIndex >= Libraries.MapLibs.Length) continue;
+                    if (index < 0 || index >= Libraries.MapLibs[libIndex].getImageCount()) continue;
+                    Libraries.MapLibs[libIndex].Draw(index, drawX, drawY);
                 }
             }
             //画中间
@@ -9927,10 +9930,6 @@ namespace Client.MirScenes
                 {
                     if (x < 0) continue;
                     if (x >= Width) break;
-                    if (FileName.IndexOf("SP00") != -1 && (x <= 2 || x >= Width - 2))
-                    {
-                        continue;
-                    }
                     drawX = (x - User.Movement.X + OffSetX) * CellWidth - OffSetX + User.OffSetMove.X; //Moving OffSet
 
                     index = M2CellInfo[x, y].MiddleImage - 1;
@@ -9954,10 +9953,10 @@ namespace Client.MirScenes
                     Libraries.MapLibs[M2CellInfo[x, y].MiddleIndex].Draw(index, drawX, drawY);
                 }
             }
-            //画
+            //画前景图片
             for (int y = User.Movement.Y - ViewRangeY; y <= User.Movement.Y + ViewRangeY + 5; y++)
             {
-                if (y <= 0) continue;
+                if (y < 0) continue;
                 if (y >= Height) break;
                 drawY = (y - User.Movement.Y + OffSetY) * CellHeight + User.OffSetMove.Y; //Moving OffSet
 
@@ -9965,18 +9964,15 @@ namespace Client.MirScenes
                 {
                     if (x < 0) continue;
                     if (x >= Width) break;
-                    if (FileName.IndexOf("SP00") != -1 && (x <= 2 || x >= Width - 2))
-                    {
-                        continue;
-                    }
+
                     drawX = (x - User.Movement.X + OffSetX) * CellWidth - OffSetX + User.OffSetMove.X; //Moving OffSet
 
                     index = (M2CellInfo[x, y].FrontImage & 0x7FFF) - 1;
                     if (index == -1) continue;
-                    int fileIndex = M2CellInfo[x, y].FrontIndex;
-                    if (fileIndex == -1) continue;
-                    Size s = Libraries.MapLibs[fileIndex].GetSize(index);
-                    if (fileIndex == 200) continue; //fixes random bad spots on old school 4.map
+                    libIndex = M2CellInfo[x, y].FrontIndex;
+                    if (libIndex == -1) continue;
+                    Size s = Libraries.MapLibs[libIndex].GetSize(index);
+                    if (libIndex == 200) continue; //fixes random bad spots on old school 4.map
 
                    
                     if (M2CellInfo[x, y].DoorIndex > 0)
@@ -9997,7 +9993,7 @@ namespace Client.MirScenes
                     }
 
                     if (index < 0 || ((s.Width != CellWidth || s.Height != CellHeight) && ((s.Width != CellWidth * 2) || (s.Height != CellHeight * 2)))) continue;
-                    Libraries.MapLibs[fileIndex].Draw(index, drawX, drawY);
+                    Libraries.MapLibs[libIndex].Draw(index, drawX, drawY);
                 }
             }
 
@@ -10012,19 +10008,19 @@ namespace Client.MirScenes
 
             if(cleanFilename.StartsWith("ID1") || cleanFilename.StartsWith("ID2"))
             {
-                Libraries.Background.Draw(10, 0, 0); //mountains
+                //Libraries.Background.Draw(10, 0, 0); //mountains
             }
             else if(cleanFilename.StartsWith("ID3_013"))
             {
-                Libraries.Background.Draw(22, 0, 0); //desert
+                //Libraries.Background.Draw(22, 0, 0); //desert
             }
             else if (cleanFilename.StartsWith("ID3_015"))
             {
-                Libraries.Background.Draw(23, 0, 0); //greatwall
+                //Libraries.Background.Draw(23, 0, 0); //greatwall
             }
             else if (cleanFilename.StartsWith("ID3_023") || cleanFilename.StartsWith("ID3_025"))
             {
-                Libraries.Background.Draw(21, 0, 0); //village entrance
+                //Libraries.Background.Draw(21, 0, 0); //village entrance
             }
         }
         //画各种对象,建筑物等
@@ -10038,28 +10034,23 @@ namespace Client.MirScenes
                 {
                     if (x < 0) continue;
                     if (x >= Width) break;
-                    if (FileName.IndexOf("SP00") != -1 && (x <= 2 || x >= Width - 2))
-                    {
-                        continue;
-                    }
                     M2CellInfo[x, y].DrawDeadObjects();
                 }
             }
 
             for (int y = User.Movement.Y - ViewRangeY; y <= User.Movement.Y + ViewRangeY + 25; y++)
             {
+
                 if (y <= 0) continue;
                 if (y >= Height) break;
                 int drawY = (y - User.Movement.Y + OffSetY + 1) * CellHeight + User.OffSetMove.Y;
 
                 for (int x = User.Movement.X - ViewRangeX; x <= User.Movement.X + ViewRangeX; x++)
                 {
+                   
                     if (x < 0) continue;
                     if (x >= Width) break;
-                    if (FileName.IndexOf("SP00") != -1 && (x <= 2 || x >= Width - 2))
-                    {
-                        continue;
-                    }
+
                     int drawX = (x - User.Movement.X + OffSetX) * CellWidth - OffSetX + User.OffSetMove.X;
                     int index;
                     byte animation;
@@ -10068,7 +10059,7 @@ namespace Client.MirScenes
                     #region Draw shanda's tile animation layer
                     index = M2CellInfo[x, y].TileAnimationImage;
                     animation = M2CellInfo[x, y].TileAnimationFrames;
-                    if ((index > 0) & (animation > 0))
+                    if ((index > 0) & (animation > 0) && DrawAnimation)
                     {
                         index--;
                         int animationoffset = M2CellInfo[x, y].TileAnimationOffset ^ 0x2000;
@@ -10093,7 +10084,7 @@ namespace Client.MirScenes
                                     blend = true;
                                     animation &= 0x0f;
                                 }
-                                if (animation > 0)
+                                if (animation > 0 && DrawAnimation)
                                 {
                                     byte animationTick = M2CellInfo[x, y].MiddleAnimationTick;
                                     index += (AnimationCount % (animation + (animation * animationTick))) / (1 + animationTick);
@@ -10134,15 +10125,17 @@ namespace Client.MirScenes
                     else
                         blend = false;
 
-                    
-                    if (animation > 0)
+         
+
+
+                    if (animation > 0 && DrawAnimation)
                     {
                         byte animationTick = M2CellInfo[x, y].FrontAnimationTick;
                         index += (AnimationCount % (animation + (animation * animationTick))) / (1 + animationTick);
                     }
 
                     
-                    if (M2CellInfo[x, y].DoorIndex > 0)
+                    if (M2CellInfo[x, y].DoorIndex > 0 && DrawAnimation)
                     {
                         Door DoorInfo = GetDoor(M2CellInfo[x, y].DoorIndex);
                         if (DoorInfo == null)
@@ -10165,10 +10158,16 @@ namespace Client.MirScenes
 
                     if (blend)
                     {
+                        //新盛大地图
                         if ((fileIndex > 99) & (fileIndex < 199))
+                        {
                             Libraries.MapLibs[fileIndex].DrawBlend(index, new Point(drawX, drawY - (3 * CellHeight)), Color.White, true);
+                        }
                         else
+                        {
+                            //老地图灯柱 index >= 2723 && index <= 2732
                             Libraries.MapLibs[fileIndex].DrawBlend(index, new Point(drawX, drawY - s.Height), Color.White, (index >= 2723 && index <= 2732));
+                        }
                     }
                     else
                         Libraries.MapLibs[fileIndex].Draw(index, drawX, drawY - s.Height);
@@ -10179,10 +10178,6 @@ namespace Client.MirScenes
                 {
                     if (x < 0) continue;
                     if (x >= Width) break;
-                    if (FileName.IndexOf("SP00") != -1 && (x <= 2 || x >= Width - 2))
-                    {
-                        continue;
-                    }
                     M2CellInfo[x, y].DrawObjects();
                 }
             }
@@ -11358,6 +11353,10 @@ namespace Client.MirScenes
         //判断是否可以进入那个格？那个格是否是空的
         private bool EmptyCell(Point p)
         {
+            if(p.X<0||p.Y<0||p.X >= M2CellInfo.GetLength(0)|| p.Y >= M2CellInfo.GetLength(1))
+            {
+                return false;
+            }
             //这个是什么？
             if ((M2CellInfo[p.X, p.Y].BackImage & 0x20000000) != 0 || (M2CellInfo[p.X, p.Y].FrontImage & 0x8000) != 0) // + (M2CellInfo[P.X, P.Y].FrontImage & 0x7FFF) != 0)
                 return false;
@@ -11386,6 +11385,10 @@ namespace Client.MirScenes
         //检测门是否打开
         private bool CheckDoorOpen(Point p)
         {
+            if (p.X < 0 || p.Y < 0 || p.X >= M2CellInfo.GetLength(0) || p.Y >= M2CellInfo.GetLength(1))
+            {
+                return false;
+            }
             if (M2CellInfo[p.X, p.Y].DoorIndex == 0) return true;
             Door DoorInfo = GetDoor(M2CellInfo[p.X, p.Y].DoorIndex);
             if (DoorInfo == null) return false;//if the door doesnt exist then it isnt even being shown on screen (and cant be open lol)
@@ -11476,6 +11479,10 @@ namespace Client.MirScenes
         {
             //GameScene.Scene.ChatDialog.ReceiveChat(string.Format("cell: {0}", (M2CellInfo[p.X, p.Y].BackImage & 0x20000000)), ChatType.Hint);
             //这个到底是什么意思
+            if (p.X < 0 || p.Y < 0 || p.X >= M2CellInfo.GetLength(0) || p.Y >= M2CellInfo.GetLength(1))
+            {
+                return false;
+            }
             return (M2CellInfo[p.X, p.Y].BackImage & 0x20000000) == 0;
         }
 

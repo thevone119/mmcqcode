@@ -131,6 +131,11 @@ namespace Client.MirScenes
         {
             if (!Network.Connected && _connectBox.Label != null && useTime>1500)
             {
+                if (Network.ConnectAttempt > 10)
+                {
+                    Program.Form.Close();
+                    return;
+                }
                 _connectBox.Label.Text = string.Format("尝试连接到服务器.\n尝试:{0}", Network.ConnectAttempt);
                 _connectBox.Show();
                 //MirLog.info("Process:"+ Network.ConnectAttempt);

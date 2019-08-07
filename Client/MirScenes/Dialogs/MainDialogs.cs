@@ -3150,8 +3150,12 @@ namespace Client.MirScenes.Dialogs
             Rectangle viewRect = new Rectangle(0, 0, 120, 108);
             Point drawLocation = Location;
             drawLocation.Offset(3, 22);
-
+            
             Size miniMapSize = Libraries.MiniMap.GetSize(map.MiniMap);
+            if (map.MiniMap >= 10000)
+            {
+                miniMapSize = Libraries.MiniMap2.GetSize(map.MiniMap- 10000);
+            }
             float scaleX = miniMapSize.Width / (float)map.Width;
             float scaleY = miniMapSize.Height / (float)map.Height;
 
@@ -3167,8 +3171,15 @@ namespace Client.MirScenes.Dialogs
 
             if (viewRect.X < 0) viewRect.X = 0;
             if (viewRect.Y < 0) viewRect.Y = 0;
-
-            Libraries.MiniMap.Draw(map.MiniMap, viewRect, drawLocation, Color.FromArgb(255, 255, 255), _fade);
+            if (map.MiniMap < 10000)
+            {
+                Libraries.MiniMap.Draw(map.MiniMap, viewRect, drawLocation, Color.FromArgb(255, 255, 255), _fade);
+            }
+            else
+            {
+                Libraries.MiniMap2.Draw(map.MiniMap- 10000, viewRect, drawLocation, Color.FromArgb(255, 255, 255), _fade);
+            }
+           
 
 
             int startPointX = (int)(viewRect.X / scaleX);
@@ -4986,8 +4997,15 @@ namespace Client.MirScenes.Dialogs
             TrySort();
 
             Rectangle viewRect = new Rectangle(0, 0, 600, 400);
-
-            Size = Libraries.MiniMap.GetSize(index);
+            if (index < 10000)
+            {
+                Size = Libraries.MiniMap.GetSize(index);
+            }
+            else
+            {
+                Size = Libraries.MiniMap2.GetSize(index-10000);
+            }
+           
 
             if (Size.Width < 600)
                 viewRect.Width = Size.Width;
@@ -5016,7 +5034,15 @@ namespace Client.MirScenes.Dialogs
             if (viewRect.X < 0) viewRect.X = 0;
             if (viewRect.Y < 0) viewRect.Y = 0;
 
-            Libraries.MiniMap.Draw(index, Location, Size, Color.FromArgb(255, 255, 255));
+            if (index < 10000)
+            {
+                Libraries.MiniMap.Draw(index, Location, Size, Color.FromArgb(255, 255, 255));
+            }
+            else
+            {
+                Libraries.MiniMap2.Draw(index-10000, Location, Size, Color.FromArgb(255, 255, 255));
+            }
+
 
             int startPointX = (int)(viewRect.X / scaleX);
             int startPointY = (int)(viewRect.Y / scaleY);

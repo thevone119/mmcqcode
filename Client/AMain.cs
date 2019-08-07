@@ -109,8 +109,8 @@ namespace Launcher
                 Checked = true;
                 _fileCount = 0;
                 _currentCount = 0;
-                //如果更新文件大于512M，则提示更新失败
-                if(_totalBytes / 1024 / 1024 > 512)
+                //如果更新文件大于200M，则提示更新失败
+                if(_totalBytes / 1024 / 1024 > 200)
                 {
                     errorMsg = "客户端更新失败，待更新文件过大，请重新下载最新客户端...";
                     Completed = true;
@@ -275,7 +275,7 @@ namespace Launcher
                 return;
             }
             //不是exe,则判断长度
-            if (info == null || old.Length != info.Length )
+            if (info == null || (info.Creation < old.Creation && old.Length != info.Length))
             {
                 DownloadList.Enqueue(old);
                 _totalBytes += old.Length;

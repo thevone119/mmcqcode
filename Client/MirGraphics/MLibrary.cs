@@ -21,6 +21,7 @@ namespace Client.MirGraphics
             BuffIcon = new MLibrary(Settings.DataPath + "BuffIcon"),
             Help = new MLibrary(Settings.DataPath + "Help"),
             MiniMap = new MLibrary(Settings.DataPath + "MMap"),
+            MiniMap2 = new MLibrary(Settings.DataPath + "MMap2"),
             Title = new MLibrary(Settings.DataPath + "Title"),
             MagIcon = new MLibrary(Settings.DataPath + "MagIcon"),
             MagIcon2 = new MLibrary(Settings.DataPath + "MagIcon2"),
@@ -292,7 +293,9 @@ namespace Client.MirGraphics
 
             MiniMap.Initialize();
             Progress++;
-
+            MiniMap2.Initialize();
+            Progress++;
+            
             MagIcon.Initialize();
             Progress++;
             MagIcon2.Initialize();

@@ -223,9 +223,30 @@ namespace Client.MirObjects
 
         private void initiate()
         {
-            if (File.Exists(FileName))
+            //如果是加密的地图，地图名称后面加个en
+            if (File.Exists(FileName+ "en"))
+            {
+                Bytes = File.ReadAllBytes(FileName + "en");
+                int len = Bytes.Length/ 1024;
+                //前面32位错乱
+                for (int i = 0; i < 32; i++)
+                {
+                    Bytes[i] = (byte)(Bytes[i] - (len / 6));
+                }
+                //加密地图解密处理
+                for (int i = 0; i < 1000; i++)
+                {
+                    int idx = len / 1000 * i + i / 6 + i;
+                    if (idx < Bytes.Length - 1 && idx > 64)
+                    {
+                        Bytes[idx] = (byte)(Bytes[idx] - (idx / 6 + i));
+                    }
+                }
+            }
+            else if (File.Exists(FileName))
             {
                 Bytes = File.ReadAllBytes(FileName);
+                //地图加密处理
             }
             else
             {

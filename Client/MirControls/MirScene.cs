@@ -216,6 +216,7 @@ namespace Client.MirControls
         private void NewQuestInfo(S.NewQuestInfo info)
         {
             GameScene.QuestInfoList.Add(info.Info);
+     
         }
 
         private void NewRecipeInfo(S.NewRecipeInfo info)
