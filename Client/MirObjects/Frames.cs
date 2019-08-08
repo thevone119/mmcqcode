@@ -3037,6 +3037,84 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Revive, new Frame(344, 10, 0, 100) { Reverse = true });
             MonstersMap.Add(Monster.Monster421, frame);
 
+            //自定义 Monster425 毒妖道士 3种攻击手段
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            //frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100, 484, 18, -18, 100) { EffectStartTime = 300 });//无敌
+            //frame.Frames.Add(MirAction.Attack3, new Frame(160, 8, 0, 100, 464, 16, -16, 100) { EffectStartTime = 200 });//范围减速，范围攻击，范围治疗
+            frame.Frames.Add(MirAction.Attack1, new Frame(160, 8, 0, 100, 484, 18, -18, 100) { EffectStartTime = 300 });//无敌
+            frame.Frames.Add(MirAction.Attack2, new Frame(288, 10, 0, 100, 464, 16, -16, 100) { EffectStartTime = 200 });//范围减速，范围攻击，范围治疗
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(224, 8, 0, 100,532, 5, -5, 200) { EffectStartTime = 200 });//远程噬血
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(368, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(392, 9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(400, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(392, 9, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster425, frame);
+
+            //自定义 Monster426 毒妖法师 3种攻击手段
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100,392,6,4,100) { EffectStartTime = 100 });//普通攻击
+            frame.Frames.Add(MirAction.Attack2, new Frame(224, 8, 0, 100, 500, 7, -7, 100) { EffectStartTime = 300 });//范围攻击
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(160, 8, 0, 100,470,5,-5,100) { EffectStartTime = 100 });//远程访问攻击
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(288, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(312, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(321, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(312, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster426, frame);
+
+            //自定义 Monster427 毒妖刺客 4种攻击手段
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 10, 0, 100,432,10,0,100) { EffectStartTime = 0 });//普通攻击
+            frame.Frames.Add(MirAction.Attack2, new Frame(216, 5, 0, 100, 541, 4, -4, 200) { EffectStartTime = 300 });//范围AOE
+            frame.Frames.Add(MirAction.Attack3, new Frame(256, 10, 0, 100, 531, 10, -10, 100) { EffectStartTime = 300 });//范围AOE2
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(176, 5, 0, 100) { EffectStartTime = 300 });//冰冻，麻痹
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(336, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(360, 9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(368, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(360, 9, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster427, frame);
+
+            //自定义 Monster428 毒妖树 2种攻击手段
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100) { EffectStartTime = 200 });//普通攻击
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(160, 9, 0, 100, 336, 6,0, 100) { EffectStartTime = 0 });//范围AOE
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(232, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(256, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(265, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(256, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster428, frame);
+
+            //自定义 Monster429 昆仑道士 5种攻击手段
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100,394,5,5,100) { EffectStartTime = 300 });//普通攻击
+            frame.Frames.Add(MirAction.Attack2, new Frame(160, 8, 0, 100) { EffectStartTime = 0 });//加buf
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(224, 8, 0, 100) { EffectStartTime = 0 });//普通符
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(224, 8, 0, 100) { EffectStartTime = 0 });//减速符
+            frame.Frames.Add(MirAction.AttackRange3, new Frame(224, 8, 0, 100) { EffectStartTime = 0 });//高攻击
+
+
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(288, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(312, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(321, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(312, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster429, frame);
+
+
+
 
         }
     }

@@ -78,7 +78,7 @@ namespace Client.MirGraphics
                                           ARWeaponsS = new MLibrary[22],
                                           ARHair = new MLibrary[9],
                                           ARHumEffect = new MLibrary[3],
-                                          Monsters = new MLibrary[430],//怪物
+                                          Monsters = new MLibrary[458],//怪物
                                           Gates = new MLibrary[2],
                                           Flags = new MLibrary[12],
                                           Mounts = new MLibrary[32],

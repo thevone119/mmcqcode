@@ -147,6 +147,13 @@ namespace Client.MirObjects
                             Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster421], 637, 8, 1600, this) { Repeat = true });
                         }
                         break;
+                    case Monster.Monster429:
+                        Effects.Clear();
+                        if (info.ExtraByte == 1)
+                        {
+                            Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster429], 542, 8, 1600, this) { Repeat = true });
+                        }
+                        break;
                     case Monster.HellLord://太子
                         {
                             Effects.Clear();
@@ -2841,6 +2848,52 @@ namespace Client.MirObjects
                                                     SoundManager.PlaySound(BaseSound + 6);
                                                 }
                                                 break;
+                                            case Monster.Monster425:
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster425], 552, 10, 1000, ob) { Blend = true });
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster425], 542, 10, 1000, ob) { Blend = true });
+                                                    SoundManager.PlaySound(BaseSound + 6);
+                                                }
+                                                break;
+                                            case Monster.Monster426:
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster426], 480, 15, 1500, ob) { Blend = true });
+                                                    SoundManager.PlaySound(BaseSound + 6);
+                                                }
+                                                break;
+                                            case Monster.Monster427:
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster427], 512, 9, 900, ob) { Blend = true });
+                                                    SoundManager.PlaySound(BaseSound + 6);
+                                                }
+                                                break;
+                                            case Monster.Monster428:
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster428], 384, 6, 600, ob) { Blend = true });
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster428], 394, 6, 600, ob) { Blend = true });
+                                                    SoundManager.PlaySound(BaseSound + 6);
+                                                }
+                                                break;
+                                            case Monster.Monster429:
+                                                missile = CreateProjectile(470, Libraries.Monsters[(ushort)Monster.Monster429], true, 4, 30, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster429], 534, 8, 800, missile.Target) { Blend = true });
+                                                    };
+                                                }
+                                                break;
+                                                
 
                                             case Monster.WhiteFoxman:
                                                 missile = CreateProjectile(1160, Libraries.Magic, true, 3, 30, 7);
@@ -3147,6 +3200,17 @@ namespace Client.MirObjects
                                                     ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster419], 438, 18, 1300, ob));
                                                 }
                                                 break;
+                                            case Monster.Monster429:
+                                                missile = CreateProjectile(470, Libraries.Monsters[(ushort)Monster.Monster429], true, 4, 30, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster429], 552, 8, 800, missile.Target) { Blend = true });
+                                                    };
+                                                }
+                                                break;
 
                                             case Monster.ShellFighter:
                                                 ob = MapControl.GetObject(TargetID);
@@ -3251,6 +3315,17 @@ namespace Client.MirObjects
                                                 {
                                                     MirDirection direction = Functions.DirectionFromPoint(CurrentLocation, ob.CurrentLocation);
                                                     ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.ChieftainSword], 1066, 10, 2000, ob));
+                                                }
+                                                break;
+                                            case Monster.Monster429:
+                                                missile = CreateProjectile(470, Libraries.Monsters[(ushort)Monster.Monster429], true, 4, 30, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster429], 560, 8, 800, missile.Target) { Blend = true });
+                                                    };
                                                 }
                                                 break;
                                         }
