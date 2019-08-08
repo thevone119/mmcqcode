@@ -2075,6 +2075,7 @@ namespace Server.MirObjects
         ConquestAvailable,
         ConquestOwner,
         CheckGuildNameList,
-        CheckItems
+        CheckItems,
+        CheckRecoveryMoney,
     }
 }

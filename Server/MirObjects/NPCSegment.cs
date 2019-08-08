@@ -159,13 +159,14 @@ namespace Server.MirObjects
                     break;
                 case "CHECKITEMS":
                     if (parts.Length < 2) return;
-
-                    tempString = parts.Length < 3 ? "1" : parts[2];
-                    tempString2 = parts.Length > 3 ? parts[3] : "";
-
                     CheckList.Add(new NPCChecks(CheckType.CheckItems, parts[1]));
                     break;
+                case "CHECKRECOVERYMONEY":
+                    if (parts.Length < 2) return;
+                    CheckList.Add(new NPCChecks(CheckType.CheckRecoveryMoney, parts[1]));
+                    break;
                     
+
                 case "CHECKGENDER":
                     if (parts.Length < 2) return;
 
@@ -2008,7 +2009,7 @@ namespace Server.MirObjects
                             failed = true;
                         break;
 
-                  case CheckType.CheckItems:
+                  case CheckType.CheckItems://检测背包是否有某个物品，一批物品，批量检测
                         string[] its2 = param[0].Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
                         foreach(string its in its2)
                         {
@@ -2029,7 +2030,14 @@ namespace Server.MirObjects
                             }
                         }
                         break;
+                    case CheckType.CheckRecoveryMoney://检测是否符合回收经验要求
+                        int cmoney = 0;
+                        int.TryParse(param[0], out cmoney);
+                        failed = !player.Info.RecoveryMoney(cmoney, false);
+                        
+                        break;
 
+                        
                     case CheckType.CheckGender:
                         MirGender gender;
 
@@ -2983,8 +2991,9 @@ namespace Server.MirObjects
                             UserItem item = player.Info.Inventory[j];
                             if (item == null) continue;
                             if (item.Info != info) continue;
-
-                            uint exp = item.Info.Price * item.Count * 2 * (uint)Settings.LevelGoldExpList[player.Level];
+                            uint price = item.Info.Price * item.Count * 2;
+                            uint exp = price * (uint)Settings.LevelGoldExpList[player.Level];
+          
                             int expPoint = 0;
                             if (player.Level < item.Info.eatLevel + 8 || !Settings.ExpMobLevelDifference)
                             {
@@ -2999,7 +3008,8 @@ namespace Server.MirObjects
                             {
                                 expPoint = (int)exp / 4;
                             }
-
+                            //加到上限中
+                            player.Info.RecoveryMoney((int)price, true);
 
                             player.Enqueue(new S.DeleteItem { UniqueID = item.UniqueID, Count = item.Count });
                             player.Info.Inventory[j] = null;

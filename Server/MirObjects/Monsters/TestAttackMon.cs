@@ -11,8 +11,8 @@ namespace Server.MirObjects.Monsters
     public class TestAttackMon : MonsterObject
     {
         private byte attType;
-        public byte ObjectAttackType=3;//攻击手段
-        public byte ObjectRangeAttack=0;//范围攻击手段
+        public byte ObjectAttackType=2;//攻击手段
+        public byte ObjectRangeAttack=1;//范围攻击手段
         protected internal TestAttackMon(MonsterInfo info)
             : base(info)
         {

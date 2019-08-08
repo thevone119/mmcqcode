@@ -15063,7 +15063,7 @@ namespace Server.MirObjects
                     //这里给主人增加经验/金币
                     if (mon.canDevour((int)temp.Info.Price))
                     {
-                        uint pexp = temp.Info.Price / 2;
+                        uint pexp = temp.Info.Price;
                         if (pexp > 10000 * 10)
                         {
                             pexp = 10000 * 10;
@@ -22589,9 +22589,9 @@ namespace Server.MirObjects
                     //return;
                 }
                 //可回收装备列表
-
                 int cancount = 0;
                 string erroritem = "";
+                uint rmoney = 0;
                 for (int t = 0; t < Info.ItemCollect.Length; t++)
                 {
                     UserItem temp = Info.ItemCollect[t];
@@ -22610,6 +22610,11 @@ namespace Server.MirObjects
                     if (temp.isEquip() && temp.Info.eatLevel>=30 )
                     {
                         canRecovery = true;
+                        rmoney = temp.Info.Price * temp.Count;
+                        if (temp.quality > 0)
+                        {
+                            rmoney = rmoney * temp.quality;
+                        }
                     }
 
                     if (temp.Info.RequiredAmount > 30)
@@ -22631,14 +22636,21 @@ namespace Server.MirObjects
                     ReceiveChat(erroritem, ChatType.System);
                     return;
                 }
-               
 
+                if (!Info.RecoveryMoney((int)rmoney, false))
+                {
+                    ReceiveChat("达到当日可回收上限，请次日再来回收...", ChatType.System);
+                    return;
+                }
+                //加到上限中
+                Info.RecoveryMoney((int)rmoney, true);
                 p.Success = true;
                 Enqueue(p);
                 for (int t = 0; t < Info.ItemCollect.Length; t++)
                 {
                     UserItem temp = Info.ItemCollect[t];
                     if (temp == null) continue;
+
                     uint exp = temp.Info.Price * temp.Count * (uint)Settings.LevelGoldExpList[Level];
                     int expPoint = 0;
                     if (Level < temp.Info.eatLevel + 8 || !Settings.ExpMobLevelDifference)

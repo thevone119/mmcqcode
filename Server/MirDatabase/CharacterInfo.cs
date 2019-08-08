@@ -704,6 +704,30 @@ namespace Server.MirDatabase
             }
         }
 
+        //回收金钱的上限，每日
+        //每级2万，60级大概可以回收200万金币吧
+        public bool RecoveryMoney(int money,bool add=true)
+        {
+            int n_day = DateTime.Now.DayOfYear;
+            string key = "RecoveryMoney_d_" + DateTime.Now.DayOfYear;
+            int AllAdd = (int)(Level / 5 + Level / 10) + Level;
+            int maxMoney = AllAdd * 20000;
+            if(money> maxMoney)
+            {
+                return false;
+            }
+            int dv = getTempValue(key);
+            if(dv+ money> maxMoney)
+            {
+                return false;
+            }
+            if (add)
+            {
+                putTempValue(key, dv + money);
+            }
+            return true;
+        }
+
         public ListViewItem CreateListView()
         {
             if (ListItem != null)

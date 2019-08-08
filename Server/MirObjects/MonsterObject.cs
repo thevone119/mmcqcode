@@ -424,7 +424,80 @@ namespace Server.MirObjects
                     return new Monster420(info);
                 case Monster.Monster421://Monster421 冰雪女皇
                     return new Monster421(info);
-
+                case Monster.Monster422:// 未知
+                    return new Monster422(info);
+                case Monster.Monster423:// 未知
+                    return new Monster423(info);
+                case Monster.Monster424:// 未知
+                    return new Monster424(info);
+                case Monster.Monster425:// 未知
+                    return new Monster425(info);
+                case Monster.Monster426:// 未知
+                    return new Monster426(info);
+                case Monster.Monster427:// 未知
+                    return new Monster427(info);
+                case Monster.Monster428:// 未知
+                    return new Monster428(info);
+                case Monster.Monster429:// 未知
+                    return new Monster429(info);
+                case Monster.Monster430:// 未知
+                    return new Monster430(info);
+                case Monster.Monster431:// 未知
+                    return new Monster431(info);
+                case Monster.Monster432:// 未知
+                    return new Monster432(info);
+                case Monster.Monster433:// 未知
+                    return new Monster433(info);
+                case Monster.Monster434:// 未知
+                    return new Monster434(info);
+                case Monster.Monster435:// 未知
+                    return new Monster435(info);
+                case Monster.Monster436:// 未知
+                    return new Monster436(info);
+                case Monster.Monster437:// 未知
+                    return new Monster437(info);
+                case Monster.Monster438:// 未知
+                    return new Monster438(info);
+                case Monster.Monster439:// 未知
+                    return new Monster439(info);
+                case Monster.Monster440:// 未知
+                    return new Monster440(info);
+                case Monster.Monster441:// 未知
+                    return new Monster441(info);
+                case Monster.Monster442:// 未知
+                    return new Monster442(info);
+                case Monster.Monster443:// 未知
+                    return new Monster443(info);
+                case Monster.Monster444:// 未知
+                    return new Monster444(info);
+                case Monster.Monster445:// 未知
+                    return new Monster445(info);
+                case Monster.Monster446:// 未知
+                    return new Monster446(info);
+                case Monster.Monster447:// 未知
+                    return new Monster447(info);
+                case Monster.Monster448:// 未知
+                    return new Monster448(info);
+                case Monster.Monster449:// 未知
+                    return new Monster449(info);
+                case Monster.Monster450:// 未知
+                    return new Monster450(info);
+                case Monster.Monster451:// 未知
+                    return new Monster451(info);
+                case Monster.Monster452:// 未知
+                    return new Monster452(info);
+                case Monster.Monster453:// 未知
+                    return new Monster453(info);
+                case Monster.Monster454:// 未知
+                    return new Monster454(info);
+                case Monster.Monster455:// 未知
+                    return new Monster455(info);
+                case Monster.Monster456:// 未知
+                    return new Monster456(info);
+                case Monster.Monster457:// 未知
+                    return new Monster457(info);
+                case Monster.Monster458:// 未知
+                    return new Monster458(info);
 
                 default:
                     return new MonsterObject(info);
