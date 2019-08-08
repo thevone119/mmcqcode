@@ -2984,13 +2984,27 @@ namespace Server.MirObjects
                             if (item == null) continue;
                             if (item.Info != info) continue;
 
-                            uint exp = item.Info.Price  * item.Count*2;
-                            exp = exp * (uint)Settings.LevelGoldExpList[player.Level];
+                            uint exp = item.Info.Price * item.Count * 2 * (uint)Settings.LevelGoldExpList[player.Level];
+                            int expPoint = 0;
+                            if (player.Level < item.Info.eatLevel + 8 || !Settings.ExpMobLevelDifference)
+                            {
+                                expPoint = (int)exp;
+                            }
+                            else
+                            {
+                                //如果玩家等级大于怪物等级10级，则逐级递减经验，直到大于怪物25级，就基本没经验了.
+                                expPoint = (int)exp - (int)Math.Round(Math.Max(exp / 10, 1) * ((double)player.Level - (item.Info.eatLevel + 8)));
+                            }
+                            if (expPoint < exp / 4)
+                            {
+                                expPoint = (int)exp / 4;
+                            }
+
 
                             player.Enqueue(new S.DeleteItem { UniqueID = item.UniqueID, Count = item.Count });
                             player.Info.Inventory[j] = null;
 
-                            player.GainExp(exp);
+                            player.GainExp((uint)expPoint);
                             break;
                         }
                         player.RefreshStats();

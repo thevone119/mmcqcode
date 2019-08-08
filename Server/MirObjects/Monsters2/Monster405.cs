@@ -18,9 +18,6 @@ namespace Server.MirObjects.Monsters
 
         }
 
-
-
-
         protected override void Attack()
         {
             if (!Target.IsAttackTarget(this))

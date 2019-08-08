@@ -132,7 +132,7 @@ namespace Server.MirDatabase
         public Dictionary<string, int> tempKey = new Dictionary<string, int>();
 
         //角色在线时长
-        public uint onlineTime = 0;//在线时长，每天的
+        public uint onlineTime = 0;//在线时长，每天的,计算为秒，
         public int onlineDay = 0;//当前日期
 
         public uint offlineTime = 0;//累计的（这个不存储到数据库）

@@ -23,8 +23,9 @@ namespace Server.MirDatabase
         public int Index;
         public string Name = string.Empty, Name_en= string.Empty;
         public Monster Image;
+        //public short AI;
         //
-        public byte AI, Effect, ViewRange = 7, CoolEye;
+        public byte AI,Effect, ViewRange = 7, CoolEye;
         //等级，这个主要作用是等级高的不允许被推动的哦
         public ushort Level;
 

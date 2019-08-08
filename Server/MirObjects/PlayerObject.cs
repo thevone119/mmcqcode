@@ -2525,14 +2525,14 @@ namespace Server.MirObjects
             {
                 return;
             }
-            if (Level < targetLevel + 10 || !Settings.ExpMobLevelDifference)
+            if (Level < targetLevel + 8 || !Settings.ExpMobLevelDifference)
             {
                 expPoint = (int)amount;
             }
             else
             {
                 //如果玩家等级大于怪物等级10级，则逐级递减经验，直到大于怪物25级，就基本没经验了.
-                expPoint = (int)amount - (int)Math.Round(Math.Max(amount / 15, 1) * ((double)Level - (targetLevel + 10)));
+                expPoint = (int)amount - (int)Math.Round(Math.Max(amount / 10, 1) * ((double)Level - (targetLevel + 8)));
             }
 
             if (expPoint <= 0) expPoint = 1;
@@ -22639,16 +22639,28 @@ namespace Server.MirObjects
                 {
                     UserItem temp = Info.ItemCollect[t];
                     if (temp == null) continue;
-                    uint exp = temp.Info.Price * temp.Count;
-                    exp = exp * (uint)Settings.LevelGoldExpList[Level];
-
+                    uint exp = temp.Info.Price * temp.Count * (uint)Settings.LevelGoldExpList[Level];
+                    int expPoint = 0;
+                    if (Level < temp.Info.eatLevel + 8 || !Settings.ExpMobLevelDifference)
+                    {
+                        expPoint = (int)exp;
+                    }
+                    else
+                    {
+                        //如果玩家等级大于怪物等级10级，则逐级递减经验，直到大于怪物25级，就基本没经验了.
+                        expPoint = (int)exp - (int)Math.Round(Math.Max(exp / 10, 1) * ((double)Level - (temp.Info.eatLevel + 8)));
+                    }
+                    if(expPoint < exp / 4)
+                    {
+                        expPoint = (int)exp / 4;
+                    }
                     //品质影响回收
                     if (temp.quality > 0)
                     {
-                        exp = exp * temp.quality;
+                        expPoint = expPoint * temp.quality;
                     }
 
-                    GainExp(exp);
+                    GainExp((uint)expPoint);
                     //移除装备
                     Info.ItemCollect[t] = null;
                     Enqueue(new S.DeleteItem { UniqueID = temp.UniqueID, Count = temp.Count });

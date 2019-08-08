@@ -347,50 +347,19 @@ namespace Server.MirObjects
                     return new DarkSpirit(info);
                 case 166://CrystalBeast 水晶兽 冰雪守护神 
                     return new CrystalBeast(info);
-                case 168://Monster403 紫花仙子
-                    return new Monster403(info);
-                case 169://Monster404 冰焰鼠
-                    return new Monster404(info);
-                case 170://Monster405 冰蜗牛
-                    return new Monster405(info);
-                case 171://Monster406 冰宫战士
-                    return new Monster406(info);
-                case 172://Monster407 冰宫射手
-                    return new Monster407(info);
-                case 173://Monster408 冰宫卫士
-                    return new Monster408(info);
-                case 174://Monster409 虹花仙子
-                    return new Monster409(info);
-                case 175://Monster410 冰宫鼠卫
-                    return new Monster410(info);
-                case 176://Monster411 冰宫骑士
-                    return new Monster411(info);
-                case 177://Monster412 冰宫刀卫
-                    return new Monster412(info);
-                case 178://Monster413 冰宫护法
-                    return new Monster413(info);
-                case 179://Monster414 冰宫画卷
-                    return new Monster414(info);
-                case 180://Monster415 冰宫画卷
-                    return new Monster415(info);
-                case 181://Monster416 冰宫画卷
-                    return new Monster416(info);
-                case 182://Monster417 冰宫画卷
-                    return new Monster417(info);
-                case 183://Monster418 冰宫学者
-                    return new Monster418(info);
-                case 184://Monster419 冰宫巫师
-                    return new Monster419(info);
-                case 185://Monster420 冰宫祭师
-                    return new Monster420(info);
-                case 186://Monster421 冰雪女皇
-                    return new Monster421(info);
+              
                 //unfinished
+
+                case 250://如果是250，则用image来做怪物AI
+                    return GetMonsterByImage(info);
+
                 case 253://鸟人像？
                     return new FlamingMutant(info);
                 case 254:
                     return new StoningStatue(info);
                 //unfinished END
+                case 255://custom
+                    return new TestAttackMon(info);
 
 
                 case 200://custom
@@ -401,10 +370,61 @@ namespace Server.MirObjects
                     return new WarTownArcher(info);
                 case 210://custom
                     return new FlameTiger(info);
-                case 255://custom
-                    return new TestAttackMon(info);
-               
+          
                     
+
+                default:
+                    return new MonsterObject(info);
+            }
+        }
+
+        //AI不够用，用image来做吧，每个都不一样的，用image来做识别，这个比较好。
+        //之前很多的ai，其实都可以用这个来做，坑了
+        public static MonsterObject GetMonsterByImage(MonsterInfo info)
+        {
+            if (info == null) return null;
+
+            switch (info.Image)
+            {
+                case Monster.Monster403://Monster403 紫花仙子
+                    return new Monster403(info);
+                case Monster.Monster404://Monster404 冰焰鼠
+                    return new Monster404(info);
+                case Monster.Monster405://Monster405 冰蜗牛
+                    return new Monster405(info);
+                case Monster.Monster406://Monster406 冰宫战士
+                    return new Monster406(info);
+                case Monster.Monster407://Monster407 冰宫射手
+                    return new Monster407(info);
+                case Monster.Monster408://Monster408 冰宫卫士
+                    return new Monster408(info);
+                case Monster.Monster409://Monster409 虹花仙子
+                    return new Monster409(info);
+                case Monster.Monster410://Monster410 冰宫鼠卫
+                    return new Monster410(info);
+                case Monster.Monster411://Monster411 冰宫骑士
+                    return new Monster411(info);
+                case Monster.Monster412://Monster412 冰宫刀卫
+                    return new Monster412(info);
+                case Monster.Monster413://Monster413 冰宫护法
+                    return new Monster413(info);
+                case Monster.Monster414://Monster414 冰宫画卷
+                    return new Monster414(info);
+                case Monster.Monster415://Monster415 冰宫画卷
+                    return new Monster415(info);
+                case Monster.Monster416://Monster416 冰宫画卷
+                    return new Monster416(info);
+                case Monster.Monster417://Monster417 冰宫画卷
+                    return new Monster417(info);
+                case Monster.Monster418://Monster418 冰宫学者
+                    return new Monster418(info);
+                case Monster.Monster419://Monster419 冰宫巫师
+                    return new Monster419(info);
+                case Monster.Monster420://Monster420 冰宫祭师
+                    return new Monster420(info);
+                case Monster.Monster421://Monster421 冰雪女皇
+                    return new Monster421(info);
+
 
                 default:
                     return new MonsterObject(info);
