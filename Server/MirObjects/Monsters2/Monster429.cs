@@ -99,7 +99,7 @@ namespace Server.MirObjects.Monsters
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
                 _stage = 1;
                 AttackedCount = RandomUtils.Next(3);
-                fireTime = Envir.Time + RandomUtils.Next(10, 20) * 1000;
+                fireTime = Envir.Time + RandomUtils.Next(6, 12) * 1000;
                 Broadcast(GetInfo());
             }
             if (attackType == 3)

@@ -7,8 +7,8 @@ using S = ServerPackets;
 namespace Server.MirObjects.Monsters
 {
     /// <summary>
-    ///  冰宫画卷(范围放毒)
-    ///  2种攻击手段
+    ///  Monster437 昆仑叛军和尚 3种攻击手段
+    ///  线性攻击
     /// </summary>
     public class Monster437 : MonsterObject
     {
@@ -23,9 +23,16 @@ namespace Server.MirObjects.Monsters
 
         protected override bool InAttackRange()
         {
-            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, 3);
-        }
+            if (Target.CurrentMap != CurrentMap) return false;
+            if (Target.CurrentLocation == CurrentLocation) return false;
 
+            int x = Math.Abs(Target.CurrentLocation.X - CurrentLocation.X);
+            int y = Math.Abs(Target.CurrentLocation.Y - CurrentLocation.Y);
+
+            if (x > 3 || y > 3) return false;
+
+            return (x == 0) || (y == 0) || (x == y);
+        }
         protected override void Attack()
         {
             if (!Target.IsAttackTarget(this))
@@ -39,42 +46,28 @@ namespace Server.MirObjects.Monsters
             int delay = distance * 50 + 500; //50 MS per Step
             DelayedAction action = null;
 
-            if (RandomUtils.Next(100) < 65 && distance<3)
+            int rd = RandomUtils.Next(100);
+            if (rd < 65)
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0 });
-                List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
-                for (int o = 0; o < listtargets.Count; o++)
+                LineAttack(3,0);
+            }
+            else if (rd < 90)
+            {
+                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
+                List<MapObject> listtargets = FindAllTargets(2, Functions.PointMove(CurrentLocation, Direction, 2));
+                foreach (MapObject ob in listtargets)
                 {
-                    MapObject ob = listtargets[o];
-                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
-                    if (!ob.IsAttackTarget(this)) continue;
-                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage , DefenceType.MAC);
+                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay + 200, ob, damage * 2, DefenceType.MAC);
                     ActionList.Add(action);
-
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist && RandomUtils.Next(100) < 40)
-                    {
-                        ob.ApplyPoison(new Poison { Owner = this, Duration = damage / 10, PType = PoisonType.Green, Value = damage / 10, TickSpeed = 2000 }, this);
-                    }
                 }
             }
             else
             {
-                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
-                List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 3);
-                for (int o = 0; o < listtargets.Count; o++)
-                {
-                    MapObject ob = listtargets[o];
-                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
-                    if (!ob.IsAttackTarget(this)) continue;
-                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage*3/2, DefenceType.MAC);
-                    ActionList.Add(action);
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist && RandomUtils.Next(100)<40)
-                    {
-                        ob.ApplyPoison(new Poison { Owner = this, Duration = damage / 10, PType = PoisonType.Green, Value = damage / 5, TickSpeed = 2000 }, this);
-                    }
-                }
+                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 2 });
+                LineAttack(3,2);
+             
             }
-            
 
             ShockTime = 0;
             ActionTime = Envir.Time + 500;
@@ -82,8 +75,57 @@ namespace Server.MirObjects.Monsters
         }
 
 
+        private void LineAttack(int distance, byte AttackType)
+        {
+            int damage = GetAttackPower(MinDC, MaxDC);
+            if (damage == 0) return;
 
-       
+            for (int i = 1; i <= distance; i++)
+            {
+                Point target = Functions.PointMove(CurrentLocation, Direction, i);
+
+                if (target == Target.CurrentLocation)
+                    Target.Attacked(this, damage, DefenceType.MACAgility);
+                else
+                {
+                    if (!CurrentMap.ValidPoint(target)) continue;
+
+                    //Cell cell = CurrentMap.GetCell(target);
+                    if (CurrentMap.Objects[target.X, target.Y] == null) continue;
+
+                    for (int o = 0; o < CurrentMap.Objects[target.X, target.Y].Count; o++)
+                    {
+                        MapObject ob = CurrentMap.Objects[target.X, target.Y][o];
+                        if (ob.Race == ObjectType.Monster || ob.Race == ObjectType.Player)
+                        {
+                            if (!ob.IsAttackTarget(this)) continue;
+                            ob.Attacked(this, damage, DefenceType.MACAgility);
+                            //禁魔
+                            if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist)
+                            {
+                                ob.ApplyPoison(new Poison
+                                {
+                                    Owner = this,
+                                    Duration = RandomUtils.Next(6, 12),
+                                    PType = PoisonType.Stun,
+                                    Value = damage,
+                                    TickSpeed = 1000
+                                }, this);
+                            }
+                        }
+                        else continue;
+
+                        break;
+                    }
+                }
+            }
+        }
+
+
+
+
+
+
 
         protected override void ProcessTarget()
         {

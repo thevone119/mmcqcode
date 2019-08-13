@@ -7,7 +7,7 @@ using S = ServerPackets;
 namespace Server.MirObjects.Monsters
 {
     /// <summary>
-    ///  冰宫画卷(范围放毒)
+    ///  Monster440 昆仑叛军射手 2种攻击手段
     ///  2种攻击手段
     /// </summary>
     public class Monster440 : MonsterObject
@@ -23,7 +23,7 @@ namespace Server.MirObjects.Monsters
 
         protected override bool InAttackRange()
         {
-            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, 3);
+            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, 8);
         }
 
         protected override void Attack()
@@ -39,40 +39,17 @@ namespace Server.MirObjects.Monsters
             int delay = distance * 50 + 500; //50 MS per Step
             DelayedAction action = null;
 
-            if (RandomUtils.Next(100) < 65 && distance<3)
+            if (RandomUtils.Next(100) < 70)
             {
-                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0 });
-                List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
-                for (int o = 0; o < listtargets.Count; o++)
-                {
-                    MapObject ob = listtargets[o];
-                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
-                    if (!ob.IsAttackTarget(this)) continue;
-                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage , DefenceType.MAC);
-                    ActionList.Add(action);
-
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist && RandomUtils.Next(100) < 40)
-                    {
-                        ob.ApplyPoison(new Poison { Owner = this, Duration = damage / 10, PType = PoisonType.Green, Value = damage / 10, TickSpeed = 2000 }, this);
-                    }
-                }
+                Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID = Target.ObjectID, Location = CurrentLocation, Type = 0 });
+                action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.ACAgility);
+                ActionList.Add(action);
             }
             else
             {
-                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
-                List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 3);
-                for (int o = 0; o < listtargets.Count; o++)
-                {
-                    MapObject ob = listtargets[o];
-                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
-                    if (!ob.IsAttackTarget(this)) continue;
-                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage*3/2, DefenceType.MAC);
-                    ActionList.Add(action);
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist && RandomUtils.Next(100)<40)
-                    {
-                        ob.ApplyPoison(new Poison { Owner = this, Duration = damage / 10, PType = PoisonType.Green, Value = damage / 5, TickSpeed = 2000 }, this);
-                    }
-                }
+                Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID = Target.ObjectID, Location = CurrentLocation, Type = 1 });
+                action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.None);
+                ActionList.Add(action);
             }
             
 
@@ -82,8 +59,6 @@ namespace Server.MirObjects.Monsters
         }
 
 
-
-       
 
         protected override void ProcessTarget()
         {
@@ -105,11 +80,48 @@ namespace Server.MirObjects.Monsters
             }
 
             if (!CanMove || Target == null) return;
-            MoveTo(Target.CurrentLocation);
-           
+            int distance = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
+            if (distance > 6)
+            {
+                MoveTo(Target.CurrentLocation);
+                return;
+            }
+
+
+            //40几率跑路
+            if (RandomUtils.Next(100) < 60)
+            {
+                return;
+            }
+            MirDirection dir = Functions.DirectionFromPoint(Target.CurrentLocation, CurrentLocation);
+
+            if (Walk(dir)) return;
+
+            switch (RandomUtils.Next(2)) //No favour
+            {
+                case 0:
+                    for (int i = 0; i < 7; i++)
+                    {
+                        dir = Functions.NextDir(dir);
+
+                        if (Walk(dir))
+                            return;
+                    }
+                    break;
+                default:
+                    for (int i = 0; i < 7; i++)
+                    {
+                        dir = Functions.PreviousDir(dir);
+
+                        if (Walk(dir))
+                            return;
+                    }
+                    break;
+            }
         }
 
-    
-     
+
+
+
     }
 }

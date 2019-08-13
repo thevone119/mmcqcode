@@ -633,7 +633,7 @@ namespace Server.MirEnvir
                 //_minfo.Drops.Add(drop5);
 
 
-                DropInfo drop7 = DropInfo.FromLine("副本_特殊戒指", String.Format("1/55 传送戒指"));
+                DropInfo drop7 = DropInfo.FromLine("副本_特殊戒指", String.Format("1/65 传送戒指"));
                 _minfo.Drops.Add(drop7);
 
 

@@ -1000,7 +1000,15 @@ namespace Server.MirObjects
                     value = value3;
                 }
                 value += Level * 2;
-                value += skCount;
+                if (skCount > 200)
+                {
+                    value += 200;
+                }
+                else
+                {
+                    value += skCount;
+                }
+               
                 LastSkillComm7 = Envir.Time + 3000;
                 CurrentMap.Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.GreatFoxThunder }, CurrentLocation);
                 //Broadcast(new S.ObjectEffect { ObjectID = this.ObjectID, Effect = SpellEffect.GreatFoxThunder });

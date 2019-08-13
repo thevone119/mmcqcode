@@ -1413,11 +1413,6 @@ namespace Server.MirObjects
             {
                 return;
             }
-  
-            LastMonSkillTime = Envir.Time + 1000;
-            //契约兽的主动技能
-
-
             if (Dead)
             {
                 //如果已经死亡，则删除玩家的零时技能
@@ -1426,25 +1421,26 @@ namespace Server.MirObjects
             else
             {
                 //没有死亡，则添加零时技能
-
-
             }
+
             if (Envir.Time < LastMonSkillTime)
             {
                 return;
             }
+            LastMonSkillTime = Envir.Time + 1000;
             if (InSafeZone)
             {
                 return;
             }
 
-
+           
             //天雷阵
             if (hasMonSk(MyMonSkill.MyMonSK7) && RandomUtils.Next(100) < 20)
             {
                 int value = GetAttackPower(MinDC, MaxDC);
-                value += Level * 2;
+                value += Level*3/2 ;
                 LastMonSkillTime = Envir.Time + 3000;
+   
                 CurrentMap.Broadcast(new S.ObjectEffect { ObjectID = ObjectID, Effect = SpellEffect.GreatFoxThunder }, CurrentLocation);
                 //Broadcast(new S.ObjectEffect { ObjectID = this.ObjectID, Effect = SpellEffect.GreatFoxThunder });
                 List<MapObject> list = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);

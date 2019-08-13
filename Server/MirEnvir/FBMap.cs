@@ -46,6 +46,7 @@ namespace Server.MirEnvir
         public int play_level;//玩家的等级，最高级的玩家
 
         public int fb_playcount;//副本的玩家数
+        public int fb_min_playcount;//副本的玩家数
         public int fb_level;//副本的层级
         public int fb_score;//累计得分
         public int fb_usertime;//累计用时
@@ -154,7 +155,7 @@ namespace Server.MirEnvir
                 }
             }
             //刷新小怪，每个玩家就是一种小怪
-            for(int i=0;i< fb_playcount; i++)
+            for(int i=0;i< fb_min_playcount; i++)
             {
                 string mname = getRandom(fbxiaoguiai);
                 MonsterInfo mInfo = null;
@@ -240,10 +241,9 @@ namespace Server.MirEnvir
             }
 
             //刷新蓝怪，蓝怪按组，3个一组
-            mcount2 = mcount2 * fb_playcount;
+            mcount2 = mcount2 * fb_min_playcount;
             for (int i = 0; i < mcount2; i++)
             {
-
                 string mname = getRandom(fbtxguai);
                 MonsterInfo mInfo = null;
                 for (int j = 0; j < 5; j++)
@@ -337,7 +337,7 @@ namespace Server.MirEnvir
 
 
             //刷新BOSS,每个玩家一个
-            for (int i = 0; i < fb_playcount; i++)
+            for (int i = 0; i < fb_min_playcount; i++)
             {
                 string mname = getRandom(fbboss);
                 if (fb_level >= 5)
@@ -826,9 +826,11 @@ namespace Server.MirEnvir
             {
                 return;
             }
+            fb_min_playcount = fb_playcount;
+            //
             if ((play_type == 1|| play_type==3) && fb_playcount == 1)
             {
-                fb_playcount = 2;
+                fb_min_playcount = 2;
             }
             ushort _MaxDC = 0, _level = 0;
             //

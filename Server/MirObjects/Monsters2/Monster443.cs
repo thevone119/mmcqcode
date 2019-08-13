@@ -7,23 +7,27 @@ using S = ServerPackets;
 namespace Server.MirObjects.Monsters
 {
     /// <summary>
-    ///  冰宫画卷(范围放毒)
-    ///  2种攻击手段
+    ///   Monster443 昆仑叛军道尊 小BOSS
+    ///  3种攻击手段
     /// </summary>
     public class Monster443 : MonsterObject
     {
 
+        private byte _stage = 0;//0:正常 1：毒免
+        private long fireTime = 0;
+        private long ProcessTime = 0;
 
         protected internal Monster443(MonsterInfo info)
             : base(info)
         {
+
         }
 
 
 
         protected override bool InAttackRange()
         {
-            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, 3);
+            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, 8);
         }
 
         protected override void Attack()
@@ -38,41 +42,39 @@ namespace Server.MirObjects.Monsters
             int distance = Functions.MaxDistance(CurrentLocation, Target.CurrentLocation);
             int delay = distance * 50 + 500; //50 MS per Step
             DelayedAction action = null;
-
-            if (RandomUtils.Next(100) < 65 && distance<3)
+            int rd = RandomUtils.Next(100);
+            
+            if (rd < 65 )
             {
-                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0 });
-                List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
-                for (int o = 0; o < listtargets.Count; o++)
-                {
-                    MapObject ob = listtargets[o];
-                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
-                    if (!ob.IsAttackTarget(this)) continue;
-                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage , DefenceType.MAC);
-                    ActionList.Add(action);
-
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist && RandomUtils.Next(100) < 40)
-                    {
-                        ob.ApplyPoison(new Poison { Owner = this, Duration = damage / 10, PType = PoisonType.Green, Value = damage / 10, TickSpeed = 2000 }, this);
-                    }
-                }
+                //吸血
+                Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID = Target.ObjectID, Location = CurrentLocation, Type = 0 });
+                action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.MAC);
+                ActionList.Add(action);
+            }
+            else if(rd<80 && PoisonList.Count>0)
+            {
+                //治愈
+                Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID = Target.ObjectID, Target = Target.CurrentLocation, Location = CurrentLocation, Type = 2 });
+                PoisonList.Clear();
+                //血量恢复
+                ChangeHP(damage * 3);
+                //5-10秒内无法中毒
+                _stage = 1;
+                fireTime = Envir.Time + RandomUtils.Next(5, 15) * 1000;
+   
             }
             else
             {
-                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
-                List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 3);
-                for (int o = 0; o < listtargets.Count; o++)
-                {
-                    MapObject ob = listtargets[o];
-                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
-                    if (!ob.IsAttackTarget(this)) continue;
-                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage*3/2, DefenceType.MAC);
-                    ActionList.Add(action);
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist && RandomUtils.Next(100)<40)
-                    {
-                        ob.ApplyPoison(new Poison { Owner = this, Duration = damage / 10, PType = PoisonType.Green, Value = damage / 5, TickSpeed = 2000 }, this);
-                    }
-                }
+                //毒云
+                Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID = Target.ObjectID, Target = Target.CurrentLocation, Location = CurrentLocation, Type = 1 });
+                action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + 1000, Target, damage * 3 / 2, DefenceType.MAC, Target.CurrentLocation);
+                ActionList.Add(action);
+
+                action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + 1800, Target, damage * 3 / 2, DefenceType.MAC, Target.CurrentLocation);
+                ActionList.Add(action);
+
+                action = new DelayedAction(DelayedType.RangeDamage, Envir.Time + 2500, Target, damage * 3 / 2, DefenceType.MAC, Target.CurrentLocation);
+                ActionList.Add(action);
             }
             
 
@@ -82,34 +84,51 @@ namespace Server.MirObjects.Monsters
         }
 
 
-
-       
-
-        protected override void ProcessTarget()
+        //有护盾的时候无法中毒
+        public override void ApplyPoison(Poison p, MapObject Caster = null, bool NoResist = false, bool ignoreDefence = true)
         {
-            if (Target == null) return;
-
-            if (InAttackRange() && CanAttack)
+            if (_stage == 0)
             {
-                Attack();
-                if (Target == null || Target.Dead)
-                    FindTarget();
-
-                return;
+                base.ApplyPoison(p, Caster, NoResist, ignoreDefence);
             }
-
-            if (Envir.Time < ShockTime)
-            {
-                Target = null;
-                return;
-            }
-
-            if (!CanMove || Target == null) return;
-            MoveTo(Target.CurrentLocation);
-           
         }
 
-    
-     
+        protected override void ProcessAI()
+        {
+            //狂暴计算
+            if (!Dead && Envir.Time > ProcessTime)
+            {
+                ProcessTime = Envir.Time + 1000;
+                byte __stage = _stage;
+                if (Envir.Time > fireTime)
+                {
+                    _stage = 0;
+                }
+
+                if (__stage != _stage)
+                {
+                    Broadcast(GetInfo());
+                }
+            }
+            base.ProcessAI();
+        }
+
+        protected override void CompleteRangeAttack(IList<object> data)
+        {
+            MapObject target = (MapObject)data[0];
+            int damage = (int)data[1];
+            DefenceType defence = (DefenceType)data[2];
+            Point point = (Point)data[3];
+            List<MapObject>  tags = FindAllTargets(2,point);
+            foreach(MapObject ob in tags)
+            {
+                ob.Attacked(this, damage, defence);
+            }
+        }
+
+
+
+
+
     }
 }

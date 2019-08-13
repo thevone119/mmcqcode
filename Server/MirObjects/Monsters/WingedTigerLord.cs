@@ -126,11 +126,12 @@ namespace Server.MirObjects.Monsters
                         MapObject ob = list[o];
                         if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
                         if (!ob.IsAttackTarget(this)) continue;
-                        //宝宝叛变了
+                        //宝宝叛变了,不叛变了，叛变有很多问题，会重复刷怪
                         if(ob.Race == ObjectType.Monster && ob.Master!=null)
                         {
-                            MonsterObject mon = (MonsterObject)ob;
-                            mon.TameTime = Envir.Time;
+                            //MonsterObject mon = (MonsterObject)ob;
+                            //mon.IsCopy = true;
+                            //mon.TameTime = Envir.Time;
                         }
 
                         action = new DelayedAction(DelayedType.Damage, Envir.Time + 300, ob, damage, DefenceType.ACAgility, AttackType.Stomp);
