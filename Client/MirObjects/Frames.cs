@@ -3104,8 +3104,6 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.AttackRange1, new Frame(224, 8, 0, 100) { EffectStartTime = 0 });//普通符
             frame.Frames.Add(MirAction.AttackRange2, new Frame(224, 8, 0, 100) { EffectStartTime = 0 });//减速符
             frame.Frames.Add(MirAction.AttackRange3, new Frame(224, 8, 0, 100) { EffectStartTime = 0 });//高攻击
-
-
             //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
             frame.Frames.Add(MirAction.Struck, new Frame(288, 3, 0, 200));
             frame.Frames.Add(MirAction.Die, new Frame(312, 10, 0, 100));
@@ -3115,6 +3113,122 @@ namespace Client.MirObjects
 
 
 
+            //自定义 Monster434 昆仑叛军法师 3种攻击手段
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100, 385, 5, 5, 100) { EffectStartTime = 0 });//普通攻击
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(160, 8, 0, 100,463,6,-6,100) { EffectStartTime = 300 });//放冰控
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(224, 8, 0, 100, 463, 6, -6, 100) { EffectStartTime = 400 });//放球控
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(288, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(312, 9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(320, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(312, 9, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster434, frame);
+
+
+            //自定义 Monster436 昆仑叛军刺客 3种攻击手段
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100, 419, 4, 6, 100) { EffectStartTime = 300 });//普通攻击
+            frame.Frames.Add(MirAction.Attack2, new Frame(160, 10, 0, 100, 496, 8, -2, 100) { EffectStartTime = 100 });//普通攻击
+            frame.Frames.Add(MirAction.Attack3, new Frame(240, 9, 0, 100, 574, 5, -5, 100) { EffectStartTime = 400 });//普通攻击
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(312, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(336, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(345, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(336, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster436, frame);
+
+
+            //自定义 Monster437 昆仑叛军和尚 3种攻击手段
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 8, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(64, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(112, 8, 0, 100, 443, 3, 7, 100,756,10,0,100) { EffectStartTime = 200, ETime2=600 });//普通攻击
+            frame.Frames.Add(MirAction.Attack2, new Frame(176, 10, 0, 100, 518, 10, 0, 100, 836, 10, 0, 100) { EffectStartTime = 100, ETime2 = 800 });//普通攻击
+            frame.Frames.Add(MirAction.Attack3, new Frame(256, 10, 0, 100,676,10,0,100 , 598, 10, 0, 100) { EffectStartTime = 100, ETime2 = 800 });//普通攻击
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(336, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(360, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(369, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(360, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster437, frame);
+
+
+
+            //自定义 Monster439 昆仑叛军武士 3种攻击手段
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100, 384, 6, 0, 100) { EffectStartTime = 200 });//普通攻击
+            frame.Frames.Add(MirAction.Attack2, new Frame(160, 9, 0, 100, 432, 7, 0, 100, 488, 6, 0, 100) { EffectStartTime = 0, ETime2 = 600 });//普通攻击
+            frame.Frames.Add(MirAction.Attack3, new Frame(232, 8, 0, 100, 536, 13, -13, 100) { EffectStartTime = 100 });//普通攻击
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(296, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(320, 8, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(327, 1, 7, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(320, 8, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster439, frame);
+
+
+            //自定义 Monster440 昆仑叛军射手 2种攻击手段
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 7, 0, 100) { EffectStartTime = 200 });//普通攻击
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(152, 10, 0, 100) { EffectStartTime = 0});//普通攻击
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(232, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(256, 8, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(263, 1, 7, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(256, 8, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster440, frame);
+
+            //自定义 Monster441 昆仑叛军战神 小BOSS
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100,400,3,0,100) { EffectStartTime = 200 });//普通攻击
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(160, 10, 0, 100,424,8,-8,100) { EffectStartTime = 300 });//普通攻击
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(240, 8, 0, 100,438,6,-6,100) { EffectStartTime = 0 });//普通攻击
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(304, 4, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(336, 8, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(343, 1, 7, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(336, 8, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster441, frame);
+
+            //自定义 Monster442 昆仑叛军箭神 小BOSS
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(96, 9, 0, 100) { EffectStartTime = 200 });//普通攻击
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(168, 10, 0, 100, 496, 8, -8, 100) { EffectStartTime = 200 });//普通攻击
+            frame.Frames.Add(MirAction.AttackRange3, new Frame(248, 8, 0, 100, 504, 8, -8, 100) { EffectStartTime = 0 });//普通攻击
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(312, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(336, 8, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(343, 1, 7, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(336, 8, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster442, frame);
+
+
+            //自定义 Monster443 昆仑叛军道尊 小BOSS
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(96, 8, 0, 100,400,5,0,100) { EffectStartTime = 300 });//普通攻击
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(160, 8, 0, 100, 454, 6, 0, 100) { EffectStartTime = 200 });//普通攻击
+            frame.Frames.Add(MirAction.AttackRange3, new Frame(224, 9, 0, 100) { EffectStartTime = 0 });//普通攻击
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(296, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(320, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(329, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(320, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster443, frame);
 
         }
     }

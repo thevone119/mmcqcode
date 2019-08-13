@@ -154,6 +154,13 @@ namespace Client.MirObjects
                             Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster429], 542, 8, 1600, this) { Repeat = true });
                         }
                         break;
+                    case Monster.Monster439:
+                        Effects.Clear();
+                        if (info.ExtraByte == 1)
+                        {
+                            Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster439], 550, 6, 1800, this) { Repeat = true });
+                        }
+                        break;
                     case Monster.HellLord://太子
                         {
                             Effects.Clear();
@@ -1751,14 +1758,23 @@ namespace Client.MirObjects
                             case Monster.IcePillar:
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.IcePillar], 26, 6, 8 * 100, this) { Start = CMain.Time + 750 });
                                 break;
+                            case Monster.Monster434://昆仑叛军法师
+                                Point source434 = (Point)action.Params[1];
+                                if (source434 != null)
+                                {
+                                    MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster434], 469, 23, 2500, source434, CMain.Time + 100));
+                                }
+                                break;
                         }
 
                         TargetID = (uint)action.Params[0];
+      
                         break;
                     case MirAction.AttackRange2:
                         PlaySecondRangeSound();
                         TargetID = (uint)action.Params[0];
-                        switch(BaseImage)
+            
+                        switch (BaseImage)
                         {
                             case Monster.TurtleKing:
                                 byte random = (byte)CMain.Random.Next(4);
@@ -1771,6 +1787,20 @@ namespace Client.MirObjects
                                     MapControl.Effects.Add(ef);
                                 }
                                 break;
+                            case Monster.Monster434://昆仑叛军法师
+                                Point source434 = (Point)action.Params[1];
+                                if (source434 != null)
+                                {
+                                    MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster434], 492, 18, 2500, source434, CMain.Time + 100));
+                                }
+                                break;
+                            case Monster.Monster443:// 昆仑叛军道尊 小BOSS,毒云
+                                Point source443 = (Point)action.Params[1];
+                                if (source443 != null)
+                                {
+                                    MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster443], 502, 16, 3200, source443, CMain.Time + 100));
+                                }
+                                break;
                         }
                         break;
                     case MirAction.AttackRange3:
@@ -1780,6 +1810,13 @@ namespace Client.MirObjects
                         {
                             case Monster.TurtleKing:
                                 Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.TurtleKing], 946, 10, Frame.Count * Frame.Interval, User));
+                                break;
+                            case Monster.Monster442://昆仑叛军箭神 小BOSS
+                                Point source442 = (Point)action.Params[1];
+                                if (source442 != null)
+                                {
+                                    MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster442], 516, 10, 1000, source442, CMain.Time + 500));
+                                }
                                 break;
                         }
                         break;
@@ -2734,7 +2771,30 @@ namespace Client.MirObjects
                                                     };
                                                 }
                                                 break;
-                                            
+                                            case Monster.Monster440://昆仑叛军射手 射箭
+                                                if (MapControl.GetObject(TargetID) != null)
+                                                {
+                                                    CreateProjectile(38, Libraries.Monsters[(ushort)Monster.ArcherGuard], false, 3, 30, 6);
+                                                    SoundManager.PlaySound(BaseSound + 6);
+                                                }
+                                     
+                                                break;
+
+                                            case Monster.Monster442://昆仑叛军射手 射箭
+                                                if (MapControl.GetObject(TargetID) != null)
+                                                {
+                                                    CreateProjectile(400, Libraries.Monsters[(ushort)Monster.Monster442], true, 6, 30, 0);
+                                                    SoundManager.PlaySound(BaseSound + 6);
+                                                }
+
+                                                break;
+                                            case Monster.Monster443://昆仑叛军射手 射箭
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster443], 440, 14, 1400, ob));
+                                                }
+                                                break;
                                             case Monster.Dark:
                                                 if (MapControl.GetObject(TargetID) != null)
                                                     CreateProjectile(224, Libraries.Monsters[(ushort)Monster.Dark], false, 3, 30, 0);
@@ -2893,7 +2953,7 @@ namespace Client.MirObjects
                                                     };
                                                 }
                                                 break;
-                                                
+                                           
 
                                             case Monster.WhiteFoxman:
                                                 missile = CreateProjectile(1160, Libraries.Magic, true, 3, 30, 7);
@@ -3211,7 +3271,31 @@ namespace Client.MirObjects
                                                     };
                                                 }
                                                 break;
+                                            case Monster.Monster440://昆仑叛军射手 射箭
+                                                ob = MapControl.GetObject(TargetID);
+                                                missile = CreateProjectile(388, Libraries.Monsters[(ushort)Monster.Monster440], true, 5, 30, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        //440 + (int)Direction * 10
+                                                        MirDirection direction = Functions.DirectionFromPoint(CurrentLocation, ob.CurrentLocation);
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster440], 332 + (int)direction * 7, 7, 700, missile.Target));
+                                                    };
+                                                }
+                                                break;
 
+
+                                            case Monster.Monster442://昆仑叛军射手 射箭
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster442], 512, 5, 500, ob));
+                                                }
+
+                                                break;
+                                
                                             case Monster.ShellFighter:
                                                 ob = MapControl.GetObject(TargetID);
                                                 if (ob != null)
@@ -3317,7 +3401,7 @@ namespace Client.MirObjects
                                                     ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.ChieftainSword], 1066, 10, 2000, ob));
                                                 }
                                                 break;
-                                            case Monster.Monster429:
+                                            case Monster.Monster429://昆仑道士 5种攻击手段
                                                 missile = CreateProjectile(470, Libraries.Monsters[(ushort)Monster.Monster429], true, 4, 30, 0);
                                                 if (missile.Target != null)
                                                 {
