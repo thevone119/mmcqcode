@@ -16,7 +16,6 @@ namespace Client.MirObjects
     /// 这个包括各种怪物对应的图片，动作等都在这里写死了。
     /// 具体怪物对应的图片，动作这些，应该在服务器端定义的？
     /// 
-    /// 
     /// </summary>
     class MonsterObject : MapObject
     {
@@ -305,6 +304,20 @@ namespace Client.MirObjects
         //固化所有怪物的帧数
         private void initFrame(S.ObjectMonster info)
         {
+            //针对部分怪切换形态
+            if(BaseImage== Monster.Monster446 && info.ExtraByte==1)
+            {
+                if(info.ExtraByte == 1)
+                {
+                    Frames = FrameSet.MonstersMap[Monster.Monster20446];
+                }
+                else
+                {
+                    Frames = FrameSet.MonstersMap[Monster.Monster446];
+                }
+                return;
+            }
+
             if (FrameSet.MonstersMap.ContainsKey(BaseImage))
             {
                 Frames = FrameSet.MonstersMap[BaseImage];
@@ -2081,6 +2094,8 @@ namespace Client.MirObjects
                                 case Monster.DeathCrawler:
                                 case Monster.CreeperPlant:
                                 case Monster.IcePhantom:
+                                case Monster.Monster428:
+                                case Monster.Monster438:
                                     Remove();
                                     return;
                                 case Monster.ZumaStatue:
@@ -2788,11 +2803,36 @@ namespace Client.MirObjects
                                                 }
 
                                                 break;
+                                            case Monster.Monster424://昆仑虎 猛扑
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster424], 478, 10, 1000, ob));
+                                                }
+
+                                                break;
+                                            case Monster.Monster438://盘蟹花 猛扑
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster438], 424, 5, 500, ob));
+                                                }
+                                                break;
                                             case Monster.Monster443://昆仑叛军射手 射箭
                                                 ob = MapControl.GetObject(TargetID);
                                                 if (ob != null)
                                                 {
                                                     ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster443], 440, 14, 1400, ob));
+                                                }
+                                                break;
+                                            case Monster.Monster446://昆仑终极BOSS
+                                                missile = CreateProjectile(896, Libraries.Monsters[(ushort)Monster.Monster446], true, 3, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster446], 944, 8, 800, missile.Target));
+                                                    };
                                                 }
                                                 break;
                                             case Monster.Dark:
@@ -3271,6 +3311,17 @@ namespace Client.MirObjects
                                                     };
                                                 }
                                                 break;
+                                            case Monster.Monster438://盘蟹花 毒液攻击
+                                                missile = CreateProjectile(429, Libraries.Monsters[(ushort)Monster.Monster438], true, 6, 30, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster438], 525, 7, 700, missile.Target) { Blend = true });
+                                                    };
+                                                }
+                                                break;
                                             case Monster.Monster440://昆仑叛军射手 射箭
                                                 ob = MapControl.GetObject(TargetID);
                                                 missile = CreateProjectile(388, Libraries.Monsters[(ushort)Monster.Monster440], true, 5, 30, 0);
@@ -3295,7 +3346,16 @@ namespace Client.MirObjects
                                                 }
 
                                                 break;
-                                
+                                            case Monster.Monster446://昆仑终极BOSS
+                                                missile = CreateProjectile(1176, Libraries.Monsters[(ushort)Monster.Monster446], true, 6, 20, -6);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster446], 1182, 8, 800, missile.Target));
+                                                    };
+                                                }
+                                                break;
                                             case Monster.ShellFighter:
                                                 ob = MapControl.GetObject(TargetID);
                                                 if (ob != null)

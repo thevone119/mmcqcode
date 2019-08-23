@@ -277,6 +277,11 @@ namespace Client.MirObjects
                 case 143:
                 case 174:
                 case 185:
+                case 515:
+                case 516:
+                case 517:
+                case 518:
+                case 519:
                     Frames = FrameSet.NPCs[10];
                     break;
                 #endregion
@@ -359,6 +364,15 @@ namespace Client.MirObjects
                     CanChangeDir = false;
                     break;
                 #endregion
+
+                case 501:
+                case 502:
+                    Frames = FrameSet.NPCs[21];
+                    break;
+                case 503:
+                case 504:
+                    Frames = FrameSet.NPCs[23];
+                    break;
             }
 
             Light = 10;

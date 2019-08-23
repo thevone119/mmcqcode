@@ -10292,7 +10292,7 @@ namespace Client.MirScenes
                         LightRange = DXManager.Lights.Count - 1;
 
                     p = ob.DrawLocation;
-
+ 
                     Color lightColour = ob.LightColour;
 
                     if (ob.Race == ObjectType.Player)

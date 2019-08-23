@@ -182,6 +182,38 @@ namespace Client.MirObjects
                     Light = 3;
                     Blend = true;
                     break;
+                case Spell.MonKITO://鬼头
+                    BodyLibrary = Libraries.Monsters[446];
+                    if (info.Param)
+                    {
+                        DrawFrame = 965;
+                        FrameInterval = 100;
+                        FrameCount = 8;
+                        Repeat = false;
+                    }
+                    else
+                    {
+                        DrawFrame = 954;
+                        FrameInterval = 100;
+                        FrameCount = 10;
+                        Repeat = true;
+                    }
+                    //Light = 1;
+                    Blend = true;
+                    break;
+                case Spell.MonFireCircle://鬼头
+                    BodyLibrary = Libraries.Monsters[(ushort)Monster.Monster446];
+                    DrawFrame = 1373;
+                    FrameInterval = 100;
+                    FrameCount = 5;
+                    Repeat = true;
+                    if (info.Param)
+                    {
+                        MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster446], 1380, 4, 400, CurrentLocation) { Blend = true });
+                    }
+                    //Light = 1;
+                    Blend = true;
+                    break;
             }
 
 

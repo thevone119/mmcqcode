@@ -82,7 +82,7 @@ namespace Client.MirGraphics
                                           Gates = new MLibrary[2],
                                           Flags = new MLibrary[12],
                                           Mounts = new MLibrary[32],
-                                          NPCs = new MLibrary[400],
+                                          NPCs = new MLibrary[1000],
                                           Fishing = new MLibrary[2],
                                           Pets = new MLibrary[14],
                                           Transform = new MLibrary[40],
