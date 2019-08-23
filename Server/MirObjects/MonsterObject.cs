@@ -374,7 +374,7 @@ namespace Server.MirObjects
                     
 
                 default:
-                    return new MonsterObject(info);
+                    return GetMonsterByImage(info);
             }
         }
 

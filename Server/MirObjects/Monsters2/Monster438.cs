@@ -7,23 +7,38 @@ using S = ServerPackets;
 namespace Server.MirObjects.Monsters
 {
     /// <summary>
-    ///  冰宫画卷(范围放毒)
+    ///  盘蟹花
     ///  2种攻击手段
     /// </summary>
     public class Monster438 : MonsterObject
     {
-
+        public bool Visible;
+        public long VisibleTime;
 
         protected internal Monster438(MonsterInfo info)
             : base(info)
         {
+            Visible = false;
         }
 
-
+        protected override bool CanAttack
+        {
+            get
+            {
+                return Visible && base.CanAttack;
+            }
+        }
+        public override bool Blocking
+        {
+            get
+            {
+                return Visible && base.Blocking;
+            }
+        }
 
         protected override bool InAttackRange()
         {
-            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, 3);
+            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, 8);
         }
 
         protected override void Attack()
@@ -39,42 +54,23 @@ namespace Server.MirObjects.Monsters
             int delay = distance * 50 + 500; //50 MS per Step
             DelayedAction action = null;
 
-            if (RandomUtils.Next(100) < 65 && distance<3)
+            if (RandomUtils.Next(100) < 65 && distance<2)
             {
-                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0 });
-                List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
-                for (int o = 0; o < listtargets.Count; o++)
-                {
-                    MapObject ob = listtargets[o];
-                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
-                    if (!ob.IsAttackTarget(this)) continue;
-                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage , DefenceType.MAC);
-                    ActionList.Add(action);
-
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist && RandomUtils.Next(100) < 40)
-                    {
-                        ob.ApplyPoison(new Poison { Owner = this, Duration = damage / 10, PType = PoisonType.Green, Value = damage / 10, TickSpeed = 2000 }, this);
-                    }
-                }
+                Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0, TargetID = Target.ObjectID });
+                action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage , DefenceType.AC);
+                ActionList.Add(action);
             }
             else
             {
-                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
-                List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 3);
-                for (int o = 0; o < listtargets.Count; o++)
+                Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1, TargetID = Target.ObjectID });
+                action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.MAC);
+                ActionList.Add(action);
+
+                if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist && RandomUtils.Next(100) < 50)
                 {
-                    MapObject ob = listtargets[o];
-                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
-                    if (!ob.IsAttackTarget(this)) continue;
-                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage*3/2, DefenceType.MAC);
-                    ActionList.Add(action);
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist && RandomUtils.Next(100)<40)
-                    {
-                        ob.ApplyPoison(new Poison { Owner = this, Duration = damage / 10, PType = PoisonType.Green, Value = damage / 5, TickSpeed = 2000 }, this);
-                    }
+                    Target.ApplyPoison(new Poison { Owner = this, Duration = damage / 10, PType = PoisonType.Green, Value = damage / 10, TickSpeed = 2000 }, this);
                 }
             }
-            
 
             ShockTime = 0;
             ActionTime = Envir.Time + 500;
@@ -83,33 +79,61 @@ namespace Server.MirObjects.Monsters
 
 
 
-       
-
-        protected override void ProcessTarget()
+        protected override void ProcessAI()
         {
-            if (Target == null) return;
-
-            if (InAttackRange() && CanAttack)
+            if (!Dead && Envir.Time > VisibleTime)
             {
-                Attack();
-                if (Target == null || Target.Dead)
-                    FindTarget();
+                VisibleTime = Envir.Time + 2000;
 
-                return;
+                bool visible = FindNearby(6);
+
+                if (!Visible && visible)
+                {
+                    Visible = true;
+                    CellTime = Envir.Time + 500;
+                    Broadcast(GetInfo());
+                    Broadcast(new S.ObjectShow { ObjectID = ObjectID });
+                    ActionTime = Envir.Time + 1000;
+                }
+
+                if (Visible && !visible)
+                {
+                    Visible = false;
+                    VisibleTime = Envir.Time + 3000;
+
+                    Broadcast(new S.ObjectHide { ObjectID = ObjectID });
+
+                    SetHP(MaxHP);
+                }
             }
 
-            if (Envir.Time < ShockTime)
-            {
-                Target = null;
-                return;
-            }
-
-            if (!CanMove || Target == null) return;
-            MoveTo(Target.CurrentLocation);
-           
+            base.ProcessAI();
         }
 
-    
-     
+        public override bool IsAttackTarget(MonsterObject attacker)
+        {
+            return Visible && base.IsAttackTarget(attacker);
+        }
+        public override bool IsAttackTarget(PlayerObject attacker)
+        {
+            return Visible && base.IsAttackTarget(attacker);
+        }
+
+        protected override void ProcessRoam() { }
+
+        protected override void ProcessSearch()
+        {
+            if (Visible)
+                base.ProcessSearch();
+        }
+
+        public override Packet GetInfo()
+        {
+            if (!Visible) return null;
+
+            return base.GetInfo();
+        }
+
+
     }
 }

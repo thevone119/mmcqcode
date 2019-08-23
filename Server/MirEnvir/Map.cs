@@ -674,19 +674,22 @@ namespace Server.MirEnvir
         }
 
         //随机返回一个可以访问的点
-        public Point RandomValidPoint(int x,int y,int Range)
+        public Point RandomValidPoint(int x,int y,int maxdis,int mindis=0)
         {
             //随机10次，随机不到，返回原来的点
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 20; i++)
             {
-                int x1 = RandomUtils.Next(x- Range,x+ Range+1);
-                int y1 = RandomUtils.Next(y - Range, y + Range+1);
+                int x1 = RandomUtils.Next(x- maxdis, x+ maxdis + 1);
+                int y1 = RandomUtils.Next(y - maxdis, y + maxdis + 1);
+                if(Math.Abs(x1 - x) < mindis && Math.Abs(y1 - y) < mindis)
+                {
+                    continue;
+                }
                 if (Valid(x1, y1))
                 {
                     return new Point(x1, y1);
                 }
             }
-
             return new Point(x, y);
         }
 
@@ -2834,7 +2837,39 @@ namespace Server.MirEnvir
                     }
                     break;
 
+                #endregion
+               
+                #region MonKITO 昆仑终极BOSS的鬼头 3秒爆炸
+                case Spell.MonKITO:
+                    value = (int)data[2];
+                    front = (Point)data[3];
+                    if (ValidPoint(front))
+                    {
+                        //cell = GetCell(front);
+                        bool cast = true;
+                        if (cast)
+                        {
+                            player.LevelMagic(magic);
+                            SpellObject ob = new SpellObject
+                            {
+                                Spell = Spell.ExplosiveTrap,
+                                Value = value,
+                                ExpireTime = Envir.Time + (10 + value / 2) * 1000,
+                                TickSpeed = 500,
+                                Caster = player,
+                                CurrentLocation = front,
+                                CurrentMap = this,
+                            };
+                            AddObject(ob);
+                            ob.Spawned();
+                            player.ArcherTrapObject = ob;
+                        }
+                    }
+                    break;
+
                     #endregion
+
+
             }
 
             if (train)

@@ -57,11 +57,10 @@ namespace Server.MirObjects.Monsters
                 Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID = Target.ObjectID, Target = Target.CurrentLocation, Location = CurrentLocation, Type = 2 });
                 PoisonList.Clear();
                 //血量恢复
-                ChangeHP(damage * 3);
+                ChangeHP(damage * 2);
                 //5-10秒内无法中毒
                 _stage = 1;
                 fireTime = Envir.Time + RandomUtils.Next(5, 15) * 1000;
-   
             }
             else
             {

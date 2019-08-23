@@ -4170,6 +4170,17 @@ namespace Server.MirObjects
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 1);
                         CriticalRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 2);
                         break;
+                    case ItemSet.DragonWhistle://龙啸套 5件套,暴击加2，准确加1，攻速加1
+                        MaxAC = (ushort)Math.Min(ushort.MaxValue, MaxAC + 2);
+                        MaxMAC = (ushort)Math.Min(ushort.MaxValue, MaxMAC + 2);
+                        MaxSC = (ushort)Math.Min(ushort.MaxValue, MaxSC + 2);
+                        MaxDC = (ushort)Math.Min(ushort.MaxValue, MaxDC + 2);
+                        MaxMC = (ushort)Math.Min(ushort.MaxValue, MaxMC + 2);
+                        MaxHP = (ushort)Math.Min(ushort.MaxValue, MaxHP + 90);
+                        Agility = (byte)Math.Min(byte.MaxValue, Agility + 2);
+                        Accuracy = (byte)Math.Min(byte.MaxValue, Accuracy + 2);
+                        CriticalRate = (byte)Math.Min(byte.MaxValue, CriticalRate + 2);
+                        break;
                     case ItemSet.GaleWind://狂风套，加2点攻速
                         ASpeed = (sbyte)Math.Min(sbyte.MaxValue, ASpeed + 2);
                         break;
@@ -10419,7 +10430,7 @@ namespace Server.MirObjects
                             CurrentLocation = new Point(x, y),
                             CurrentMap = this.CurrentMap,
                             Direction = Direction,
-                            DetonatedTrap = true
+                            Param = true
                         };
                         sp.Broadcast(sp.GetInfo());
                     }

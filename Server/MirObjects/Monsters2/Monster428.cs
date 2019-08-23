@@ -13,13 +13,30 @@ namespace Server.MirObjects.Monsters
     public class Monster428 : MonsterObject
     {
 
+        public bool Visible;
+        public long VisibleTime;
 
 
         protected internal Monster428(MonsterInfo info)
             : base(info)
         {
+            Visible = false;
         }
 
+        protected override bool CanAttack
+        {
+            get
+            {
+                return Visible && base.CanAttack;
+            }
+        }
+        public override bool Blocking
+        {
+            get
+            {
+                return Visible && base.Blocking;
+            }
+        }
 
 
         protected override bool InAttackRange()
@@ -61,7 +78,60 @@ namespace Server.MirObjects.Monsters
 
 
 
+        protected override void ProcessAI()
+        {
+            if (!Dead && Envir.Time > VisibleTime)
+            {
+                VisibleTime = Envir.Time + 2000;
 
+                bool visible = FindNearby(6);
+
+                if (!Visible && visible)
+                {
+                    Visible = true;
+                    CellTime = Envir.Time + 500;
+                    Broadcast(GetInfo());
+                    Broadcast(new S.ObjectShow { ObjectID = ObjectID });
+                    ActionTime = Envir.Time + 1000;
+                }
+
+                if (Visible && !visible)
+                {
+                    Visible = false;
+                    VisibleTime = Envir.Time + 3000;
+
+                    Broadcast(new S.ObjectHide { ObjectID = ObjectID });
+
+                    SetHP(MaxHP);
+                }
+            }
+
+            base.ProcessAI();
+        }
+
+        public override bool IsAttackTarget(MonsterObject attacker)
+        {
+            return Visible && base.IsAttackTarget(attacker);
+        }
+        public override bool IsAttackTarget(PlayerObject attacker)
+        {
+            return Visible && base.IsAttackTarget(attacker);
+        }
+
+        protected override void ProcessRoam() { }
+
+        protected override void ProcessSearch()
+        {
+            if (Visible)
+                base.ProcessSearch();
+        }
+
+        public override Packet GetInfo()
+        {
+            if (!Visible) return null;
+
+            return base.GetInfo();
+        }
 
         protected override void ProcessTarget()
         {

@@ -7,7 +7,7 @@ using S = ServerPackets;
 namespace Server.MirObjects.Monsters
 {
     /// <summary>
-    ///  冰宫画卷(范围放毒)
+    ///  昆仑虎 2种攻击手段
     ///  2种攻击手段
     /// </summary>
     public class Monster424 : MonsterObject
@@ -23,7 +23,7 @@ namespace Server.MirObjects.Monsters
 
         protected override bool InAttackRange()
         {
-            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, 3);
+            return CurrentMap == Target.CurrentMap && Functions.InRange(CurrentLocation, Target.CurrentLocation, 2);
         }
 
         protected override void Attack()
@@ -39,40 +39,19 @@ namespace Server.MirObjects.Monsters
             int delay = distance * 50 + 500; //50 MS per Step
             DelayedAction action = null;
 
-            if (RandomUtils.Next(100) < 65 && distance<3)
+            if (RandomUtils.Next(100) < 70)
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 0 });
-                List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
-                for (int o = 0; o < listtargets.Count; o++)
-                {
-                    MapObject ob = listtargets[o];
-                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
-                    if (!ob.IsAttackTarget(this)) continue;
-                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage , DefenceType.MAC);
-                    ActionList.Add(action);
-
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist && RandomUtils.Next(100) < 40)
-                    {
-                        ob.ApplyPoison(new Poison { Owner = this, Duration = damage / 10, PType = PoisonType.Green, Value = damage / 10, TickSpeed = 2000 }, this);
-                    }
-                }
+                action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.ACAgility);
+                ActionList.Add(action);
             }
             else
             {
-                Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
-                List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 3);
-                for (int o = 0; o < listtargets.Count; o++)
-                {
-                    MapObject ob = listtargets[o];
-                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
-                    if (!ob.IsAttackTarget(this)) continue;
-                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage*3/2, DefenceType.MAC);
-                    ActionList.Add(action);
-                    if (RandomUtils.Next(Settings.PoisonResistWeight) >= ob.PoisonResist && RandomUtils.Next(100)<40)
-                    {
-                        ob.ApplyPoison(new Poison { Owner = this, Duration = damage / 10, PType = PoisonType.Green, Value = damage / 5, TickSpeed = 2000 }, this);
-                    }
-                }
+                Broadcast(new S.ObjectRangeAttack { ObjectID = ObjectID, Direction = Direction, TargetID = Target.ObjectID, Location = CurrentLocation, Type = 0 });
+                action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, Target, damage, DefenceType.AC);
+                ActionList.Add(action);
+                action = new DelayedAction(DelayedType.Damage, Envir.Time + delay+200, Target, damage, DefenceType.MAC);
+                ActionList.Add(action);
             }
             
 

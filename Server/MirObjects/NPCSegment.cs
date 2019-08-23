@@ -2940,7 +2940,10 @@ namespace Server.MirObjects
                     case ActionType.TakeItem:
                         if (param.Count < 2 || !uint.TryParse(param[1], out count)) count = 1;
                         info = ItemInfo.getItem(param[0]);
-
+                        if (count <= 0)
+                        {
+                            count = 1;
+                        }
                         ushort dura;
                         bool checkDura = ushort.TryParse(param[2], out dura);
 

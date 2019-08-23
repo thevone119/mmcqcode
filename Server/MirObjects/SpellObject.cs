@@ -34,7 +34,8 @@ namespace Server.MirObjects
 
         public long TickTime, StartTime;
         public PlayerObject Caster;//施法者，技能释放者
-        public int Value, TickSpeed;
+        public MonsterObject MonCaster;//施法者，怪物
+        public int Value, TickSpeed,Tick;
         public Spell Spell;
         public Point CastLocation;
         public bool Show, Decoration;
@@ -43,7 +44,7 @@ namespace Server.MirObjects
         public MyMonster myMon;
 
         //ExplosiveTrap
-        public bool DetonatedTrap;
+        public bool Param;
 
         //Portal
         public Map ExitMap;
@@ -100,9 +101,12 @@ namespace Server.MirObjects
                     Despawn();
                     return;
                 }
+               
+             
 
                 if (Envir.Time < TickTime) return;
                 TickTime = Envir.Time + TickSpeed;
+                Tick++;
 
                 //Cell cell = CurrentMap.GetCell(CurrentLocation);
                 for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
@@ -225,7 +229,7 @@ namespace Server.MirObjects
                     if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) return;
                     if (ob.Dead) return;
                     if (!ob.IsAttackTarget(Caster)) return;
-                    if (DetonatedTrap) return;//make sure explosion happens only once
+                    if (Param) return;//make sure explosion happens only once
                     //DetonateTrapNow();
                     //烈火阵 
                     if (Caster != null)
@@ -349,13 +353,51 @@ namespace Server.MirObjects
                     }
                     
                     break;
+                case Spell.MonKITO:
+                    if (ob != this) return;
+                    if (Tick == 2)
+                    {
+                        Param = true;
+                        Broadcast(GetInfo());
+                        ExpireTime = Envir.Time;
+                        List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
+                        for (int o = 0; o < listtargets.Count; o++)
+                        {
+                            MapObject _ob = listtargets[o];
+                            if (_ob.Race != ObjectType.Player && _ob.Race != ObjectType.Monster) continue;
+                            if (!_ob.IsAttackTarget(MonCaster)) continue;
+                            _ob.Attacked(MonCaster, Value, DefenceType.MAC);
+                        }
+                    }
+                    break;
+                case Spell.MonFireCircle:
+                    if (ob != this) return;
+                    if (Tick >= 6)
+                    {
+                        ExpireTime = Envir.Time;
+                    }
+                    if (Tick > 1)
+                    {
+                        Param = true;
+                        Broadcast(GetInfo());
+                        Param = false;
+                        List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
+                        for (int o = 0; o < listtargets.Count; o++)
+                        {
+                            MapObject _ob = listtargets[o];
+                            if (_ob.Race != ObjectType.Player && _ob.Race != ObjectType.Monster) continue;
+                            if (!_ob.IsAttackTarget(MonCaster)) continue;
+                            _ob.Attacked(MonCaster, Value, DefenceType.MAC);
+                        }
+                    }
+                    break;
             }
         }
 
         //引爆烈火阵，在1秒以后
         public void DetonateTrapNow()
         {
-            DetonatedTrap = true;
+            Param = true;
             Broadcast(GetInfo());
             ExpireTime = Envir.Time + 1000;
         }
@@ -473,7 +515,7 @@ namespace Server.MirObjects
                         Location = CurrentLocation,
                         Spell = Spell,
                         Direction = Direction,
-                        Param = DetonatedTrap
+                        Param = Param
                     };
 
                 default:
@@ -482,7 +524,8 @@ namespace Server.MirObjects
                         ObjectID = ObjectID,
                         Location = CurrentLocation,
                         Spell = Spell,
-                        Direction = Direction
+                        Direction = Direction,
+                        Param = Param
                     };
             }
 

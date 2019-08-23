@@ -12,7 +12,7 @@ namespace Server.MirObjects.Monsters
     {
         private byte attType;
         public byte ObjectAttackType=0;//攻击手段
-        public byte ObjectRangeAttack=3;//范围攻击手段
+        public byte ObjectRangeAttack=2;//范围攻击手段
         protected internal TestAttackMon(MonsterInfo info)
             : base(info)
         {

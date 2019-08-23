@@ -178,7 +178,6 @@ namespace Server.MirObjects
                 if (_target == value) return;
                 _target = value;
             }
-
         }
         //主人，最后攻击人，经验拥有者，拥有者(怪物的经验归属，装备归属这个要调整下，否则道士的毒太厉害了),LastAttack，最后攻击者，这个用于做经验归属哦
         public MapObject Master, LastHitter, EXPOwner, Owner, LastAttacker;
