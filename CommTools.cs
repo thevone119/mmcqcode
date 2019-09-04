@@ -1570,7 +1570,7 @@ public class OSystem
                 }
             }
             return macAddresses;
-        }catch(Exception ex)
+        }catch(Exception)
         {
 
         }

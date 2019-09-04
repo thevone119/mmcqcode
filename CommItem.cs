@@ -1872,6 +1872,9 @@ public class MyMonster
     //重置次数
     public int RestartUpTime;
 
+    //刷技能的次数
+    public int skCount;
+
     //吞噬的技能判断
     public int DevDay = -1;
     public int DevMoney = 0;
@@ -1918,21 +1921,20 @@ public class MyMonster
     public void RestartUp(int UpChance)
     {
         RestartUpTime++;
-
-        int addChance = RestartUpTime/2 ;
-        if (addChance > 8)
+        int addChance = RestartUpTime/2;
+        if (addChance > 10)
         {
-            addChance = 8;
+            addChance = 10;
         }
 
         UpChance += addChance;
-        if (UpChance < 20)
+        if (UpChance < 33)
         {
-            UpChance = 20;
+            UpChance = 33;
         }
-        if (UpChance > 40)
+        if (UpChance > 45)
         {
-            UpChance = 40;
+            UpChance = 45;
         }
         AcUp = 5;
         MacUp = 5;
@@ -1996,7 +1998,7 @@ public class MyMonster
     {
         //可吞噬金币量,按等级计算，60级每天可以吞噬200万
         int AllAdd = (ushort)(MonLevel / 5 + MonLevel / 10) + MonLevel;
-        int maxMoney = AllAdd * 30000;
+        int maxMoney = AllAdd * 20000;
 
         if (money > maxMoney)
         {

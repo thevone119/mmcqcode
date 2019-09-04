@@ -484,6 +484,7 @@ namespace ServerPackets
         public bool Lightning, Fire;
         public byte MapDarkLight;
         public bool CanFastRun;
+        public bool DrawAnimation;
         //地图信息增加安全区,用于客户端判断是否在安全区，在安全区则可以穿人，穿怪
         //安全区域
         public List<SafeZoneInfo> SafeZones = new List<SafeZoneInfo>();
@@ -508,6 +509,7 @@ namespace ServerPackets
             {
                 SafeZones.Add(new SafeZoneInfo(reader));
             }
+            DrawAnimation = reader.ReadBoolean();
         }
 
         protected override void WritePacket(BinaryWriter writer)
@@ -529,6 +531,7 @@ namespace ServerPackets
             {
                 SafeZones[i].Save(writer);
             }
+            writer.Write(DrawAnimation);
         }
     }
 
@@ -2886,6 +2889,7 @@ namespace ServerPackets
         //地图信息增加安全区,用于客户端判断是否在安全区，在安全区则可以穿人，穿怪
         //安全区域
         public List<SafeZoneInfo> SafeZones = new List<SafeZoneInfo>();
+        public bool DrawAnimation;
 
         protected override void ReadPacket(BinaryReader reader)
         {
@@ -2904,6 +2908,7 @@ namespace ServerPackets
             {
                 SafeZones.Add(new SafeZoneInfo(reader));
             }
+            DrawAnimation = reader.ReadBoolean();
         }
         protected override void WritePacket(BinaryWriter writer)
         {
@@ -2923,6 +2928,7 @@ namespace ServerPackets
             {
                 SafeZones[i].Save(writer);
             }
+            writer.Write(DrawAnimation);
         }
     }
     public sealed class ObjectTeleportOut : Packet

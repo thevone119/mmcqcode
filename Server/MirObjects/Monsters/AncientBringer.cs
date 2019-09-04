@@ -174,7 +174,7 @@ namespace Server.MirObjects.Monsters
                         {
                             if (RandomUtils.Next(2) == 0)
                             {
-                                ob.ApplyPoison(new Poison { Owner = this, Duration = 6, PType = PoisonType.DelayedExplosion, Value = damage , TickSpeed = 2000 }, this);
+                                ob.ApplyPoison(new Poison { Owner = this, Duration = 20, PType = PoisonType.DelayedExplosion, Value = damage , TickSpeed = 2000 }, this);
                             }
                         }
                     }

@@ -2835,6 +2835,28 @@ namespace Client.MirObjects
                                                     };
                                                 }
                                                 break;
+                                            case Monster.Monster450://毒妖射手 射箭
+                                                missile = CreateProjectile(240, Libraries.Monsters[(ushort)Monster.Monster450], true, 3, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster450], 288, 10, 1000, missile.Target));
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.Monster451://毒妖射手 射箭
+                                                missile = CreateProjectile(399, Libraries.Monsters[(ushort)Monster.Monster451], true, 4, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster451], 479, 7, 700, missile.Target));
+                                                    };
+                                                }
+                                                break;
                                             case Monster.Dark:
                                                 if (MapControl.GetObject(TargetID) != null)
                                                     CreateProjectile(224, Libraries.Monsters[(ushort)Monster.Dark], false, 3, 30, 0);
@@ -3354,6 +3376,13 @@ namespace Client.MirObjects
                                                     {
                                                         missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster446], 1182, 8, 800, missile.Target));
                                                     };
+                                                }
+                                                break;
+                                            case Monster.Monster451://Monster451 碑石妖 毒妖林小BOSS
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster451], 486, 12, 1200, ob));
                                                 }
                                                 break;
                                             case Monster.ShellFighter:

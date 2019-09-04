@@ -14901,8 +14901,6 @@ namespace Server.MirObjects
                         return;
                     }
 
-
-
                     mon.callTime = mon.callTime - 30;
                     mon.UpMonIndex = temp.src_mon_idx;
                     mon.UpMonName = mob.Name;

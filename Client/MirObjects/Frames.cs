@@ -3342,6 +3342,70 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Revive, new Frame(816, 10, 0, 100) { Reverse = true });
             MonstersMap.Add(Monster.Monster20446, frame);
 
+
+            //自定义 Monster447 毒妖花 孽火花
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 10, 0, 300));
+            frame.Frames.Add(MirAction.Walking, new Frame(80, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(128, 10, 0, 100, 312, 10, -10, 100) { EffectStartTime = 800 });//普通攻击
+            frame.Frames.Add(MirAction.Struck, new Frame(208, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(232, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(241, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(232, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster447, frame);
+
+            //自定义 Monster448 毒妖花 孽冰花
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 10, 0, 300));
+            frame.Frames.Add(MirAction.Walking, new Frame(80, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(128, 10, 0, 100, 312, 10, -10, 100) { EffectStartTime = 800 });//普通攻击
+            frame.Frames.Add(MirAction.Struck, new Frame(208, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(232, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(241, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(232, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster448, frame);
+
+            //自定义 Monster449 毒妖武士
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 7, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(56, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(104, 10, 0, 100, 272, 9, -9, 100) { EffectStartTime = 200 });//普通攻击
+            frame.Frames.Add(MirAction.Attack2, new Frame(104, 10, 0, 100, 281, 10, -10, 100) { EffectStartTime = 100 });//普通攻击
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(184, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(208, 8, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(215, 1, 7, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(208, 8, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster449, frame);
+
+            //自定义 Monster450 毒妖射手
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(96, 7, 0, 100) { EffectStartTime = 200 });//普通攻击
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(152, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(176, 8, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(183, 1, 7, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(176, 8, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster450, frame);
+
+            //自定义 Monster451 碑石妖 毒妖林小BOSS
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 7, 0, 100,392,7,-7,100) { EffectStartTime = 100 });//旋转
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(152, 9, 0, 100,522,5,0,100) { EffectStartTime = 100 });//普通攻击
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(224, 8, 0, 100) { EffectStartTime = 0 });//普通攻击
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(288, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(312, 10, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(321, 1, 9, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(312, 10, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster451, frame);
+
+
+
         }
     }
 

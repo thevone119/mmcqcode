@@ -140,13 +140,13 @@ public enum RefinedValue : byte
     MC = 2,
     SC = 3,
 }
-
+//任务类型
 public enum QuestType : byte
 {
-    General = 0,
-    Daily = 1,
-    Repeatable = 2,
-    Story = 3
+    General = 0,//常规任务
+    Daily = 1,//每日任务
+    Repeatable = 2,//可重复做的任务，无限重复做的任务
+    Story = 3//故事
 }
 
 public enum QuestIcon : byte
@@ -643,6 +643,41 @@ public enum Monster : ushort
     Monster421 = 421,
     Monster422 = 422,
     Monster423 = 423,
+    Monster424 = 424,
+    Monster425 = 425,
+    Monster426 = 426,
+    Monster427 = 427,
+    Monster428 = 428,
+    Monster429 = 429,
+    Monster430 = 430,
+    Monster431 = 431,
+    Monster432 = 432,
+    Monster433 = 433,
+    Monster434 = 434,
+    Monster435 = 435,
+    Monster436 = 436,
+    Monster437 = 437,
+    Monster438 = 438,
+    Monster439 = 439,
+    Monster440 = 440,
+    Monster441 = 441,
+    Monster442 = 442,
+    Monster443 = 443,
+    Monster444 = 444,
+    Monster445 = 445,
+    Monster446 = 446,
+    Monster447 = 447,
+    Monster448 = 448,
+    Monster449 = 449,
+    Monster450 = 450,
+    Monster451 = 451,
+    Monster452 = 452,
+    Monster453 = 453,
+    Monster454 = 454,
+    Monster455 = 455,
+    Monster456 = 456,
+    Monster457 = 457,
+    Monster458 = 458,
 
 
     EvilMir = 900,
@@ -677,6 +712,9 @@ public enum Monster : ushort
     BabyMonkey = 10011,//unknown
     AngryBird = 10012,
     Foxey = 10013,
+
+    //怪物466的另外一个副本
+    Monster20446 = 20446,
 }
 
 //所有的动作定义
@@ -729,7 +767,11 @@ public enum MirAction : byte
 
     FishingCast,
     FishingWait,
-    FishingReel
+    FishingReel,
+
+    Standing2,//另外一种形态下的站立
+    Walking2,//另外一种形态下的站立
+    Struck2,//另外一种形态被攻击
 }
 
 public enum CellAttribute : byte
@@ -879,6 +921,7 @@ public enum ItemType : byte
     SkinWeapon = 38,//武器变幻
     SkinArmour = 39,//衣服变幻
     MonsterDan = 40,//兽魂丹
+
 }
 //格子类型，就是各种交易框的类型咯？
 public enum MirGridType : byte
@@ -995,8 +1038,16 @@ public enum PetType : byte
     Common = 0,//普通，法师召唤的，道士召唤的宝宝
     CreaturePet = 1,//非战斗宠物
     MyMonster = 2,//契约兽
+    ChildTempMonster = 3,//契约兽的子兽，零时的
 
-    All=11,//包括所有
+    //通用技能，契约兽带的技能，虚空之门，
+    //虚空之门，每3秒召唤一个怪物，召唤30秒，30秒内如果被打死，则不能停止召唤
+    //随机召唤10个怪物为其战斗5分钟，5分钟后，怪物重返虚空,超过叛变时间，直接死亡
+    TempMonster = 4,
+
+
+
+    All =11,//包括所有
 }
 //毒药类型
 [Flags]
@@ -1012,7 +1063,8 @@ public enum PoisonType : ushort
     Paralysis = 32,//麻痹
     DelayedExplosion = 64,//延期爆炸
     Bleeding = 128,//流血
-    LRParalysis = 256//解毒？
+    LRParalysis = 256,//解毒？
+    DelayedBomb = 512,//延期自爆（契约兽的自爆）
 }
 //物品的绑定类型，搞那么多干毛，所有物品都一样就行了啊。靠了
 [Flags]
@@ -1136,6 +1188,7 @@ public enum ItemSet : byte
 
     //以下是自行添加得
     GaleWind =51,//狂风套
+    DragonWhistle = 52,//龙啸套
 
     //这里增加首饰套，从沃玛套到金龙套，狂龙套
 
@@ -1268,6 +1321,10 @@ public enum Spell : byte
 
     //定点移动，类似闪现
     FixedMove=161,
+    //虚空，虚空之门,地狱之门，一个圆圈的门
+    EmptyDoor = 162,
+    //契约兽自爆
+    MyMonsterBomb = 163,
 
 
 
@@ -1277,7 +1334,9 @@ public enum Spell : byte
     MapLightning = 202,//地图上的闪电
     MapLava = 203,//地图上的熔岩
     MapQuake1 = 204,//地突
-    MapQuake2 = 205//地突
+    MapQuake2 = 205,//地突
+    MonKITO = 206,//鬼头2.5秒后自爆
+    MonFireCircle = 207//鬼圈 6秒后消失
 }
 
 
@@ -1318,6 +1377,7 @@ public enum SpellEffect : byte
     Focus,//基本箭法，聚集，焦点，噬血等
     FlameRound,//火焰环绕
     PoisonRain,//毒雨
+    DelayedBomb,//自爆效果，爆炸效果（契约兽的自爆）
 }
 
 public enum BuffType : byte
@@ -2413,7 +2473,7 @@ public static class Functions
         }
         else if (t.TotalHours < 1.0)
         {
-            answer = string.Format("{0}分 {1:D2}秒", t.TotalMinutes, t.Seconds);
+            answer = string.Format("{0}分 {1:D2}秒", (int)t.TotalMinutes, t.Seconds);
         }
         else if (t.TotalDays < 1.0)
         {
@@ -5251,6 +5311,8 @@ public class ItemSets
                 case ItemSet.Nephrite:
                 case ItemSet.NephriteH:
                     return 5;
+                case ItemSet.DragonWhistle:
+                    return 6;
                 default:
                     return 2;
             }
@@ -6318,6 +6380,8 @@ public enum MyMonSkill : byte
     MyMonSK6 = 6,//战
     MyMonSK7 = 7,//战
     MyMonSK8 = 8,//战
+    MyMonSK9 = 9,//虚空
+    MyMonSK11=11,//自爆
 }
 
 //契约兽技能
@@ -6348,11 +6412,13 @@ public class MyMonSkillBean
             list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK1, "护主", "主人受到的伤害部分转接给契约兽", 160, 40));
             list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK2, "金刚", "大幅提升双抗，降低攻击", 320, 40));
             list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK3, "兽血", "血量提升，血量恢复提升", 320, 40));
+            list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK11, "自爆", "引爆自身，对身边怪物造成一次性伤害", 160, 40));
             list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK4, "狂暴", "攻速，移速提升", 160, 45));
             list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK5, "矫捷", "敏捷，准确提升", 160, 45));
             list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK6, "吞噬", "吞噬万物，转化为经验反馈给主人", 30, 45));
             list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK7, "天雷", "几率触发天雷对契约兽身旁怪物造成雷电攻击", 20, 50));
             list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK8, "毒雨", "几率触发毒雨对契约兽身旁怪物造成毒雨攻击", 8, 50));
+            list.Add(new MyMonSkillBean(MyMonSkill.MyMonSK9, "虚空", "消耗体力，召唤虚空生物，为其战斗", 8, 50));
         }
     }
 
@@ -6371,9 +6437,10 @@ public class MyMonSkillBean
 
     //刷武器的阵法
     //刷前2阵法
-    public static MyMonSkillBean RefreshSkill(byte MonLevel, MyMonSkill ExcSkill)
+    public static MyMonSkillBean RefreshSkill(byte MonLevel, MyMonSkill ExcSkill1, MyMonSkill ExcSkill2,int skCount)
     {
         init();
+        skCount = skCount / 2;
         List<MyMonSkillBean> listc = new List<MyMonSkillBean>();
         foreach (MyMonSkillBean sk in list)
         {
@@ -6382,7 +6449,7 @@ public class MyMonSkillBean
             {
                 continue;
             }
-            if(sk.skid == ExcSkill)
+            if(sk.skid == ExcSkill1 || sk.skid==ExcSkill2)
             {
                 continue;
             }
@@ -6393,13 +6460,13 @@ public class MyMonSkillBean
         int count = 0;
         foreach (MyMonSkillBean sk in listc)
         {
-            count += sk.change;
+            count += sk.change + skCount;
         }
         int rd = RandomUtils.Next(count);
         count = 0;
         foreach (MyMonSkillBean sk in listc)
         {
-            count += sk.change;
+            count += sk.change + skCount;
             if (rd < count)
             {
                 return sk;
@@ -6701,9 +6768,12 @@ public class NameChange
 
 /// <summary>
 /// 服务器的配置，这个后面需要从服务器端读取
+/// 服务器端和客户端的通用配置哦
 /// </summary>
 public class ServerConfig
 {
+    private static readonly InIReader Reader = new InIReader(@".\Configs\ServerClientCommon.ini");
+
     public static LightType lightType = LightType.Normal;//
     public static RunType runType = RunType.Normal;//
     public static ExitGameType exitGameType = ExitGameType.noWait;
@@ -6714,5 +6784,13 @@ public class ServerConfig
     //版本号，通过版本号传送客户端数据，版本号不同的可以兼容数据传送
     public static int Version = 100;
 
+    public static void Load()
+    {
+        //General
+        openMaxGem = Reader.ReadBoolean("General", "openMaxGem", openMaxGem);
+
+
+    }
+   
 
 }

@@ -29,4 +29,3 @@ D:\c_work\mir2-master\Build\Server\Server.exe
 D:\c_work\mir2-master\Build\Server\Server.pdb
 D:\c_work\mir2-master\Server\obj\Debug\Server.exe
 D:\c_work\mir2-master\Server\obj\Debug\Server.pdb
-D:\c_work\mir2-master\Server\obj\Debug\Server.csprojResolveAssemblyReference.cache
