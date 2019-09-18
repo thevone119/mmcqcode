@@ -428,19 +428,19 @@ namespace Server.MirObjects
                     return new Monster422(info);
                 case Monster.Monster423:// 未知
                     return new Monster423(info);
-                case Monster.Monster424:// 未知
+                case Monster.Monster424:// 昆仑虎
                     return new Monster424(info);
-                case Monster.Monster425:// 未知
+                case Monster.Monster425:// 部落祭师
                     return new Monster425(info);
-                case Monster.Monster426:// 未知
+                case Monster.Monster426:// 部落法师
                     return new Monster426(info);
-                case Monster.Monster427:// 未知
+                case Monster.Monster427:// 部落刺客
                     return new Monster427(info);
-                case Monster.Monster428:// 未知
+                case Monster.Monster428:// 老树盘根
                     return new Monster428(info);
-                case Monster.Monster429:// 未知
+                case Monster.Monster429:// 叛军道士
                     return new Monster429(info);
-                case Monster.Monster430:// 未知
+                case Monster.Monster430:// 多手怪
                     return new Monster430(info);
                 case Monster.Monster431:// 未知
                     return new Monster431(info);
@@ -448,47 +448,47 @@ namespace Server.MirObjects
                     return new Monster432(info);
                 case Monster.Monster433:// 未知
                     return new Monster433(info);
-                case Monster.Monster434:// 未知
+                case Monster.Monster434:// 叛军法师
                     return new Monster434(info);
-                case Monster.Monster435:// 未知
+                case Monster.Monster435:// 九尾火狐
                     return new Monster435(info);
-                case Monster.Monster436:// 未知
+                case Monster.Monster436:// 叛军刺客
                     return new Monster436(info);
-                case Monster.Monster437:// 未知
+                case Monster.Monster437:// 叛军武僧
                     return new Monster437(info);
-                case Monster.Monster438:// 未知
+                case Monster.Monster438:// 盘蟹花
                     return new Monster438(info);
-                case Monster.Monster439:// 未知
+                case Monster.Monster439:// 叛军武士
                     return new Monster439(info);
-                case Monster.Monster440:// 未知
+                case Monster.Monster440:// 叛军射手
                     return new Monster440(info);
-                case Monster.Monster441:// 未知
+                case Monster.Monster441:// 叛军战神
                     return new Monster441(info);
-                case Monster.Monster442:// 未知
+                case Monster.Monster442:// 叛军箭神
                     return new Monster442(info);
-                case Monster.Monster443:// 未知
+                case Monster.Monster443:// 叛军道尊
                     return new Monster443(info);
-                case Monster.Monster444:// 未知
+                case Monster.Monster444:// 叛军刺皇
                     return new Monster444(info);
-                case Monster.Monster445:// 未知
+                case Monster.Monster445:// 昆仑门
                     return new Monster445(info);
-                case Monster.Monster446:// 未知
+                case Monster.Monster446:// 叛军首领
                     return new Monster446(info);
-                case Monster.Monster447:// 未知
+                case Monster.Monster447:// 孽火花
                     return new Monster447(info);
-                case Monster.Monster448:// 未知
+                case Monster.Monster448:// 孽冰花
                     return new Monster448(info);
-                case Monster.Monster449:// 未知
+                case Monster.Monster449:// 毒妖武士
                     return new Monster449(info);
-                case Monster.Monster450:// 未知
+                case Monster.Monster450:// 毒妖射手
                     return new Monster450(info);
-                case Monster.Monster451:// 未知
+                case Monster.Monster451:// 碑石妖 毒妖林小BOSS
                     return new Monster451(info);
-                case Monster.Monster452:// 未知
+                case Monster.Monster452:// 多毒妖 毒妖林小BOSS
                     return new Monster452(info);
-                case Monster.Monster453:// 未知
+                case Monster.Monster453:// 巨斧妖 毒妖林小BOSS
                     return new Monster453(info);
-                case Monster.Monster454:// 未知
+                case Monster.Monster454:// 毒妖女皇 毒妖林BOSS
                     return new Monster454(info);
                 case Monster.Monster455:// 未知
                     return new Monster455(info);
@@ -2341,6 +2341,78 @@ namespace Server.MirObjects
 
             return true;
         }
+
+        //这里增加一种怪物跑动的方法
+        public virtual bool Run(MirDirection dir,byte distance=2,bool Blocking =true)
+        {
+            if (!CanMove) return false;
+
+            Point location = Functions.PointMove(CurrentLocation, dir, distance);
+
+            if (!CurrentMap.ValidPoint(location)) return false;
+
+            //Cell cell = CurrentMap.GetCell(location);
+
+            if (CurrentMap.Objects[location.X, location.Y] != null)
+            {
+                for (int i = 0; i < CurrentMap.Objects[location.X, location.Y].Count; i++)
+                {
+                    MapObject ob = CurrentMap.Objects[location.X, location.Y][i];
+                    if (Blocking)
+                    {
+                        if (!ob.Blocking || Race == ObjectType.Creature) continue;
+                    }
+                    return false;
+                }
+            }
+
+            CurrentMap.Remove(CurrentLocation.X, CurrentLocation.Y, this);
+
+            Direction = dir;
+            RemoveObjects(dir, distance);
+            CurrentLocation = location;
+            CurrentMap.Add(this);
+            AddObjects(dir, distance);
+
+            if (Hidden)
+            {
+                Hidden = false;
+
+                for (int i = 0; i < Buffs.Count; i++)
+                {
+                    if (Buffs[i].Type != BuffType.Hiding) continue;
+
+                    Buffs[i].ExpireTime = 0;
+                    break;
+                }
+            }
+
+
+            CellTime = Envir.Time + 500;
+            ActionTime = Envir.Time + 300;
+            MoveTime = Envir.Time + MoveSpeed;
+            if (MoveTime > AttackTime)
+                AttackTime = MoveTime;
+
+            InSafeZone = CurrentMap.GetSafeZone(CurrentLocation) != null;
+
+            Broadcast(new S.ObjectRun { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation });
+
+
+            //cell = CurrentMap.GetCell(CurrentLocation);
+
+            for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
+            {
+                if (CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i].Race != ObjectType.Spell) continue;
+                SpellObject ob = (SpellObject)CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i];
+
+                ob.ProcessSpell(this);
+                //break;
+            }
+
+            return true;
+        }
+
         //改写下这里，支持多种攻击手段
         protected virtual void Attack()
         {

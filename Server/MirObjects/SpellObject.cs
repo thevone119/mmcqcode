@@ -108,9 +108,22 @@ namespace Server.MirObjects
                 TickTime = Envir.Time + TickSpeed;
                 Tick++;
 
-                //Cell cell = CurrentMap.GetCell(CurrentLocation);
-                for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
-                    ProcessSpell(CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i]);
+                //范围伤害
+                if (Spell== Spell.MonKITO|| Spell == Spell.MonFireCircle || Spell == Spell.MonRotateAxe|| Spell == Spell.MonGhostFlag1 || Spell == Spell.MonGhostHead)
+                {
+                    //范围伤害
+                    ProcessSpell(null);
+                }
+                else
+                {
+                    //单体伤害
+                    for (int i = 0; i < CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y].Count; i++)
+                    {
+                        ProcessSpell(CurrentMap.Objects[CurrentLocation.X, CurrentLocation.Y][i]);
+                    }
+                }
+               
+                    
                 //
                 if ((Spell == Spell.MapLava) || (Spell == Spell.MapLightning)) Value = 0;
             }
@@ -124,6 +137,7 @@ namespace Server.MirObjects
         public void ProcessSpell(MapObject ob)
         {
             if (Envir.Time < StartTime) return;
+            List<MapObject> listtargets =  new List<MapObject>(); 
             switch (Spell)
             {
                 case Spell.FireWall:
@@ -354,13 +368,12 @@ namespace Server.MirObjects
                     
                     break;
                 case Spell.MonKITO:
-                    if (ob != this) return;
                     if (Tick == 2)
                     {
                         Param = true;
                         Broadcast(GetInfo());
                         ExpireTime = Envir.Time;
-                        List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
+                        listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
                         for (int o = 0; o < listtargets.Count; o++)
                         {
                             MapObject _ob = listtargets[o];
@@ -371,7 +384,6 @@ namespace Server.MirObjects
                     }
                     break;
                 case Spell.MonFireCircle:
-                    if (ob != this) return;
                     if (Tick >= 6)
                     {
                         ExpireTime = Envir.Time;
@@ -381,7 +393,7 @@ namespace Server.MirObjects
                         Param = true;
                         Broadcast(GetInfo());
                         Param = false;
-                        List<MapObject> listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
+                        listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
                         for (int o = 0; o < listtargets.Count; o++)
                         {
                             MapObject _ob = listtargets[o];
@@ -391,6 +403,56 @@ namespace Server.MirObjects
                         }
                     }
                     break;
+                case Spell.MonPoisonFog:
+                    if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) return;
+                    if (ob.Dead) return;
+                    if (!ob.IsAttackTarget(MonCaster)) return;
+                    ob.Attacked(MonCaster, Value, DefenceType.MAC);
+                    break;
+                case Spell.MonRotateAxe:
+                    if (Tick > 1)
+                    {
+                        listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
+                        for (int o = 0; o < listtargets.Count; o++)
+                        {
+                            MapObject _ob = listtargets[o];
+                            if (_ob.Race != ObjectType.Player && _ob.Race != ObjectType.Monster) continue;
+                            if (!_ob.IsAttackTarget(MonCaster)) continue;
+                            _ob.Attacked(MonCaster, Value, DefenceType.MAC);
+                        }
+                    }
+                    break;
+                case Spell.MonGhostFlag1://鬼旗，附近5格的友军，解毒,加血
+                    if (Tick > 1)
+                    {
+                        listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 5);
+                        for (int o = 0; o < listtargets.Count; o++)
+                        {
+                            MapObject _ob = listtargets[o];
+                            if (_ob.Race != ObjectType.Player && _ob.Race != ObjectType.Monster) continue;
+                            if (!_ob.IsFriendlyTarget(MonCaster)) continue;
+                            _ob.PoisonList.Clear();
+                            _ob.HealAmount = (ushort)Math.Min(ushort.MaxValue, _ob.HealAmount + Value);
+                        }
+                    }
+                    break;
+                case Spell.MonGhostHead:
+                    if (Tick >= RandomUtils.Next(2, 5))
+                    {
+                        Param = true;
+                        Broadcast(GetInfo());
+                        ExpireTime = Envir.Time;
+                        listtargets = CurrentMap.getMapObjects(CurrentLocation.X, CurrentLocation.Y, 2);
+                        for (int o = 0; o < listtargets.Count; o++)
+                        {
+                            MapObject _ob = listtargets[o];
+                            if (_ob.Race != ObjectType.Player && _ob.Race != ObjectType.Monster) continue;
+                            if (!_ob.IsAttackTarget(MonCaster)) continue;
+                            _ob.Attacked(MonCaster, Value, DefenceType.MAC);
+                        }
+                    }
+                    break;
+
             }
         }
 

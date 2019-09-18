@@ -47,7 +47,7 @@ namespace Client.MirObjects
 
 
         public FrameSet Frames;
-        public Frame Frame, WingFrame;
+        public Frame Frame, WingFrame,SDFrame;
         public int FrameIndex, FrameInterval, EffectFrameIndex, EffectFrameInterval, SlowFrameIndex;
         public byte SkipFrameUpdate = 0;
 
@@ -458,6 +458,13 @@ namespace Client.MirObjects
                             else
                                 WeaponLibrary2 = Index < Libraries.ARWeapons.Length ? Libraries.ARWeapons[Index] : null;
 
+                            //支持弓手的盛大的武器模型哦
+                            if(WeaponLibrary2 == null|| WeaponLibrary2.getImageCount() <= 0)
+                            {
+                                WeaponLibrary2 = Libraries.ARWeaponsSD[Index];
+                                WeaponLibrary2.parameter1 = 1;
+                            }
+
                             WeaponLibrary1 = null;
                         }
                         else
@@ -588,6 +595,19 @@ namespace Client.MirObjects
 
                             WeaponLibrary1 = Index < Libraries.AWeaponsL.Length ? Libraries.AWeaponsR[Index] : null;
                             WeaponLibrary2 = Index < Libraries.AWeaponsR.Length ? Libraries.AWeaponsL[Index] : null;
+
+                            //支持刺客的盛大的武器模型哦
+                            if (WeaponLibrary1 == null || WeaponLibrary1.getImageCount() <= 0)
+                            {
+                                WeaponLibrary1 = Libraries.AWeaponsLSD[Index];
+                                WeaponLibrary1.parameter1 = 1;
+                            }
+                            //支持刺客的盛大的武器模型哦
+                            if (WeaponLibrary2 == null || WeaponLibrary2.getImageCount() <= 0)
+                            {
+                                WeaponLibrary2 = Libraries.AWeaponsRSD[Index];
+                                WeaponLibrary2.parameter1 = 1;
+                            }
                         }
                         else
                         {
@@ -643,33 +663,37 @@ namespace Client.MirObjects
                         #endregion
 
                         #region Weapons 武器库
-                        if (Weapon >= 1000)
+                        int weapon_idx = Weapon;
+                        if(weapon_idx >= 1000)
                         {
-                            WeaponLibrary1 = ( Weapon-1000 ) < Libraries.CWeapons.Length ? Libraries.CWeapons[(Weapon - 1000)] : null;
-                            if (WeaponEffect > 0)
-                                WeaponEffectLibrary1 = WeaponEffect < Libraries.CWeaponEffect.Length ? Libraries.CWeaponEffect[WeaponEffect] : null;
-                            else
-                                WeaponEffectLibrary1 = null;
+                            weapon_idx = weapon_idx - 1000;
                         }
-						else if (Weapon >= 0)
+                        if (weapon_idx >= 0)
 						{
-							WeaponLibrary1 = Weapon < Libraries.CWeapons.Length ? Libraries.CWeapons[Weapon] : null;
+							WeaponLibrary1 = weapon_idx < Libraries.CWeapons.Length ? Libraries.CWeapons[weapon_idx] : null;
 							if (WeaponEffect > 0)
 								WeaponEffectLibrary1 = WeaponEffect < Libraries.CWeaponEffect.Length ? Libraries.CWeaponEffect[WeaponEffect] : null;
 							else
 								WeaponEffectLibrary1 = null;
-						}
-						else
+
+                            //支持盛大的武器模型哦
+                            if (WeaponLibrary1 == null || WeaponLibrary1.getImageCount() <= 0)
+                            {
+                                WeaponLibrary1 = Libraries.CWeaponsSD[weapon_idx];
+                                WeaponLibrary1.parameter1 = 1;
+                            }
+                        }
+                        else
 						{
 							WeaponLibrary1 = null;
 							WeaponEffectLibrary1 = null;
 							WeaponLibrary2 = null;
 						}
 
-						#endregion
+                        #endregion
 
-						#region WingEffects
-						if (WingEffect > 0 && WingEffect < 100)
+                        #region WingEffects
+                        if (WingEffect > 0 && WingEffect < 100)
                         {
                             WingLibrary = (WingEffect - 1) < Libraries.CHumEffect.Length ? Libraries.CHumEffect[WingEffect - 1] : null;
                         }
@@ -1007,6 +1031,24 @@ namespace Client.MirObjects
                 if (Fishing) CurrentAction = MirAction.FishingWait;
 
                 Frames.Frames.TryGetValue(CurrentAction, out Frame);
+
+                //适配盛大的武器库？（弓手,刺客适配了）
+                if ((WeaponLibrary1 != null && WeaponLibrary1.parameter1 == 1)|| (WeaponLibrary2 != null && WeaponLibrary2.parameter1 == 1))
+                {
+                    foreach (MirAction ac in Frames.Frames.Keys)
+                    {
+                        if (Frames.Frames[ac] == Frame)
+                        {
+                            FrameSet.sdWeapon.Frames.TryGetValue(ac, out SDFrame);
+                            //MirLog.info("ac:" + ac);
+                            break;
+                        }
+                    }
+                }
+
+             
+
+
                 FrameIndex = 0;
                 EffectFrameIndex = 0;
 
@@ -1365,6 +1407,22 @@ namespace Client.MirObjects
                 ClientMagic magic;
 
                 if (Frame == null) return;
+
+                //适配盛大的武器库？（弓手适配了）
+                if ((WeaponLibrary1 != null && WeaponLibrary1.parameter1 == 1) || (WeaponLibrary2 != null && WeaponLibrary2.parameter1 == 1))
+                {
+                    foreach (MirAction ac  in Frames.Frames.Keys)
+                    {
+                        if(Frames.Frames[ac]== Frame)
+                        {
+                            FrameSet.sdWeapon.Frames.TryGetValue(ac, out SDFrame);
+                            //MirLog.info("ac:"+ ac);
+                            break;
+                        }
+                    }
+                }
+
+
 
                 FrameInterval = Frame.Interval;
                 EffectFrameInterval = Frame.EffectInterval;
@@ -5110,7 +5168,18 @@ namespace Client.MirObjects
 		{
 			if (Weapon < 0) return;
 
-			if (WeaponLibrary1 != null)
+            if (WeaponLibrary1 == null)
+            {
+                return;
+            }
+            //盛大直接迁移过来的武器模型
+            if (WeaponLibrary1.parameter1 == 1 && SDFrame != null)
+            {
+                int DrawFrame = SDFrame.Start + (SDFrame.OffSet * (byte)Direction) + FrameIndex;
+                WeaponLibrary1.Draw(DrawFrame, DrawLocation, DrawColour, true);
+            }
+
+            if (WeaponLibrary1.parameter1==0)
 			{
 				WeaponLibrary1.Draw(DrawFrame + WeaponOffSet, DrawLocation, DrawColour, true); //original
 
@@ -5122,8 +5191,20 @@ namespace Client.MirObjects
         {
             if (Weapon == -1) return;
 
-            if (WeaponLibrary2 != null)
+            if (WeaponLibrary2 == null)
+            {
+                return;
+            }
+            //盛大直接迁移过来的武器模型
+            if (WeaponLibrary2.parameter1 == 1 && SDFrame!=null)
+            {
+                int DrawFrame = SDFrame.Start + (SDFrame.OffSet * (byte)Direction) + FrameIndex;
+                WeaponLibrary2.Draw(DrawFrame , DrawLocation, DrawColour, true);
+            }
+            else
+            {
                 WeaponLibrary2.Draw(DrawFrame + WeaponOffSet, DrawLocation, DrawColour, true);
+            }
         }
         public void DrawWings()
         {

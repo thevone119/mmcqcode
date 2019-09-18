@@ -17,6 +17,8 @@ namespace Client.MirObjects
         public static List<FrameSet> Gates;//
         public static List<FrameSet> Walls;//城墙
 
+        public static FrameSet sdWeapon;//盛大的武器模型，参考传奇外传的武器
+
         public Dictionary<MirAction, Frame> Frames = new Dictionary<MirAction, Frame>();
 
         static FrameSet()
@@ -29,6 +31,8 @@ namespace Client.MirObjects
       
 
             Players = new FrameSet();
+
+            sdWeapon = new FrameSet();
 
             HelperPets = new List<FrameSet>(); //IntelligentCreature
 
@@ -60,11 +64,11 @@ namespace Client.MirObjects
             Players.Frames.Add(MirAction.Mine, new Frame(184, 6, 0, 100, 216, 6, 0, 100));
             Players.Frames.Add(MirAction.Lunge, new Frame(139, 1, 5, 1000, 300, 1, 5, 1000)); //slashingburst test
 
-            //Assassin
+            //Assassin 刺客
             Players.Frames.Add(MirAction.Sneek, new Frame(464, 6, 0, 100, 496, 6, 0, 100));
             Players.Frames.Add(MirAction.DashAttack, new Frame(80, 3, 3, 100, 112, 3, 3, 100));
 
-            //Archer
+            //Archer 弓手
             Players.Frames.Add(MirAction.WalkingBow, new Frame(0, 6, 0, 100, 0, 6, 0, 100));
             Players.Frames.Add(MirAction.RunningBow, new Frame(48, 6, 0, 100, 48, 6, 0, 100));
             Players.Frames.Add(MirAction.AttackRange1, new Frame(96, 8, 0, 100, 96, 8, 0, 100));
@@ -72,19 +76,66 @@ namespace Client.MirObjects
             Players.Frames.Add(MirAction.AttackRange3, new Frame(224, 8, 0, 100, 224, 8, 0, 100));
             Players.Frames.Add(MirAction.Jump, new Frame(288, 8, 0, 100, 288, 8, 0, 100));
 
-            //Mounts
+            //Mounts 坐骑
             Players.Frames.Add(MirAction.MountStanding, new Frame(416, 4, 0, 500, 448, 4, 0, 500));
             Players.Frames.Add(MirAction.MountWalking, new Frame(448, 8, 0, 100, 480, 8, 0, 500));
             Players.Frames.Add(MirAction.MountRunning, new Frame(512, 6, 0, 100, 544, 6, 0, 100));
             Players.Frames.Add(MirAction.MountStruck, new Frame(560, 3, 0, 100, 592, 3, 0, 100));
             Players.Frames.Add(MirAction.MountAttack, new Frame(584, 6, 0, 100, 616, 6, 0, 100));
 
-            //Fishing
+            //Fishing 钓鱼
             Players.Frames.Add(MirAction.FishingCast, new Frame(632, 8, 0, 100));
             Players.Frames.Add(MirAction.FishingWait, new Frame(696, 6, 0, 120));
             Players.Frames.Add(MirAction.FishingReel, new Frame(744, 8, 0, 100));
 
             #endregion
+
+            /*
+           * sdWeapon 盛大的武器模型哦。针对弓手
+           */
+            #region sdWeapon Frames
+            //Common
+            sdWeapon.Frames.Add(MirAction.Standing, new Frame(0, 4, 4, 500));
+            sdWeapon.Frames.Add(MirAction.Walking, new Frame(64, 6, 2, 100));
+            sdWeapon.Frames.Add(MirAction.Running, new Frame(128, 6, 2, 100));
+            sdWeapon.Frames.Add(MirAction.Stance, new Frame(192, 1, 0, 1000));
+            sdWeapon.Frames.Add(MirAction.Stance2, new Frame(396, 1, 7, 1000));
+            sdWeapon.Frames.Add(MirAction.Attack1, new Frame(200, 6, 2, 100));
+            sdWeapon.Frames.Add(MirAction.Attack2, new Frame(264, 6, 2, 100));
+            sdWeapon.Frames.Add(MirAction.Attack3, new Frame(328, 8, 0, 100));
+            //sdWeapon.Frames.Add(MirAction.Attack4, new Frame(416, 6, 2, 100));
+            sdWeapon.Frames.Add(MirAction.Attack4, new Frame(416, 6, 2, 100));
+            sdWeapon.Frames.Add(MirAction.Spell, new Frame(392, 6, 2, 100));
+            //sdWeapon.Frames.Add(MirAction.Harvest, new Frame(456, 2, 0, 300));
+            sdWeapon.Frames.Add(MirAction.Harvest, new Frame(456, 2, 0, 300));
+
+            sdWeapon.Frames.Add(MirAction.Struck, new Frame(472, 3, 5, 100));
+            sdWeapon.Frames.Add(MirAction.Die, new Frame(536, 4,4, 100));
+            sdWeapon.Frames.Add(MirAction.Dead, new Frame(539, 1, 7, 1000));
+            sdWeapon.Frames.Add(MirAction.Revive, new Frame(536, 4, 4, 100) { Reverse = true });
+            sdWeapon.Frames.Add(MirAction.Mine, new Frame(264, 6, 2, 100));
+            sdWeapon.Frames.Add(MirAction.Lunge, new Frame(203, 1, 7, 1000)); //slashingburst test
+
+            //Assassin 刺客
+            sdWeapon.Frames.Add(MirAction.Sneek, new Frame(1824, 6, 2, 100));
+            sdWeapon.Frames.Add(MirAction.DashAttack, new Frame(128, 3, 5, 100));
+
+            //Archer 弓手
+            //sdWeapon.Frames.Add(MirAction.WalkingBow, new Frame(664, 6, 2, 100));
+            //sdWeapon.Frames.Add(MirAction.RunningBow, new Frame(728, 6, 2, 100));
+            //sdWeapon.Frames.Add(MirAction.AttackRange1, new Frame(800, 6, 2, 100));
+            //sdWeapon.Frames.Add(MirAction.AttackRange2, new Frame(864, 6, 2, 100));
+            //sdWeapon.Frames.Add(MirAction.AttackRange3, new Frame(928, 8, 0, 100));
+            //sdWeapon.Frames.Add(MirAction.Jump, new Frame(992, 6, 2, 100));
+
+            sdWeapon.Frames.Add(MirAction.WalkingBow, new Frame(664, 6, 2, 100));
+            sdWeapon.Frames.Add(MirAction.RunningBow, new Frame(728, 6, 2, 100));
+            sdWeapon.Frames.Add(MirAction.AttackRange1, new Frame(800, 6, 2, 100));
+            sdWeapon.Frames.Add(MirAction.AttackRange2, new Frame(864, 8, 0, 100));
+            sdWeapon.Frames.Add(MirAction.AttackRange3, new Frame(928, 8, 0, 100));
+            sdWeapon.Frames.Add(MirAction.Jump, new Frame(992, 6, 2, 100));
+            #endregion
+
 
             /*
              * NPCS
@@ -1645,7 +1696,7 @@ namespace Client.MirObjects
 
             //138 - KillerPlant ,黑暗船长
             Monsters.Add(frame = new FrameSet());
-            frame.Frames.Add(MirAction.Standing, new Frame(0, 10, 0, 200, 584, 10, 0, 200));
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 10, 0, 300, 584, 10, 0, 300) { Eff1Clear =true});
             frame.Frames.Add(MirAction.Walking, new Frame(80, 8, 0, 100, 664,8,0,100));
             //1.挥刀砍，范围伤害
             frame.Frames.Add(MirAction.Attack1, new Frame(144, 7, 0, 100,1168,4,0,100) { EffectStartTime = 300 ,EStart2=728, ECount2=7, ESkip2=0, EInterval2=100, ETime2=0 });
@@ -1663,7 +1714,7 @@ namespace Client.MirObjects
             //放雷电，满天的雷电
             //frame.Frames.Add(MirAction.AttackRange2, new Frame(424, 7, 0, 100, 896, 7, 0, 100));-OK
             frame.Frames.Add(MirAction.AttackRange2, new Frame(424, 7, 0, 100, 1008, 7, 0, 100) { EffectStartTime = 0, EStart2 = 1234, ECount2 = 12, ESkip2 = -12, EInterval2 = 100, ETime2 = 200 });
-            frame.Frames.Add(MirAction.Struck, new Frame(480, 3, 0, 200));
+            frame.Frames.Add(MirAction.Struck, new Frame(480, 3, 0, 200,1064,3,0,200));
             frame.Frames.Add(MirAction.Die, new Frame(504, 10, 0, 100));
             frame.Frames.Add(MirAction.Dead, new Frame(513, 1, 9, 1000));
             frame.Frames.Add(MirAction.Revive, new Frame(504, 10, 0, 100) { Reverse = true });
@@ -2657,6 +2708,7 @@ namespace Client.MirObjects
             #endregion
         }
 
+
         //这里针对一些怪物进行重新定位帧
         static void initMonsters()
         {
@@ -3404,9 +3456,57 @@ namespace Client.MirObjects
             frame.Frames.Add(MirAction.Revive, new Frame(312, 10, 0, 100) { Reverse = true });
             MonstersMap.Add(Monster.Monster451, frame);
 
+            //自定义 Monster452 多毒妖 毒妖林小BOSS
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100) { EffectStartTime = 100 });//普通攻击
+            frame.Frames.Add(MirAction.Attack2, new Frame(160, 10, 0, 100, 407, 11, -11, 100) { EffectStartTime = 0 });//普通攻击
+            frame.Frames.Add(MirAction.Attack3, new Frame(240, 8, 0, 100,432,9,-9,100) { EffectStartTime = 0 });//普通攻击
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(304, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(328, 9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(336, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(328, 9, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster452, frame);
+
+            //自定义 Monster453 巨斧妖 毒妖林小BOSS
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100, 536, 6, 0, 100) { EffectStartTime = 200 });//普通攻击
+            frame.Frames.Add(MirAction.Attack2, new Frame(160, 9, 0, 100, 528, 8, -8, 100) { EffectStartTime = 200 });//旋转
+            frame.Frames.Add(MirAction.Running, new Frame(160, 9, 0, 100, 528, 8, -8, 100) { EffectStartTime = 200 });//旋转，跑到某个点
+            frame.Frames.Add(MirAction.Attack3, new Frame(232, 9, 0, 100) { EffectStartTime = 0 });//释放技能，举手
+            frame.Frames.Add(MirAction.Attack4, new Frame(304, 10, 0, 100, 584, 8, 0, 100) { EffectStartTime = 400 });//开天斩
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(384, 8, 0, 100) { EffectStartTime = 0 });//飞虎头
+            frame.Frames.Add(MirAction.Struck, new Frame(448, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(472, 7, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(478, 1, 6, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(472, 7, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster453, frame);
+
+            //自定义 Monster454 毒妖女皇 毒妖林小BOSS
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 300,528,6,0,300) { Eff1Clear = false });
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100,576,6,0,100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 8, 0, 100, 624,8,0,100) { EffectStartTime = 0 });//普通攻击
+            frame.Frames.Add(MirAction.Attack2, new Frame(160, 9, 0, 100, 688,9,0, 100,1080, 7, 0, 100) { EffectStartTime = 0, ETime2 = 200 });//脉冲，范围麻痹
+            frame.Frames.Add(MirAction.Attack3, new Frame(232, 9, 0, 100, 760,9,0,100) { EffectStartTime = 0 });//撒花,放鬼头
+            frame.Frames.Add(MirAction.Attack4, new Frame(304, 9, 0, 100, 832, 9, 0, 100, 1052, 9, -9, 100) { EffectStartTime = 0, ETime2 = 200 });//无敌，护盾
+            frame.Frames.Add(MirAction.Attack5, new Frame(304, 9, 0, 100, 832, 9, 0, 100,1070,9,-9,100) { EffectStartTime = 0, ETime2=200 });//闪现，瞬移
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(376, 8, 0, 100, 904,8,0,100) { EffectStartTime = 0 });//远程单体雷电，禁魔
+            frame.Frames.Add(MirAction.Struck, new Frame(440, 3, 0, 200, 968, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(464, 8, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(471, 1, 7, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(464, 8, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster454, frame);
+
 
 
         }
+
+
     }
 
     
@@ -3417,10 +3517,11 @@ namespace Client.MirObjects
         public int Start, Count, Skip, Interval;
         //第一组特效
         public int EffectStart, EffectCount, EffectSkip, EffectInterval, EffectStartTime;
+
         //第二组特效
         public int EStart2, ECount2, ESkip2, EInterval2, ETime2;
-        //Reverse翻转，Blend混合
-        public bool Reverse, Blend;
+        //Reverse翻转，Blend混合,Eff1Clear:是否清除，Eff2Clear：是否清除
+        public bool Reverse, Blend,Eff1Clear;
 
         public int OffSet
         {

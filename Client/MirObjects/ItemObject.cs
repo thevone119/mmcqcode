@@ -47,6 +47,12 @@ namespace Client.MirObjects
             DrawFrame = info.Image;
             grade = info.grade;
             Size = BodyLibrary.GetTrueSize(DrawFrame);
+            //如果没有DNitems,就用items
+            if (Size.Width <= 1)
+            {
+                BodyLibrary = Libraries.Items;
+                Size = BodyLibrary.GetTrueSize(DrawFrame);
+            }
 
             DrawY = CurrentLocation.Y;
 

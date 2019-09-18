@@ -62,20 +62,24 @@ namespace Client.MirGraphics
             Deco = new MLibrary(Settings.DataPath + "Deco");
 
         public static readonly MLibrary[] CArmours = new MLibrary[42],
-                                          CWeapons = new MLibrary[110],
+                                          CWeapons = new MLibrary[150],
+                                          CWeaponsSD = new MLibrary[150],
                                           CWeaponEffect = new MLibrary[67],
                                           CHair = new MLibrary[9],
                                           CHumEffect = new MLibrary[10],
                                           AArmours = new MLibrary[26],
-                                          AWeaponsL = new MLibrary[40],
-                                          AWeaponsLGlow = new MLibrary[40],
-                                          AWeaponsR = new MLibrary[40],
-                                          AWeaponsRGlow = new MLibrary[40],
+                                          AWeaponsL = new MLibrary[50],
+                                          AWeaponsLSD = new MLibrary[50],
+                                          AWeaponsLGlow = new MLibrary[50],
+                                          AWeaponsR = new MLibrary[50],
+                                          AWeaponsRSD = new MLibrary[50],
+                                          AWeaponsRGlow = new MLibrary[50],
                                           AHair = new MLibrary[9],
                                           AHumEffect = new MLibrary[3],
                                           ARArmours = new MLibrary[17],
-                                          ARWeapons = new MLibrary[22],
-                                          ARWeaponsS = new MLibrary[22],
+                                          ARWeapons = new MLibrary[50],
+                                          ARWeaponsS = new MLibrary[50],
+                                          ARWeaponsSD = new MLibrary[50],//盛大的武器模型
                                           ARHair = new MLibrary[9],
                                           ARHumEffect = new MLibrary[3],
                                           Monsters = new MLibrary[458],//怪物
@@ -102,6 +106,10 @@ namespace Client.MirGraphics
             for (int i = 0; i < CWeapons.Length; i++)
                 CWeapons[i] = new MLibrary(Settings.CWeaponPath + i.ToString("00"));
 
+            for (int i = 0; i < CWeaponsSD.Length; i++)
+                CWeaponsSD[i] = new MLibrary(Settings.CWeaponPath + i.ToString("00_SD"));
+            
+
             for (int i = 0; i < CWeaponEffect.Length; i++)
                 CWeaponEffect[i] = new MLibrary(Settings.CWeaponEffectPath + i.ToString("00"));
 
@@ -118,12 +126,21 @@ namespace Client.MirGraphics
             for (int i = 0; i < AWeaponsL.Length; i++)
                 AWeaponsL[i] = new MLibrary(Settings.AWeaponPath + i.ToString("00") + " L");
 
+            for (int i = 0; i < AWeaponsLSD.Length; i++)
+                AWeaponsLSD[i] = new MLibrary(Settings.AWeaponPath + i.ToString("00") + " L_SD");
+
+            
+
             for (int i = 0; i < AWeaponsLGlow.Length; i++)
                 AWeaponsLGlow[i] = new MLibrary(Settings.AWeaponPath + i.ToString("00") + " LGlow");
             
 
             for (int i = 0; i < AWeaponsR.Length; i++)
                 AWeaponsR[i] = new MLibrary(Settings.AWeaponPath + i.ToString("00") + " R");
+
+
+            for (int i = 0; i < AWeaponsRSD.Length; i++)
+                AWeaponsRSD[i] = new MLibrary(Settings.AWeaponPath + i.ToString("00") + " R_SD");
 
             for (int i = 0; i < AWeaponsRGlow.Length; i++)
                 AWeaponsRGlow[i] = new MLibrary(Settings.AWeaponPath + i.ToString("00") + " RGlow");
@@ -144,6 +161,10 @@ namespace Client.MirGraphics
 
             for (int i = 0; i < ARWeaponsS.Length; i++)
                 ARWeaponsS[i] = new MLibrary(Settings.ARWeaponPath + i.ToString("00") + " S");
+
+            for (int i = 0; i < ARWeaponsSD.Length; i++)
+                ARWeaponsSD[i] = new MLibrary(Settings.ARWeaponPath + i.ToString("00") + "_sd");
+            
 
             for (int i = 0; i < ARHumEffect.Length; i++)
                 ARHumEffect[i] = new MLibrary(Settings.ARHumEffectPath + i.ToString("00"));
@@ -540,6 +561,13 @@ namespace Client.MirGraphics
         //扩展支持下个库
         public int maxIdx;//最大的IDX，如果大于这个数，则查找下一个lib
         public MLibrary nextLib;
+
+
+        //特殊参数，用于做一些特殊处理，例如，识别某个库是否特殊库，比如兼容盛大的库
+        //盛大的特殊的武器格式，直接用盛大的武器
+        //0：默认
+        //1.盛大的弓手武器，总共1196幅图
+        public int parameter1;
 
         public MLibrary(string filename)
         {

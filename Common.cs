@@ -772,6 +772,9 @@ public enum MirAction : byte
     Standing2,//另外一种形态下的站立
     Walking2,//另外一种形态下的站立
     Struck2,//另外一种形态被攻击
+    MoveAttack1,//移动攻击
+    MoveAttack2,//移动攻击
+    MoveAttack3//移动攻击
 }
 
 public enum CellAttribute : byte
@@ -1336,7 +1339,11 @@ public enum Spell : byte
     MapQuake1 = 204,//地突
     MapQuake2 = 205,//地突
     MonKITO = 206,//鬼头2.5秒后自爆
-    MonFireCircle = 207//鬼圈 6秒后消失
+    MonFireCircle = 207,//鬼圈 6秒后消失
+    MonPoisonFog = 208,//怪物的毒雾，类似毒云吧
+    MonRotateAxe = 209,//怪物的旋转斧头
+    MonGhostFlag1 = 210,//怪物鬼旗
+    MonGhostHead = 211,//怪物鬼头2 3秒或者6秒后爆炸
 }
 
 

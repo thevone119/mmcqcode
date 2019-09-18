@@ -131,8 +131,14 @@ namespace Client.MirObjects
                             SoundManager.PlaySound(BaseSound + 8);
                         }
                         break;
+                    case Monster.GeneralJinmYo://猫妖将军，狂暴
+                        Effects.Clear();
+                        if (Stage == 1)
+                        {
+                            Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.GeneralJinmYo], 529, 7, 1400, this) { Repeat = true });
+                        }
+                        break;
                     case Monster.Monster413:
-
                         Effects.Clear();
                         if (info.ExtraByte == 1)
                         {
@@ -157,7 +163,15 @@ namespace Client.MirObjects
                         Effects.Clear();
                         if (info.ExtraByte == 1)
                         {
-                            Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster439], 550, 6, 1800, this) { Repeat = true });
+                            Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster439], 550, 6, 1200, this) { Repeat = true });
+                        }
+                        break;
+
+                    case Monster.Monster454:
+                        Effects.Clear();
+                        if (info.ExtraByte == 1)
+                        {
+                            Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster454], 1054, 7, 1400, this) { Repeat = true });
                         }
                         break;
                     case Monster.HellLord://太子
@@ -1220,9 +1234,13 @@ namespace Client.MirObjects
                         break;
                     }
                     int i = CurrentAction == MirAction.Running ? 2 : 1;
-
+                    //有可能跑3格？
+                    if (CurrentAction == MirAction.Running && BaseImage== Monster.Monster453)
+                    {
+                        i = 3;
+                    }
                     Movement = Functions.PointMove(CurrentLocation, Direction, CurrentAction == MirAction.Pushed ? 0 : -i);
-
+                    
                     int count = Frame.Count;
                     int index = FrameIndex;
 
@@ -1323,6 +1341,7 @@ namespace Client.MirObjects
                 switch (NextAction.Action)
                 {
                     case MirAction.Walking:
+                    case MirAction.Running:
                     case MirAction.Pushed:
                         return false;
                 }
@@ -1349,6 +1368,12 @@ namespace Client.MirObjects
                     break;
                     break;
             }
+
+            bool nextClear = false;
+            if (Frame != null && Frame.Eff1Clear)
+            {
+                nextClear = true;
+            }
             //如果没有未处理的动作，默认就是站立的动作
             if (ActionFeed.Count == 0)
             {
@@ -1357,6 +1382,8 @@ namespace Client.MirObjects
                 {
                     CurrentAction = SitDown ? MirAction.SitDown : MirAction.Standing;
                 }
+
+    
 
                 Frames.Frames.TryGetValue(CurrentAction, out Frame);
 
@@ -1377,11 +1404,16 @@ namespace Client.MirObjects
                 //放在Frame中的特效在这里加入
                 if (Frame.EffectCount > 0 && BodyLibrary != null)
                 {
+                    if (nextClear)
+                    {
+                        Effects.Clear();
+                    }
                     Effects.Add(new Effect(BodyLibrary, Frame.EffectStart + (Frame.EffectOffSet * (byte)Direction), Frame.EffectCount, Frame.EffectCount * Frame.EffectInterval, this, CMain.Time + Frame.EffectStartTime));
                 }
                 //这个是第2组特效
                 if (Frame.ECount2 > 0 && BodyLibrary != null)
                 {
+                    Effects.Clear();
                     Effects.Add(new Effect(BodyLibrary, Frame.EStart2 + (Frame.EOffSet2 * (byte)Direction), Frame.ECount2, Frame.ECount2 * Frame.EInterval2, this, CMain.Time + Frame.ETime2));
                 }
             }
@@ -1398,8 +1430,14 @@ namespace Client.MirObjects
                 switch (CurrentAction)
                 {
                     case MirAction.Walking:
+                    case MirAction.Running:
                     case MirAction.Pushed:
                         int i = CurrentAction == MirAction.Running ? 2 : 1;
+                        //有可能跑3格？
+                        if (CurrentAction == MirAction.Running && BaseImage == Monster.Monster453)
+                        {
+                            i = 3;
+                        }
                         temp = Functions.PointMove(CurrentLocation, Direction, CurrentAction == MirAction.Pushed ? 0 : -i);
                         break;
                     default:
@@ -1495,6 +1533,10 @@ namespace Client.MirObjects
                 //放在Frame中的特效在这里加入
                 if (Frame.EffectCount > 0 && BodyLibrary != null)
                 {
+                    if (nextClear)
+                    {
+                        Effects.Clear();
+                    }
                     Effects.Add(new Effect(BodyLibrary, Frame.EffectStart + (Frame.EffectOffSet * (byte)Direction), Frame.EffectCount, Frame.EffectCount * Frame.EffectInterval, this,CMain.Time + Frame.EffectStartTime));
                 }
                 //这个是第2组特效
@@ -1526,6 +1568,7 @@ namespace Client.MirObjects
                         GameScene.Scene.Redraw();
                         break;
                     case MirAction.Walking:
+                    case MirAction.Running:
                         GameScene.Scene.Redraw();
                         break;
                     case MirAction.Attack1:
@@ -2001,6 +2044,7 @@ namespace Client.MirObjects
             switch (CurrentAction)
             {
                 case MirAction.Walking:
+                case MirAction.Running:
                     //这个是干嘛啊
                     if (!GameScene.CanMove) return;
 
@@ -2854,6 +2898,28 @@ namespace Client.MirObjects
                                                     {
                                                         if (missile.Target.CurrentAction == MirAction.Dead) return;
                                                         missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster451], 479, 7, 700, missile.Target));
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.Monster453:// Monster453 巨斧妖 毒妖林小BOSS
+                                                missile = CreateProjectile(648, Libraries.Monsters[(ushort)Monster.Monster453], true, 5, 20, -5);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster453], 668, 6, 600, missile.Target));
+                                                    };
+                                                }
+                                                break;
+                                            case Monster.Monster454:// Monster453 毒妖女皇 毒妖林小BOSS
+                                                missile = CreateProjectile(1136, Libraries.Monsters[(ushort)Monster.Monster454], true, 6, 20, 0);
+                                                if (missile.Target != null)
+                                                {
+                                                    missile.Complete += (o, e) =>
+                                                    {
+                                                        if (missile.Target.CurrentAction == MirAction.Dead) return;
+                                                        missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster454], 1232, 7, 700, missile.Target));
                                                     };
                                                 }
                                                 break;
@@ -4712,21 +4778,8 @@ namespace Client.MirObjects
                     }
                     break;
 
-                case Monster.GeneralJinmYo:
-                    //猫妖将军，狂暴
-                    if (Stage == 1 && CurrentAction != MirAction.Dead)
-                    {
-                        Libraries.Monsters[(ushort)Monster.GeneralJinmYo].DrawBlend(529 , DrawLocation, Color.White, true);
-                    }
-                    break;
-                case Monster.Monster413:
-                    //
-                    if (Stage == 1 && CurrentAction != MirAction.Dead)
-                    {
-                        //this.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster413], 496, 8, 800, this,0,true));
-                        //Libraries.Monsters[(ushort)Monster.Monster413].DrawBlend(496+ (int)Direction, DrawLocation, Color.White, true);
-                    }
-                    break;
+              
+
                 case Monster.CatShaman:
                     if (CurrentAction != MirAction.Dead)
                     {

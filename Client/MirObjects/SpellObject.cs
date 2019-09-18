@@ -28,6 +28,8 @@ namespace Client.MirObjects
 
         public Spell Spell;
         public int FrameCount, FrameInterval, FrameIndex;
+        //这个是特效
+        public int EffectStart, EffectCount, EffectInterval, EffectIndex;
         public bool Repeat;
         
 
@@ -214,12 +216,72 @@ namespace Client.MirObjects
                     //Light = 1;
                     Blend = true;
                     break;
+                case Spell.MonPoisonFog://怪物的毒雾，类似毒云吧
+                    BodyLibrary = Libraries.Monsters[(ushort)Monster.Monster452];
+                    DrawFrame = 400;
+                    FrameInterval = 100;
+                    FrameCount = 7;
+                    Repeat = true;
+                    //Light = 1;
+                    Blend = true;
+                    break;
+                case Spell.MonRotateAxe://怪物的旋转斧头
+                    BodyLibrary = Libraries.Monsters[(ushort)Monster.Monster453];
+                    DrawFrame = 653;
+                    FrameInterval = 150;
+                    FrameCount = 5;
+                    Repeat = true;
+                    //Light = 1;
+                    Blend = true;
+                    break;
+                case Spell.MonGhostFlag1://怪物鬼旗
+                    BodyLibrary = Libraries.Monsters[(ushort)Monster.Monster453];
+                    DrawFrame = 675;
+                    FrameInterval = 100;
+                    FrameCount = 8;
+                    Repeat = true;
+                    //Light = 1;
+                    Blend = false;
+                    //MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster453], 683, 7, 700, CurrentLocation) { Blend = true });
+                    break;
+                case Spell.MonGhostHead://鬼头2
+                    BodyLibrary = Libraries.Monsters[454];
+                    if (info.Param)
+                    {
+                        DrawFrame = 1041;
+                        FrameInterval = 100;
+                        FrameCount = 11;
+                        Repeat = false;
+                        Blend = true;
+                    }
+                    else
+                    {
+                        DrawFrame = 1024;
+                        FrameInterval = 100;
+                        FrameCount = 6;
+                        Repeat = true;
+                        EffectStart = 1035;
+                        EffectCount = 6;
+                        EffectInterval = 100;
+                        Blend = false;
+                    }
+                    //Light = 1;
+                   
+                    break;
             }
 
 
             NextMotion = CMain.Time + FrameInterval;
             //这个是干嘛的？消除后面2位的小数？
             NextMotion -= NextMotion % 100;
+
+            if (EffectCount > 0)
+            {
+                NextMotion2 = CMain.Time + EffectInterval;
+                //这个是干嘛的？消除后面2位的小数？
+                NextMotion2 -= NextMotion2 % 100;
+            }
+         
         }
         public override void Process()
         {
@@ -229,6 +291,15 @@ namespace Client.MirObjects
                     FrameIndex = 0;
                 NextMotion = CMain.Time + FrameInterval;
             }
+
+            //这个是画特效
+            if (CMain.Time >= NextMotion2 && EffectCount>0)
+            {
+                if (++EffectIndex >= EffectCount && Repeat)
+                    EffectIndex = 0;
+                NextMotion2 = CMain.Time + EffectInterval;
+            }
+            
 
             DrawLocation = new Point((CurrentLocation.X - User.Movement.X + MapControl.OffSetX) * MapControl.CellWidth, (CurrentLocation.Y - User.Movement.Y + MapControl.OffSetY) * MapControl.CellHeight);
             DrawLocation.Offset(GlobalDisplayLocationOffset);
@@ -244,6 +315,18 @@ namespace Client.MirObjects
                 BodyLibrary.DrawBlend(DrawFrame + FrameIndex, DrawLocation, DrawColour, true, 0.8F);
             else
                 BodyLibrary.Draw(DrawFrame + FrameIndex, DrawLocation, DrawColour, true);
+
+            //画特效
+            if (EffectCount <= 0)
+            {
+                return;
+            }
+            if (EffectIndex >= EffectCount && !Repeat)
+            {
+                return;
+            }
+            BodyLibrary.DrawBlend(EffectStart + EffectIndex, DrawLocation, Color.White, true, 0.8F);
+
         }
 
         public override bool MouseOver(Point p)
@@ -255,8 +338,16 @@ namespace Client.MirObjects
         {
         }
 
+        //画特效
         public override void DrawEffects(bool effectsEnabled)
-        { 
+        {
+            if (!effectsEnabled) return;
+
+            for (int i = 0; i < Effects.Count; i++)
+            {
+                if (Effects[i].DrawBehind) continue;
+                Effects[i].Draw();
+            }
         }
     }
 }
