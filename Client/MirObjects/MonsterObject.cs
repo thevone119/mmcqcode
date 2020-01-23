@@ -2855,6 +2855,13 @@ namespace Client.MirObjects
                                                 }
 
                                                 break;
+                                            case Monster.Monster430://千面妖王，放冰
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    MapControl.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster430], 432, 10, 1000, new Point(ob.CurrentLocation.X, ob.CurrentLocation.Y)));
+                                                }
+                                                break;
                                             case Monster.Monster438://盘蟹花 猛扑
                                                 ob = MapControl.GetObject(TargetID);
                                                 if (ob != null)
@@ -3397,6 +3404,13 @@ namespace Client.MirObjects
                                                         if (missile.Target.CurrentAction == MirAction.Dead) return;
                                                         missile.Target.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster429], 552, 8, 800, missile.Target) { Blend = true });
                                                     };
+                                                }
+                                                break;
+                                            case Monster.Monster430://千面妖王，放火
+                                                ob = MapControl.GetObject(TargetID);
+                                                if (ob != null)
+                                                {
+                                                    ob.Effects.Add(new Effect(Libraries.Monsters[(ushort)Monster.Monster430], 442, 10, 1000, ob));
                                                 }
                                                 break;
                                             case Monster.Monster438://盘蟹花 毒液攻击
