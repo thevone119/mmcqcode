@@ -106,14 +106,14 @@ namespace Server.MirObjects.Monsters
 
             if (target.Attacked(this, damage, DefenceType.MACAgility) > 0)
             {
-                if (RandomUtils.Next(Settings.PoisonResistWeight) >= Target.PoisonResist)
+                if (RandomUtils.Next(Settings.PoisonResistWeight) >= target.PoisonResist)
                 {
                     int Duration = RandomUtils.Next(MaxMC);
                     if (Duration > 30)
                     {
                         Duration = 30;
                     }
-                    Target.ApplyPoison(new Poison
+                    target.ApplyPoison(new Poison
                     {
                         Owner = this,
                         Duration = Duration,

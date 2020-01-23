@@ -30,12 +30,50 @@ namespace Server.MirObjects.Monsters
         //攻击的次数,每10次攻击放1次鬼头
         private long _actime = 0;
 
+
+        //是否可以活动
+        private bool _canMove = false;
+        private long _checkMoveTime = 0;//AI计算的时间
+        private string preMonName = "巨斧妖";
+
+
         protected internal Monster454(MonsterInfo info)
             : base(info)
         {
             //MaxTeleportTime = (byte)RandomUtils.Next(1, 3);
         }
 
+
+        private void checkCanMove()
+        {
+            if (!Dead && Envir.Time > _checkMoveTime)
+            {
+                _checkMoveTime = Envir.Time + 5000;
+                bool has = false;
+                foreach(MapObject ob in SMain.Envir.Objects)
+                {
+                    if (ob == null || ob.Dead || ob.CurrentMap != CurrentMap || ob.Race != ObjectType.Monster)
+                    {
+                        continue;
+                    }
+                    if (preMonName.Equals(ob.Name))
+                    {
+                        has = true;
+                        break;
+                    }
+                }
+                if (has)
+                {
+                    _canMove = false;
+                    MoveTime = Envir.Time + 5200;
+                    AttackTime = Envir.Time + 5200;
+                }
+                else
+                {
+                    _canMove = true;
+                }
+            }
+        }
 
 
         protected override bool InAttackRange()
@@ -127,6 +165,7 @@ namespace Server.MirObjects.Monsters
             {
                 Broadcast(new S.ObjectAttack { ObjectID = ObjectID, Direction = Direction, Location = CurrentLocation, Type = 1 });
                 Point movepoint = Functions.PointMove(CurrentLocation, Direction, 2);
+               
                 List<MapObject> listtargets = CurrentMap.getMapObjects(movepoint.X, movepoint.Y, 2);
                 for (int o = 0; o < listtargets.Count; o++)
                 {
@@ -284,6 +323,7 @@ namespace Server.MirObjects.Monsters
 
         protected override void ProcessAI()
         {
+            checkCanMove();
             //狂暴计算
             if (!Dead && Envir.Time > ProcessTime)
             {
@@ -301,7 +341,6 @@ namespace Server.MirObjects.Monsters
 
                 if (__stage != _stage)
                 {
-                    SMain.Enqueue("_stage:"+ _stage);
                     Broadcast(GetInfo());
                     ProcessTime = Envir.Time + 5000;
                 }
@@ -312,6 +351,10 @@ namespace Server.MirObjects.Monsters
 
         public override int Attacked(MonsterObject attacker, int damage, DefenceType type = DefenceType.ACAgility)
         {
+            if (!_canMove)
+            {
+                return 0;
+            }
             if (_stage == 0)
             {
                 return base.Attacked(attacker, damage, type);
@@ -323,6 +366,11 @@ namespace Server.MirObjects.Monsters
         }
         public override int Attacked(PlayerObject attacker, int damage, DefenceType type = DefenceType.ACAgility, bool damageWeapon = true)
         {
+            if (!_canMove)
+            {
+                return 0;
+            }
+
             if (_stage == 0)
             {
                 return base.Attacked(attacker, damage, type, damageWeapon);
@@ -336,6 +384,10 @@ namespace Server.MirObjects.Monsters
         //有护盾的时候无法中毒
         public override void ApplyPoison(Poison p, MapObject Caster = null, bool NoResist = false, bool ignoreDefence = true)
         {
+            if (!_canMove)
+            {
+                return;
+            }
             if (Envir.Time > PoisonTime)
             {
                 base.ApplyPoison(p, Caster, NoResist, ignoreDefence);
