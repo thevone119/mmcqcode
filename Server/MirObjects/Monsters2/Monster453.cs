@@ -20,13 +20,54 @@ namespace Server.MirObjects.Monsters
         private byte atype = 1;
         private long PoisonTime = 0;//可被中毒的时间
         private long atype4Time = 0;//可以放技能4的时间
-        
+
+        //是否可以活动
+        private bool _canMove = false;
+        private long _checkMoveTime = 0;//AI计算的时间
+        private string preMonName = "多毒妖";
+
 
         protected internal Monster453(MonsterInfo info)
             : base(info)
         {
         }
 
+        private void checkCanMove()
+        {
+            if (!Dead && Envir.Time > _checkMoveTime)
+            {
+                _checkMoveTime = Envir.Time + 5000;
+                bool has = false;
+                foreach (MapObject ob in SMain.Envir.Objects)
+                {
+                    if (ob == null || ob.Dead || ob.CurrentMap != CurrentMap || ob.Race != ObjectType.Monster)
+                    {
+                        continue;
+                    }
+                    if (preMonName.Equals(ob.Name))
+                    {
+                        has = true;
+                        break;
+                    }
+                }
+                if (has)
+                {
+                    _canMove = false;
+                    MoveTime = Envir.Time + 5200;
+                    AttackTime = Envir.Time + 5200;
+                }
+                else
+                {
+                    _canMove = true;
+                }
+            }
+        }
+
+        protected override void ProcessAI()
+        {
+            checkCanMove();
+            base.ProcessAI();
+        }
 
 
         protected override bool InAttackRange()
@@ -212,10 +253,30 @@ namespace Server.MirObjects.Monsters
            
         }
 
+        public override int Attacked(MonsterObject attacker, int damage, DefenceType type = DefenceType.ACAgility)
+        {
+            if (!_canMove)
+            {
+                return 0;
+            }
+            return base.Attacked(attacker, damage, type);
+        }
+        public override int Attacked(PlayerObject attacker, int damage, DefenceType type = DefenceType.ACAgility, bool damageWeapon = true)
+        {
+            if (!_canMove)
+            {
+                return 0;
+            }
 
+            return base.Attacked(attacker, damage, type, damageWeapon);
+        }
         //有护盾的时候无法中毒
         public override void ApplyPoison(Poison p, MapObject Caster = null, bool NoResist = false, bool ignoreDefence = true)
         {
+            if (!_canMove)
+            {
+                return;
+            }
             if (Envir.Time > PoisonTime)
             {
                 base.ApplyPoison(p, Caster, NoResist, ignoreDefence);

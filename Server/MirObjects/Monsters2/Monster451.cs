@@ -14,6 +14,8 @@ namespace Server.MirObjects.Monsters
     {
         private int a1Time = 0;
 
+   
+
         protected internal Monster451(MonsterInfo info)
             : base(info)
         {
@@ -70,7 +72,7 @@ namespace Server.MirObjects.Monsters
                     MapObject ob = listtargets[o];
                     if (ob.Race != ObjectType.Player && ob.Race != ObjectType.Monster) continue;
                     if (!ob.IsAttackTarget(this)) continue;
-                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage + damage *(0.2 * a1Time), DefenceType.AC);
+                    action = new DelayedAction(DelayedType.Damage, Envir.Time + delay, ob, damage + damage * a1Time / 5, DefenceType.AC);
                     ActionList.Add(action);
                 }
             }
