@@ -1921,7 +1921,7 @@ public class MyMonster
     public void RestartUp(int UpChance)
     {
         RestartUpTime++;
-        int addChance = RestartUpTime/2;
+        int addChance = RestartUpTime/3;
         if (addChance > 10)
         {
             addChance = 10;

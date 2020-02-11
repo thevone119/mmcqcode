@@ -15066,8 +15066,8 @@ namespace Server.MirObjects
                 //吞噬万物，除了书页
                 if (mon.hasMonSk(MyMonSkill.MyMonSK6))
                 {
-                    //吃装备，3倍的经验获得
-                    uint exp = temp.Info.Price * temp.Count * 3;
+                    //吃装备，2倍的经验获得
+                    uint exp = temp.Info.Price * temp.Count * 2;
                     exp = exp * (uint)Settings.LevelGoldExpList[mon.MonLevel];
 
                     MyMonsterUtils.MyMonExp(mon, exp, this, null);
@@ -15087,7 +15087,7 @@ namespace Server.MirObjects
                         }
 
                         pexp = pexp * (uint)Settings.LevelGoldExpList[Level]* temp.Count;
-                        GainExp(pexp);
+                        GainExp(pexp/2);
                     }
                     else
                     {
@@ -15114,7 +15114,7 @@ namespace Server.MirObjects
                     else
                     {
                         //吃装备，双倍的经验获得
-                        uint exp = temp.Info.Price * temp.Count * 3;
+                        uint exp = temp.Info.Price * temp.Count * 2;
                         exp = exp * (uint)Settings.LevelGoldExpList[Level];
 
                         MyMonsterUtils.MyMonExp(mon, exp,this,null);
@@ -22689,7 +22689,7 @@ namespace Server.MirObjects
                         expPoint = expPoint * temp.quality;
                     }
 
-                    GainExp((uint)expPoint);
+                    GainExp((uint)expPoint/2);
                     //移除装备
                     Info.ItemCollect[t] = null;
                     Enqueue(new S.DeleteItem { UniqueID = temp.UniqueID, Count = temp.Count });
