@@ -3190,6 +3190,21 @@ namespace Client.MirObjects
             MonstersMap.Add(Monster.Monster429, frame);
 
 
+            //自定义 Monster430 千面妖王 毒妖林小BOSS  3种攻击手段
+            frame = new FrameSet();
+            frame.Frames.Add(MirAction.Standing, new Frame(0, 6, 0, 500));
+            frame.Frames.Add(MirAction.Walking, new Frame(48, 6, 0, 100));
+            frame.Frames.Add(MirAction.Attack1, new Frame(96, 10, 0, 100, 354, 10, 0, 100) { EffectStartTime = 100 });//普通攻击
+            frame.Frames.Add(MirAction.AttackRange1, new Frame(176, 10, 0, 100) { EffectStartTime = 0 });//冰
+            frame.Frames.Add(MirAction.AttackRange2, new Frame(176, 10, 0, 100) { EffectStartTime = 0 });//火
+            //frame.Frames.Add(MirAction.AttackRange2, new Frame(288, 10, 0, 100));
+            frame.Frames.Add(MirAction.Struck, new Frame(256, 3, 0, 200));
+            frame.Frames.Add(MirAction.Die, new Frame(280, 9, 0, 100));
+            frame.Frames.Add(MirAction.Dead, new Frame(288, 1, 8, 1000));
+            frame.Frames.Add(MirAction.Revive, new Frame(280, 9, 0, 100) { Reverse = true });
+            MonstersMap.Add(Monster.Monster430, frame);
+
+
 
             //自定义 Monster434 昆仑叛军法师 3种攻击手段
             frame = new FrameSet();

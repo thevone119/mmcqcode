@@ -47,7 +47,8 @@ namespace Client.MirObjects
 
 
         public FrameSet Frames;
-        public Frame Frame, WingFrame,SDFrame;
+        //SDWFrame：盛大的武器帧
+        public Frame Frame, WingFrame,SDWFrame;
         public int FrameIndex, FrameInterval, EffectFrameIndex, EffectFrameInterval, SlowFrameIndex;
         public byte SkipFrameUpdate = 0;
 
@@ -1039,7 +1040,7 @@ namespace Client.MirObjects
                     {
                         if (Frames.Frames[ac] == Frame)
                         {
-                            FrameSet.sdWeapon.Frames.TryGetValue(ac, out SDFrame);
+                            FrameSet.sdWeapon.Frames.TryGetValue(ac, out SDWFrame);
                             //MirLog.info("ac:" + ac);
                             break;
                         }
@@ -1408,14 +1409,14 @@ namespace Client.MirObjects
 
                 if (Frame == null) return;
 
-                //适配盛大的武器库？（弓手适配了）
+                //适配盛大的武器库？
                 if ((WeaponLibrary1 != null && WeaponLibrary1.parameter1 == 1) || (WeaponLibrary2 != null && WeaponLibrary2.parameter1 == 1))
                 {
                     foreach (MirAction ac  in Frames.Frames.Keys)
                     {
                         if(Frames.Frames[ac]== Frame)
                         {
-                            FrameSet.sdWeapon.Frames.TryGetValue(ac, out SDFrame);
+                            FrameSet.sdWeapon.Frames.TryGetValue(ac, out SDWFrame);
                             //MirLog.info("ac:"+ ac);
                             break;
                         }
@@ -2733,6 +2734,7 @@ namespace Client.MirObjects
 
                                     break;
                                 case 5:
+                                    
                                     missile = CreateProjectile(1030, Libraries.Magic3, true, 5, 30, 5);
                                     StanceTime = CMain.Time + StanceDelay;
                                     SoundManager.PlaySound(20000 + 121 * 10);
@@ -5173,9 +5175,9 @@ namespace Client.MirObjects
                 return;
             }
             //盛大直接迁移过来的武器模型
-            if (WeaponLibrary1.parameter1 == 1 && SDFrame != null)
+            if (WeaponLibrary1.parameter1 == 1 && SDWFrame != null)
             {
-                int DrawFrame = SDFrame.Start + (SDFrame.OffSet * (byte)Direction) + FrameIndex;
+                int DrawFrame = SDWFrame.Start + (SDWFrame.OffSet * (byte)Direction) + FrameIndex;
                 WeaponLibrary1.Draw(DrawFrame, DrawLocation, DrawColour, true);
             }
 
@@ -5196,9 +5198,9 @@ namespace Client.MirObjects
                 return;
             }
             //盛大直接迁移过来的武器模型
-            if (WeaponLibrary2.parameter1 == 1 && SDFrame!=null)
+            if (WeaponLibrary2.parameter1 == 1 && SDWFrame != null)
             {
-                int DrawFrame = SDFrame.Start + (SDFrame.OffSet * (byte)Direction) + FrameIndex;
+                int DrawFrame = SDWFrame.Start + (SDWFrame.OffSet * (byte)Direction) + FrameIndex;
                 WeaponLibrary2.Draw(DrawFrame , DrawLocation, DrawColour, true);
             }
             else
