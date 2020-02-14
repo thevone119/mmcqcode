@@ -143,6 +143,9 @@ namespace Client.MirScenes
         public GuestItemRentDialog GuestItemRentDialog;
         public ItemRentalDialog ItemRentalDialog;
 
+        //验证码
+        public CheckCodeDialog CheckCodeDialog;
+
         public BuffDialog BuffsDialog;
 
         //not added yet
@@ -208,6 +211,8 @@ namespace Client.MirScenes
         //这个控制这个消息的延时，比如释放魔法过于频繁，则提示，但是一秒内只允许提示一次
         public long OutputDelay;
 
+        //处理验证码的时间
+        public long NextCheckCode = 0;
 
         public GameScene()
         {
@@ -308,6 +313,8 @@ namespace Client.MirScenes
             GuestItemRentingDialog = new GuestItemRentingDialog { Parent = this, Visible = false };
             GuestItemRentDialog = new GuestItemRentDialog { Parent = this, Visible = false };
             ItemRentalDialog = new ItemRentalDialog { Parent = this, Visible = false };
+
+            CheckCodeDialog = new CheckCodeDialog { Parent = this, Visible = false };
 
             BuffsDialog = new BuffDialog {Parent = this, Visible = true};
 
@@ -549,7 +556,7 @@ namespace Client.MirScenes
                     MailReadLetterDialog.Hide();
                     MailReadParcelDialog.Hide();
                     ItemRentalDialog.Visible = false;
-
+                    CheckCodeDialog.Hide();
 
 
                     GameScene.Scene.DisposeItemLabel();
@@ -1076,6 +1083,47 @@ namespace Client.MirScenes
             //辅助，外挂处理
             AutoHelpProcess();
 
+            //自动处理验证码
+            AutoCheckCode();
+        }
+
+        //处理验证码，如果有验证码，则自动弹出
+        private void AutoCheckCode()
+        {
+            //死亡后不处理
+            if (CMain.Time > NextCheckCode)
+            {
+                NextCheckCode = CMain.Time + 2000;
+                //判断有没有验证码需要验证的，如果有的话，要先做验证码处理
+                if (LastCheckTime > 0 && CMain.Time + 3000 < LastCheckTime)
+                {
+                    try
+                    {
+
+                        if (CheckCodeDialog == null)
+                        {
+                            CheckCodeDialog = new CheckCodeDialog
+                            {
+                                Parent = this
+                            };
+                        }
+                        if (CheckCodeDialog.Visible)
+                        {
+                            return;
+                        }
+                        CheckCodeDialog.Hide();
+                        CheckCodeDialog.checkcode = LastCheckCode;
+                        CheckCodeDialog.LastCheckTime = LastCheckTime;
+                        CheckCodeDialog.Show();
+                        NextCheckCode = CMain.Time + 1000*30;
+                        return;
+                    }
+                    catch (Exception e)
+                    {
+                        MirLog.info(e.StackTrace);
+                    }
+                }
+            }
         }
 
         //自动辅助处理，自动烈火，自动魔法盾，自动喝药等
@@ -2138,7 +2186,6 @@ namespace Client.MirScenes
                 case (short)ServerPacketIds.UserGold://刷新金币
                     Gold = ((S.UserGold)p).Gold;
                     Credit = ((S.UserGold)p).Credit;
-
                     break;
                 default:
                     base.ProcessPacket(p);
@@ -2189,6 +2236,9 @@ namespace Client.MirScenes
             User.BindAllItems();
             InventoryDialog.RefreshInventory();
         }
+
+  
+
 
         private void UserLocation(S.UserLocation p)
         {

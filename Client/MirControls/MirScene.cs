@@ -26,6 +26,10 @@ namespace Client.MirControls
         private static MirControl _clickedControl;
         //private bool _redraw;
 
+        //验证码加入在这里
+        public static string LastCheckCode;//
+        public static long LastCheckTime;//
+
         protected MirScene()
         {
             DrawControlTexture = true;
@@ -205,7 +209,18 @@ namespace Client.MirControls
                 case (short)ServerPacketIds.NewRecipeInfo:
                     NewRecipeInfo((S.NewRecipeInfo)p);
                     break;
+                case (short)ServerPacketIds.CheckCode://返回验证码
+                    CheckCode((S.CheckCode)p);
+                    break;
             }
+        }
+
+        //服务器端返回验证码
+        private void CheckCode(S.CheckCode p)
+        {
+            MirLog.info("CheckCode:" + p.code+ ",remainTime:" + p.remainTime);
+            LastCheckCode = p.code;
+            LastCheckTime = CMain.Time + p.remainTime;
         }
 
         private void NewItemInfo(S.NewItemInfo info)
@@ -250,6 +265,9 @@ namespace Client.MirControls
                     break;
                 case 5:
                     MirMessageBox.Show("断开连接：达到最大连接.", true);
+                    break;
+                case 6:
+                    MirMessageBox.Show("断开连接：验证码输入错误.", true);
                     break;
             }
 

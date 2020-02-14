@@ -64,6 +64,10 @@ namespace Server.MirNetwork
         //存储发送
         public bool StorageSent;
 
+
+
+
+
         //初始化
         public MirConnection(int sessionID, TcpClient client)
         {
@@ -675,6 +679,10 @@ namespace Server.MirNetwork
                     MyMonsterOperation((C.MyMonsterOperation)p);
                     break;
 
+                case (short)ClientPacketIds.CheckCode:
+                    CheckCode((C.CheckCode)p);
+                    break;
+
                 default:
                     SMain.Enqueue(string.Format("Invalid packet received. Index : {0}", p.Index));
                     break;
@@ -747,6 +755,70 @@ namespace Server.MirNetwork
 
             BeginSend(data);
             SoftDisconnect(reason);
+        }
+
+        //这里发送校验码
+        //src 0:登录，1：小退 3：游戏内
+        public void SendCheckCode(byte src)
+        {
+            //获取
+            if (Account == null)
+            {
+                return;
+            }
+            //SMain.Enqueue("SendCheckCode...");
+            //2分钟内校验
+            if(Account.LastCheckTime < SMain.Envir.Time)
+            {
+                Account.LastCheckTime = SMain.Envir.Time + (Settings.Minute * 2);
+            }
+            Account.checkErrorCount++;
+
+            //下次校验时间也更新
+            Account.NextCheckTime = Account.LastCheckTime+10000;
+            //发送校验码
+            Account.CheckCode = RandomUtils.Next(10, 99)+"";
+
+            Enqueue(new S.CheckCode { code = EncryptHelper.DesEncrypt(Account.CheckCode +"_" + RandomUtils.Next()), remainTime= Account.LastCheckTime-SMain.Envir.Time});
+
+        }
+
+        //校验客户端发送上来的校验码
+        public void CheckCode(C.CheckCode p)
+        {
+            //获取
+            if (Account == null)
+            {
+                return;
+            }
+            
+            //超时或者校验不通过，都失败，关闭客户端
+            if (p==null||Account.LastCheckTime < SMain.Envir.Time || p.code!= Account.CheckCode)
+            {
+                Account.LastCheckTime = 0;
+                SendDisconnect(6);
+                return;
+            }
+            
+            Account.LastCheckTime = 0;
+            Account.checkErrorCount--;
+            Account.checkSuccCount++;
+            //验证通过了，更新下次验证时间(如果错得多，则时间短)
+            if (Account.checkSuccCount <= Account.checkErrorCount)
+            {
+                Account.NextCheckTime = SMain.Envir.Time + (Settings.Minute * RandomUtils.Next(60, 120));
+                return;
+            }
+            //错误次数非常少，则时间延长些
+            if(Account.checkErrorCount<= Account.checkSuccCount / 8)
+            {
+                Account.NextCheckTime = SMain.Envir.Time + (Settings.Minute * RandomUtils.Next(180, 300));
+                return;
+            }
+
+            Account.NextCheckTime = SMain.Envir.Time + (Settings.Minute * RandomUtils.Next(120, 180));
+            return;
+
         }
 
         //检测客户端版本
@@ -1004,8 +1076,12 @@ namespace Server.MirNetwork
 
             Stage = GameStage.Select;
             Player = null;
-
             Enqueue(new S.LogOutSuccess { Characters = Account.GetSelectInfo()});
+            //这里发送一次校验码
+            if(Account.NextCheckTime > 0 && Account.NextCheckTime < SMain.Envir.Time + 1000 * 60 * 60)
+            {
+                SendCheckCode(1);
+            }
         }
 
         private void Turn(C.Turn p)

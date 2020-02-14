@@ -63,6 +63,20 @@ namespace Server.MirDatabase
 
         public bool AdminAccount;
 
+
+        //验证码（最少半个小时-1个小时，1个小时-2个小时，2个小时-3个小时，2-4个小时）
+        [JsonIgnore]
+        public string CheckCode;
+        [JsonIgnore]
+        public long LastCheckTime;//最后校验时间
+        [JsonIgnore]
+        public long NextCheckTime;//下次校验时间
+        [JsonIgnore]
+        public int checkSuccCount;//校验成功次数
+        [JsonIgnore]
+        public int checkErrorCount;//校验失败次数
+
+
         public AccountInfo()
         {
 

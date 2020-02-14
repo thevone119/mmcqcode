@@ -35,6 +35,9 @@ namespace Client.MirScenes
         //最后支付时间，没有成功前，不允许重复触发支付，间隔30秒
         private long lastPayTime = 0;
 
+        //验证码
+        public CheckCodeDialog CheckCodeDialog;
+
         public SelectScene(List<SelectInfo> characters)
         {
             SoundManager.PlaySound(SoundList.SelectMusic, true);
@@ -133,6 +136,7 @@ namespace Client.MirScenes
                 
             };
 
+            
 
             StartGameButton = new MirButton
             {
@@ -310,6 +314,32 @@ namespace Client.MirScenes
         //开始游戏
         public void StartGame()
         {
+            //判断有没有验证码需要验证的，如果有的话，要先做验证码处理
+            if(LastCheckTime>0 && CMain.Time < LastCheckTime)
+            {
+                try
+                {
+
+                    if (CheckCodeDialog == null)
+                    {
+                        CheckCodeDialog = new CheckCodeDialog
+                        {
+                            Parent = this
+                        };
+                    }
+                    CheckCodeDialog.Hide();
+                    CheckCodeDialog.checkcode = LastCheckCode;
+                    CheckCodeDialog.LastCheckTime = LastCheckTime;
+                    CheckCodeDialog.Show();
+                    return;
+                }
+                catch(Exception e)
+                {
+                    MirLog.info(e.StackTrace);
+                }
+            }
+
+
             if (!Libraries.Loaded)
             {
                 MirMessageBox message = new MirMessageBox(LanguageUtils.Format("Please wait, The game is still loading... {0:##0}%", Libraries.Progress / (double)Libraries.Count * 100), MirMessageBoxButtons.Cancel);
@@ -352,7 +382,6 @@ namespace Client.MirScenes
                 RechargeBox.Show();
                 
             }
-           
         }
         public override void ProcessPacket(Packet p)
         {
@@ -425,6 +454,7 @@ namespace Client.MirScenes
                     RechargeBox.Label.Text = "充值成功，已到账元宝数："+ ((S.RechargeResult)p).addCredit;
                     RechargeBox.Show();
                     break;
+
                 default:
                     base.ProcessPacket(p);
                     break;
@@ -470,6 +500,8 @@ namespace Client.MirScenes
             _selected = 0;
             UpdateInterface();
         }
+
+      
 
         private void DeleteCharacter()
         {

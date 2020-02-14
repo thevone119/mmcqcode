@@ -51,6 +51,7 @@ namespace Server.MirEnvir
         private readonly DateTime _startTime = DateTime.Now;
         public readonly Stopwatch Stopwatch = Stopwatch.StartNew();
 
+        //时间，毫秒值
         public long Time { get; private set; }
         public RespawnTimer RespawnTick = new RespawnTimer();
         private static List<string> DisabledCharNames = new List<string>();
@@ -1102,6 +1103,8 @@ namespace Server.MirEnvir
             return null;
         }
 
+        
+
         //加载排行榜
         //每5分钟加载刷新一次
         //只排前20
@@ -1647,6 +1650,7 @@ namespace Server.MirEnvir
 
         private void StartEnvir()
         {
+            SMain.Enqueue("StartEnvir ...");
             Players.Clear();
             StartPoints.Clear();
             StartItems.Clear();
@@ -2109,10 +2113,16 @@ namespace Server.MirEnvir
                 //return;
             }
 
+            //之前的校验未通过，需要等待
+            if (account.LastCheckTime>0 && account.LastCheckTime+Settings.Minute*5 > Time)
+            {
+                c.Enqueue(new ServerPackets.Login { Result = 5, Reason="之前此账号验证码未通过认证，请等待 "+ ((account.LastCheckTime + Settings.Minute * 5- Time)/1000)+" 秒后进行登录操作" });
+                return;
+            }
 
 
             account.WrongPasswordCount = 0;
-
+            account.LastCheckTime = 0;
             lock (AccountLock)
             {
                 if (account.Connection != null)
@@ -2129,7 +2139,9 @@ namespace Server.MirEnvir
             account.LastIP = c.IPAddress;
             SMain.Enqueue("account Login:" + account.AccountID + ", User logged in.");
             SMain.Enqueue(account.Connection.SessionID + ", " + account.Connection.IPAddress + ",MAC:" + p.ClientInfo  + ", User logged in.");
+            //返回登录成功，并且返回角色列表
             c.Enqueue(new ServerPackets.LoginSuccess { Characters = account.GetSelectInfo()});
+            //这里发送一次校验码
             
         }
 

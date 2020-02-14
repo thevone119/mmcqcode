@@ -32,7 +32,10 @@ namespace Server.MirObjects
         public long LastOnlineTimeCheck;//最后检测时间
         public long LastItemSkillTime, LastSkillComm4,LastSkillComm5, LastSkillComm7;//最后检测时间
 
+        public long LastCheckCodeTime;//最后检测时间验证码时间。10秒一次
+        public long LastMoveTime;//最后移动时间，最后走路的时间，如果一直移动，则不校验验证码的.
 
+        public long LastMyMonEatTime;//契约兽最后进食时间
 
         public short Looks_Armour = 0, Looks_Weapon = -1, Looks_WeaponEffect = 0;
 		public byte Looks_Wings = 0;
@@ -609,6 +612,8 @@ namespace Server.MirObjects
                     return string.Format("{0} Has logged out. Reason: Kicked by admin", Name);
                 case 5:
                     return string.Format("{0} Has logged out. Reason: Maximum connections reached", Name);
+                case 6:
+                    return string.Format("{0} 验证码输入错误", Name);
                 case 10:
                     return string.Format("{0} Has logged out. Reason: Wrong client version", Name);
                 case 20:
@@ -654,6 +659,7 @@ namespace Server.MirObjects
             }
             return original;
         }
+
         //死循环调用入口，这个用trycatch 包裹，因为这里非常多逻辑，非常容易发生异常
         public override void Process()
         {
@@ -834,6 +840,7 @@ namespace Server.MirObjects
                 ProcessOnlineTime();
                 ProcessItemSkill();
                 RefreshNameColour();
+                ProcessCheckCode();
                 //当前是否可以免助跑
                 FastRun = false;
                 if (CurrentMap!=null && CurrentMap.Info!=null && CurrentMap.Info.CanFastRun)
@@ -878,6 +885,68 @@ namespace Server.MirObjects
             {
                 Info.onlineDay = DateTime.Now.DayOfYear;
                 Info.onlineTime = 0;
+            }
+        }
+
+
+        /// <summary>
+        /// 重新发送验证码
+        /// 每分钟检测，处理一次
+        /// </summary>
+        public void ProcessCheckCode()
+        {
+            if (Envir.Time < LastCheckCodeTime)
+            {
+                return;
+            }
+            LastCheckCodeTime = Envir.Time + 10000;
+            if (Level < 7)
+            {
+                return;
+            }
+
+           
+
+            try
+            {
+                //校验发送的校验码是否超时
+                //如果超时不校验，则退出哦
+                if (Info.AccountInfo.LastCheckTime > 0 && Info.AccountInfo.LastCheckTime < Envir.Time)
+                {
+                    Info.AccountInfo.Connection.CheckCode(null);
+                    return;
+                }
+
+                //如果超过1个小时不动？一动就出验证码
+                if(LastMoveTime + Settings.Hour < Envir.Time)
+                {
+                    Info.AccountInfo.NextCheckTime = Envir.Time-1000;
+                }
+
+
+                //10秒内没有移动,并且契约兽没有进食。
+                if (LastMoveTime + 10000 < Envir.Time && LastMyMonEatTime + 10000 < Envir.Time)
+                {
+                    return;
+                }
+
+                //校验时间，如果
+                if (Info.AccountInfo.NextCheckTime <= 0)
+                {
+                    Info.AccountInfo.NextCheckTime = Envir.Time + (1000 * 60 * RandomUtils.Next(30, 60));
+                }
+                else
+                {
+                    //发送校验码，每分钟发送一次校验码
+                    if (Info.AccountInfo.NextCheckTime <= Envir.Time)
+                    {
+                        Info.AccountInfo.Connection.SendCheckCode(2);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
             }
         }
 
@@ -7083,6 +7152,7 @@ namespace Server.MirObjects
             CheckConquest();
 
 
+            LastMoveTime = Envir.Time;
 
             CellTime = Envir.Time + 500;
             ActionTime = Envir.Time + GetDelayTime(MoveDelay);
@@ -7229,7 +7299,7 @@ namespace Server.MirObjects
             CheckConquest();
 
 
-
+            LastMoveTime = Envir.Time;
             CellTime = Envir.Time + 500;
             ActionTime = Envir.Time + GetDelayTime(MoveDelay);
 
@@ -11962,6 +12032,7 @@ namespace Server.MirObjects
 
             if (!base.Teleport(temp, location, effects)) return false;
 
+            LastMoveTime = Envir.Time;
             Enqueue(new S.MapChanged
             {
                 FileName = CurrentMap.Info.FileName,
@@ -14781,6 +14852,8 @@ namespace Server.MirObjects
             //喂食
             if (operation == 5)
             {
+                
+
                 ulong itemid = ulong.Parse(parameter1);
                 //
                 UserItem temp = null;
@@ -14798,7 +14871,9 @@ namespace Server.MirObjects
                     //Enqueue(p);
                     return;
                 }
-         
+                //契约兽最后进食时间
+                LastMyMonEatTime = Envir.Time;
+
                 //灵兽仙桃
                 if (temp.Info.Name == "灵兽仙桃")
                 {
