@@ -335,6 +335,11 @@ namespace Client.MirScenes
                     _login.PasswordTextBox.SetFocus();
                     break;
                 case 5:
+                    MirMessageBox.Show("服务器端拒绝连接");
+                    _login.PasswordTextBox.Text = string.Empty;
+                    _login.PasswordTextBox.SetFocus();
+                    break;
+                case 6:
                     MirMessageBox.Show(p.Reason);
                     _login.PasswordTextBox.Text = string.Empty;
                     _login.PasswordTextBox.SetFocus();
