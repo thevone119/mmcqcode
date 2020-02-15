@@ -137,6 +137,87 @@ public static class UniqueKeyHelper
 }
 
 
+/// <summary>
+/// 各种加密解密处理，用于对报文等信息进行关键业务的加解密，防止网络端被获取，修改
+/// 
+/// </summary>
+public class EncryptHelper
+{
+    //默认的加密，解密密钥
+    private static string desKey = "xfqsxdef";
+
+    public static string DesEncrypt(string strText)
+    {
+        return DesEncrypt(strText, desKey);
+    }
+
+    #region DES对称加密解密
+    /// <summary> 加密字符串
+    /// </summary> 
+    /// <param name="strText">需被加密的字符串</param> 
+    /// <param name="strEncrKey">密钥</param> 
+    /// <returns></returns> 
+    #endregion
+    public static string DesEncrypt(string strText, string strEncrKey)
+    {
+        try
+        {
+            byte[] byKey = null;
+            byte[] IV = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
+
+            byKey = Encoding.UTF8.GetBytes(strEncrKey.Substring(0, 8));
+            DESCryptoServiceProvider des = new DESCryptoServiceProvider();
+            byte[] inputByteArray = Encoding.UTF8.GetBytes(strText);
+            MemoryStream ms = new MemoryStream();
+            CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(byKey, IV), CryptoStreamMode.Write);
+            cs.Write(inputByteArray, 0, inputByteArray.Length);
+            cs.FlushFinalBlock();
+            return Convert.ToBase64String(ms.ToArray());
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    public static string DesDecrypt(string strText)
+    {
+        return DesDecrypt(strText, desKey);
+    }
+
+    /// <summary> 解密字符串
+    /// </summary> 
+    /// <param name="strText">需被解密的字符串</param> 
+    /// <param name="sDecrKey">密钥</param> 
+    /// <returns></returns> 
+ 
+    public static string DesDecrypt(string strText, string sDecrKey)
+    {
+        try
+        {
+            byte[] byKey = null;
+            byte[] IV = { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
+            byte[] inputByteArray = new Byte[strText.Length];
+
+            byKey = Encoding.UTF8.GetBytes(sDecrKey.Substring(0, 8));
+            DESCryptoServiceProvider des = new DESCryptoServiceProvider();
+            inputByteArray = Convert.FromBase64String(strText);
+            MemoryStream ms = new MemoryStream();
+            CryptoStream cs = new CryptoStream(ms, des.CreateDecryptor(byKey, IV), CryptoStreamMode.Write);
+            cs.Write(inputByteArray, 0, inputByteArray.Length);
+            cs.FlushFinalBlock();
+            Encoding encoding = new UTF8Encoding();
+            return encoding.GetString(ms.ToArray());
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+}
+
+
 //快速随机函数的工具而已嘛，需要搞什么线程么。
 //不用线程产生的随机数竟然有问题。坑爹啊,还是用线程变量吧
 public class RandomUtils
@@ -1600,3 +1681,244 @@ public class OSystem
 
 }
 
+public class Computer
+{
+    public static string CpuID; //1.cpu序列号
+    public static string MacAddress; //2.mac序列号
+    public static string DiskID; //3.硬盘id
+    public static string IpAddress; //4.ip地址
+    public static string LoginUserName; //5.登录用户名
+    public static string ComputerName; //6.计算机名
+    public static string SystemType; //7.系统类型
+    public static string TotalPhysicalMemory; //8.内存量 单位：M
+
+    static Computer()
+    {
+        CpuID = GetCpuID();
+        MacAddress = GetMacAddress();
+        DiskID = GetDiskID();
+        IpAddress = GetIPAddress();
+        LoginUserName = GetUserName();
+        SystemType = GetSystemType();
+        TotalPhysicalMemory = GetTotalPhysicalMemory();
+        ComputerName = GetComputerName();
+    }
+    //1.获取CPU序列号代码 
+
+    static string GetCpuID()
+    {
+        try
+        {
+            string cpuInfo = "";//cpu序列号 
+            ManagementClass mc = new ManagementClass("Win32_Processor");
+            ManagementObjectCollection moc = mc.GetInstances();
+            foreach (ManagementObject mo in moc)
+            {
+                cpuInfo = mo.Properties["ProcessorId"].Value.ToString();
+            }
+            moc = null;
+            mc = null;
+            return cpuInfo;
+        }
+        catch
+        {
+            return "unknow";
+        }
+        finally
+        {
+        }
+
+    }
+
+    //2.获取网卡硬件地址 
+
+    static string GetMacAddress()
+    {
+        try
+        {
+            string mac = "";
+            ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
+            ManagementObjectCollection moc = mc.GetInstances();
+            foreach (ManagementObject mo in moc)
+            {
+                if ((bool)mo["IPEnabled"] == true)
+                {
+                    mac = mo["MacAddress"].ToString();
+                    break;
+                }
+            }
+            moc = null;
+            mc = null;
+            return mac;
+        }
+        catch
+        {
+            return "unknow";
+        }
+        finally
+        {
+        }
+
+    }
+
+    //3.获取硬盘ID 
+    static string GetDiskID()
+    {
+        try
+        {
+            String HDid = "";
+            ManagementClass mc = new ManagementClass("Win32_DiskDrive");
+            ManagementObjectCollection moc = mc.GetInstances();
+            foreach (ManagementObject mo in moc)
+            {
+                HDid = (string)mo.Properties["Model"].Value;
+            }
+            moc = null;
+            mc = null;
+            return HDid;
+        }
+        catch
+        {
+            return "unknow";
+        }
+        finally
+        {
+        }
+
+    }
+
+    //4.获取IP地址 
+
+    static string GetIPAddress()
+    {
+        try
+        {
+            string st = "";
+            ManagementClass mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
+            ManagementObjectCollection moc = mc.GetInstances();
+            foreach (ManagementObject mo in moc)
+            {
+                if ((bool)mo["IPEnabled"] == true)
+                {
+                    //st=mo["IpAddress"].ToString(); 
+                    System.Array ar;
+                    ar = (System.Array)(mo.Properties["IpAddress"].Value);
+                    st = ar.GetValue(0).ToString();
+                    break;
+                }
+            }
+            moc = null;
+            mc = null;
+            return st;
+        }
+        catch
+        {
+            return "unknow";
+        }
+        finally
+        {
+        }
+
+    }
+
+    /// 5.操作系统的登录用户名 
+    static string GetUserName()
+    {
+        try
+        {
+            string un = "";
+
+            un = Environment.UserName;
+            return un;
+        }
+        catch
+        {
+            return "unknow";
+        }
+        finally
+        {
+        }
+
+    }
+
+
+
+    //6.获取计算机名
+    static string GetComputerName()
+    {
+        try
+        {
+            return System.Environment.MachineName;
+
+        }
+        catch
+        {
+            return "unknow";
+        }
+        finally
+        {
+        }
+    }
+
+
+
+    ///7 PC类型 
+    static string GetSystemType()
+    {
+        try
+        {
+            string st = "";
+            ManagementClass mc = new ManagementClass("Win32_ComputerSystem");
+            ManagementObjectCollection moc = mc.GetInstances();
+            foreach (ManagementObject mo in moc)
+            {
+
+                st = mo["SystemType"].ToString();
+
+            }
+            moc = null;
+            mc = null;
+            return st;
+        }
+        catch
+        {
+            return "unknow";
+        }
+        finally
+        {
+        }
+    }
+
+
+
+    ///8.物理内存        
+    static string GetTotalPhysicalMemory()
+    {
+        try
+        {
+
+            string st = "";
+            ManagementClass mc = new ManagementClass("Win32_ComputerSystem");
+            ManagementObjectCollection moc = mc.GetInstances();
+            foreach (ManagementObject mo in moc)
+            {
+
+                st = mo["TotalPhysicalMemory"].ToString();
+
+            }
+            moc = null;
+            mc = null;
+            return st;
+        }
+        catch
+        {
+            return "unknow";
+        }
+        finally
+        {
+        }
+
+    }
+
+
+}

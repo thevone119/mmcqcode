@@ -186,22 +186,27 @@ namespace ServerPackets
         }
 
         public byte Result;
+
+        public string Reason="";
         /*
          * 0: Disabled
          * 1: Bad AccountID
          * 2: Bad Password
          * 3: Account Not Exist
          * 4: Wrong Password
+         * 5: check code error
          */
 
         protected override void ReadPacket(BinaryReader reader)
         {
             Result = reader.ReadByte();
+            Reason = reader.ReadString();
         }
 
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(Result);
+            writer.Write(Reason);
         }
     }
     //禁止登录
@@ -6184,6 +6189,31 @@ namespace ServerPackets
         protected override void WritePacket(BinaryWriter writer)
         {
             writer.Write(Success);
+        }
+    }
+
+
+
+
+    public sealed class CheckCode : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ServerPacketIds.CheckCode; }
+        }
+        public string code;
+        public long remainTime;//剩余时间毫秒
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            code = reader.ReadString();
+            remainTime = reader.ReadInt64();
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            writer.Write(code);
+            writer.Write(remainTime);
         }
     }
 }

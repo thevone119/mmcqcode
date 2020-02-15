@@ -1718,6 +1718,7 @@ public enum ServerPacketIds : short
     BlizzardStopTime,
     MyMonstersPackets,
     MyMonstersExpUpdate,
+    CheckCode,
 }
 
 public enum ClientPacketIds : short
@@ -1871,6 +1872,7 @@ public enum ClientPacketIds : short
     ConfirmItemCollect,//确认收集物品
     MagicParameter,//魔法参数，魔法释放的前置
     MyMonsterOperation,//契约兽操作
+    CheckCode,//发送验证码
 }
 
 public enum ConquestType : byte
@@ -4309,6 +4311,8 @@ public abstract class Packet
                 return new C.MagicParameter();
             case (short)ClientPacketIds.MyMonsterOperation:
                 return new C.MyMonsterOperation();
+            case (short)ClientPacketIds.CheckCode:
+                return new C.CheckCode();
                 
             default:
                 return null;
@@ -4820,7 +4824,10 @@ public abstract class Packet
                 return new S.ItemCollectCancel();
             case (short)ServerPacketIds.ConfirmItemCollect:
                 return new S.ConfirmItemCollect();
-                
+            case (short)ServerPacketIds.CheckCode:
+                return new S.CheckCode();
+
+
             default:
                 return null;
         }
