@@ -761,6 +761,10 @@ namespace Server.MirNetwork
         //src 0:登录，1：小退 3：游戏内
         public void SendCheckCode(byte src)
         {
+            if (!Settings.openCheckCode)
+            {
+                return;
+            }
             //获取
             if (Account == null)
             {
@@ -770,7 +774,7 @@ namespace Server.MirNetwork
             //2分钟内校验
             if(Account.LastCheckTime < SMain.Envir.Time)
             {
-                Account.LastCheckTime = SMain.Envir.Time + (Settings.Minute * 2);
+                Account.LastCheckTime = SMain.Envir.Time + (Settings.Minute);
             }
             Account.checkErrorCount++;
 
@@ -1077,7 +1081,7 @@ namespace Server.MirNetwork
             Stage = GameStage.Select;
             Player = null;
             Enqueue(new S.LogOutSuccess { Characters = Account.GetSelectInfo()});
-            //这里发送一次校验码
+            //这里发送一次校验码，验证码
             if(Account.NextCheckTime > 0 && Account.NextCheckTime < SMain.Envir.Time + 1000 * 60 * 60)
             {
                 SendCheckCode(1);

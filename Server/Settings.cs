@@ -99,7 +99,7 @@ namespace Server
 
         //public static bool openSaBaKe = false;//是否沙巴克战役
 
-
+        public static bool openCheckCode = true;//是否开启验证码系统
 
         public static readonly bool saveSetting = false;//是否保存配置
 
@@ -364,8 +364,8 @@ namespace Server
             openLevelExpSup = Reader.ReadBoolean("Optional", "openLevelExpSup", openLevelExpSup);
             openGroupWar = Reader.ReadBoolean("Optional", "openGroupWar", openGroupWar);
             openTaskQuest = Reader.ReadBoolean("Optional", "openTaskQuest", openTaskQuest);
+            openTaskQuest = Reader.ReadBoolean("Optional", "openCheckCode", openCheckCode);
             
-
 
 
             //Database
