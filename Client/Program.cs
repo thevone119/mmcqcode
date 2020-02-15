@@ -37,6 +37,7 @@ namespace Client
 
                 if (RuntimePolicyHelper.LegacyV2RuntimeEnabledSuccessfully == true) { }
 
+                long currExeLen = new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Length;
                 //客户端多开限制，只运行开3个客户端
                 int currClient = 0;
                 string[] dsmach = { "Config", "Data", "DirectX", "Map", "Sound" };
@@ -50,6 +51,11 @@ namespace Client
                             continue;
                         }
                         MirLog.info(p.MainModule.FileName);
+                        if (new FileInfo(p.MainModule.FileName).Length == currExeLen)
+                        {
+                            currClient++;
+                        }
+
                         FileInfo f = new FileInfo(p.MainModule.FileName);
                         DirectoryInfo[] ds = f.Directory.GetDirectories();
                         int dsmachcount = 0;
@@ -65,7 +71,7 @@ namespace Client
                         }
                         if (dsmachcount >= 5)
                         {
-                            currClient++;
+                            //currClient++;
                         }
                     }
                     catch(Exception e)
@@ -73,7 +79,7 @@ namespace Client
                         MirLog.error(e.Message);
                     }
                 }
-                if (currClient >= 4)
+                if (currClient >= 3)
                 {
                     MirLog.info("最多只运行同时打开3个客户端");
                     MessageBox.Show("最多只运行同时打开3个客户端", "提示", MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1);
