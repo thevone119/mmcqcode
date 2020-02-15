@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using System.Drawing;
 using System.Collections.Specialized;
 using System.Net.NetworkInformation;
+using System.Management;
 
 /// <summary>
 /// 日志处理类，正式发布后，关闭日志输出
@@ -1703,7 +1704,13 @@ public class Computer
         TotalPhysicalMemory = GetTotalPhysicalMemory();
         ComputerName = GetComputerName();
     }
+
     //1.获取CPU序列号代码 
+    public static string GetComputerInfo()
+    {
+        return CpuID + "|" + MacAddress + "|" + DiskID+"|"+ IpAddress+"|"+ ComputerName+"|"+ SystemType+"|"+ TotalPhysicalMemory;
+    }
+
 
     static string GetCpuID()
     {
