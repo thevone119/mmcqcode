@@ -191,7 +191,6 @@ public class EncryptHelper
     /// <param name="strText">需被解密的字符串</param> 
     /// <param name="sDecrKey">密钥</param> 
     /// <returns></returns> 
- 
     public static string DesDecrypt(string strText, string sDecrKey)
     {
         try
@@ -216,6 +215,63 @@ public class EncryptHelper
         }
     }
 
+    //自己定义实现的加密算法
+    public static string MyEncrypt(string strText)
+    {
+        try
+        {
+    
+            byte[] IV = { 0x11, 0x02, 0x43, 0x22, 0x19, 0xAB, 0xCD, 0xEF };
+            byte[] inputByteArray = Convert.FromBase64String(strText);
+            byte[] valueByteArray = new byte[inputByteArray.Length];
+
+            for(int i=0;i< inputByteArray.Length; i++)
+            {
+                int v = inputByteArray[i] + IV[i % IV.Length];
+                if (v > 255)
+                {
+                    v = v - 255;
+                }
+                valueByteArray[i] = (byte)v;
+            }
+            Encoding encoding = new UTF8Encoding();
+            return encoding.GetString(valueByteArray);
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    //自定义解密算法
+    public static string MyDecrypt(string strText)
+    {
+        try
+        {
+   
+            byte[] IV = { 0x11, 0x02, 0x43, 0x22, 0x19, 0xAB, 0xCD, 0xEF };
+            byte[] inputByteArray = Encoding.UTF8.GetBytes(strText);
+            byte[] valueByteArray = new byte[inputByteArray.Length];
+
+            for (int i = 0; i < inputByteArray.Length; i++)
+            {
+                int v = inputByteArray[i] - IV[i % IV.Length];
+                if (v <0 )
+                {
+                    v = v + 255;
+                }
+                valueByteArray[i] = (byte)v;
+            }
+
+            return Convert.ToBase64String(valueByteArray);
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+
 }
 
 
@@ -226,7 +282,10 @@ public class RandomUtils
     private static int seed = Environment.TickCount;
     private static ThreadLocal<Random> RandomWrapper = new ThreadLocal<Random>(() => new Random(Interlocked.Increment(ref seed)));
     //private static Random random = new Random();
+    private static string[] ChineseTerms = {"夜火", "传奇","怪物","野猪","老虎","攻击","打架","屠夫","鞋子","老婆","老板","女人","情人","情妇","大方","总裁","工会","行会","跑路","农民", "吃货","笨蛋","爸爸","杀怪","傻瓜","高手","无敌","神仙","神奇","权利","天才","男人","乌龟","牛逼","游戏","地狱","天堂","轮回","灵性","品质","魔法","战士","法师","射手","刺客","裁决","龙纹","骨玉","力量","戒指","头盔","衣服","鞋子","手镯","腰带" };
 
+    //100个汉语常用字
+    private static string ChineseChar = "的一国在人了有中是年和大业不为发会工经上地市要个产这出行作生家以成到日民来我部对进多全建他公开们场展时理新方主企资实学报制政济用同于法高长现本月定化加动合品重关机分力自外者区能设后就等体下万元社过前面夜火传奇白野猪怪物";
 
     public static int Next()
     {
@@ -253,6 +312,19 @@ public class RandomUtils
         for (int i = 0; i < count; i++) if (Next(rate) == 0) x++;
         return x;
     }
+
+    public static string RandomomRangeChineseTerm()
+    {
+        if (Next(100) < 30)
+        {
+            return ChineseTerms[Next(ChineseTerms.Length)];
+        }
+        else
+        {
+            return ChineseChar.Substring(Next(ChineseChar.Length), 1) + ChineseChar.Substring(Next(ChineseChar.Length), 1);
+        }
+    }
+
 
 
 }

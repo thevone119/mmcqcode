@@ -2528,7 +2528,27 @@ namespace ClientPackets
             writer.Write(code);
         }
     }
+
+    //刷新验证码
+    public sealed class RefreshCheckCode : Packet
+    {
+        public override short Index
+        {
+            get { return (short)ClientPacketIds.RefreshCheckCode; }
+        }
+
+        protected override void ReadPacket(BinaryReader reader)
+        {
+            
+        }
+
+        protected override void WritePacket(BinaryWriter writer)
+        {
+            
+        }
+    }
     
+
 
 
 }

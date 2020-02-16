@@ -1873,6 +1873,7 @@ public enum ClientPacketIds : short
     MagicParameter,//魔法参数，魔法释放的前置
     MyMonsterOperation,//契约兽操作
     CheckCode,//发送验证码
+    RefreshCheckCode,//刷新验证码
 }
 
 public enum ConquestType : byte
@@ -4313,6 +4314,8 @@ public abstract class Packet
                 return new C.MyMonsterOperation();
             case (short)ClientPacketIds.CheckCode:
                 return new C.CheckCode();
+            case (short)ClientPacketIds.RefreshCheckCode:
+                return new C.RefreshCheckCode();
                 
             default:
                 return null;
@@ -5353,7 +5356,7 @@ public class MineSet
 {
     public string Name = string.Empty;
     public byte SpotRegenRate = 5;//矿石再生时间默认5分钟
-    public byte MaxStones = 160;//最大产生矿的数量，也就是每5分钟最多产生0-160块矿石，挖完了，就等下一个5分钟了.
+    public byte MaxStones = 150;//最大产生矿的数量，也就是每5分钟最多产生0-160块矿石，挖完了，就等下一个5分钟了.这个数量是包括挖中，挖不中等情况的，也就是说5分钟最多挖150下
     public byte HitRate= 25;//这个是挖到土的几率
     public byte DropRate = 10;//这个是掉的几率
 
