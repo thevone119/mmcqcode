@@ -2047,6 +2047,8 @@ namespace Server.MirEnvir
                 c.Enqueue(new ServerPackets.Login { Result = 1 });
                 return;
             }
+            //密码解密
+            p.Password = EncryptHelper.MyEncrypt(p.Password);
 
             if (!PasswordReg.IsMatch(p.Password))
             {
@@ -2077,6 +2079,7 @@ namespace Server.MirEnvir
             account.BanReason = string.Empty;
             account.ExpiryDate = DateTime.MinValue;
 
+            
 
             if (String.CompareOrdinal(account.Password, p.Password) != 0)
             {
@@ -2114,7 +2117,7 @@ namespace Server.MirEnvir
             }
 
             //之前的校验未通过，需要等待
-            if (account.LastCheckTime>0 && account.LastCheckTime+Settings.Minute*4 > Time)
+            if (account.LastCheckTime>0 && account.LastCheckTime+Settings.Minute*2 > Time)
             {
                 c.Enqueue(new ServerPackets.Login { Result = 6, Reason="之前此账号验证码未通过认证，请等待 "+ ((account.LastCheckTime + Settings.Minute * 5- Time)/1000)+" 秒后进行登录操作" });
                 return;

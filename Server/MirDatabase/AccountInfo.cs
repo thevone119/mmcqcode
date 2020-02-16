@@ -68,6 +68,8 @@ namespace Server.MirDatabase
         [JsonIgnore]
         public string CheckCode;
         [JsonIgnore]
+        public long LastSendCodeTime;//最后发送校验码时间
+        [JsonIgnore]
         public long LastCheckTime;//最后校验时间
         [JsonIgnore]
         public long NextCheckTime;//下次校验时间

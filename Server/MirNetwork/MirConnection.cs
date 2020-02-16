@@ -682,6 +682,10 @@ namespace Server.MirNetwork
                 case (short)ClientPacketIds.CheckCode:
                     CheckCode((C.CheckCode)p);
                     break;
+                case (short)ClientPacketIds.RefreshCheckCode:
+                    SendCheckCode(1);
+                    break;
+                    
 
                 default:
                     SMain.Enqueue(string.Format("Invalid packet received. Index : {0}", p.Index));
@@ -770,18 +774,34 @@ namespace Server.MirNetwork
             {
                 return;
             }
-            //SMain.Enqueue("SendCheckCode...");
-            //2分钟内校验
-            if(Account.LastCheckTime < SMain.Envir.Time)
+            
+            //1秒只发一个验证码
+            if (Account.LastSendCodeTime < SMain.Envir.Time)
+            {
+                Account.LastSendCodeTime = SMain.Envir.Time + (Settings.Second);
+            }
+            else
+            {
+                return;
+            }
+
+            //最后3秒，不允许重发
+            if (Account.LastCheckTime>0 && Account.LastCheckTime -3000 < SMain.Envir.Time)
+            {
+                return;
+            }
+
+            //1分钟内校验
+            if (Account.LastCheckTime < SMain.Envir.Time)
             {
                 Account.LastCheckTime = SMain.Envir.Time + (Settings.Minute);
             }
             Account.checkErrorCount++;
-
+            SMain.Enqueue("SendCheckCode...:"+Account.AccountID);
             //下次校验时间也更新
             Account.NextCheckTime = Account.LastCheckTime+10000;
             //发送校验码
-            Account.CheckCode = RandomUtils.Next(10, 99)+"";
+            Account.CheckCode = RandomUtils.RandomomRangeChineseTerm();
 
             Enqueue(new S.CheckCode { code = EncryptHelper.DesEncrypt(Account.CheckCode +"_" + RandomUtils.Next()), remainTime= Account.LastCheckTime-SMain.Envir.Time});
 
@@ -799,11 +819,12 @@ namespace Server.MirNetwork
             //超时或者校验不通过，都失败，关闭客户端
             if (p==null||Account.LastCheckTime < SMain.Envir.Time || p.code!= Account.CheckCode)
             {
+                SMain.Enqueue("CheckCode error...:" + Account.AccountID);
                 Account.LastCheckTime = 0;
                 SendDisconnect(6);
                 return;
             }
-            
+            SMain.Enqueue("CheckCode suss...:"+ Account.AccountID);
             Account.LastCheckTime = 0;
             Account.checkErrorCount--;
             Account.checkSuccCount++;
@@ -816,7 +837,7 @@ namespace Server.MirNetwork
             //错误次数非常少，则时间延长些
             if(Account.checkErrorCount<= Account.checkSuccCount / 8)
             {
-                Account.NextCheckTime = SMain.Envir.Time + (Settings.Minute * RandomUtils.Next(180, 300));
+                Account.NextCheckTime = SMain.Envir.Time + (Settings.Minute * RandomUtils.Next(120, 240));
                 return;
             }
 

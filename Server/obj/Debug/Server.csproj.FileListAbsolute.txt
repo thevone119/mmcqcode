@@ -61,4 +61,3 @@ D:\code\c_work\mir2-master\Server\obj\Debug\Server.csproj.GenerateResource.Cache
 D:\code\c_work\mir2-master\Build\Server\Server.exe
 D:\code\c_work\mir2-master\Build\Server\Server.pdb
 D:\code\c_work\mir2-master\Server\obj\Debug\Server.csproj.CopyComplete
-D:\code\c_work\mir2-master\Server\obj\Debug\Server.csprojAssemblyReference.cache

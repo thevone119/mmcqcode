@@ -992,6 +992,29 @@ namespace Server.MirObjects
                     player.Enqueue(new S.NPCGoods { List = Goods, Rate = PriceRate(player), Type = PanelType.Buy });
                     break;
                 case SellKey:
+                    //没有校验
+                    if (Settings.openCheckCode)
+                    {
+                        try
+                        {
+                            //没有校验
+                            if (player.Info.AccountInfo.LastCheckTime == 0)
+                            {
+                                if (player.LastSellCheckCodeTime < Envir.Time)
+                                {
+                                    player.LastSellCheckCodeTime = Envir.Time + Settings.Hour;
+                                    player.ReceiveChat("请完成校验码校验后再卖物品", ChatType.System);
+                                    player.Info.AccountInfo.Connection.SendCheckCode(1);
+                                    return;
+                                }
+                            }
+                        }
+                        catch(Exception e)
+                        {
+                            SMain.Enqueue(e);
+                        }
+                    }
+                    
                     player.Enqueue(new S.NPCSell());
                     break;
                 case BuySellKey:

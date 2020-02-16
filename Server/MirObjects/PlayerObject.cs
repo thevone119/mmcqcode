@@ -37,6 +37,8 @@ namespace Server.MirObjects
 
         public long LastMyMonEatTime;//契约兽最后进食时间
 
+        public long LastSellCheckCodeTime;//最后卖东西的校验时间
+
         public short Looks_Armour = 0, Looks_Weapon = -1, Looks_WeaponEffect = 0;
 		public byte Looks_Wings = 0;
 
@@ -5061,6 +5063,27 @@ namespace Server.MirObjects
                         ReceiveChat(string.Format("已封停账号 {0}", parts[1]), ChatType.System);
 
                         return;
+
+                    case "验证账号":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        AccountInfo checkcodeaccount = Envir.GetAccount(parts[1]);
+                        if (checkcodeaccount == null)
+                        {
+                            ReceiveChat(string.Format("找不到此账户 {0}", parts[1]), ChatType.System);
+                            return;
+                        }
+                    
+                        if (checkcodeaccount.Connection != null)
+                        {
+                            checkcodeaccount.Connection.SendCheckCode(1);
+                        }
+                        ReceiveChat(string.Format("已发送验证码到账号 {0}", parts[1]), ChatType.System);
+
+                        return;
+
 
                     case "重载封IP":
                         if (!IsGM)
@@ -15151,8 +15174,9 @@ namespace Server.MirObjects
                     Info.Inventory[index] = null;
                     RefreshBagWeight();
                     Enqueue(p);
+                    SMain.Enqueue(Name + ",吞噬了：" + temp.Name);
 
-                    //这里给主人增加经验/金币
+                    //这里给主人增加经验/金币，这里的经营有点多啊。
                     if (mon.canDevour((int)temp.Info.Price))
                     {
                         uint pexp = temp.Info.Price;
@@ -18239,7 +18263,18 @@ namespace Server.MirObjects
                 Enqueue(p);
                 return;
             }
-
+            if (Settings.openCheckCode)
+            {
+                //没有校验
+                if (Info.AccountInfo.LastCheckTime > 0)
+                {
+                    ReceiveChat("请完成校验码校验后再卖物品", ChatType.System);
+                    Enqueue(p);
+                    return;
+                }
+            }
+            
+             
             for (int n = 0; n < CurrentMap.NPCs.Count; n++)
             {
                 NPCObject ob = CurrentMap.NPCs[n];
