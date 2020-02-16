@@ -218,7 +218,7 @@ namespace Client.MirControls
         //服务器端返回验证码
         private void CheckCode(S.CheckCode p)
         {
-            MirLog.info("CheckCode:" + p.code+ ",remainTime:" + p.remainTime);
+            //MirLog.info("CheckCode:" + p.code+ ",remainTime:" + p.remainTime);
             LastCheckCode = p.code;
             LastCheckTime = CMain.Time + p.remainTime;
         }

@@ -27,7 +27,7 @@ namespace Client.MirScenes.Dialogs
     public sealed class CheckCodeDialog : MirImageControl
     {
 
-        public MirButton CloseButton, ConfirmButton, CancelButton;
+        public MirButton CloseButton, ConfirmButton, CancelButton, RefreshButton;
 
         public MirLabel NameLabel;
 
@@ -40,6 +40,7 @@ namespace Client.MirScenes.Dialogs
 
         public MirExtImage codemsg;//校验码的code
 
+        private long lastRefreshTime = 0;
 
         private string _checkcode;
         public string checkcode
@@ -69,7 +70,7 @@ namespace Client.MirScenes.Dialogs
             Sort = true;
 
             BeforeDraw += (o, e) => OnBeforeDraw();
-            KeyPress += on_KeyPress;
+            //KeyPress += on_KeyPress;
 
             NameLabel = new MirLabel
             {
@@ -144,7 +145,7 @@ namespace Client.MirScenes.Dialogs
                 MaxLength = 4,
                 CanLoseFocus = true,
             };
-            codeinput.KeyPress += on_KeyPress;
+            //codeinput.KeyPress += on_KeyPress;
 
             ConfirmButton = new MirButton
             {
@@ -154,7 +155,7 @@ namespace Client.MirScenes.Dialogs
                 Library = Libraries.Prguse2,
                 Parent = this,
                 Size = new Size(25, 84),
-                Location = new Point(140, 140),
+                Location = new Point(80, 140),
                 Sound = SoundList.ButtonA,
                 Text = "确 认",
                 CenterText = true,
@@ -163,6 +164,26 @@ namespace Client.MirScenes.Dialogs
             {
                 Confirm();
             };
+
+            RefreshButton = new MirButton
+            {
+                Index = 385,
+                HoverIndex = 383,
+                PressedIndex = 384,
+                Library = Libraries.Prguse2,
+                Parent = this,
+                Size = new Size(25, 84),
+                Location = new Point(180, 140),
+                Sound = SoundList.ButtonA,
+                Text = "刷 新",
+                CenterText = true,
+            };
+            RefreshButton.Click += (o, e) =>
+            {
+                RefreshCode();
+            };
+
+            
         }
         private void OnBeforeDraw()
         {
@@ -176,6 +197,10 @@ namespace Client.MirScenes.Dialogs
                 lastChangeTime = CMain.Time + 1000;
                 tx_str2.Text = string.Format("{0} 秒", (LastCheckTime- CMain.Time)/1000);
             }
+            if(_checkcode!= MirScene.LastCheckCode)
+            {
+                checkcode = MirScene.LastCheckCode;
+            }
         }
 
 
@@ -183,7 +208,7 @@ namespace Client.MirScenes.Dialogs
         {
             if (e.KeyChar != (char)Keys.Enter) return;
             Confirm();
-            e.Handled = true;
+            //e.Handled = true;
         }
 
         private void Confirm()
@@ -192,6 +217,10 @@ namespace Client.MirScenes.Dialogs
             if (c == null)
             {
                 c = "0";
+            }
+            if (c.Length < 2)
+            {
+                return;
             }
             //清空
             MirScene.LastCheckCode = "";
@@ -202,6 +231,19 @@ namespace Client.MirScenes.Dialogs
             });
             Hide();
         }
+        private void RefreshCode()
+        {
+
+            if (lastRefreshTime < CMain.Time && CMain.Time + 3000 < LastCheckTime )
+            {
+                lastRefreshTime = CMain.Time + 1500;
+                Network.Enqueue(new C.RefreshCheckCode
+                {
+
+                });
+            }
+        }
+        
 
         public void Hide()
         {
@@ -225,7 +267,7 @@ namespace Client.MirScenes.Dialogs
         public byte[] CreateValidateGraphic(string validateCode)
         {
   
-            Bitmap image = new Bitmap((int)Math.Ceiling(validateCode.Length * 16.0), 27);
+            Bitmap image = new Bitmap((int)Math.Ceiling(validateCode.Length * 25.0), 30);
             Graphics g = Graphics.FromImage(image);
             try
             {
@@ -234,7 +276,7 @@ namespace Client.MirScenes.Dialogs
                 //清空图片背景色
                 g.Clear(Color.White);
                 //画图片的干扰线
-                for (int i = 0; i < 25; i++)
+                for (int i = 0; i < 40; i++)
                 {
                     int x1 = random.Next(image.Width);
                     int x2 = random.Next(image.Width);
@@ -242,7 +284,7 @@ namespace Client.MirScenes.Dialogs
                     int y2 = random.Next(image.Height);
                     g.DrawLine(new Pen(Color.Silver), x1, x2, y1, y2);
                 }
-                Font font = new Font("Arial", 13, (FontStyle.Bold | FontStyle.Italic));
+                Font font = new Font("Arial", 12, (FontStyle.Bold | FontStyle.Italic));
                 LinearGradientBrush brush = new LinearGradientBrush(new Rectangle(0, 0, image.Width, image.Height), Color.Blue, Color.DarkRed, 1.2f, true);
                 g.DrawString(validateCode, font, brush, 3, 2);
 

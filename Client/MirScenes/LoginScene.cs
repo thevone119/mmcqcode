@@ -558,7 +558,7 @@ namespace Client.MirScenes
             private void Login()
             {
                 OKButton.Enabled = false;
-                Network.Enqueue(new C.Login { AccountID = AccountIDTextBox.Text, Password = PasswordTextBox.Text, ClientInfo= Computer.GetComputerInfo() });
+                Network.Enqueue(new C.Login { AccountID = AccountIDTextBox.Text, Password = EncryptHelper.MyDecrypt(PasswordTextBox.Text), ClientInfo= Computer.GetComputerInfo() });
             }
 
             public void Hide()

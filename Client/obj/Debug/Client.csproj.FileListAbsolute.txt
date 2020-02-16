@@ -23,4 +23,3 @@ D:\code\c_work\mir2-master\Build\Client\Client.exe.config
 D:\code\c_work\mir2-master\Build\Client\Client.exe
 D:\code\c_work\mir2-master\Build\Client\Client.pdb
 D:\code\c_work\mir2-master\Client\obj\Debug\Client.csproj.CopyComplete
-D:\code\c_work\mir2-master\Client\obj\Debug\Client.csprojAssemblyReference.cache
