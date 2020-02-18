@@ -8,6 +8,7 @@ using System.Linq;
 using Server.MirDatabase;
 using Server.MirForms.Systems;
 using System.Text;
+using ClientPackets;
 
 namespace Server
 {
@@ -20,10 +21,14 @@ namespace Server
         private static readonly ConcurrentQueue<string> MessageLog = new ConcurrentQueue<string>();
         private static readonly ConcurrentQueue<string> DebugLog = new ConcurrentQueue<string>();
         private static readonly ConcurrentQueue<string> ChatLog = new ConcurrentQueue<string>();
+        private static readonly ConcurrentQueue<ClientSubmitFrame> ClientFrame = new ConcurrentQueue<ClientSubmitFrame>();
+        
 
         private static long lastBackUpTime = 0;//最后数据备份时间
 
         private static long cleanLogTime = 0;//清理日志的时间
+
+
 
         public SMain()
         {
@@ -62,6 +67,11 @@ namespace Server
         {
             MessageLog.Enqueue(String.Format("[{0}]: {1}" + Environment.NewLine, DateTime.Now, msg));
         }
+        public static void Enqueue(ClientSubmitFrame msg)
+        {
+            ClientFrame.Enqueue(msg);
+        }
+        
 
         private void configToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -103,7 +113,7 @@ namespace Server
                 if (sb.Length > 0)
                 {
                     LogTextBox.AppendText(sb.ToString());
-                    File.AppendAllText(Settings.LogPath + "Log (" + DateTime.Now.Date.ToString("dd-MM-yyyy") + ").txt", sb.ToString());
+                    File.AppendAllText(Settings.LogPath + "Log (" + DateTime.Now.Date.ToString("yyyy-MM-dd") + ").txt", sb.ToString());
                     sb.Clear();
                 }
                 while (!DebugLog.IsEmpty)
@@ -116,7 +126,7 @@ namespace Server
                 if (sb.Length > 0)
                 {
                     DebugLogTextBox.AppendText(sb.ToString());
-                    File.AppendAllText(Settings.LogPath + "DebugLog (" + DateTime.Now.Date.ToString("dd-MM-yyyy") + ").txt", sb.ToString());
+                    File.AppendAllText(Settings.LogPath + "DebugLog (" + DateTime.Now.Date.ToString("yyyy-MM-dd") + ").txt", sb.ToString());
                     sb.Clear();
                 }
 
@@ -128,7 +138,7 @@ namespace Server
                 if (sb.Length > 0)
                 {
                     ChatLogTextBox.AppendText(sb.ToString());
-                    File.AppendAllText(Settings.LogPath + "ChatLog (" + DateTime.Now.Date.ToString("dd-MM-yyyy") + ").txt", sb.ToString());
+                    File.AppendAllText(Settings.LogPath + "ChatLog (" + DateTime.Now.Date.ToString("yyyy-MM-dd") + ").txt", sb.ToString());
                     sb.Clear();
                 }
                 ProcessPlayersOnlineTab();
@@ -232,7 +242,30 @@ namespace Server
             {
                 Enqueue(ex);
             }
-            
+
+            try
+            {
+                while (!ClientFrame.IsEmpty)
+                {
+                    ClientSubmitFrame message;
+                    if (!ClientFrame.TryDequeue(out message)) continue;
+                    if (message != null)
+                    {
+                        FileStream fs = new FileStream(Settings.LogPath+ message.AccountID+"_"+ DateTime.Now.ToString("yyyyMMddHHmmss")+".jpg", FileMode.Create);
+                        BinaryWriter bw = new BinaryWriter(fs);
+                        //开始写入
+                        bw.Write(message.imgbytes, 0, message.imgbytes.Length);
+                        //关闭流
+                        bw.Close();
+                        fs.Close();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Enqueue(ex);
+            }
+
         }
         //刷新在线用户视图
         //这个如果用户比较多，可能比较消耗性能，最好是10秒内只允许更新一次？

@@ -2207,6 +2207,13 @@ namespace Server.MirEnvir
 
             int count = 0;
 
+            //每个账号只能建立10个角色，包括删除的。避免恶作剧
+            if (c.Account.Characters.Count >= 10)
+            {
+                c.Enqueue(new ServerPackets.NewCharacter { Result = 4 });
+                return;
+            }
+
             for (int i = 0; i < c.Account.Characters.Count; i++)
             {
                 if (c.Account.Characters[i].Deleted) continue;

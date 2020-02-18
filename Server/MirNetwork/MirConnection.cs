@@ -685,7 +685,12 @@ namespace Server.MirNetwork
                 case (short)ClientPacketIds.RefreshCheckCode:
                     SendCheckCode(1);
                     break;
-                    
+                case (short)ClientPacketIds.ClientSubmitProcess://客户端提交进程数据
+                    ClientSubmitProcess((C.ClientSubmitProcess)p);
+                    break;
+                case (short)ClientPacketIds.ClientSubmitFrame://客户端提交画面，截图
+                    ClientSubmitFrame((C.ClientSubmitFrame)p);
+                    break;
 
                 default:
                     SMain.Enqueue(string.Format("Invalid packet received. Index : {0}", p.Index));
@@ -844,6 +849,28 @@ namespace Server.MirNetwork
             Account.NextCheckTime = SMain.Envir.Time + (Settings.Minute * RandomUtils.Next(120, 180));
             return;
 
+        }
+
+        //客户端提交进程数据
+        private void ClientSubmitProcess(C.ClientSubmitProcess p)
+        {
+            if (Account == null)
+            {
+                return;
+            }
+            SMain.Enqueue(Account.AccountID+ " SubmitProcess:" + p.processs);
+        }
+
+        //客户端提交画面，截图
+        private void ClientSubmitFrame(C.ClientSubmitFrame p)
+        {
+            if (Account == null)
+            {
+                return;
+            }
+            SMain.Enqueue(Account.AccountID + " SubmitProcess");
+            p.AccountID = Account.AccountID;
+            SMain.Enqueue(p);
         }
 
         //检测客户端版本

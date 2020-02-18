@@ -5023,6 +5023,7 @@ namespace Server.MirObjects
                 CharacterInfo data;
                 String hintstring;
                 UserItem item;
+                AccountInfo account;
 
                 string comand = CMDTransform.Transform(parts[0]);
                 switch (comand)
@@ -5047,7 +5048,7 @@ namespace Server.MirObjects
                         {
                             return;
                         }
-                        AccountInfo account = Envir.GetAccount(parts[1]);
+                        account = Envir.GetAccount(parts[1]);
                         if (account == null)
                         {
                             ReceiveChat(string.Format("找不到此账户 {0}", parts[1]), ChatType.System);
@@ -5069,20 +5070,62 @@ namespace Server.MirObjects
                         {
                             return;
                         }
-                        AccountInfo checkcodeaccount = Envir.GetAccount(parts[1]);
-                        if (checkcodeaccount == null)
+                        account = Envir.GetAccount(parts[1]);
+                        if (account == null)
                         {
                             ReceiveChat(string.Format("找不到此账户 {0}", parts[1]), ChatType.System);
                             return;
                         }
                     
-                        if (checkcodeaccount.Connection != null)
+                        if (account.Connection != null)
                         {
-                            checkcodeaccount.Connection.SendCheckCode(1);
+                            account.Connection.SendCheckCode(1);
                         }
                         ReceiveChat(string.Format("已发送验证码到账号 {0}", parts[1]), ChatType.System);
 
                         return;
+
+                    case "收集进程":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        account = Envir.GetAccount(parts[1]);
+                        if (account == null)
+                        {
+                            ReceiveChat(string.Format("找不到此账户 {0}", parts[1]), ChatType.System);
+                            return;
+                        }
+
+                        if (account.Connection != null)
+                        {
+                            account.Connection.Enqueue(new S.CollectClientProcess {  });
+                        }
+                        ReceiveChat(string.Format("已发送收集进程信息到 {0}", parts[1]), ChatType.System);
+
+                        return;
+
+                    case "收集画面":
+                        if (!IsGM)
+                        {
+                            return;
+                        }
+                        account = Envir.GetAccount(parts[1]);
+                        byte _type = 0;
+                        byte.TryParse(parts[2], out _type);
+                        if (account == null)
+                        {
+                            ReceiveChat(string.Format("找不到此账户 {0}", parts[1]), ChatType.System);
+                            return;
+                        }
+                        if (account.Connection != null)
+                        {
+                            account.Connection.Enqueue(new S.CollectClientFrame { type= _type });
+                        }
+                        ReceiveChat(string.Format("已发送收集画面信息到 {0}", parts[1]), ChatType.System);
+
+                        return;
+
 
 
                     case "重载封IP":
